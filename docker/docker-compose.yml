@@ -1,0 +1,55 @@
+﻿services:
+
+  dbserver:
+    container_name: ${DB_HOST}
+    image: biarms/mysql:5.5.62
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ}
+      MYSQL_RANDOM_ROOT_PASSWORD: 1
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+    ports:
+      - "8306:3306"
+    volumes:
+      - "./data/mysql/data:/var/lib/mysql:Z"
+      - "./data/mysql/initdb:/docker-entrypoint-initdb.d:Z"
+
+  sshserver:
+    profiles: ["all"]
+    container_name: sshserver
+    build:
+      context: ./data/sshserver
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ}
+      UID: 1000
+      GID: 1000
+#      AUTH_KEYS_URL: abc
+      ALLOW_INTERACTIVE_LOGIN: true
+    ports:
+      - "1022:22"
+    volumes:
+      - "./data/sshserver/data:/authorized_keys:Z"
+
+  ssh:
+      profiles: ["all"]
+      image: serversideup/docker-ssh
+      ports:
+        - target: 2222
+          published: 2222
+          mode: host
+      # Set the Authorized Keys of who can connect
+      environment:
+        AUTHORIZED_KEYS: >
+          "# Start Keys
+           ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDot3LmpE7qlroCaFeu5RF1JvcNOM10pYqc9LhIkn1jTyD5amVgD/c1T07Pz1A3QBqrpNA5LMiu/IHm97TGZvGyr+Ij862L6As0xlgQVgSe2eEFhtOfEa20Ri0XPmlDvPkBEk8pCfCuUE9yUamfMur47llFzdCNx3skwFYyXiSbAPIq5dtTxYr0QJEfD8jIfCTtT8KpJdX94yM5P7nNjj/tsKoeSDuyIsxKb9RkjMZB7sxd9cxXgMpZEdfGOf/Nvv/z5aG87pis2Dd46ZmzGxMfhUqnLGZGQpZecm4seDh5IVh3L3rdfEPo+7vrPMipXjq7D73ouu5BHejp7KzOk0cM91x6EjIJAiFGxls12q1zbjpHwplZP2HPR6bZ4u83C4xsUH13mvZ/Vwe5/7SK4BfZ+pnhAQg/WVxwsm4PBCpQyhha4K/n5dzoM+iCBGvCzg8u5tZ4sxQ81BVfU8kClb5Gr/qkE0ruho2alTidYeVeL/yE423Pig05HqOmTVi1I5c= bernd@P14S
+           # End Keys"
+        # Lock down the access to certain IP addresses
+        ALLOWED_IPS: "AllowUsers tunnel@1.2.3.4"
+      networks:
+          - database
+
+networks:
+  database:

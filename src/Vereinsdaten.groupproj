@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{200BCABD-30B6-4E6F-B9CD-6080468A5883}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="vdmTests.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="vdm.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="vdmTests">
+        <MSBuild Projects="vdmTests.dproj"/>
+    </Target>
+    <Target Name="vdmTests:Clean">
+        <MSBuild Projects="vdmTests.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="vdmTests:Make">
+        <MSBuild Projects="vdmTests.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="vdm">
+        <MSBuild Projects="vdm.dproj"/>
+    </Target>
+    <Target Name="vdm:Clean">
+        <MSBuild Projects="vdm.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="vdm:Make">
+        <MSBuild Projects="vdm.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="vdmTests;vdm"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="vdmTests:Clean;vdm:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="vdmTests:Make;vdm:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>
