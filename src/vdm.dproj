@@ -59,8 +59,8 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
-        <DCC_DcuOutput>..\out\$(Platform)\$(Config)</DCC_DcuOutput>
-        <DCC_ExeOutput>..\out\$(Platform)\$(Config)</DCC_ExeOutput>
+        <DCC_DcuOutput>..\out\dcu\$(Platform)\$(Config)</DCC_DcuOutput>
+        <DCC_ExeOutput>..\out\bin\$(Platform)\$(Config)</DCC_ExeOutput>
         <DCC_E>false</DCC_E>
         <DCC_N>false</DCC_N>
         <DCC_S>false</DCC_S>
