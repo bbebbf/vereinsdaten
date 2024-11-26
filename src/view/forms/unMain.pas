@@ -86,7 +86,9 @@ type
 
     procedure Initialize(const aCommands: ICrudCommands<Int32>); overload;
     procedure Initialize(const aCommands: IMainBusinessIntf); overload;
-    procedure LoadUIList(const aList: TList<TDtoPersonAggregated>);
+    procedure LoadUIListBegin;
+    procedure LoadUIListAddRecord(const aRecord: TDtoPersonAggregated);
+    procedure LoadUIListEnd;
     procedure DeleteRecordfromUI(const aPersonId: Int32);
     procedure ClearRecordUI;
     procedure SetRecordToUI(const aRecord: TDtoPersonAggregated);
@@ -103,6 +105,8 @@ var
 implementation
 
 {$R *.dfm}
+
+uses VdmGlobals, ConfigReader;
 
 { TfmMain }
 
@@ -216,6 +220,9 @@ begin
   if fActivated then
     Exit;
   fActivated := True;
+
+  StatusBar.SimpleText := 'Server: ' + TConfigReader.Instance.Connection.Host +
+    ':' + IntToStr(TConfigReader.Instance.Connection.Port);
   fMainBusinessIntf.LoadList;
   LoadAvailableAdresses;
   ClearRecordUI;
@@ -225,6 +232,7 @@ procedure TfmMain.FormCreate(Sender: TObject);
 begin
   fPersonListviewAttachedData := TListviewAttachedData<Int32, TPersonListItemData>.Create(lvPersonListview);
   fDatetimePickerFormat := dtPersonBithday.Format;
+  Caption := TVdmGlobals.GetVdmApplicationTitle;
 end;
 
 procedure TfmMain.FormDestroy(Sender: TObject);
@@ -290,19 +298,21 @@ begin
   fMainBusinessIntf.LoadCurrentRecord(aPersonId);
 end;
 
-procedure TfmMain.LoadUIList(const aList: TList<TDtoPersonAggregated>);
+procedure TfmMain.LoadUIListBegin;
 begin
   lvPersonListview.Items.BeginUpdate;
-  try
-    fPersonListviewAttachedData.Clear;
-    lvPersonListview.Items.Clear;
-    for var lEntry in aList do
-    begin
-      PersonEntryToListItem(lEntry.Person, nil);
-    end;
-  finally
-    lvPersonListview.Items.EndUpdate;
-  end;
+  fPersonListviewAttachedData.Clear;
+  lvPersonListview.Items.Clear;
+end;
+
+procedure TfmMain.LoadUIListAddRecord(const aRecord: TDtoPersonAggregated);
+begin
+  PersonEntryToListItem(aRecord.Person, nil);
+end;
+
+procedure TfmMain.LoadUIListEnd;
+begin
+  lvPersonListview.Items.EndUpdate;
 end;
 
 procedure TfmMain.lvPersonListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;

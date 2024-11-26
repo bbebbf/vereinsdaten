@@ -135,7 +135,7 @@ end;
 function TMainBusiness.LoadList: TCrudCommandResult;
 begin
   Result := default(TCrudCommandResult);
-  var lRecords := TObjectList<TDtoPersonAggregated>.Create;
+  fUI.LoadUIListBegin;
   try
     var lSqlResult := fConnection.GetSelectResult(fPersonConfig.GetSelectSqlList);
     while lSqlResult.Next do
@@ -143,11 +143,10 @@ begin
       var lRecord := default(TDtoPerson);
       fPersonConfig.SetRecordFromResult(lSqlResult, lRecord);
       if fShowInactivePersons or lRecord.Aktiv then
-        lRecords.Add(TDtoPersonAggregated.Create(lRecord));
+        fUI.LoadUIListAddRecord(TDtoPersonAggregated.Create(lRecord));
     end;
-    fUI.LoadUIList(lRecords);
   finally
-    lRecords.Free;
+    fUI.LoadUIListEnd;
   end;
 end;
 

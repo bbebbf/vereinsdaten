@@ -30,7 +30,9 @@ uses
   ConfigReader in 'general\common\Tools\ConfigReader.pas',
   unMain in 'view\forms\unMain.pas' {fmMain},
   DtoClubmembership in 'data\DtoClubmembership.pas',
-  CrudConfigClubmembership in 'data\CrudConfigClubmembership.pas';
+  CrudConfigClubmembership in 'data\CrudConfigClubmembership.pas',
+  VdmGlobals in 'general\VdmGlobals.pas',
+  FileTools in 'general\common\Tools\FileTools.pas';
 
 {$R *.res}
 

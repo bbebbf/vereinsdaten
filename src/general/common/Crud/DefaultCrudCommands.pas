@@ -62,18 +62,17 @@ end;
 function TDefaultCrudCommands<TRecord, TRecordIdentity>.LoadList: TCrudCommandResult;
 begin
   Result := default(TCrudCommandResult);
-  var lRecords := TList<TRecord>.Create;
+  fUI.LoadUIListBegin;
   try
     var lSqlResult := fConnection.GetSelectResult(fConfig.GetSelectSqlList);
     while lSqlResult.Next do
     begin
       var lRecord := default(TRecord);
       fConfig.SetRecordFromResult(lSqlResult, lRecord);
-      lRecords.Add(lRecord);
+      fUI.LoadUIListAddRecord(lRecord);
     end;
-    fUI.LoadUIList(lRecords);
   finally
-    lRecords.Free;
+    fUI.LoadUIListEnd;
   end;
 end;
 

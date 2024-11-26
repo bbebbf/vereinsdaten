@@ -11,6 +11,7 @@ object fmMain: TfmMain
   Font.Name = 'Segoe UI'
   Font.Style = []
   Menu = MainMenu
+  WindowState = wsMaximized
   OnActivate = FormActivate
   OnCreate = FormCreate
   OnDestroy = FormDestroy
@@ -30,8 +31,8 @@ object fmMain: TfmMain
     Width = 995
     Height = 22
     Panels = <>
-    ExplicitTop = 640
-    ExplicitWidth = 993
+    SimplePanel = True
+    ExplicitTop = 650
   end
   object pnPersonListview: TPanel
     Left = 0
