@@ -164,6 +164,11 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="data\CrudConfigClubmembership.pas"/>
         <DCCReference Include="general\VdmGlobals.pas"/>
         <DCCReference Include="general\common\Tools\FileTools.pas"/>
+        <DCCReference Include="general\intf\ProgressObserver.pas"/>
+        <DCCReference Include="view\forms\unProgressForm.pas">
+            <Form>fmProgressForm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

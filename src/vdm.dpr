@@ -32,7 +32,9 @@ uses
   DtoClubmembership in 'data\DtoClubmembership.pas',
   CrudConfigClubmembership in 'data\CrudConfigClubmembership.pas',
   VdmGlobals in 'general\VdmGlobals.pas',
-  FileTools in 'general\common\Tools\FileTools.pas';
+  FileTools in 'general\common\Tools\FileTools.pas',
+  ProgressObserver in 'general\intf\ProgressObserver.pas',
+  unProgressForm in 'view\forms\unProgressForm.pas' {fmProgressForm};
 
 {$R *.res}
 
@@ -40,9 +42,18 @@ begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
   Application.CreateForm(TfmMain, fmMain);
-  var lConnection := TConnectionFactory.CreateConnection;
-  var lMainBusiness: IMainBusinessIntf := TMainBusiness.Create(lConnection, fmMain);
-  lMainBusiness.Initialize;
+  var lConnectProgress := TfmProgressForm.Create(Application);
+  try
+    lConnectProgress.ProgressBegin(0, False, 'Datenbankverbing wird hergestellt ...');
+    var lConnection := TConnectionFactory.CreateConnection;
+    if not lConnection.Connect then
+      Exit;
 
-  Application.Run;
+    lConnectProgress.ProgressEnd;
+    var lMainBusiness: IMainBusinessIntf := TMainBusiness.Create(lConnection, fmMain);
+    lMainBusiness.Initialize;
+    Application.Run;
+  finally
+    lConnectProgress.Free;
+  end;
 end.
