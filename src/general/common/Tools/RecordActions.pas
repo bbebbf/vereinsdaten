@@ -69,7 +69,7 @@ begin
   var lNewRecordResponse := fConfig.IsNewRecord(aRecord);
   if lNewRecordResponse = TCrudConfigNewRecordResponse.NewRecord then
   begin
-    fConfig.SetValues(aRecord, fInsertAccessor);
+    fConfig.SetValues(aRecord, fInsertAccessor, False);
     fInsertAccessor.Insert(aTransaction);
     if fInsertAccessor.AutoIncPresent and (fInsertAccessor.LastInsertedId > 0) then
     begin
@@ -79,20 +79,20 @@ begin
   end
   else if lNewRecordResponse = TCrudConfigNewRecordResponse.ExistingRecord then
   begin
-    fConfig.SetValues(aRecord, fUpdateAccessor);
+    fConfig.SetValues(aRecord, fUpdateAccessor, True);
     fUpdateAccessor.Update(aTransaction);
     Result := TRecordActionsSaveResponse.Updated;
   end
   else
   begin
-    fConfig.SetValues(aRecord, fUpdateAccessor);
+    fConfig.SetValues(aRecord, fUpdateAccessor, True);
     if fUpdateAccessor.Update(aTransaction) then
     begin
       Result := TRecordActionsSaveResponse.Updated;
     end
     else
     begin
-      fConfig.SetValues(aRecord, fInsertAccessor);
+      fConfig.SetValues(aRecord, fInsertAccessor, False);
       fInsertAccessor.Insert(aTransaction);
       if fInsertAccessor.AutoIncPresent and (fInsertAccessor.LastInsertedId > 0) then
       begin

@@ -140,7 +140,7 @@ begin
     else
     begin
       if aRaiseOnFailure then
-        raise ECrudAccessorException.Create('Column "' + lEntry.Key + '" is not parameterized table ' + Tablename + '.');
+        raise ECrudAccessorException.Create('Column "' + lEntry.Key + '" is not parameterized for table ' + Tablename + '.');
       Exit(False);
     end;
   end;

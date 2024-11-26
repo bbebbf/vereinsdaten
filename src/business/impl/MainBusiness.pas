@@ -4,7 +4,7 @@ interface
 
 uses System.Classes, System.SysUtils, CrudCommands, CrudConfig, Transaction, MainBusinessIntf,
   DtoPersonAggregated, SqlConnection, PersonAggregatedUI, DtoPerson, RecordActions,
-  KeyIndexMapper, DtoPersonAddress, DtoAddress;
+  KeyIndexMapper, DtoPersonAddress, DtoAddress, DtoClubmembership;
 
 type
   TMainBusiness = class(TInterfacedObject, IMainBusinessIntf)
@@ -16,6 +16,8 @@ type
     fPersonAddressRecordActions: TRecordActions<TDtoPersonAddress, Int32>;
     fAddressConfig: ICrudConfig<TDtoAddress, Int32>;
     fAddressRecordActions: TRecordActions<TDtoAddress, Int32>;
+    fClubmembershipConfig: ICrudConfig<TDtoClubmembership, Int32>;
+    fClubmembershipRecordActions: TRecordActions<TDtoClubmembership, Int32>;
     fUI: IPersonAggregatedUI;
     fCurrentRecord: TDtoPersonAggregated;
     fAddressMapper: TKeyIndexMapper<Int32>;
@@ -40,7 +42,7 @@ type
 implementation
 
 uses System.Generics.Collections, DefaultCrudCommands,
-  CrudConfigPerson, CrudConfigAddress, CrudConfigPersonAddress;
+  CrudConfigPerson, CrudConfigAddress, CrudConfigPersonAddress, CrudConfigClubmembership;
 
 { TMainBusiness }
 
@@ -49,21 +51,24 @@ begin
   inherited Create;
   fConnection := aConnection;
   fUI := aUI;
+  fAddressMapper := TKeyIndexMapper<Int32>.Create(0);
   fPersonConfig := TCrudConfigPerson.Create;
   fPersonRecordActions := TRecordActions<TDtoPerson, Int32>.Create(fConnection, fPersonConfig);
   fPersonAddressConfig := TCrudConfigPersonAddress.Create;
   fPersonAddressRecordActions := TRecordActions<TDtoPersonAddress, Int32>.Create(fConnection, fPersonAddressConfig);
   fAddressConfig := TCrudConfigAddress.Create;
   fAddressRecordActions := TRecordActions<TDtoAddress, Int32>.Create(fConnection, fAddressConfig);
-  fAddressMapper := TKeyIndexMapper<Int32>.Create(0);
+  fClubmembershipConfig := TCrudConfigClubmembership.Create;
+  fClubmembershipRecordActions := TRecordActions<TDtoClubmembership, Int32>.Create(fConnection, fClubmembershipConfig);
 end;
 
 destructor TMainBusiness.Destroy;
 begin
-  fAddressMapper.Free;
   fCurrentRecord.Free;
+  fClubmembershipRecordActions.Free;
   fPersonAddressRecordActions.Free;
   fPersonRecordActions.Free;
+  fAddressMapper.Free;
   inherited;
 end;
 
@@ -112,6 +117,11 @@ begin
     if fPersonAddressRecordActions.LoadRecord(fCurrentRecord.Id, lPersonAddressRecord) then
     begin
       fCurrentRecord.AddressIndex := fAddressMapper.GetIndex(lPersonAddressRecord.AddressId);
+    end;
+    var lMembershipRecord := default(TDtoClubmembership);
+    if fClubmembershipRecordActions.LoadRecord(fCurrentRecord.Id, lMembershipRecord) then
+    begin
+      fCurrentRecord.SetDtoClubmembership(lMembershipRecord);
     end;
     fUI.SetRecordToUI(fCurrentRecord);
   end
@@ -185,6 +195,22 @@ begin
   else
   begin
     fPersonAddressRecordActions.SaveRecord(lPersonAddressRecord);
+  end;
+
+  var lMembershipRecord := fCurrentRecord.GetDtoClubmembership;
+  if fCurrentRecord.MembershipNoMembership then
+  begin
+    if lMembershipRecord.Id > 0 then
+    begin
+      fClubmembershipRecordActions.DeleteRecord(lMembershipRecord.Id);
+    end;
+  end
+  else
+  begin
+    if fClubmembershipRecordActions.SaveRecord(lMembershipRecord) = TRecordActionsSaveResponse.Created then
+    begin
+      fCurrentRecord.SetDtoClubmembership(lMembershipRecord);
+    end;
   end;
 
   if lNewAddressCreated then

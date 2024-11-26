@@ -13,7 +13,7 @@ type
     function GetSelectSqlRecord: string;
     procedure SetRecordFromResult(const aSqlResult: ISqlResult; out aRecord: TDtoPerson);
     function IsNewRecord(const aRecord: TDtoPerson): TCrudConfigNewRecordResponse;
-    procedure SetValues(const aRecord: TDtoPerson; const aAccessor: TCrudAccessorBase);
+    procedure SetValues(const aRecord: TDtoPerson; const aAccessor: TCrudAccessorBase; const aForUpdate: Boolean);
     procedure SetParametersForLoad(const aRecordIdentity: Int32; const aQuery: ISqlPreparedQuery);
     procedure SetValuesForDelete(const aRecordIdentity: Int32; const aAccessor: TCrudAccessorDelete);
     procedure UpdateRecordIdentity(const aAccessor: TCrudAccessorInsert; var aRecord: TDtoPerson);
@@ -61,7 +61,8 @@ begin
     Result := TCrudConfigNewRecordResponse.ExistingRecord;
 end;
 
-procedure TCrudConfigPerson.SetValues(const aRecord: TDtoPerson; const aAccessor: TCrudAccessorBase);
+procedure TCrudConfigPerson.SetValues(const aRecord: TDtoPerson; const aAccessor: TCrudAccessorBase;
+  const aForUpdate: Boolean);
 begin
   aAccessor.SetValue('person_id', aRecord.Id);
   aAccessor.SetValueEmptyStrAsNull('person_vorname', aRecord.Vorname);

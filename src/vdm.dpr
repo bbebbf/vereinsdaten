@@ -28,7 +28,9 @@ uses
   MainBusiness in 'business\impl\MainBusiness.pas',
   RecordActions in 'general\common\Tools\RecordActions.pas',
   ConfigReader in 'general\common\Tools\ConfigReader.pas',
-  unMain in 'view\forms\unMain.pas' {fmMain};
+  unMain in 'view\forms\unMain.pas' {fmMain},
+  DtoClubmembership in 'data\DtoClubmembership.pas',
+  CrudConfigClubmembership in 'data\CrudConfigClubmembership.pas';
 
 {$R *.res}
 

@@ -48,6 +48,20 @@ type
     edNewAddressCity: TEdit;
     pnFilter: TPanel;
     cbShowInactivePersons: TCheckBox;
+    cbMembership: TComboBox;
+    lbMembership: TLabel;
+    edMembershipNumber: TEdit;
+    lbMembershipnumber: TLabel;
+    cbMembershipBeginKnown: TCheckBox;
+    dtMembershipBegin: TDateTimePicker;
+    lbMembershipBegin: TLabel;
+    lbMembershipEnd: TLabel;
+    cbMembershipEndKnown: TCheckBox;
+    dtMembershipEnd: TDateTimePicker;
+    edMembershipEndText: TEdit;
+    lbMembershipEndReason: TLabel;
+    edMembershipEndReason: TEdit;
+    lbMembershipEndText: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormActivate(Sender: TObject);
@@ -59,6 +73,8 @@ type
     procedure acPersonReloadCurrentRecordExecute(Sender: TObject);
     procedure cbCreateNewAddressClick(Sender: TObject);
     procedure cbShowInactivePersonsClick(Sender: TObject);
+    procedure cbMembershipBeginKnownClick(Sender: TObject);
+    procedure cbMembershipEndKnownClick(Sender: TObject);
   private
     { Private-Deklarationen }
   strict private
@@ -114,6 +130,36 @@ begin
   lbNewAddressCity.Enabled := cbCreateNewAddress.Checked;
 end;
 
+procedure TfmMain.cbMembershipBeginKnownClick(Sender: TObject);
+begin
+  if cbMembershipBeginKnown.Checked then
+  begin
+    dtMembershipBegin.Enabled := True;
+    dtMembershipBegin.Format := fDatetimePickerFormat;
+  end
+  else
+  begin
+    dtMembershipBegin.Enabled := False;
+    dtMembershipBegin.Format := ' ';
+  end;
+end;
+
+procedure TfmMain.cbMembershipEndKnownClick(Sender: TObject);
+begin
+  if cbMembershipEndKnown.Checked then
+  begin
+    dtMembershipEnd.Enabled := True;
+    dtMembershipEnd.Format := fDatetimePickerFormat;
+  end
+  else
+  begin
+    dtMembershipEnd.Enabled := False;
+    dtMembershipEnd.Format := ' ';
+  end;
+  lbMembershipEndText.Enabled := not dtMembershipEnd.Enabled;
+  edMembershipEndText.Enabled := not dtMembershipEnd.Enabled;
+end;
+
 procedure TfmMain.cbPersonBirthdayKnownClick(Sender: TObject);
 begin
   if cbPersonBirthdayKnown.Checked then
@@ -148,6 +194,16 @@ begin
   edNewAddressPostalcode.Text := '';
   edNewAddressCity.Text := '';
   cbCreateNewAddressClick(cbCreateNewAddress);
+
+  cbMembership.ItemIndex := 0;
+  edMembershipNumber.Text := '';
+  cbMembershipBeginKnown.Checked := False;
+  dtMembershipBegin.Date := Now;
+  cbMembershipEndKnown.Checked := False;
+  dtMembershipEnd.Date := Now;
+  edMembershipEndText.Text := '';
+  cbMembershipBeginKnownClick(cbMembershipBeginKnown);
+  cbMembershipEndKnownClick(cbMembershipEndKnown);
 end;
 
 procedure TfmMain.DeleteRecordfromUI(const aPersonId: Int32);
@@ -193,6 +249,25 @@ begin
   aRecord.NewAddressStreet := edNewAddressStreet.Text;
   aRecord.NewAddressPostalcode := edNewAddressPostalcode.Text;
   aRecord.NewAddressCity := edNewAddressCity.Text;
+
+  aRecord.MembershipNoMembership := cbMembership.ItemIndex <= 0;
+  aRecord.MembershipActive := cbMembership.ItemIndex = 1;
+  aRecord.MembershipNumber := StrToInt(edMembershipNumber.Text);
+  if cbMembershipBeginKnown.Checked then
+    aRecord.MembershipBeginDate := dtMembershipBegin.Date
+  else
+    aRecord.MembershipBeginDate := 0;
+  if cbMembershipEndKnown.Checked then
+  begin
+    aRecord.MembershipEndDate := dtMembershipEnd.Date;
+    aRecord.MembershipEndDateText := '';
+  end
+  else
+  begin
+    aRecord.MembershipEndDate := 0;
+    aRecord.MembershipEndDateText := edMembershipEndText.Text;
+  end;
+  aRecord.MembershipEndReason := edMembershipEndReason.Text;
 end;
 
 procedure TfmMain.Initialize(const aCommands: IMainBusinessIntf);
@@ -296,6 +371,41 @@ begin
   edNewAddressPostalcode.Text := '';
   edNewAddressCity.Text := '';
   cbCreateNewAddressClick(cbCreateNewAddress);
+
+  if aRecord.MembershipId > 0 then
+  begin
+    if aRecord.MembershipActive then
+      cbMembership.ItemIndex := 1
+    else
+      cbMembership.ItemIndex := 2;
+    if aRecord.MembershipNumber > 0 then
+      edMembershipNumber.Text := IntToStr(aRecord.MembershipNumber)
+    else
+      edMembershipNumber.Text := '';
+    cbMembershipBeginKnown.Checked := aRecord.MembershipBeginDate > 0;
+    if aRecord.MembershipBeginDate > 0 then
+      dtMembershipBegin.Date := aRecord.MembershipBeginDate
+    else
+      dtMembershipBegin.Date := Now;
+    cbMembershipEndKnown.Checked := aRecord.MembershipEndDate > 0;
+    if aRecord.MembershipEndDate > 0 then
+      dtMembershipEnd.Date := aRecord.MembershipEndDate
+    else
+      dtMembershipEnd.Date := Now;
+    edMembershipEndText.Text := aRecord.MembershipEndDateText;
+    edMembershipEndReason.Text := aRecord.MembershipEndReason;
+  end
+  else
+  begin
+    cbMembership.ItemIndex := 0;
+    edMembershipNumber.Text := '';
+    cbMembershipBeginKnown.Checked := False;
+    cbMembershipEndKnown.Checked := False;
+    edMembershipEndText.Text := '';
+    edMembershipEndReason.Text := '';
+  end;
+  cbMembershipBeginKnownClick(cbMembershipBeginKnown);
+  cbMembershipEndKnownClick(cbMembershipEndKnown);
 end;
 
 end.
