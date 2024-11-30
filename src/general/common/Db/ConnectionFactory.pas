@@ -14,14 +14,26 @@ type
 
 implementation
 
-uses System.SysUtils, ConfigReader, MySqlConnection;
+uses System.SysUtils, ConfigReader, MySqlConnection, SshTunnelSqlConnection;
 
 { TConnectionFactory }
 
 class function TConnectionFactory.CreateConnection: ISqlConnection;
 begin
-  Result := TMySqlConnection.Create;
-  ApplyConfig(Result);
+  var lSqlConnection: ISqlConnection := TMySqlConnection.Create;
+  ApplyConfig(lSqlConnection);
+  if Length(TConfigReader.Instance.Connection.SshRemoteHost) > 0 then
+  begin
+    var lSshConnection: ISqlConnection := TSshTunnelSqlConnection.Create(lSqlConnection,
+      TConfigReader.Instance.Connection.SshRemoteHost,
+      TConfigReader.Instance.Connection.SshRemotePort
+    );
+    Result := lSshConnection;
+  end
+  else
+  begin
+    Result := lSqlConnection;
+  end;
 end;
 
 class procedure TConnectionFactory.ApplyConfig(const aConnection: ISqlConnection);

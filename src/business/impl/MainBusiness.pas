@@ -37,8 +37,8 @@ type
 
     procedure CheckCurrentPersonId(const aPersonId: Int32);
   public
-    constructor Create(aConnection: ISqlConnection; aUI: IPersonAggregatedUI;
-      aProgressObserver: IProgressObserver);
+    constructor Create(const aConnection: ISqlConnection; const aUI: IPersonAggregatedUI;
+      const aProgressObserver: IProgressObserver);
     destructor Destroy; override;
   end;
 
@@ -49,8 +49,8 @@ uses System.Generics.Collections, DefaultCrudCommands,
 
 { TMainBusiness }
 
-constructor TMainBusiness.Create(aConnection: ISqlConnection; aUI: IPersonAggregatedUI;
-  aProgressObserver: IProgressObserver);
+constructor TMainBusiness.Create(const aConnection: ISqlConnection; const aUI: IPersonAggregatedUI;
+  const aProgressObserver: IProgressObserver);
 begin
   inherited Create;
   fConnection := aConnection;
@@ -62,7 +62,6 @@ begin
   fPersonAddressConfig := TCrudConfigPersonAddress.Create;
   fPersonAddressRecordActions := TRecordActions<TDtoPersonAddress, Int32>.Create(fConnection, fPersonAddressConfig);
   fAddressConfig := TCrudConfigAddress.Create;
-  fAddressRecordActions := TRecordActions<TDtoAddress, Int32>.Create(fConnection, fAddressConfig);
   fClubmembershipConfig := TCrudConfigClubmembership.Create;
   fClubmembershipRecordActions := TRecordActions<TDtoClubmembership, Int32>.Create(fConnection, fClubmembershipConfig);
   fClubMembershipNumberChecker := TClubMembershipNumberChecker.Create(fConnection);
@@ -71,11 +70,13 @@ end;
 destructor TMainBusiness.Destroy;
 begin
   fCurrentRecord.Free;
+  fAddressRecordActions.Free;
   fClubMembershipNumberChecker.Free;
   fClubmembershipRecordActions.Free;
   fPersonAddressRecordActions.Free;
   fPersonRecordActions.Free;
   fAddressMapper.Free;
+  fConnection := nil;
   inherited;
 end;
 
@@ -205,6 +206,10 @@ begin
           lNewAddressRecord.Street := lNewRecord.NewAddressStreet;
           lNewAddressRecord.Postalcode := lNewRecord.NewAddressPostalcode;
           lNewAddressRecord.City := lNewRecord.NewAddressCity;
+          if not Assigned(fAddressRecordActions) then
+          begin
+            fAddressRecordActions := TRecordActions<TDtoAddress, Int32>.Create(fConnection, fAddressConfig);
+          end;
           lNewAddressCreated := fAddressRecordActions.SaveRecord(lNewAddressRecord, lSaveTransaction) = TRecordActionsSaveResponse.Created;
           lPersonAddressRecord.AddressId := lNewAddressRecord.Id;
         end

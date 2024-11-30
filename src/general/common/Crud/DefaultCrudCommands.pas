@@ -16,14 +16,13 @@ type
 
     function LoadList: TCrudCommandResult;
     procedure Initialize;
-    procedure StartNewRecord;
     function LoadCurrentRecord(const aRecordIdentity: TRecordIdentity): TCrudCommandResult;
     function SaveCurrentRecord(const aRecordIdentity: TRecordIdentity): TCrudSaveRecordResult;
     function ReloadCurrentRecord(const aRecordIdentity: TRecordIdentity): TCrudCommandResult;
     function DeleteRecord(const aRecordIdentity: TRecordIdentity): TCrudCommandResult;
   public
-    constructor Create(aConnection: ISqlConnection; aConfig: ICrudConfig<TRecord, TRecordIdentity>;
-      aUI: ICrudUI<TRecord, TRecordIdentity>);
+    constructor Create(const aConnection: ISqlConnection; const aConfig: ICrudConfig<TRecord, TRecordIdentity>;
+      const aUI: ICrudUI<TRecord, TRecordIdentity>);
     destructor Destroy; override;
     property Connection: ISqlConnection read fConnection;
   end;
@@ -32,8 +31,8 @@ implementation
 
 { TDefaultCrudCommands<TRecord, TRecordIdentity> }
 
-constructor TDefaultCrudCommands<TRecord, TRecordIdentity>.Create(aConnection: ISqlConnection;
-  aConfig: ICrudConfig<TRecord, TRecordIdentity>; aUI: ICrudUI<TRecord, TRecordIdentity>);
+constructor TDefaultCrudCommands<TRecord, TRecordIdentity>.Create(const aConnection: ISqlConnection;
+  const aConfig: ICrudConfig<TRecord, TRecordIdentity>; const aUI: ICrudUI<TRecord, TRecordIdentity>);
 begin
   inherited Create;
   fConnection := aConnection;
@@ -102,11 +101,6 @@ begin
   fUI.GetRecordFromUI(fCurrrentRecord);
   var lResponse := fRecordActions.SaveRecord(fCurrrentRecord);
   fUI.SetRecordToUI(fCurrrentRecord, lResponse = TRecordActionsSaveResponse.Created);
-end;
-
-procedure TDefaultCrudCommands<TRecord, TRecordIdentity>.StartNewRecord;
-begin
-
 end;
 
 end.

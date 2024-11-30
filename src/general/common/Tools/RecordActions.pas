@@ -16,7 +16,7 @@ type
     fUpdateAccessor: TCrudAccessorUpdate;
     fDeleteAccessor: TCrudAccessorDelete;
   public
-    constructor Create(aConnection: ISqlConnection; aConfig: ICrudConfig<TRecord, TRecordIdentity>);
+    constructor Create(const aConnection: ISqlConnection; const aConfig: ICrudConfig<TRecord, TRecordIdentity>);
     destructor Destroy; override;
     function LoadRecord(const aRecordIdentity: TRecordIdentity; var aRecord: TRecord): Boolean;
     function SaveRecord(var aRecord: TRecord; aTransaction: ITransaction = nil): TRecordActionsSaveResponse;
@@ -27,8 +27,8 @@ implementation
 
 { TRecordActions<TRecord, TRecordIdentity> }
 
-constructor TRecordActions<TRecord, TRecordIdentity>.Create(aConnection: ISqlConnection;
-  aConfig: ICrudConfig<TRecord, TRecordIdentity>);
+constructor TRecordActions<TRecord, TRecordIdentity>.Create(const aConnection: ISqlConnection;
+  const aConfig: ICrudConfig<TRecord, TRecordIdentity>);
 begin
   inherited Create;
   fConnection := aConnection;

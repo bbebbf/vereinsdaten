@@ -37,7 +37,12 @@ uses
   unProgressForm in 'view\forms\unProgressForm.pas' {fmProgressForm},
   ComponentValueChangedObserver in 'view\tools\ComponentValueChangedObserver.pas',
   ClubmembershipTools in 'data\ClubmembershipTools.pas',
-  MessageDialogs in 'view\tools\MessageDialogs.pas';
+  MessageDialogs in 'view\tools\MessageDialogs.pas',
+  WindowsProcess in 'general\common\Tools\WindowsProcess.pas',
+  WindowsProcess.Tools in 'general\common\Tools\WindowsProcess.Tools.pas',
+  WindowsRunningProcesses in 'general\common\Tools\WindowsRunningProcesses.pas',
+  SshTunnel in 'general\common\Tools\SshTunnel.pas',
+  SshTunnelSqlConnection in 'general\common\SshTunnelSql\SshTunnelSqlConnection.pas';
 
 {$R *.res}
 

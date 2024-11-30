@@ -45,7 +45,7 @@ type
     procedure RaiseIfExecuteStmtIsInvalid; virtual;
     function Execute(aTransaction: ITransaction): Boolean;
   public
-    constructor Create(aConnection: ISqlConnection; const aTablename: string;
+    constructor Create(const aConnection: ISqlConnection; const aTablename: string;
       const aIdentityColumnNames: TArray<string> = []);
     destructor Destroy; override;
     procedure SetValue<T>(const aColumnName: string; const aValue: T);
@@ -89,7 +89,7 @@ uses System.Rtti, System.TypInfo, System.Variants, System.Generics.Defaults, Str
 
 { TCrudAccessorBase }
 
-constructor TCrudAccessorBase.Create(aConnection: ISqlConnection; const aTablename: string;
+constructor TCrudAccessorBase.Create(const aConnection: ISqlConnection; const aTablename: string;
   const aIdentityColumnNames: TArray<string>);
 begin
   inherited Create;
