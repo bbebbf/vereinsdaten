@@ -8,6 +8,7 @@ type
   TDtoPersonAggregated = class
   strict private
     fPerson: TDtoPerson;
+    fExistingAddressId: Integer;
     fAddressIndex: Integer;
     fCreateNewAddress: Boolean;
     fNewAddressStreet: string;
@@ -23,6 +24,7 @@ type
     fMembershipEndReason: string;
   public
     constructor Create(const aPerson: TDtoPerson);
+    function Clone: TDtoPersonAggregated;
     function GetDtoClubmembership: TDtoClubmembership;
     procedure SetDtoClubmembership(const aValue: TDtoClubmembership);
     property Person: TDtoPerson read fPerson;
@@ -32,6 +34,8 @@ type
     property Lastname: string read fPerson.Nachname write fPerson.Nachname;
     property Active: Boolean read fPerson.Aktiv write fPerson.Aktiv;
     property Birthday: TDate read fPerson.Geburtsdatum write fPerson.Geburtsdatum;
+
+    property ExistingAddressId: Integer read fExistingAddressId write fExistingAddressId;
     property AddressIndex: Integer read fAddressIndex write fAddressIndex;
     property CreateNewAddress: Boolean read fCreateNewAddress write fCreateNewAddress;
     property NewAddressStreet: string read fNewAddressStreet write fNewAddressStreet;
@@ -57,6 +61,27 @@ begin
   inherited Create;
   fPerson := aPerson;
   fAddressIndex := -1;
+end;
+
+function TDtoPersonAggregated.Clone: TDtoPersonAggregated;
+begin
+  Result := TDtoPersonAggregated.Create(fPerson);
+
+  Result.ExistingAddressId := fExistingAddressId;
+  Result.AddressIndex := fAddressIndex;
+  Result.CreateNewAddress := fCreateNewAddress;
+  Result.NewAddressStreet := fNewAddressStreet;
+  Result.NewAddressPostalcode := fNewAddressPostalcode;
+  Result.NewAddressCity := fNewAddressCity;
+
+  Result.MembershipNoMembership := fMembershipNoMembership;
+  Result.MembershipId := fMembershipId;
+  Result.MembershipActive := fMembershipActive;
+  Result.MembershipNumber := fMembershipNumber;
+  Result.MembershipBeginDate := fMembershipBeginDate;
+  Result.MembershipEndDate := fMembershipEndDate;
+  Result.MembershipEndDateText := fMembershipEndDateText;
+  Result.MembershipEndReason := fMembershipEndReason;
 end;
 
 function TDtoPersonAggregated.GetDtoClubmembership: TDtoClubmembership;

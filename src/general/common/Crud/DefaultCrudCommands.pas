@@ -16,8 +16,9 @@ type
 
     function LoadList: TCrudCommandResult;
     procedure Initialize;
+    procedure StartNewRecord;
     function LoadCurrentRecord(const aRecordIdentity: TRecordIdentity): TCrudCommandResult;
-    function SaveCurrentRecord(const aRecordIdentity: TRecordIdentity): TCrudCommandResult;
+    function SaveCurrentRecord(const aRecordIdentity: TRecordIdentity): TCrudSaveRecordResult;
     function ReloadCurrentRecord(const aRecordIdentity: TRecordIdentity): TCrudCommandResult;
     function DeleteRecord(const aRecordIdentity: TRecordIdentity): TCrudCommandResult;
   public
@@ -86,7 +87,7 @@ begin
   Result := default(TCrudCommandResult);
   if fRecordActions.LoadRecord(aRecordIdentity, fCurrrentRecord) then
   begin
-    fUI.SetRecordToUI(fCurrrentRecord);
+    fUI.SetRecordToUI(fCurrrentRecord, False);
   end
   else
   begin
@@ -95,12 +96,17 @@ begin
   end;
 end;
 
-function TDefaultCrudCommands<TRecord, TRecordIdentity>.SaveCurrentRecord(const aRecordIdentity: TRecordIdentity): TCrudCommandResult;
+function TDefaultCrudCommands<TRecord, TRecordIdentity>.SaveCurrentRecord(const aRecordIdentity: TRecordIdentity): TCrudSaveRecordResult;
 begin
-  Result := default(TCrudCommandResult);
+  Result := default(TCrudSaveRecordResult);
   fUI.GetRecordFromUI(fCurrrentRecord);
-  fRecordActions.SaveRecord(fCurrrentRecord);
-  fUI.SetRecordToUI(fCurrrentRecord);
+  var lResponse := fRecordActions.SaveRecord(fCurrrentRecord);
+  fUI.SetRecordToUI(fCurrrentRecord, lResponse = TRecordActionsSaveResponse.Created);
+end;
+
+procedure TDefaultCrudCommands<TRecord, TRecordIdentity>.StartNewRecord;
+begin
+
 end;
 
 end.

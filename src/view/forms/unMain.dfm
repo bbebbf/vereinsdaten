@@ -32,7 +32,8 @@ object fmMain: TfmMain
     Height = 22
     Panels = <>
     SimplePanel = True
-    ExplicitTop = 650
+    ExplicitTop = 640
+    ExplicitWidth = 993
   end
   object pnPersonListview: TPanel
     Left = 0
@@ -42,12 +43,12 @@ object fmMain: TfmMain
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 1
-    ExplicitHeight = 640
+    ExplicitLeft = 1
     object lvPersonListview: TListView
       Left = 0
       Top = 41
       Width = 220
-      Height = 607
+      Height = 582
       Align = alClient
       Columns = <
         item
@@ -56,10 +57,11 @@ object fmMain: TfmMain
       ReadOnly = True
       RowSelect = True
       ShowColumnHeaders = False
-      TabOrder = 0
+      TabOrder = 1
       ViewStyle = vsReport
       OnCustomDrawItem = lvPersonListviewCustomDrawItem
       OnSelectItem = lvPersonListviewSelectItem
+      ExplicitHeight = 536
     end
     object pnFilter: TPanel
       Left = 0
@@ -68,9 +70,9 @@ object fmMain: TfmMain
       Height = 41
       Align = alTop
       BevelOuter = bvNone
-      TabOrder = 1
+      TabOrder = 0
       object cbShowInactivePersons: TCheckBox
-        Left = 8
+        Left = 16
         Top = 13
         Width = 169
         Height = 17
@@ -78,6 +80,18 @@ object fmMain: TfmMain
         TabOrder = 0
         OnClick = cbShowInactivePersonsClick
       end
+    end
+    object Button1: TButton
+      Left = 0
+      Top = 623
+      Width = 220
+      Height = 25
+      Action = acPersonStartNewRecord
+      Align = alBottom
+      TabOrder = 2
+      ExplicitLeft = 66
+      ExplicitTop = 575
+      ExplicitWidth = 154
     end
   end
   object pnPersonDetails: TPanel
@@ -95,13 +109,11 @@ object fmMain: TfmMain
       Top = 0
       Width = 768
       Height = 648
-      ActivePage = tsBasicdata
+      ActivePage = tsPersonaldata
       Align = alClient
       TabOrder = 0
-      ExplicitWidth = 766
-      ExplicitHeight = 640
-      object tsBasicdata: TTabSheet
-        Caption = 'Basisdaten'
+      object tsPersonaldata: TTabSheet
+        Caption = 'Personendaten'
         object lbPersonFirstname: TLabel
           Left = 23
           Top = 19
@@ -146,42 +158,42 @@ object fmMain: TfmMain
         end
         object lbMembership: TLabel
           Left = 23
-          Top = 270
+          Top = 232
           Width = 76
           Height = 15
           Caption = 'Mitgliedschaft'
         end
         object lbMembershipnumber: TLabel
           Left = 23
-          Top = 323
+          Top = 285
           Width = 95
           Height = 15
           Caption = 'Mitgliedsnummer'
         end
         object lbMembershipBegin: TLabel
           Left = 23
-          Top = 376
+          Top = 338
           Width = 75
           Height = 15
           Caption = 'Eintrittsdatum'
         end
         object lbMembershipEnd: TLabel
           Left = 23
-          Top = 424
+          Top = 386
           Width = 79
           Height = 15
           Caption = 'Austrittsdatum'
         end
         object lbMembershipEndReason: TLabel
           Left = 23
-          Top = 474
+          Top = 436
           Width = 76
           Height = 15
           Caption = 'Austrittsgrund'
         end
         object lbMembershipEndText: TLabel
           Left = 247
-          Top = 424
+          Top = 386
           Width = 111
           Height = 15
           Caption = 'Austrittsdatum (Text)'
@@ -210,15 +222,14 @@ object fmMain: TfmMain
           MaxLength = 100
           TabOrder = 2
         end
-        object dtPersonBithday: TDateTimePicker
+        object dtPersonBirthday: TDateTimePicker
           Left = 409
           Top = 40
           Width = 176
           Height = 23
-          Date = 9133.000000000000000000
-          Time = 9133.000000000000000000
+          Date = 2.000000000000000000
+          Time = 2.000000000000000000
           MaxDate = 69763.999988425930000000
-          MinDate = 9133.000000000000000000
           TabOrder = 4
         end
         object cbPersonBirthdayKnown: TCheckBox
@@ -230,19 +241,21 @@ object fmMain: TfmMain
           OnClick = cbPersonBirthdayKnownClick
         end
         object btPersonSave: TButton
-          Left = 31
-          Top = 575
+          Left = 22
+          Top = 500
           Width = 154
           Height = 25
           Action = acPersonSaveCurrentRecord
+          Default = True
           TabOrder = 19
         end
         object btPersonReload: TButton
-          Left = 191
-          Top = 575
+          Left = 182
+          Top = 500
           Width = 154
           Height = 25
           Action = acPersonReloadCurrentRecord
+          Cancel = True
           TabOrder = 20
         end
         object cbPersonActive: TCheckBox
@@ -297,7 +310,7 @@ object fmMain: TfmMain
         end
         object cbMembership: TComboBox
           Left = 23
-          Top = 291
+          Top = 253
           Width = 170
           Height = 23
           Style = csDropDownList
@@ -309,7 +322,7 @@ object fmMain: TfmMain
         end
         object edMembershipNumber: TEdit
           Left = 23
-          Top = 344
+          Top = 306
           Width = 34
           Height = 23
           MaxLength = 3
@@ -318,7 +331,7 @@ object fmMain: TfmMain
         end
         object cbMembershipBeginKnown: TCheckBox
           Left = 23
-          Top = 399
+          Top = 361
           Width = 26
           Height = 16
           TabOrder = 13
@@ -326,18 +339,17 @@ object fmMain: TfmMain
         end
         object dtMembershipBegin: TDateTimePicker
           Left = 51
-          Top = 397
+          Top = 359
           Width = 182
           Height = 23
-          Date = 9133.000000000000000000
-          Time = 9133.000000000000000000
+          Date = 2.000000000000000000
+          Time = 2.000000000000000000
           MaxDate = 69763.999988425930000000
-          MinDate = 9133.000000000000000000
           TabOrder = 14
         end
         object cbMembershipEndKnown: TCheckBox
           Left = 23
-          Top = 447
+          Top = 409
           Width = 26
           Height = 16
           TabOrder = 15
@@ -345,18 +357,17 @@ object fmMain: TfmMain
         end
         object dtMembershipEnd: TDateTimePicker
           Left = 51
-          Top = 445
+          Top = 407
           Width = 182
           Height = 23
-          Date = 9133.000000000000000000
-          Time = 9133.000000000000000000
+          Date = 2.000000000000000000
+          Time = 2.000000000000000000
           MaxDate = 69763.999988425930000000
-          MinDate = 9133.000000000000000000
           TabOrder = 16
         end
         object edMembershipEndText: TEdit
           Left = 247
-          Top = 445
+          Top = 407
           Width = 216
           Height = 23
           MaxLength = 100
@@ -364,7 +375,7 @@ object fmMain: TfmMain
         end
         object edMembershipEndReason: TEdit
           Left = 23
-          Top = 496
+          Top = 458
           Width = 440
           Height = 23
           MaxLength = 100
@@ -390,6 +401,10 @@ object fmMain: TfmMain
     object acPersonReloadCurrentRecord: TAction
       Caption = 'Daten wiederherstellen'
       OnExecute = acPersonReloadCurrentRecordExecute
+    end
+    object acPersonStartNewRecord: TAction
+      Caption = 'Neuen Datensatz starten'
+      OnExecute = acPersonStartNewRecordExecute
     end
   end
 end

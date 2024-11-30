@@ -50,7 +50,7 @@ type
     destructor Destroy; override;
     procedure SetValue<T>(const aColumnName: string; const aValue: T);
     procedure SetValueToNull(const aColumnName: string);
-    procedure SetValueEmptyStrAsNull(const aColumnName: string; const aValue: string);
+    procedure SetValueEmptyStrAsNull(const aColumnName: string; const aValue: string; const aTrimmed: Boolean = True);
     procedure SetValueZeroAsNull(const aColumnName: string; const aValue: Int64); overload;
     procedure SetValueZeroAsNull(const aColumnName: string; const aValue: TDateTime); overload;
     procedure SetAllValuesToNull;
@@ -212,12 +212,15 @@ begin
   fValues.AddOrSetValue(aColumnName, System.Variants.Null);
 end;
 
-procedure TCrudAccessorBase.SetValueEmptyStrAsNull(const aColumnName, aValue: string);
+procedure TCrudAccessorBase.SetValueEmptyStrAsNull(const aColumnName, aValue: string; const aTrimmed: Boolean);
 begin
-  if Length(aValue) = 0 then
+  var lNewValue := aValue;
+  if aTrimmed then
+    lNewValue := Trim(lNewValue);
+  if Length(lNewValue) = 0 then
     SetValueToNull(aColumnName)
   else
-    SetValue(aColumnName, aValue);
+    SetValue(aColumnName, lNewValue);
 end;
 
 procedure TCrudAccessorBase.SetValueZeroAsNull(const aColumnName: string; const aValue: Int64);

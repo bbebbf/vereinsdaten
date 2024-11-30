@@ -7,7 +7,7 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
   System.Generics.Collections, CrudCommands, DtoPerson, ListviewAttachedData, Vcl.Menus, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.WinXPickers, System.Actions, Vcl.ActnList,
-  MainBusinessIntf, PersonAggregatedUI, DtoPersonAggregated;
+  MainBusinessIntf, PersonAggregatedUI, DtoPersonAggregated, ComponentValueChangedObserver;
 
 type
   TPersonListItemData = record
@@ -23,13 +23,13 @@ type
     Datei1: TMenuItem;
     lvPersonListview: TListView;
     pcPersonDetails: TPageControl;
-    tsBasicdata: TTabSheet;
+    tsPersonaldata: TTabSheet;
     edPersonFirstname: TEdit;
     lbPersonFirstname: TLabel;
     edPersonPraeposition: TEdit;
     lbPersonLastname: TLabel;
     edPersonLastname: TEdit;
-    dtPersonBithday: TDateTimePicker;
+    dtPersonBirthday: TDateTimePicker;
     lbPersonBirthday: TLabel;
     cbPersonBirthdayKnown: TCheckBox;
     alPersonActionList: TActionList;
@@ -62,6 +62,8 @@ type
     lbMembershipEndReason: TLabel;
     edMembershipEndReason: TEdit;
     lbMembershipEndText: TLabel;
+    acPersonStartNewRecord: TAction;
+    Button1: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormActivate(Sender: TObject);
@@ -75,13 +77,22 @@ type
     procedure cbShowInactivePersonsClick(Sender: TObject);
     procedure cbMembershipBeginKnownClick(Sender: TObject);
     procedure cbMembershipEndKnownClick(Sender: TObject);
+    procedure acPersonStartNewRecordExecute(Sender: TObject);
   private
     { Private-Deklarationen }
   strict private
     fActivated: Boolean;
+    fCurrentRecordId: Int32;
+    fNewRecordStarted: Boolean;
+    fComponentValueChangedObserver: TComponentValueChangedObserver;
+    fInEditMode: Boolean;
     fMainBusinessIntf: IMainBusinessIntf;
     fDatetimePickerFormat: string;
     fPersonListviewAttachedData: TListviewAttachedData<Int32, TPersonListItemData>;
+
+    procedure SetEditMode(const aEditMode: Boolean);
+    procedure ControlValuesChanged(Sender: TObject);
+    procedure ControlValuesUnchanged(Sender: TObject);
     procedure PersonEntryToListItem(const aPerson: TDtoPerson; const aItem: TListItem);
 
     procedure Initialize(const aCommands: ICrudCommands<Int32>); overload;
@@ -91,7 +102,8 @@ type
     procedure LoadUIListEnd;
     procedure DeleteRecordfromUI(const aPersonId: Int32);
     procedure ClearRecordUI;
-    procedure SetRecordToUI(const aRecord: TDtoPersonAggregated);
+    procedure StartNewRecord;
+    procedure SetRecordToUI(const aRecord: TDtoPersonAggregated; const aRecordAsNewEntry: Boolean);
     function GetRecordFromUI(var aRecord: TDtoPersonAggregated): Boolean;
     procedure LoadAvailableAdresses;
     procedure LoadCurrentRecord(const aPersonId: Int32);
@@ -106,22 +118,37 @@ implementation
 
 {$R *.dfm}
 
-uses VdmGlobals, ConfigReader;
+uses VdmGlobals, ConfigReader, StringTools, MessageDialogs;
 
 { TfmMain }
 
 procedure TfmMain.acPersonReloadCurrentRecordExecute(Sender: TObject);
 begin
-  var lPersonId: Int32;
-  if fPersonListviewAttachedData.TryGetKey(lvPersonListview.Selected, lPersonId) then
-    fMainBusinessIntf.ReloadCurrentRecord(lPersonId);
+  fMainBusinessIntf.ReloadCurrentRecord(fCurrentRecordId);
+  SetEditMode(False);
 end;
 
 procedure TfmMain.acPersonSaveCurrentRecordExecute(Sender: TObject);
 begin
-  var lPersonId: Int32;
-  if fPersonListviewAttachedData.TryGetKey(lvPersonListview.Selected, lPersonId) then
-    fMainBusinessIntf.SaveCurrentRecord(lPersonId);
+  var lPersonId: Int32 := 0;
+  if not fNewRecordStarted then
+    lPersonId := fCurrentRecordId;
+
+  var lResponse := fMainBusinessIntf.SaveCurrentRecord(lPersonId);
+  if lResponse.Status = TCrudSaveRecordStatus.Successful then
+  begin
+    SetEditMode(False);
+  end
+  else if lResponse.Status = TCrudSaveRecordStatus.CancelledWithMessage then
+  begin
+    TMessageDialogs.Ok(lResponse.MessageText, TMsgDlgType.mtInformation);
+  end;
+end;
+
+procedure TfmMain.acPersonStartNewRecordExecute(Sender: TObject);
+begin
+  StartNewRecord;
+  edPersonFirstname.SetFocus;
 end;
 
 procedure TfmMain.cbCreateNewAddressClick(Sender: TObject);
@@ -168,13 +195,13 @@ procedure TfmMain.cbPersonBirthdayKnownClick(Sender: TObject);
 begin
   if cbPersonBirthdayKnown.Checked then
   begin
-    dtPersonBithday.Enabled := True;
-    dtPersonBithday.Format := fDatetimePickerFormat;
+    dtPersonBirthday.Enabled := True;
+    dtPersonBirthday.Format := fDatetimePickerFormat;
   end
   else
   begin
-    dtPersonBithday.Enabled := False;
-    dtPersonBithday.Format := ' ';
+    dtPersonBirthday.Enabled := False;
+    dtPersonBirthday.Format := ' ';
   end;
 end;
 
@@ -185,12 +212,14 @@ end;
 
 procedure TfmMain.ClearRecordUI;
 begin
+  fComponentValueChangedObserver.BeginUpdate;
+
   edPersonFirstname.Text := '';
   edPersonPraeposition.Text := '';
   edPersonLastname.Text := '';
   cbPersonBirthdayKnown.Checked := False;
   cbPersonBirthdayKnownClick(cbPersonBirthdayKnown);
-  dtPersonBithday.Date := Now;
+  dtPersonBirthday.Date := TVdmGlobals.GetDateTimePickerNullValue;
   cbPersonActive.Checked := True;
   cbPersonAddress.ItemIndex := -1;
   cbCreateNewAddress.Checked := False;
@@ -202,12 +231,24 @@ begin
   cbMembership.ItemIndex := 0;
   edMembershipNumber.Text := '';
   cbMembershipBeginKnown.Checked := False;
-  dtMembershipBegin.Date := Now;
+  dtMembershipBegin.Date := TVdmGlobals.GetDateTimePickerNullValue;
   cbMembershipEndKnown.Checked := False;
-  dtMembershipEnd.Date := Now;
+  dtMembershipEnd.Date := TVdmGlobals.GetDateTimePickerNullValue;
   edMembershipEndText.Text := '';
   cbMembershipBeginKnownClick(cbMembershipBeginKnown);
   cbMembershipEndKnownClick(cbMembershipEndKnown);
+
+  fComponentValueChangedObserver.EndUpdate;
+end;
+
+procedure TfmMain.ControlValuesChanged(Sender: TObject);
+begin
+  SetEditMode(True);
+end;
+
+procedure TfmMain.ControlValuesUnchanged(Sender: TObject);
+begin
+  SetEditMode(False);
 end;
 
 procedure TfmMain.DeleteRecordfromUI(const aPersonId: Int32);
@@ -223,31 +264,75 @@ begin
 
   StatusBar.SimpleText := 'Server: ' + TConfigReader.Instance.Connection.Host +
     ':' + IntToStr(TConfigReader.Instance.Connection.Port);
-  fMainBusinessIntf.LoadList;
+
+  SetEditMode(False);
   LoadAvailableAdresses;
-  ClearRecordUI;
+  fMainBusinessIntf.LoadList;
 end;
 
 procedure TfmMain.FormCreate(Sender: TObject);
 begin
+  dtPersonBirthday.MinDate := TVdmGlobals.GetDateTimePickerNullValue;
+  dtMembershipBegin.MinDate := TVdmGlobals.GetDateTimePickerNullValue;
+  dtMembershipEnd.MinDate := TVdmGlobals.GetDateTimePickerNullValue;
+
+  fComponentValueChangedObserver := TComponentValueChangedObserver.Create;
+  fComponentValueChangedObserver.OnValuesChanged := ControlValuesChanged;
+  fComponentValueChangedObserver.OnValuesUnchanged := ControlValuesUnchanged;
+
+  fComponentValueChangedObserver.RegisterEdit(edPersonFirstname);
+  fComponentValueChangedObserver.RegisterEdit(edPersonPraeposition);
+  fComponentValueChangedObserver.RegisterEdit(edPersonLastname);
+  fComponentValueChangedObserver.RegisterCheckbox(cbPersonBirthdayKnown);
+  fComponentValueChangedObserver.RegisterDateTimePicker(dtPersonBirthday);
+  fComponentValueChangedObserver.RegisterCheckbox(cbPersonActive);
+  fComponentValueChangedObserver.RegisterCombobox(cbPersonAddress);
+  fComponentValueChangedObserver.RegisterCheckbox(cbCreateNewAddress);
+  fComponentValueChangedObserver.RegisterEdit(edNewAddressStreet);
+  fComponentValueChangedObserver.RegisterEdit(edNewAddressPostalcode);
+  fComponentValueChangedObserver.RegisterEdit(edNewAddressCity);
+  fComponentValueChangedObserver.RegisterCombobox(cbMembership);
+  fComponentValueChangedObserver.RegisterEdit(edMembershipNumber);
+  fComponentValueChangedObserver.RegisterCheckbox(cbMembershipBeginKnown);
+  fComponentValueChangedObserver.RegisterDateTimePicker(dtMembershipBegin);
+  fComponentValueChangedObserver.RegisterCheckbox(cbMembershipEndKnown);
+  fComponentValueChangedObserver.RegisterDateTimePicker(dtMembershipEnd);
+  fComponentValueChangedObserver.RegisterEdit(edMembershipEndText);
+  fComponentValueChangedObserver.RegisterEdit(edMembershipEndReason);
+
   fPersonListviewAttachedData := TListviewAttachedData<Int32, TPersonListItemData>.Create(lvPersonListview);
-  fDatetimePickerFormat := dtPersonBithday.Format;
+  fDatetimePickerFormat := dtPersonBirthday.Format;
   Caption := TVdmGlobals.GetVdmApplicationTitle;
 end;
 
 procedure TfmMain.FormDestroy(Sender: TObject);
 begin
   fPersonListviewAttachedData.Free;
+  fComponentValueChangedObserver.Free;
 end;
 
 function TfmMain.GetRecordFromUI(var aRecord: TDtoPersonAggregated): Boolean;
 begin
+  if TStringTools.IsEmpty(edPersonFirstname.Text) and TStringTools.IsEmpty(edPersonLastname.Text) then
+  begin
+    edPersonFirstname.SetFocus;
+    TMessageDialogs.Ok('Vorname oder Nachname müssen angegeben sein.', TMsgDlgType.mtInformation);
+    Exit(False);
+  end;
+  if (cbMembership.ItemIndex > 0) and TStringTools.IsEmpty(edMembershipNumber.Text) then
+  begin
+    edMembershipNumber.SetFocus;
+    TMessageDialogs.Ok('Die Mitgliedsnummer muss angegeben sein.', TMsgDlgType.mtInformation);
+    Exit(False);
+  end;
+
+
   Result := True;
   aRecord.Firstname := edPersonFirstname.Text;
   aRecord.Praeposition := edPersonPraeposition.Text;
   aRecord.Lastname := edPersonLastname.Text;
   if cbPersonBirthdayKnown.Checked then
-    aRecord.Birthday := dtPersonBithday.Date
+    aRecord.Birthday := dtPersonBirthday.Date
   else
     aRecord.Birthday := 0;
   aRecord.Active := cbPersonActive.Checked;
@@ -260,7 +345,7 @@ begin
 
   aRecord.MembershipNoMembership := cbMembership.ItemIndex <= 0;
   aRecord.MembershipActive := cbMembership.ItemIndex = 1;
-  aRecord.MembershipNumber := StrToInt(edMembershipNumber.Text);
+  aRecord.MembershipNumber := StrToIntDef(edMembershipNumber.Text, 0);
   if cbMembershipBeginKnown.Checked then
     aRecord.MembershipBeginDate := dtMembershipBegin.Date
   else
@@ -295,7 +380,10 @@ end;
 
 procedure TfmMain.LoadCurrentRecord(const aPersonId: Int32);
 begin
+  fCurrentRecordId := aPersonId;
+  fNewRecordStarted := False;
   fMainBusinessIntf.LoadCurrentRecord(aPersonId);
+  SetEditMode(False);
 end;
 
 procedure TfmMain.LoadUIListBegin;
@@ -313,6 +401,14 @@ end;
 procedure TfmMain.LoadUIListEnd;
 begin
   lvPersonListview.Items.EndUpdate;
+  if lvPersonListview.Items.Count > 0 then
+  begin
+    lvPersonListview.Items[0].Selected := True;
+  end
+  else
+  begin
+    StartNewRecord;
+  end;
 end;
 
 procedure TfmMain.lvPersonListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
@@ -362,18 +458,32 @@ begin
   end;
 end;
 
-procedure TfmMain.SetRecordToUI(const aRecord: TDtoPersonAggregated);
+procedure TfmMain.SetEditMode(const aEditMode: Boolean);
 begin
+  fInEditMode := aEditMode;
+  acPersonSaveCurrentRecord.Enabled := fInEditMode;
+  acPersonReloadCurrentRecord.Enabled := fInEditMode;
+  if not fInEditMode then
+    fNewRecordStarted := False;
+end;
+
+procedure TfmMain.SetRecordToUI(const aRecord: TDtoPersonAggregated; const aRecordAsNewEntry: Boolean);
+begin
+  fComponentValueChangedObserver.BeginUpdate;
+
   edPersonFirstname.Text := aRecord.Firstname;
   edPersonPraeposition.Text := aRecord.Praeposition;
   edPersonLastname.Text := aRecord.Lastname;
   cbPersonBirthdayKnown.Checked := (aRecord.Birthday > 0);
   cbPersonBirthdayKnownClick(cbPersonBirthdayKnown);
   if aRecord.Birthday > 0 then
-    dtPersonBithday.Date := aRecord.Birthday
+    dtPersonBirthday.Date := aRecord.Birthday
   else
-    dtPersonBithday.Date := Now;
-  PersonEntryToListItem(aRecord.Person, lvPersonListview.Selected);
+    dtPersonBirthday.Date := TVdmGlobals.GetDateTimePickerNullValue;
+  if aRecordAsNewEntry then
+    PersonEntryToListItem(aRecord.Person, nil)
+  else
+    PersonEntryToListItem(aRecord.Person, lvPersonListview.Selected);
   cbPersonActive.Checked := aRecord.Active;
   cbPersonAddress.ItemIndex := aRecord.AddressIndex;
   cbCreateNewAddress.Checked := False;
@@ -396,12 +506,12 @@ begin
     if aRecord.MembershipBeginDate > 0 then
       dtMembershipBegin.Date := aRecord.MembershipBeginDate
     else
-      dtMembershipBegin.Date := Now;
+      dtMembershipBegin.Date := TVdmGlobals.GetDateTimePickerNullValue;
     cbMembershipEndKnown.Checked := aRecord.MembershipEndDate > 0;
     if aRecord.MembershipEndDate > 0 then
       dtMembershipEnd.Date := aRecord.MembershipEndDate
     else
-      dtMembershipEnd.Date := Now;
+      dtMembershipEnd.Date := TVdmGlobals.GetDateTimePickerNullValue;
     edMembershipEndText.Text := aRecord.MembershipEndDateText;
     edMembershipEndReason.Text := aRecord.MembershipEndReason;
   end
@@ -416,6 +526,14 @@ begin
   end;
   cbMembershipBeginKnownClick(cbMembershipBeginKnown);
   cbMembershipEndKnownClick(cbMembershipEndKnown);
+
+  fComponentValueChangedObserver.EndUpdate;
+end;
+
+procedure TfmMain.StartNewRecord;
+begin
+  fNewRecordStarted := True;
+  ClearRecordUI;
 end;
 
 end.

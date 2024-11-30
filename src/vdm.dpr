@@ -34,7 +34,10 @@ uses
   VdmGlobals in 'general\VdmGlobals.pas',
   FileTools in 'general\common\Tools\FileTools.pas',
   ProgressObserver in 'general\intf\ProgressObserver.pas',
-  unProgressForm in 'view\forms\unProgressForm.pas' {fmProgressForm};
+  unProgressForm in 'view\forms\unProgressForm.pas' {fmProgressForm},
+  ComponentValueChangedObserver in 'view\tools\ComponentValueChangedObserver.pas',
+  ClubmembershipTools in 'data\ClubmembershipTools.pas',
+  MessageDialogs in 'view\tools\MessageDialogs.pas';
 
 {$R *.res}
 
@@ -50,7 +53,7 @@ begin
       Exit;
 
     lConnectProgress.ProgressEnd;
-    var lMainBusiness: IMainBusinessIntf := TMainBusiness.Create(lConnection, fmMain);
+    var lMainBusiness: IMainBusinessIntf := TMainBusiness.Create(lConnection, fmMain, lConnectProgress);
     lMainBusiness.Initialize;
     Application.Run;
   finally

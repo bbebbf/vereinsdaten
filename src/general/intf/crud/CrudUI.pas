@@ -13,7 +13,7 @@ type
     procedure LoadUIListEnd;
     procedure DeleteRecordfromUI(const aRecordIdentity: TRecordIdentity);
     procedure ClearRecordUI;
-    procedure SetRecordToUI(const aRecord: TRecord);
+    procedure SetRecordToUI(const aRecord: TRecord; const aRecordAsNewEntry: Boolean);
     function GetRecordFromUI(var aRecord: TRecord): Boolean;
   end;
 

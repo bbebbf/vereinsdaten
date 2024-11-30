@@ -6,6 +6,7 @@ type
   TVdmGlobals = class
   public
     class function GetVdmApplicationTitle: string;
+    class function GetDateTimePickerNullValue: TDateTime;
   end;
 
 
@@ -17,6 +18,11 @@ const
   VdmApplicationTitle: string = 'Vereinsdaten-Manager';
 
 { TVdmGlobals }
+
+class function TVdmGlobals.GetDateTimePickerNullValue: TDateTime;
+begin
+  Result := 1;
+end;
 
 class function TVdmGlobals.GetVdmApplicationTitle: string;
 begin

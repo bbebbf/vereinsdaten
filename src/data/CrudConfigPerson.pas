@@ -64,7 +64,8 @@ end;
 procedure TCrudConfigPerson.SetValues(const aRecord: TDtoPerson; const aAccessor: TCrudAccessorBase;
   const aForUpdate: Boolean);
 begin
-  aAccessor.SetValue('person_id', aRecord.Id);
+  if aForUpdate then
+    aAccessor.SetValue('person_id', aRecord.Id);
   aAccessor.SetValueEmptyStrAsNull('person_vorname', aRecord.Vorname);
   aAccessor.SetValueEmptyStrAsNull('person_praeposition', aRecord.Praeposition);
   aAccessor.SetValueEmptyStrAsNull('person_nachname', aRecord.Nachname);
