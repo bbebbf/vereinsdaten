@@ -5,7 +5,7 @@ interface
 uses System.SysUtils, CrudConfig, CrudAccessor, SqlConnection, DtoClubmembership;
 
 type
-  TCrudConfigClubmembership = class(TInterfacedObject, ICrudConfig<TDtoClubmembership, Int32>)
+  TCrudConfigClubmembership = class(TInterfacedObject, ICrudConfig<TDtoClubmembership, UInt32>)
   strict private
     function GetTablename: string;
     function GetIdentityColumns: TArray<string>;
@@ -14,8 +14,8 @@ type
     procedure SetRecordFromResult(const aSqlResult: ISqlResult; out aRecord: TDtoClubmembership);
     function IsNewRecord(const aRecord: TDtoClubmembership): TCrudConfigNewRecordResponse;
     procedure SetValues(const aRecord: TDtoClubmembership; const aAccessor: TCrudAccessorBase; const aForUpdate: Boolean);
-    procedure SetParametersForLoad(const aRecordIdentity: Int32; const aQuery: ISqlPreparedQuery);
-    procedure SetValuesForDelete(const aRecordIdentity: Int32; const aAccessor: TCrudAccessorDelete);
+    procedure SetParametersForLoad(const aRecordIdentity: UInt32; const aQuery: ISqlPreparedQuery);
+    procedure SetValuesForDelete(const aRecordIdentity: UInt32; const aAccessor: TCrudAccessorDelete);
     procedure UpdateRecordIdentity(const aAccessor: TCrudAccessorInsert; var aRecord: TDtoClubmembership);
   end;
 
@@ -52,16 +52,16 @@ begin
     Result := TCrudConfigNewRecordResponse.ExistingRecord;
 end;
 
-procedure TCrudConfigClubmembership.SetParametersForLoad(const aRecordIdentity: Int32; const aQuery: ISqlPreparedQuery);
+procedure TCrudConfigClubmembership.SetParametersForLoad(const aRecordIdentity: UInt32; const aQuery: ISqlPreparedQuery);
 begin
   aQuery.ParamByName('PersonId').Value := aRecordIdentity;
 end;
 
 procedure TCrudConfigClubmembership.SetRecordFromResult(const aSqlResult: ISqlResult; out aRecord: TDtoClubmembership);
 begin
-  aRecord.Id := aSqlResult.FieldByName('clmb_id').AsInteger;
-  aRecord.PersonId := aSqlResult.FieldByName('person_id').AsInteger;
-  aRecord.Number := aSqlResult.FieldByName('clmb_number').AsInteger;
+  aRecord.Id := aSqlResult.FieldByName('clmb_id').AsLongWord;
+  aRecord.PersonId := aSqlResult.FieldByName('person_id').AsLongWord;
+  aRecord.Number := aSqlResult.FieldByName('clmb_number').AsLongWord;
   aRecord.Active := aSqlResult.FieldByName('clmb_active').AsBoolean;
   aRecord.Startdate := aSqlResult.FieldByName('clmb_startdate').AsDateTime;
   aRecord.Enddate := aSqlResult.FieldByName('clmb_enddate').AsDateTime;
@@ -83,7 +83,7 @@ begin
   aAccessor.SetValueEmptyStrAsNull('clmb_endreason', aRecord.Endreason);
 end;
 
-procedure TCrudConfigClubmembership.SetValuesForDelete(const aRecordIdentity: Int32;
+procedure TCrudConfigClubmembership.SetValuesForDelete(const aRecordIdentity: UInt32;
   const aAccessor: TCrudAccessorDelete);
 begin
   aAccessor.SetValue('clmb_id', aRecordIdentity);

@@ -9,7 +9,7 @@ type
     RequestedNumber: UInt16;
     NumberIsOccupied: Boolean;
     MembershipActive: Boolean;
-    OccupiedByPersonId: Int32;
+    OccupiedByPersonId: UInt32;
     OccupiedByPersonName: string;
     OccupiedByPersonActive: Boolean;
     function OccupiedToString: string;
@@ -21,7 +21,7 @@ type
     fPreparedQuery: ISqlPreparedQuery;
   public
     constructor Create(const aConntection: ISqlConnection);
-    function IsMembershipNumberOccupied(const aPersonId: Int32;
+    function IsMembershipNumberOccupied(const aPersonId: UInt32;
       const aMembershipNumber: UInt16): TClubMembershipNumberCheckerResponse;
   end;
 
@@ -40,7 +40,7 @@ begin
   fConnection := aConntection;
 end;
 
-function TClubMembershipNumberChecker.IsMembershipNumberOccupied(const aPersonId: Int32;
+function TClubMembershipNumberChecker.IsMembershipNumberOccupied(const aPersonId: UInt32;
   const aMembershipNumber: UInt16): TClubMembershipNumberCheckerResponse;
 begin
   Result := default(TClubMembershipNumberCheckerResponse);

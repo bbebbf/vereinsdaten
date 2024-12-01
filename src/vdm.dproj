@@ -187,6 +187,9 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="general\common\Tools\WindowsRunningProcesses.pas"/>
         <DCCReference Include="general\common\Tools\SshTunnel.pas"/>
         <DCCReference Include="general\common\SshTunnelSql\SshTunnelSqlConnection.pas"/>
+        <DCCReference Include="data\DtoMember.pas"/>
+        <DCCReference Include="data\DtoRole.pas"/>
+        <DCCReference Include="data\DtoUnit.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

@@ -4,7 +4,7 @@ interface
 
 type
   TDtoAddress = record
-    Id: Int32;
+    Id: UInt32;
     Street: string;
     Postalcode: string;
     City: string;

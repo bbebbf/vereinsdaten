@@ -4,13 +4,13 @@ interface
 
 type
   TDtoPerson = record
-    Id: Int32;
+    Id: UInt32;
     Vorname: string;
     Praeposition: string;
     Nachname: string;
     Aktiv: Boolean;
     Geburtsdatum: TDate;
-    AddressId: Integer;
+    AddressId: UInt32;
     function ToString: string;
   end;
 

@@ -42,7 +42,10 @@ uses
   WindowsProcess.Tools in 'general\common\Tools\WindowsProcess.Tools.pas',
   WindowsRunningProcesses in 'general\common\Tools\WindowsRunningProcesses.pas',
   SshTunnel in 'general\common\Tools\SshTunnel.pas',
-  SshTunnelSqlConnection in 'general\common\SshTunnelSql\SshTunnelSqlConnection.pas';
+  SshTunnelSqlConnection in 'general\common\SshTunnelSql\SshTunnelSqlConnection.pas',
+  DtoMember in 'data\DtoMember.pas',
+  DtoRole in 'data\DtoRole.pas',
+  DtoUnit in 'data\DtoUnit.pas';
 
 {$R *.res}
 

@@ -8,14 +8,14 @@ type
   TDtoPersonAggregated = class
   strict private
     fPerson: TDtoPerson;
-    fExistingAddressId: Integer;
+    fExistingAddressId: UInt32;
     fAddressIndex: Integer;
     fCreateNewAddress: Boolean;
     fNewAddressStreet: string;
     fNewAddressPostalcode: string;
     fNewAddressCity: string;
     fMembershipNoMembership: Boolean;
-    fMembershipId: Int32;
+    fMembershipId: UInt32;
     fMembershipActive: Boolean;
     fMembershipNumber: UInt16;
     fMembershipBeginDate: TDate;
@@ -28,14 +28,14 @@ type
     function GetDtoClubmembership: TDtoClubmembership;
     procedure SetDtoClubmembership(const aValue: TDtoClubmembership);
     property Person: TDtoPerson read fPerson;
-    property Id: Int32 read fPerson.Id write fPerson.Id;
+    property Id: UInt32 read fPerson.Id write fPerson.Id;
     property Firstname: string read fPerson.Vorname write fPerson.Vorname;
     property Praeposition: string read fPerson.Praeposition write fPerson.Praeposition;
     property Lastname: string read fPerson.Nachname write fPerson.Nachname;
     property Active: Boolean read fPerson.Aktiv write fPerson.Aktiv;
     property Birthday: TDate read fPerson.Geburtsdatum write fPerson.Geburtsdatum;
 
-    property ExistingAddressId: Integer read fExistingAddressId write fExistingAddressId;
+    property ExistingAddressId: UInt32 read fExistingAddressId write fExistingAddressId;
     property AddressIndex: Integer read fAddressIndex write fAddressIndex;
     property CreateNewAddress: Boolean read fCreateNewAddress write fCreateNewAddress;
     property NewAddressStreet: string read fNewAddressStreet write fNewAddressStreet;
@@ -43,7 +43,7 @@ type
     property NewAddressCity: string read fNewAddressCity write fNewAddressCity;
 
     property MembershipNoMembership: Boolean read fMembershipNoMembership write fMembershipNoMembership;
-    property MembershipId: Int32 read fMembershipId write fMembershipId;
+    property MembershipId: UInt32 read fMembershipId write fMembershipId;
     property MembershipActive: Boolean read fMembershipActive write fMembershipActive;
     property MembershipNumber: UInt16 read fMembershipNumber write fMembershipNumber;
     property MembershipBeginDate: TDate read fMembershipBeginDate write fMembershipBeginDate;

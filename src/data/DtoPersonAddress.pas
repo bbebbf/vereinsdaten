@@ -4,8 +4,8 @@ interface
 
 type
   TDtoPersonAddress = record
-    PersonId: Integer;
-    AddressId: Integer;
+    PersonId: UInt32;
+    AddressId: UInt32;
   end;
 
 implementation

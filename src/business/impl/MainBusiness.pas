@@ -1,4 +1,4 @@
-unit MainBusiness;
+ï»¿unit MainBusiness;
 
 interface
 
@@ -11,31 +11,31 @@ type
   strict private
     fConnection: ISqlConnection;
     fProgressObserver: IProgressObserver;
-    fPersonConfig: ICrudConfig<TDtoPerson, Int32>;
-    fPersonRecordActions: TRecordActions<TDtoPerson, Int32>;
-    fPersonAddressConfig: ICrudConfig<TDtoPersonAddress, Int32>;
-    fPersonAddressRecordActions: TRecordActions<TDtoPersonAddress, Int32>;
-    fAddressConfig: ICrudConfig<TDtoAddress, Int32>;
-    fAddressRecordActions: TRecordActions<TDtoAddress, Int32>;
-    fClubmembershipConfig: ICrudConfig<TDtoClubmembership, Int32>;
-    fClubmembershipRecordActions: TRecordActions<TDtoClubmembership, Int32>;
+    fPersonConfig: ICrudConfig<TDtoPerson, UInt32>;
+    fPersonRecordActions: TRecordActions<TDtoPerson, UInt32>;
+    fPersonAddressConfig: ICrudConfig<TDtoPersonAddress, UInt32>;
+    fPersonAddressRecordActions: TRecordActions<TDtoPersonAddress, UInt32>;
+    fAddressConfig: ICrudConfig<TDtoAddress, UInt32>;
+    fAddressRecordActions: TRecordActions<TDtoAddress, UInt32>;
+    fClubmembershipConfig: ICrudConfig<TDtoClubmembership, UInt32>;
+    fClubmembershipRecordActions: TRecordActions<TDtoClubmembership, UInt32>;
     fUI: IPersonAggregatedUI;
     fCurrentRecord: TDtoPersonAggregated;
-    fAddressMapper: TKeyIndexMapper<Int32>;
+    fAddressMapper: TKeyIndexMapper<UInt32>;
     fShowInactivePersons: Boolean;
     fClubMembershipNumberChecker: TClubMembershipNumberChecker;
 
     procedure Initialize;
     function LoadList: TCrudCommandResult;
-    function LoadCurrentRecord(const aPersonId: Int32): TCrudCommandResult;
-    function SaveCurrentRecord(const aPersonId: Int32): TCrudSaveRecordResult;
-    function ReloadCurrentRecord(const aPersonId: Int32): TCrudCommandResult;
-    function DeleteRecord(const aPersonId: Int32): TCrudCommandResult;
+    function LoadCurrentRecord(const aPersonId: UInt32): TCrudCommandResult;
+    function SaveCurrentRecord(const aPersonId: UInt32): TCrudSaveRecordResult;
+    function ReloadCurrentRecord(const aPersonId: UInt32): TCrudCommandResult;
+    function DeleteRecord(const aPersonId: UInt32): TCrudCommandResult;
     procedure LoadAvailableAddresses(const aStrings: TStrings);
     function GetShowInactivePersons: Boolean;
     procedure SetShowInactivePersons(const aValue: Boolean);
 
-    procedure CheckCurrentPersonId(const aPersonId: Int32);
+    procedure CheckCurrentPersonId(const aPersonId: UInt32);
   public
     constructor Create(const aConnection: ISqlConnection; const aUI: IPersonAggregatedUI;
       const aProgressObserver: IProgressObserver);
@@ -56,14 +56,14 @@ begin
   fConnection := aConnection;
   fProgressObserver := aProgressObserver;
   fUI := aUI;
-  fAddressMapper := TKeyIndexMapper<Int32>.Create(0);
+  fAddressMapper := TKeyIndexMapper<UInt32>.Create(0);
   fPersonConfig := TCrudConfigPerson.Create;
-  fPersonRecordActions := TRecordActions<TDtoPerson, Int32>.Create(fConnection, fPersonConfig);
+  fPersonRecordActions := TRecordActions<TDtoPerson, UInt32>.Create(fConnection, fPersonConfig);
   fPersonAddressConfig := TCrudConfigPersonAddress.Create;
-  fPersonAddressRecordActions := TRecordActions<TDtoPersonAddress, Int32>.Create(fConnection, fPersonAddressConfig);
+  fPersonAddressRecordActions := TRecordActions<TDtoPersonAddress, UInt32>.Create(fConnection, fPersonAddressConfig);
   fAddressConfig := TCrudConfigAddress.Create;
   fClubmembershipConfig := TCrudConfigClubmembership.Create;
-  fClubmembershipRecordActions := TRecordActions<TDtoClubmembership, Int32>.Create(fConnection, fClubmembershipConfig);
+  fClubmembershipRecordActions := TRecordActions<TDtoClubmembership, UInt32>.Create(fConnection, fClubmembershipConfig);
   fClubMembershipNumberChecker := TClubMembershipNumberChecker.Create(fConnection);
 end;
 
@@ -85,7 +85,7 @@ begin
   Result := fShowInactivePersons;
 end;
 
-function TMainBusiness.DeleteRecord(const aPersonId: Int32): TCrudCommandResult;
+function TMainBusiness.DeleteRecord(const aPersonId: UInt32): TCrudCommandResult;
 begin
 
 end;
@@ -101,7 +101,7 @@ begin
   try
     fAddressMapper.Clear;
     aStrings.Clear;
-    aStrings.Add('<Adresse auswählen>');
+    aStrings.Add('<Adresse auswï¿½hlen>');
     var lSqlResult := fConnection.GetSelectResult(fAddressConfig.GetSelectSqlList);
     while lSqlResult.Next do
     begin
@@ -114,7 +114,7 @@ begin
   end;
 end;
 
-function TMainBusiness.LoadCurrentRecord(const aPersonId: Int32): TCrudCommandResult;
+function TMainBusiness.LoadCurrentRecord(const aPersonId: UInt32): TCrudCommandResult;
 begin
   FreeAndNil(fCurrentRecord);
   var lRecord := default(TDtoPerson);
@@ -159,13 +159,13 @@ begin
   end;
 end;
 
-function TMainBusiness.ReloadCurrentRecord(const aPersonId: Int32): TCrudCommandResult;
+function TMainBusiness.ReloadCurrentRecord(const aPersonId: UInt32): TCrudCommandResult;
 begin
   CheckCurrentPersonId(aPersonId);
   fUI.SetRecordToUI(fCurrentRecord, False);
 end;
 
-function TMainBusiness.SaveCurrentRecord(const aPersonId: Int32): TCrudSaveRecordResult;
+function TMainBusiness.SaveCurrentRecord(const aPersonId: UInt32): TCrudSaveRecordResult;
 begin
   Result := default(TCrudSaveRecordResult);
   var lNewRecord: TDtoPersonAggregated := nil;
@@ -208,7 +208,7 @@ begin
           lNewAddressRecord.City := lNewRecord.NewAddressCity;
           if not Assigned(fAddressRecordActions) then
           begin
-            fAddressRecordActions := TRecordActions<TDtoAddress, Int32>.Create(fConnection, fAddressConfig);
+            fAddressRecordActions := TRecordActions<TDtoAddress, UInt32>.Create(fConnection, fAddressConfig);
           end;
           lNewAddressCreated := fAddressRecordActions.SaveRecord(lNewAddressRecord, lSaveTransaction) = TRecordActionsSaveResponse.Created;
           lPersonAddressRecord.AddressId := lNewAddressRecord.Id;
@@ -288,7 +288,7 @@ begin
   LoadList;
 end;
 
-procedure TMainBusiness.CheckCurrentPersonId(const aPersonId: Int32);
+procedure TMainBusiness.CheckCurrentPersonId(const aPersonId: UInt32);
 begin
   if not Assigned(fCurrentRecord) then
     raise Exception.Create('No current record.');

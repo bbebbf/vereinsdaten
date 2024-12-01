@@ -5,7 +5,7 @@ interface
 uses System.SysUtils, CrudConfig, CrudAccessor, SqlConnection, DtoPerson;
 
 type
-  TCrudConfigPerson = class(TInterfacedObject, ICrudConfig<TDtoPerson, Int32>)
+  TCrudConfigPerson = class(TInterfacedObject, ICrudConfig<TDtoPerson, UInt32>)
   strict private
     function GetTablename: string;
     function GetIdentityColumns: TArray<string>;
@@ -14,8 +14,8 @@ type
     procedure SetRecordFromResult(const aSqlResult: ISqlResult; out aRecord: TDtoPerson);
     function IsNewRecord(const aRecord: TDtoPerson): TCrudConfigNewRecordResponse;
     procedure SetValues(const aRecord: TDtoPerson; const aAccessor: TCrudAccessorBase; const aForUpdate: Boolean);
-    procedure SetParametersForLoad(const aRecordIdentity: Int32; const aQuery: ISqlPreparedQuery);
-    procedure SetValuesForDelete(const aRecordIdentity: Int32; const aAccessor: TCrudAccessorDelete);
+    procedure SetParametersForLoad(const aRecordIdentity: UInt32; const aQuery: ISqlPreparedQuery);
+    procedure SetValuesForDelete(const aRecordIdentity: UInt32; const aAccessor: TCrudAccessorDelete);
     procedure UpdateRecordIdentity(const aAccessor: TCrudAccessorInsert; var aRecord: TDtoPerson);
   end;
 
@@ -25,7 +25,7 @@ implementation
 
 procedure TCrudConfigPerson.SetRecordFromResult(const aSqlResult: ISqlResult; out aRecord: TDtoPerson);
 begin
-  aRecord.Id := aSqlResult.FieldByName('person_id').AsLargeInt;
+  aRecord.Id := aSqlResult.FieldByName('person_id').AsLongWord;
   aRecord.Vorname := aSqlResult.FieldByName('person_vorname').AsString;
   aRecord.Praeposition := aSqlResult.FieldByName('person_praeposition').AsString;
   aRecord.Nachname := aSqlResult.FieldByName('person_nachname').AsString;
@@ -73,12 +73,12 @@ begin
   aAccessor.SetValueZeroAsNull('person_birthday', aRecord.Geburtsdatum)
 end;
 
-procedure TCrudConfigPerson.SetValuesForDelete(const aRecordIdentity: Int32; const aAccessor: TCrudAccessorDelete);
+procedure TCrudConfigPerson.SetValuesForDelete(const aRecordIdentity: UInt32; const aAccessor: TCrudAccessorDelete);
 begin
   aAccessor.SetValue('person_id', aRecordIdentity);
 end;
 
-procedure TCrudConfigPerson.SetParametersForLoad(const aRecordIdentity: Int32; const aQuery: ISqlPreparedQuery);
+procedure TCrudConfigPerson.SetParametersForLoad(const aRecordIdentity: UInt32; const aQuery: ISqlPreparedQuery);
 begin
   aQuery.ParamByName('Id').Value := aRecordIdentity;
 end;

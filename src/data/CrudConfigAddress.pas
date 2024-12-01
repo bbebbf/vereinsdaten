@@ -5,7 +5,7 @@ interface
 uses System.SysUtils, CrudConfig, CrudAccessor, SqlConnection, DtoAddress;
 
 type
-  TCrudConfigAddress = class(TInterfacedObject, ICrudConfig<TDtoAddress, Int32>)
+  TCrudConfigAddress = class(TInterfacedObject, ICrudConfig<TDtoAddress, UInt32>)
   strict private
     function GetTablename: string;
     function GetIdentityColumns: TArray<string>;
@@ -14,8 +14,8 @@ type
     procedure SetRecordFromResult(const aSqlResult: ISqlResult; out aRecord: TDtoAddress);
     function IsNewRecord(const aRecord: TDtoAddress): TCrudConfigNewRecordResponse;
     procedure SetValues(const aRecord: TDtoAddress; const aAccessor: TCrudAccessorBase; const aForUpdate: Boolean);
-    procedure SetParametersForLoad(const aRecordIdentity: Int32; const aQuery: ISqlPreparedQuery);
-    procedure SetValuesForDelete(const aRecordIdentity: Int32; const aAccessor: TCrudAccessorDelete);
+    procedure SetParametersForLoad(const aRecordIdentity: UInt32; const aQuery: ISqlPreparedQuery);
+    procedure SetValuesForDelete(const aRecordIdentity: UInt32; const aAccessor: TCrudAccessorDelete);
     procedure UpdateRecordIdentity(const aAccessor: TCrudAccessorInsert; var aRecord: TDtoAddress);
   end;
 
@@ -54,7 +54,7 @@ end;
 
 procedure TCrudConfigAddress.SetRecordFromResult(const aSqlResult: ISqlResult; out aRecord: TDtoAddress);
 begin
-  aRecord.Id := aSqlResult.FieldByName('adr_id').AsLargeInt;
+  aRecord.Id := aSqlResult.FieldByName('adr_id').AsLongWord;
   aRecord.Street := aSqlResult.FieldByName('adr_street').AsString;
   aRecord.Postalcode := aSqlResult.FieldByName('adr_postalcode').AsString;
   aRecord.City := aSqlResult.FieldByName('adr_city').AsString;
@@ -63,17 +63,19 @@ end;
 procedure TCrudConfigAddress.SetValues(const aRecord: TDtoAddress; const aAccessor: TCrudAccessorBase;
   const aForUpdate: Boolean);
 begin
+  if aForUpdate then
+    aAccessor.SetValue('adr_id', aRecord.Id);
   aAccessor.SetValue('adr_street', aRecord.Street);
   aAccessor.SetValue('adr_postalcode', aRecord.Postalcode);
   aAccessor.SetValue('adr_city', aRecord.City);
 end;
 
-procedure TCrudConfigAddress.SetValuesForDelete(const aRecordIdentity: Int32; const aAccessor: TCrudAccessorDelete);
+procedure TCrudConfigAddress.SetValuesForDelete(const aRecordIdentity: UInt32; const aAccessor: TCrudAccessorDelete);
 begin
   aAccessor.SetValue('adr_id', aRecordIdentity);
 end;
 
-procedure TCrudConfigAddress.SetParametersForLoad(const aRecordIdentity: Int32; const aQuery: ISqlPreparedQuery);
+procedure TCrudConfigAddress.SetParametersForLoad(const aRecordIdentity: UInt32; const aQuery: ISqlPreparedQuery);
 begin
   aQuery.ParamByName('Id').Value := aRecordIdentity;
 end;

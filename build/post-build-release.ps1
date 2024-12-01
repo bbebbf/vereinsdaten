@@ -17,7 +17,8 @@ if (-Not (Test-Path -Path $OutputDir)) {
 
 $3rdparty_basepath = Join-Path -Path $BaseSourceDir -ChildPath "src\3rdparty";
 $3rdparty_filepathes = @(
-    "mysql\dll\libmariadb.dll"
+    "mysql\dll\libmariadb.dll",
+    "OpenSSH\ssh.exe"
 );
 
 foreach ($filepath in $3rdparty_filepathes)

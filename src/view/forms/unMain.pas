@@ -82,31 +82,31 @@ type
     { Private-Deklarationen }
   strict private
     fActivated: Boolean;
-    fCurrentRecordId: Int32;
+    fCurrentRecordId: UInt32;
     fNewRecordStarted: Boolean;
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
     fMainBusinessIntf: IMainBusinessIntf;
     fDatetimePickerFormat: string;
-    fPersonListviewAttachedData: TListviewAttachedData<Int32, TPersonListItemData>;
+    fPersonListviewAttachedData: TListviewAttachedData<UInt32, TPersonListItemData>;
 
     procedure SetEditMode(const aEditMode: Boolean);
     procedure ControlValuesChanged(Sender: TObject);
     procedure ControlValuesUnchanged(Sender: TObject);
     procedure PersonEntryToListItem(const aPerson: TDtoPerson; const aItem: TListItem);
 
-    procedure Initialize(const aCommands: ICrudCommands<Int32>); overload;
+    procedure Initialize(const aCommands: ICrudCommands<UInt32>); overload;
     procedure Initialize(const aCommands: IMainBusinessIntf); overload;
     procedure LoadUIListBegin;
     procedure LoadUIListAddRecord(const aRecord: TDtoPersonAggregated);
     procedure LoadUIListEnd;
-    procedure DeleteRecordfromUI(const aPersonId: Int32);
+    procedure DeleteRecordfromUI(const aPersonId: UInt32);
     procedure ClearRecordUI;
     procedure StartNewRecord;
     procedure SetRecordToUI(const aRecord: TDtoPersonAggregated; const aRecordAsNewEntry: Boolean);
     function GetRecordFromUI(var aRecord: TDtoPersonAggregated): Boolean;
     procedure LoadAvailableAdresses;
-    procedure LoadCurrentRecord(const aPersonId: Int32);
+    procedure LoadCurrentRecord(const aPersonId: UInt32);
   public
     { Public-Deklarationen }
   end;
@@ -130,7 +130,7 @@ end;
 
 procedure TfmMain.acPersonSaveCurrentRecordExecute(Sender: TObject);
 begin
-  var lPersonId: Int32 := 0;
+  var lPersonId: UInt32 := 0;
   if not fNewRecordStarted then
     lPersonId := fCurrentRecordId;
 
@@ -251,7 +251,7 @@ begin
   SetEditMode(False);
 end;
 
-procedure TfmMain.DeleteRecordfromUI(const aPersonId: Int32);
+procedure TfmMain.DeleteRecordfromUI(const aPersonId: UInt32);
 begin
 
 end;
@@ -262,8 +262,11 @@ begin
     Exit;
   fActivated := True;
 
-  StatusBar.SimpleText := 'Server: ' + TConfigReader.Instance.Connection.Host +
+  var lConnectionInfo := 'Server: ' + TConfigReader.Instance.Connection.Host +
     ':' + IntToStr(TConfigReader.Instance.Connection.Port);
+  if Length(TConfigReader.Instance.Connection.SshRemoteHost) > 0 then
+    lConnectionInfo := 'Remote Host: ' + TConfigReader.Instance.Connection.SshRemoteHost + ' / ' + lConnectionInfo;
+  StatusBar.SimpleText := lConnectionInfo;
 
   SetEditMode(False);
   LoadAvailableAdresses;
@@ -300,7 +303,7 @@ begin
   fComponentValueChangedObserver.RegisterEdit(edMembershipEndText);
   fComponentValueChangedObserver.RegisterEdit(edMembershipEndReason);
 
-  fPersonListviewAttachedData := TListviewAttachedData<Int32, TPersonListItemData>.Create(lvPersonListview);
+  fPersonListviewAttachedData := TListviewAttachedData<UInt32, TPersonListItemData>.Create(lvPersonListview);
   fDatetimePickerFormat := dtPersonBirthday.Format;
   Caption := TVdmGlobals.GetVdmApplicationTitle;
 end;
@@ -316,7 +319,7 @@ begin
   if TStringTools.IsEmpty(edPersonFirstname.Text) and TStringTools.IsEmpty(edPersonLastname.Text) then
   begin
     edPersonFirstname.SetFocus;
-    TMessageDialogs.Ok('Vorname oder Nachname müssen angegeben sein.', TMsgDlgType.mtInformation);
+    TMessageDialogs.Ok('Vorname oder Nachname mï¿½ssen angegeben sein.', TMsgDlgType.mtInformation);
     Exit(False);
   end;
   if (cbMembership.ItemIndex > 0) and TStringTools.IsEmpty(edMembershipNumber.Text) then
@@ -368,7 +371,7 @@ begin
   fMainBusinessIntf := aCommands;
 end;
 
-procedure TfmMain.Initialize(const aCommands: ICrudCommands<Int32>);
+procedure TfmMain.Initialize(const aCommands: ICrudCommands<UInt32>);
 begin
 
 end;
@@ -378,7 +381,7 @@ begin
   fMainBusinessIntf.LoadAvailableAddresses(cbPersonAddress.Items);
 end;
 
-procedure TfmMain.LoadCurrentRecord(const aPersonId: Int32);
+procedure TfmMain.LoadCurrentRecord(const aPersonId: UInt32);
 begin
   fCurrentRecordId := aPersonId;
   fNewRecordStarted := False;
@@ -426,7 +429,7 @@ end;
 procedure TfmMain.lvPersonListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
 begin
   var lPersonFound := False;
-  var lPersonId: Int32 := 0;
+  var lPersonId: UInt32 := 0;
   if Selected then
   begin
     lPersonFound := fPersonListviewAttachedData.TryGetKey(Item, lPersonId);
