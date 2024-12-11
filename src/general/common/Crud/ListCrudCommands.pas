@@ -28,7 +28,7 @@ type
   end;
 
 
-  TListCrudCommands<TS; TD; F: record> = class(TFilterSelect<TS, F>)
+  TListCrudCommands<TS; TD; FSelect, FLoop: record> = class(TFilterSelect<TS, FSelect, FLoop>)
   strict private
     fItems: TList<TListEntry<TD>>;
     fGetItemFromSourceCallback: TFunc<TS, TD>;
@@ -41,7 +41,7 @@ type
     procedure ListEnumEnd; override;
   public
     constructor Create(const aConnection: ISqlConnection;
-      const aConfig: ISelectListFilter<TS, F>;
+      const aConfig: ISelectListFilter<TS, FSelect>;
       const aGetItemFromSourceCallback: TFunc<TS, TD>);
     destructor Destroy; override;
     procedure Reload;
@@ -49,35 +49,35 @@ type
     property Items: TList<TListEntry<TD>> read fItems;
   end;
 
-  TObjectListCrudCommands<TS; TD: class; F: record> = class(TListCrudCommands<TS, TD, F>)
+  TObjectListCrudCommands<TS; TD: class; FSelect, FLoop: record> = class(TListCrudCommands<TS, TD, FSelect, FLoop>)
   strict protected
     function CreateListEntry(const aItem: TD): TListEntry<TD>; override;
   end;
 
 implementation
 
-{ TListCrudCommands<TS, TD, F> }
+{ TListCrudCommands<TS, TD, FSelect, FLoop> }
 
-constructor TListCrudCommands<TS, TD, F>.Create(const aConnection: ISqlConnection;
-  const aConfig: ISelectListFilter<TS, F>; const aGetItemFromSourceCallback: TFunc<TS, TD>);
+constructor TListCrudCommands<TS, TD, FSelect, FLoop>.Create(const aConnection: ISqlConnection;
+  const aConfig: ISelectListFilter<TS, FSelect>; const aGetItemFromSourceCallback: TFunc<TS, TD>);
 begin
   inherited Create(aConnection, aConfig);
   fGetItemFromSourceCallback := aGetItemFromSourceCallback;
 end;
 
-destructor TListCrudCommands<TS, TD, F>.Destroy;
+destructor TListCrudCommands<TS, TD, FSelect, FLoop>.Destroy;
 begin
   fItems.Free;
   inherited;
 end;
 
-procedure TListCrudCommands<TS, TD, F>.FilterChanged;
+procedure TListCrudCommands<TS, TD, FSelect, FLoop>.FilterChanged;
 begin
   inherited;
   ApplyFilter;
 end;
 
-procedure TListCrudCommands<TS, TD, F>.ListEnumBegin;
+procedure TListCrudCommands<TS, TD, FSelect, FLoop>.ListEnumBegin;
 begin
   inherited;
   if Assigned(fItems) then
@@ -92,14 +92,14 @@ begin
     fTargetEnumerator.ListEnumBegin;
 end;
 
-procedure TListCrudCommands<TS, TD, F>.ListEnumEnd;
+procedure TListCrudCommands<TS, TD, FSelect, FLoop>.ListEnumEnd;
 begin
   inherited;
   if Assigned(fTargetEnumerator) then
     fTargetEnumerator.ListEnumEnd;
 end;
 
-procedure TListCrudCommands<TS, TD, F>.ListEnumProcessItem(const aItem: TS);
+procedure TListCrudCommands<TS, TD, FSelect, FLoop>.ListEnumProcessItem(const aItem: TS);
 begin
   inherited;
   var lTargetItem := fGetItemFromSourceCallback(aItem);
@@ -109,12 +109,12 @@ begin
     fTargetEnumerator.ListEnumProcessItem(lTargetItem);
 end;
 
-function TListCrudCommands<TS, TD, F>.CreateListEntry(const aItem: TD): TListEntry<TD>;
+function TListCrudCommands<TS, TD, FSelect, FLoop>.CreateListEntry(const aItem: TD): TListEntry<TD>;
 begin
   Result := TListEntry<TD>.Create(aItem);
 end;
 
-procedure TListCrudCommands<TS, TD, F>.Reload;
+procedure TListCrudCommands<TS, TD, FSelect, FLoop>.Reload;
 begin
   FreeAndNil(fItems);
   ApplyFilter;
@@ -163,9 +163,9 @@ begin
   inherited;
 end;
 
-{ TObjectListCrudCommands<TS, TD, F> }
+{ TObjectListCrudCommands<TS, TD, FSelect, FLoop> }
 
-function TObjectListCrudCommands<TS, TD, F>.CreateListEntry(const aItem: TD): TListEntry<TD>;
+function TObjectListCrudCommands<TS, TD, FSelect, FLoop>.CreateListEntry(const aItem: TD): TListEntry<TD>;
 begin
   Result := TObjectListEntry<TD>.Create(aItem);
 end;

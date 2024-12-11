@@ -18,6 +18,7 @@ type
     cbShowInactiveMemberOfs: TCheckBox;
     procedure lvMemberOfCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
+    procedure cbShowInactiveMemberOfsClick(Sender: TObject);
   private
     fBusinessIntf: IMemberOfBusinessIntf;
     fMemberOfListviewAttachedData: TListviewAttachedData<UInt32, TMemberOfListItemData>;
@@ -42,6 +43,11 @@ implementation
 uses VdmGlobals;
 
 { TfraPersonMemberOf }
+
+procedure TfraPersonMemberOf.cbShowInactiveMemberOfsClick(Sender: TObject);
+begin
+  fBusinessIntf.ShowInactiveMemberOfs := not fBusinessIntf.ShowInactiveMemberOfs;
+end;
 
 constructor TfraPersonMemberOf.Create(AOwner: TComponent);
 begin

@@ -5,7 +5,7 @@ interface
 uses System.Generics.Collections, SqlConnection, FilterSelect, SelectListFilter;
 
 type
-  TListSelector<T; F: record> = class(TFilterSelect<T, F>)
+  TListSelector<T; FSelect, FLoop: record> = class(TFilterSelect<T, FSelect, FLoop>)
   strict private
     fItems: TList<T>;
     procedure OnListNotify(Sender: TObject; const Item: T; Action: TCollectionNotification);
@@ -21,7 +21,7 @@ type
     property Items: TList<T> read GetItems;
   end;
 
-  TObjectListSelector<T: class; F: record> = class(TListSelector<T, F>)
+  TObjectListSelector<T: class; FSelect, FLoop: record> = class(TListSelector<T, FSelect, FLoop>)
   protected
     procedure Notify(const Item: T; Action: TCollectionNotification); override;
   end;
@@ -30,15 +30,15 @@ implementation
 
 uses System.SysUtils;
 
-{ TListSelector<T, F> }
+{ TListSelector<T, FSelect, FLoop> }
 
-destructor TListSelector<T, F>.Destroy;
+destructor TListSelector<T, FSelect, FLoop>.Destroy;
 begin
   fItems.Free;
   inherited;
 end;
 
-function TListSelector<T, F>.GetItems: TList<T>;
+function TListSelector<T, FSelect, FLoop>.GetItems: TList<T>;
 begin
   if Assigned(fItems) then
     Exit(fItems);
@@ -47,28 +47,28 @@ begin
   Result := fItems;
 end;
 
-procedure TListSelector<T, F>.InvalidateItems;
+procedure TListSelector<T, FSelect, FLoop>.InvalidateItems;
 begin
   FreeAndNil(fItems);
 end;
 
-procedure TListSelector<T, F>.Notify(const Item: T; Action: TCollectionNotification);
+procedure TListSelector<T, FSelect, FLoop>.Notify(const Item: T; Action: TCollectionNotification);
 begin
 
 end;
 
-procedure TListSelector<T, F>.OnListNotify(Sender: TObject; const Item: T; Action: TCollectionNotification);
+procedure TListSelector<T, FSelect, FLoop>.OnListNotify(Sender: TObject; const Item: T; Action: TCollectionNotification);
 begin
   Notify(Item, Action);
 end;
 
-procedure TListSelector<T, F>.FilterChanged;
+procedure TListSelector<T, FSelect, FLoop>.FilterChanged;
 begin
   inherited;
   InvalidateItems;
 end;
 
-procedure TListSelector<T, F>.ListEnumBegin;
+procedure TListSelector<T, FSelect, FLoop>.ListEnumBegin;
 begin
   inherited;
   if Assigned(fItems) then
@@ -82,15 +82,15 @@ begin
   end;
 end;
 
-procedure TListSelector<T, F>.ListEnumProcessItem(const aItem: T);
+procedure TListSelector<T, FSelect, FLoop>.ListEnumProcessItem(const aItem: T);
 begin
   inherited;
   fItems.Add(aItem);
 end;
 
-{ TObjectListSelector<T, F> }
+{ TObjectListSelector<T, FSelect, FLoop> }
 
-procedure TObjectListSelector<T, F>.Notify(const Item: T; Action: TCollectionNotification);
+procedure TObjectListSelector<T, FSelect, FLoop>.Notify(const Item: T; Action: TCollectionNotification);
 begin
   inherited;
   if Action = cnRemoved then

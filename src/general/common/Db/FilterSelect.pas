@@ -5,55 +5,63 @@ interface
 uses SqlConnection, SelectListFilter, ListEnumerator, ProgressObserver;
 
 type
-  TFilterSelectItemIsValid<T, F> = procedure(Sender: TObject; const aItem: T; const aFilter: F; var aIsVald: Boolean) of object;
+  TFilterSelectItemMatchesFilter<T, F> = procedure(Sender: TObject; const aItem: T; const aFilter: F; var aItemMatches: Boolean) of object;
 
-  TFilterSelect<T; F: record> = class
+  TFilterSelect<T; FSelect, FLoop: record> = class
   strict private
     fConnection: ISqlConnection;
-    fConfig: ISelectListFilter<T, F>;
+    fConfig: ISelectListFilter<T, FSelect>;
     fEnumerator: IListEnumerator<T>;
     fProgressObserver: IProgressObserver;
     fProgressText: string;
     fSqlSelect: ISqlPreparedQuery;
-    fFilter: F;
-    fOnItemIsValid: TFilterSelectItemIsValid<T, F>;
+    fFilterSelect: FSelect;
+    fFilterLoop: FLoop;
+    fInFilterUpdate: Integer;
+    fOnItemMatchesFilter: TFilterSelectItemMatchesFilter<T, FLoop>;
     fItemCount: Integer;
-    procedure SetFilter(const aValue: F);
+    procedure SetFilterSelect(const aValue: FSelect);
+    procedure SetFilterLoop(const aValue: FLoop);
   strict protected
     procedure ApplyFilter;
     procedure FilterChanged; virtual;
     procedure ListEnumBegin; virtual;
     procedure ListEnumProcessItem(const aItem: T); virtual;
     procedure ListEnumEnd; virtual;
-    function ListItemIsValid(const aItem: T; const aFilter: F): Boolean;
+    function ItemMatchesFilter(const aItem: T; const aFilter: FLoop): Boolean;
   public
-    constructor Create(const aConnection: ISqlConnection; const aConfig: ISelectListFilter<T, F>);
-    property Filter: F read fFilter write SetFilter;
+    constructor Create(const aConnection: ISqlConnection; const aConfig: ISelectListFilter<T, FSelect>);
+    procedure BeginUpdateFilter;
+    procedure EndUpdateFilter;
+    property FilterSelect: FSelect read fFilterSelect write SetFilterSelect;
+    property FilterLoop: FLoop read fFilterLoop write SetFilterLoop;
     property Enumerator: IListEnumerator<T> read fEnumerator write fEnumerator;
     property ProgressObserver: IProgressObserver read fProgressObserver write fProgressObserver;
     property ProgressText: string read fProgressText write fProgressText;
-    property OnItemIsValid: TFilterSelectItemIsValid<T, F> read fOnItemIsValid write fOnItemIsValid;
+    property OnItemMatchesFilter: TFilterSelectItemMatchesFilter<T, FLoop> read fOnItemMatchesFilter write fOnItemMatchesFilter;
   end;
 
 implementation
 
-{ TFilterSelect<T, F> }
+uses System.SysUtils;
 
-constructor TFilterSelect<T, F>.Create(const aConnection: ISqlConnection;
-  const aConfig: ISelectListFilter<T, F>);
+{ TFilterSelect<T, FSelect, FLoop> }
+
+constructor TFilterSelect<T, FSelect, FLoop>.Create(const aConnection: ISqlConnection;
+  const aConfig: ISelectListFilter<T, FSelect>);
 begin
   inherited Create;
   fConnection := aConnection;
   fConfig := aConfig;
 end;
 
-procedure TFilterSelect<T, F>.ApplyFilter;
+procedure TFilterSelect<T, FSelect, FLoop>.ApplyFilter;
 begin
   if not Assigned(fSqlSelect) then
   begin
     fSqlSelect := fConnection.CreatePreparedQuery(fConfig.GetSelectListSQL);
   end;
-  fConfig.SetSelectListSQLParameter(fFilter, fSqlSelect);
+  fConfig.SetSelectListSQLParameter(fFilterSelect, fSqlSelect);
   ListEnumBegin;
   try
     var lSqlResult := fSqlSelect.Open;
@@ -61,7 +69,7 @@ begin
     begin
       var lRecord := default(T);
       fConfig.GetRecordFromSqlResult(lSqlResult, lRecord);
-      if ListItemIsValid(lRecord, fFilter) then
+      if ItemMatchesFilter(lRecord, fFilterLoop) then
         ListEnumProcessItem(lRecord);
     end;
   finally
@@ -69,21 +77,45 @@ begin
   end;
 end;
 
-procedure TFilterSelect<T, F>.SetFilter(const aValue: F);
+procedure TFilterSelect<T, FSelect, FLoop>.BeginUpdateFilter;
 begin
-  if fFilter = aValue then
+  fInFilterUpdate := AtomicIncrement(fInFilterUpdate);
+end;
+
+procedure TFilterSelect<T, FSelect, FLoop>.EndUpdateFilter;
+begin
+  var lMoreThanZero := fInFilterUpdate > 0;
+  fInFilterUpdate := AtomicDecrement(fInFilterUpdate);
+  if fInFilterUpdate <= 0 then
+    FilterChanged;
+end;
+
+procedure TFilterSelect<T, FSelect, FLoop>.SetFilterLoop(const aValue: FLoop);
+begin
+  if CompareMem(@fFilterLoop, @aValue, SizeOf(FLoop)) then
     Exit;
 
-  fFilter := aValue;
-  FilterChanged;
+  fFilterLoop := aValue;
+  if fInFilterUpdate = 0 then
+    FilterChanged;
 end;
 
-procedure TFilterSelect<T, F>.FilterChanged;
+procedure TFilterSelect<T, FSelect, FLoop>.SetFilterSelect(const aValue: FSelect);
+begin
+  if CompareMem(@fFilterSelect, @aValue, SizeOf(FSelect)) then
+    Exit;
+
+  fFilterSelect := aValue;
+  if fInFilterUpdate = 0 then
+    FilterChanged;
+end;
+
+procedure TFilterSelect<T, FSelect, FLoop>.FilterChanged;
 begin
 
 end;
 
-procedure TFilterSelect<T, F>.ListEnumBegin;
+procedure TFilterSelect<T, FSelect, FLoop>.ListEnumBegin;
 begin
   if Assigned(fProgressObserver) then
     fProgressObserver.ProgressBegin(-1, False, fProgressText);
@@ -92,7 +124,7 @@ begin
     fEnumerator.ListEnumBegin;
 end;
 
-procedure TFilterSelect<T, F>.ListEnumProcessItem(const aItem: T);
+procedure TFilterSelect<T, FSelect, FLoop>.ListEnumProcessItem(const aItem: T);
 begin
   Inc(fItemCount);
   if Assigned(fProgressObserver) then
@@ -101,14 +133,14 @@ begin
     fEnumerator.ListEnumProcessItem(aItem);
 end;
 
-function TFilterSelect<T, F>.ListItemIsValid(const aItem: T; const aFilter: F): Boolean;
+function TFilterSelect<T, FSelect, FLoop>.ItemMatchesFilter(const aItem: T; const aFilter: FLoop): Boolean;
 begin
   Result := True;
-  if Assigned(fOnItemIsValid) then
-    fOnItemIsValid(Self, aItem, aFilter, Result);
+  if Assigned(fOnItemMatchesFilter) then
+    fOnItemMatchesFilter(Self, aItem, aFilter, Result);
 end;
 
-procedure TFilterSelect<T, F>.ListEnumEnd;
+procedure TFilterSelect<T, FSelect, FLoop>.ListEnumEnd;
 begin
   if Assigned(fProgressObserver) then
     fProgressObserver.ProgressEnd;

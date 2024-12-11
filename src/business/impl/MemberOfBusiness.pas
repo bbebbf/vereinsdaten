@@ -8,8 +8,7 @@ uses System.Classes, System.SysUtils, SqlConnection, CrudCommands, MemberOfBusin
 
 type
   TMemberOfBusinessRecordFilter = record
-//    ShowInactiveMemberOfs: Boolean;
-    PersonId: UInt32;
+    ShowInactiveMemberOfs: Boolean;
   end;
 
   TMemberOfBusiness = class(TInterfacedObject, IMemberOfBusinessIntf)
@@ -18,12 +17,13 @@ type
     fProgressObserver: IProgressObserver;
     fUI: IPersonMemberOfUI;
     fMemberConfig: ICrudConfig<TDtoMember, UInt32>;
-    fMemberConfigSelectListFilter: ISelectListFilter<TDtoMember, TMemberOfBusinessRecordFilter>;
-    fListCrudCommands: TObjectListCrudCommands<TDtoMember, TDtoMemberAggregated, TMemberOfBusinessRecordFilter>;
+    fMemberConfigSelectListFilter: ISelectListFilter<TDtoMember, UInt32>;
+    fListCrudCommands: TObjectListCrudCommands<TDtoMember, TDtoMemberAggregated, UInt32, TMemberOfBusinessRecordFilter>;
     fUnitMapper: TKeyIndexMapper<UInt32>;
     fUnitListConfig: ISelectList<TDtoUnit>;
     fRoleMapper: TKeyIndexMapper<UInt32>;
     fRoleListConfig: ISelectList<TDtoRole>;
+    fCurrentPersonId: UInt32;
     fCurrentFilter: TMemberOfBusinessRecordFilter;
     procedure Initialize;
     function LoadList: TCrudCommandResult;
@@ -40,6 +40,8 @@ type
     procedure SetShowInactiveMemberOfs(const aValue: Boolean);
 
     function CreateMemberAggregated(aSource: TDtoMember): TDtoMemberAggregated;
+    procedure OnItemMatchesFilter(Sender: TObject;
+      const aItem: TDtoMember; const aFilter: TMemberOfBusinessRecordFilter; var aItemMatches: Boolean);
   public
     constructor Create(const aConnection: ISqlConnection; const aUI: IPersonMemberOfUI;
       const aProgressObserver: IProgressObserver);
@@ -60,10 +62,11 @@ begin
   fProgressObserver := aProgressObserver;
   fUI := aUI;
   fMemberConfig := TCrudMemberConfig.Create;
-  Supports(fMemberConfig, ISelectListFilter<TDtoMember, TMemberOfBusinessRecordFilter>, fMemberConfigSelectListFilter);
-  fListCrudCommands := TObjectListCrudCommands<TDtoMember, TDtoMemberAggregated, TMemberOfBusinessRecordFilter>.Create(
+  Supports(fMemberConfig, ISelectListFilter<TDtoMember, UInt32>, fMemberConfigSelectListFilter);
+  fListCrudCommands := TObjectListCrudCommands<TDtoMember, TDtoMemberAggregated, UInt32, TMemberOfBusinessRecordFilter>.Create(
     fConnection, fMemberConfigSelectListFilter, CreateMemberAggregated);
   fListCrudCommands.TargetEnumerator := fUI;
+  fListCrudCommands.OnItemMatchesFilter := OnItemMatchesFilter;
   fUnitListConfig := TCrudConfigUnit.Create;
   fUnitMapper := TKeyIndexMapper<UInt32>.Create(0);
   fRoleListConfig := TCrudConfigRole.Create;
@@ -85,7 +88,7 @@ end;
 
 function TMemberOfBusiness.GetShowInactiveMemberOfs: Boolean;
 begin
-  Result := False; // fCurrentFilter.ShowInactiveMemberOfs;
+  Result := fCurrentFilter.ShowInactiveMemberOfs;
 end;
 
 function TMemberOfBusiness.GetUnitMapperIndex(const aUnitId: UInt32): Integer;
@@ -148,7 +151,10 @@ end;
 
 function TMemberOfBusiness.LoadList: TCrudCommandResult;
 begin
-//  fListCrudCommands.Filter := fCurrentFilter;
+  fListCrudCommands.BeginUpdateFilter;
+  fListCrudCommands.FilterSelect := fCurrentPersonId;
+  fListCrudCommands.FilterLoop := fCurrentFilter;
+  fListCrudCommands.EndUpdateFilter;
 end;
 
 function TMemberOfBusiness.ReloadCurrentRecord(const aRecordIdentity: TDtoMemberAggregated): TCrudCommandResult;
@@ -163,8 +169,11 @@ end;
 
 procedure TMemberOfBusiness.SetShowInactiveMemberOfs(const aValue: Boolean);
 begin
-//  fCurrentFilter.ShowInactiveMemberOfs := aValue;
-//  LoadList;
+  if fCurrentFilter.ShowInactiveMemberOfs = aValue then
+    Exit;
+
+  fCurrentFilter.ShowInactiveMemberOfs := aValue;
+  LoadList;
 end;
 
 function TMemberOfBusiness.DeleteRecord(const aRecordIdentity: TDtoMemberAggregated): TCrudCommandResult;
@@ -174,11 +183,17 @@ end;
 
 procedure TMemberOfBusiness.LoadPersonsMemberOfs(const aPersonId: UInt32);
 begin
-  if fCurrentFilter.PersonId = aPersonId then
+  if fCurrentPersonId = aPersonId then
     Exit;
 
-  fCurrentFilter.PersonId := aPersonId;
+  fCurrentPersonId := aPersonId;
   LoadList;
+end;
+
+procedure TMemberOfBusiness.OnItemMatchesFilter(Sender: TObject; const aItem: TDtoMember;
+  const aFilter: TMemberOfBusinessRecordFilter; var aItemMatches: Boolean);
+begin
+  aItemMatches := aItem.Active or aFilter.ShowInactiveMemberOfs;
 end;
 
 end.

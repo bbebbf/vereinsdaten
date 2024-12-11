@@ -36,7 +36,6 @@ object fraPersonMemberOf: TfraPersonMemberOf
     TabOrder = 0
     ViewStyle = vsReport
     OnCustomDrawItem = lvMemberOfCustomDrawItem
-    ExplicitTop = -6
   end
   object pnCommands: TPanel
     Left = 0
@@ -56,6 +55,7 @@ object fraPersonMemberOf: TfraPersonMemberOf
       Anchors = [akTop, akRight]
       Caption = 'Inaktive Verbindungen anzeigen'
       TabOrder = 0
+      OnClick = cbShowInactiveMemberOfsClick
     end
   end
 end
