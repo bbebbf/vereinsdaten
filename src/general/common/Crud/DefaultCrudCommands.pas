@@ -62,17 +62,17 @@ end;
 function TDefaultCrudCommands<TRecord, TRecordIdentity>.LoadList: TCrudCommandResult;
 begin
   Result := default(TCrudCommandResult);
-  fUI.LoadUIListBegin;
+  fUI.ListEnumBegin;
   try
-    var lSqlResult := fConnection.GetSelectResult(fConfig.GetSelectSqlList);
+    var lSqlResult: ISqlResult := nil; // fConnection.GetSelectResult(fConfig.GetSelectSqlList);
     while lSqlResult.Next do
     begin
       var lRecord := default(TRecord);
-      fConfig.SetRecordFromResult(lSqlResult, lRecord);
-      fUI.LoadUIListAddRecord(lRecord);
+      fConfig.GetRecordFromSqlResult(lSqlResult, lRecord);
+      fUI.ListEnumProcessItem(lRecord);
     end;
   finally
-    fUI.LoadUIListEnd;
+    fUI.ListEnumEnd;
   end;
 end;
 

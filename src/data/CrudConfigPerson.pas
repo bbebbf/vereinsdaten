@@ -2,28 +2,28 @@ unit CrudConfigPerson;
 
 interface
 
-uses System.SysUtils, CrudConfig, CrudAccessor, SqlConnection, DtoPerson;
+uses System.SysUtils, CrudConfig, SelectList, CrudAccessor, SqlConnection, DtoPerson, Vdm.Types;
 
 type
-  TCrudConfigPerson = class(TInterfacedObject, ICrudConfig<TDtoPerson, UInt32>)
+  TCrudConfigPerson = class(TInterfacedObject, ICrudConfig<TDtoPerson, UInt32>, ISelectList<TDtoPerson>)
   strict private
     function GetTablename: string;
     function GetIdentityColumns: TArray<string>;
-    function GetSelectSqlList: string;
-    function GetSelectSqlRecord: string;
-    procedure SetRecordFromResult(const aSqlResult: ISqlResult; out aRecord: TDtoPerson);
+    function GetSelectRecordSQL: string;
+    procedure GetRecordFromSqlResult(const aSqlResult: ISqlResult; var aRecord: TDtoPerson);
     function IsNewRecord(const aRecord: TDtoPerson): TCrudConfigNewRecordResponse;
     procedure SetValues(const aRecord: TDtoPerson; const aAccessor: TCrudAccessorBase; const aForUpdate: Boolean);
-    procedure SetParametersForLoad(const aRecordIdentity: UInt32; const aQuery: ISqlPreparedQuery);
+    procedure SetSelectRecordSQLParameter(const aRecordIdentity: UInt32; const aQuery: ISqlPreparedQuery);
     procedure SetValuesForDelete(const aRecordIdentity: UInt32; const aAccessor: TCrudAccessorDelete);
     procedure UpdateRecordIdentity(const aAccessor: TCrudAccessorInsert; var aRecord: TDtoPerson);
+    function GetSelectListSQL: string;
   end;
 
 implementation
 
 { TCrudConfigPerson }
 
-procedure TCrudConfigPerson.SetRecordFromResult(const aSqlResult: ISqlResult; out aRecord: TDtoPerson);
+procedure TCrudConfigPerson.GetRecordFromSqlResult(const aSqlResult: ISqlResult; var aRecord: TDtoPerson);
 begin
   aRecord.Id := aSqlResult.FieldByName('person_id').AsLongWord;
   aRecord.Vorname := aSqlResult.FieldByName('person_vorname').AsString;
@@ -38,12 +38,12 @@ begin
   Result := [];
 end;
 
-function TCrudConfigPerson.GetSelectSqlList: string;
+function TCrudConfigPerson.GetSelectListSQL: string;
 begin
   Result := 'select * from person order by person_nachname, person_vorname, person_praeposition';
 end;
 
-function TCrudConfigPerson.GetSelectSqlRecord: string;
+function TCrudConfigPerson.GetSelectRecordSQL: string;
 begin
   Result := 'select * from person where person_id = :Id';
 end;
@@ -78,7 +78,7 @@ begin
   aAccessor.SetValue('person_id', aRecordIdentity);
 end;
 
-procedure TCrudConfigPerson.SetParametersForLoad(const aRecordIdentity: UInt32; const aQuery: ISqlPreparedQuery);
+procedure TCrudConfigPerson.SetSelectRecordSQLParameter(const aRecordIdentity: UInt32; const aQuery: ISqlPreparedQuery);
 begin
   aQuery.ParamByName('Id').Value := aRecordIdentity;
 end;

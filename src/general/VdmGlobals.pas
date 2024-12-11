@@ -7,17 +7,34 @@ type
   public
     class function GetVdmApplicationTitle: string;
     class function GetDateTimePickerNullValue: TDateTime;
+    class function GetDateAsString(const aValue: TDateTime): string;
+    class function GetDateTimeAsString(const aValue: TDateTime): string;
   end;
-
 
 implementation
 
-uses FileTools;
+uses System.SysUtils, FileTools;
 
 const
   VdmApplicationTitle: string = 'Vereinsdaten-Manager';
 
 { TVdmGlobals }
+
+class function TVdmGlobals.GetDateAsString(const aValue: TDateTime): string;
+begin
+  if aValue > GetDateTimePickerNullValue then
+    Result := FormatDateTime('dd.mm.yyyy', aValue)
+  else
+    Result := '';
+end;
+
+class function TVdmGlobals.GetDateTimeAsString(const aValue: TDateTime): string;
+begin
+  if aValue > GetDateTimePickerNullValue then
+    Result := FormatDateTime('dd.mm.yyyy HH:nn', aValue)
+  else
+    Result := '';
+end;
 
 class function TVdmGlobals.GetDateTimePickerNullValue: TDateTime;
 begin

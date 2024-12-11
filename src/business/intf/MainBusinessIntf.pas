@@ -10,6 +10,7 @@ type
     function GetShowInactivePersons: Boolean;
     procedure SetShowInactivePersons(const aValue: Boolean);
     procedure LoadAvailableAddresses(const aStrings: TStrings);
+    procedure LoadPersonsMemberOfs(const aPersonId: UInt32);
     property ShowInactivePersons: Boolean read GetShowInactivePersons write SetShowInactivePersons;
   end;
 

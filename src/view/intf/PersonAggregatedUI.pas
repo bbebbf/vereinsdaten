@@ -2,7 +2,7 @@ unit PersonAggregatedUI;
 
 interface
 
-uses CrudUI, DtoPersonAggregated, MainBusinessIntf;
+uses CrudUI, DtoPersonAggregated, MainBusinessIntf, PersonMemberOfUI;
 
 type
   IPersonAggregatedUI = interface(ICrudUI<TDtoPersonAggregated, UInt32>)
@@ -10,6 +10,7 @@ type
     procedure Initialize(const aCommands: IMainBusinessIntf);
     procedure LoadAvailableAdresses;
     procedure LoadCurrentRecord(const aPersonId: UInt32);
+    function GetMemberOfUI: IPersonMemberOfUI;
   end;
 
 implementation

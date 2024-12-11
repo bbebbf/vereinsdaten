@@ -43,7 +43,7 @@ object fmMain: TfmMain
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 1
-    ExplicitLeft = 1
+    ExplicitHeight = 640
     object lvPersonListview: TListView
       Left = 0
       Top = 41
@@ -61,7 +61,6 @@ object fmMain: TfmMain
       ViewStyle = vsReport
       OnCustomDrawItem = lvPersonListviewCustomDrawItem
       OnSelectItem = lvPersonListviewSelectItem
-      ExplicitHeight = 536
     end
     object pnFilter: TPanel
       Left = 0
@@ -89,9 +88,7 @@ object fmMain: TfmMain
       Action = acPersonStartNewRecord
       Align = alBottom
       TabOrder = 2
-      ExplicitLeft = 66
-      ExplicitTop = 575
-      ExplicitWidth = 154
+      ExplicitTop = 615
     end
   end
   object pnPersonDetails: TPanel
@@ -112,6 +109,10 @@ object fmMain: TfmMain
       ActivePage = tsPersonaldata
       Align = alClient
       TabOrder = 0
+      OnChange = pcPersonDetailsChange
+      OnChanging = pcPersonDetailsChanging
+      ExplicitWidth = 766
+      ExplicitHeight = 640
       object tsPersonaldata: TTabSheet
         Caption = 'Personendaten'
         object lbPersonFirstname: TLabel
@@ -382,6 +383,10 @@ object fmMain: TfmMain
           TabOrder = 18
         end
       end
+      object tsMemberOf: TTabSheet
+        Caption = 'Mitglied von ...'
+        ImageIndex = 1
+      end
     end
   end
   object MainMenu: TMainMenu
@@ -395,11 +400,11 @@ object fmMain: TfmMain
     Left = 52
     Top = 154
     object acPersonSaveCurrentRecord: TAction
-      Caption = 'Daten speichern'
+      Caption = #196'nderungen speichern'
       OnExecute = acPersonSaveCurrentRecordExecute
     end
     object acPersonReloadCurrentRecord: TAction
-      Caption = 'Daten wiederherstellen'
+      Caption = #196'nderungen verwerfen'
       OnExecute = acPersonReloadCurrentRecordExecute
     end
     object acPersonStartNewRecord: TAction

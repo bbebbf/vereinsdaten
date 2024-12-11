@@ -10,11 +10,11 @@ type
     function GetTablename: string;
     function GetIdentityColumns: TArray<string>;
     function GetSelectSqlList: string;
-    function GetSelectSqlRecord: string;
-    procedure SetRecordFromResult(const aSqlResult: ISqlResult; out aRecord: TDtoClubmembership);
+    function GetSelectRecordSQL: string;
+    procedure GetRecordFromSqlResult(const aSqlResult: ISqlResult; var aRecord: TDtoClubmembership);
     function IsNewRecord(const aRecord: TDtoClubmembership): TCrudConfigNewRecordResponse;
     procedure SetValues(const aRecord: TDtoClubmembership; const aAccessor: TCrudAccessorBase; const aForUpdate: Boolean);
-    procedure SetParametersForLoad(const aRecordIdentity: UInt32; const aQuery: ISqlPreparedQuery);
+    procedure SetSelectRecordSQLParameter(const aRecordIdentity: UInt32; const aQuery: ISqlPreparedQuery);
     procedure SetValuesForDelete(const aRecordIdentity: UInt32; const aAccessor: TCrudAccessorDelete);
     procedure UpdateRecordIdentity(const aAccessor: TCrudAccessorInsert; var aRecord: TDtoClubmembership);
   end;
@@ -34,7 +34,7 @@ begin
   raise ENotSupportedException.Create('TCrudConfigClubmembership.GetSelectSqlList');
 end;
 
-function TCrudConfigClubmembership.GetSelectSqlRecord: string;
+function TCrudConfigClubmembership.GetSelectRecordSQL: string;
 begin
   Result := 'select * from clubmembership where person_id = :PersonId';
 end;
@@ -52,12 +52,12 @@ begin
     Result := TCrudConfigNewRecordResponse.ExistingRecord;
 end;
 
-procedure TCrudConfigClubmembership.SetParametersForLoad(const aRecordIdentity: UInt32; const aQuery: ISqlPreparedQuery);
+procedure TCrudConfigClubmembership.SetSelectRecordSQLParameter(const aRecordIdentity: UInt32; const aQuery: ISqlPreparedQuery);
 begin
   aQuery.ParamByName('PersonId').Value := aRecordIdentity;
 end;
 
-procedure TCrudConfigClubmembership.SetRecordFromResult(const aSqlResult: ISqlResult; out aRecord: TDtoClubmembership);
+procedure TCrudConfigClubmembership.GetRecordFromSqlResult(const aSqlResult: ISqlResult; var aRecord: TDtoClubmembership);
 begin
   aRecord.Id := aSqlResult.FieldByName('clmb_id').AsLongWord;
   aRecord.PersonId := aSqlResult.FieldByName('person_id').AsLongWord;

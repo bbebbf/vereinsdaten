@@ -10,11 +10,11 @@ type
     function GetTablename: string;
     function GetIdentityColumns: TArray<string>;
     function GetSelectSqlList: string;
-    function GetSelectSqlRecord: string;
-    procedure SetRecordFromResult(const aSqlResult: ISqlResult; out aRecord: TDtoPersonAddress);
+    function GetSelectRecordSQL: string;
+    procedure GetRecordFromSqlResult(const aSqlResult: ISqlResult; var aRecord: TDtoPersonAddress);
     function IsNewRecord(const aRecord: TDtoPersonAddress): TCrudConfigNewRecordResponse;
     procedure SetValues(const aRecord: TDtoPersonAddress; const aAccessor: TCrudAccessorBase; const aForUpdate: Boolean);
-    procedure SetParametersForLoad(const aRecordIdentity: UInt32; const aQuery: ISqlPreparedQuery);
+    procedure SetSelectRecordSQLParameter(const aRecordIdentity: UInt32; const aQuery: ISqlPreparedQuery);
     procedure SetValuesForDelete(const aRecordIdentity: UInt32; const aAccessor: TCrudAccessorDelete);
     procedure UpdateRecordIdentity(const aAccessor: TCrudAccessorInsert; var aRecord: TDtoPersonAddress);
   end;
@@ -33,7 +33,7 @@ begin
   raise ENotSupportedException.Create('TCrudConfigPersonAddress.GetSelectSqlList');
 end;
 
-function TCrudConfigPersonAddress.GetSelectSqlRecord: string;
+function TCrudConfigPersonAddress.GetSelectRecordSQL: string;
 begin
   Result := 'select * from person_address where person_id = :PersonId';
 end;
@@ -48,7 +48,7 @@ begin
   Result := TCrudConfigNewRecordResponse.Unknown;
 end;
 
-procedure TCrudConfigPersonAddress.SetRecordFromResult(const aSqlResult: ISqlResult; out aRecord: TDtoPersonAddress);
+procedure TCrudConfigPersonAddress.GetRecordFromSqlResult(const aSqlResult: ISqlResult; var aRecord: TDtoPersonAddress);
 begin
   aRecord.PersonId := aSqlResult.FieldByName('person_id').AsLongWord;
   aRecord.AddressId := aSqlResult.FieldByName('adr_id').AsLongWord;
@@ -67,7 +67,7 @@ begin
   aAccessor.SetValue('person_id', aRecordIdentity);
 end;
 
-procedure TCrudConfigPersonAddress.SetParametersForLoad(const aRecordIdentity: UInt32; const aQuery: ISqlPreparedQuery);
+procedure TCrudConfigPersonAddress.SetSelectRecordSQLParameter(const aRecordIdentity: UInt32; const aQuery: ISqlPreparedQuery);
 begin
   aQuery.ParamByName('PersonId').Value := aRecordIdentity;
 end;
@@ -75,7 +75,7 @@ end;
 procedure TCrudConfigPersonAddress.UpdateRecordIdentity(const aAccessor: TCrudAccessorInsert;
   var aRecord: TDtoPersonAddress);
 begin
-
+  raise ENotSupportedException.Create('TCrudConfigPersonAddress.UpdateRecordIdentity');
 end;
 
 end.

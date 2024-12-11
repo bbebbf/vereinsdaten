@@ -45,7 +45,23 @@ uses
   SshTunnelSqlConnection in 'general\common\SshTunnelSql\SshTunnelSqlConnection.pas',
   DtoMember in 'data\DtoMember.pas',
   DtoRole in 'data\DtoRole.pas',
-  DtoUnit in 'data\DtoUnit.pas';
+  DtoUnit in 'data\DtoUnit.pas',
+  ListSelector in 'general\common\Db\ListSelector.pas',
+  unPersonMemberOf in 'view\frames\unPersonMemberOf.pas' {fraPersonMemberOf: TFrame},
+  ListCrudCommands in 'general\common\Crud\ListCrudCommands.pas',
+  FilterSelect in 'general\common\Db\FilterSelect.pas',
+  ListEnumerator in 'general\intf\ListEnumerator.pas',
+  PersonMemberOfUI in 'view\intf\PersonMemberOfUI.pas',
+  DtoMemberAggregated in 'data\DtoMemberAggregated.pas',
+  MemberOfBusinessIntf in 'business\intf\MemberOfBusinessIntf.pas',
+  MemberOfBusiness in 'business\impl\MemberOfBusiness.pas',
+  CrudMemberConfig in 'data\CrudMemberConfig.pas',
+  SelectRecord in 'general\intf\sql\SelectRecord.pas',
+  Vdm.Types in 'general\Vdm.Types.pas',
+  SelectList in 'general\intf\sql\SelectList.pas',
+  SelectListFilter in 'general\intf\sql\SelectListFilter.pas',
+  CrudConfigUnit in 'data\CrudConfigUnit.pas',
+  CrudConfigRole in 'data\CrudConfigRole.pas';
 
 {$R *.res}
 

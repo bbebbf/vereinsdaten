@@ -4,7 +4,8 @@ interface
 
 uses System.Classes, System.SysUtils, CrudCommands, CrudConfig, Transaction, MainBusinessIntf,
   DtoPersonAggregated, SqlConnection, PersonAggregatedUI, DtoPerson, RecordActions,
-  KeyIndexMapper, DtoPersonAddress, DtoAddress, DtoClubmembership, ProgressObserver, ClubmembershipTools;
+  KeyIndexMapper, DtoPersonAddress, DtoAddress, DtoClubmembership, ProgressObserver, ClubmembershipTools,
+  MemberOfBusinessIntf;
 
 type
   TMainBusiness = class(TInterfacedObject, IMainBusinessIntf)
@@ -24,6 +25,7 @@ type
     fAddressMapper: TKeyIndexMapper<UInt32>;
     fShowInactivePersons: Boolean;
     fClubMembershipNumberChecker: TClubMembershipNumberChecker;
+    fMemberOfBusiness: IMemberOfBusinessIntf;
 
     procedure Initialize;
     function LoadList: TCrudCommandResult;
@@ -34,6 +36,7 @@ type
     procedure LoadAvailableAddresses(const aStrings: TStrings);
     function GetShowInactivePersons: Boolean;
     procedure SetShowInactivePersons(const aValue: Boolean);
+    procedure LoadPersonsMemberOfs(const aPersonId: UInt32);
 
     procedure CheckCurrentPersonId(const aPersonId: UInt32);
   public
@@ -44,8 +47,9 @@ type
 
 implementation
 
-uses System.Generics.Collections, DefaultCrudCommands,
-  CrudConfigPerson, CrudConfigAddress, CrudConfigPersonAddress, CrudConfigClubmembership;
+uses System.Generics.Collections, SelectList,
+  CrudConfigPerson, CrudConfigAddress, CrudConfigPersonAddress, CrudConfigClubmembership,
+  MemberOfBusiness;
 
 { TMainBusiness }
 
@@ -65,6 +69,8 @@ begin
   fClubmembershipConfig := TCrudConfigClubmembership.Create;
   fClubmembershipRecordActions := TRecordActions<TDtoClubmembership, UInt32>.Create(fConnection, fClubmembershipConfig);
   fClubMembershipNumberChecker := TClubMembershipNumberChecker.Create(fConnection);
+
+  fMemberOfBusiness := TMemberOfBusiness.Create(fConnection, fUI.GetMemberOfUI, fProgressObserver);
 end;
 
 destructor TMainBusiness.Destroy;
@@ -93,6 +99,7 @@ end;
 procedure TMainBusiness.Initialize;
 begin
   fUI.Initialize(Self);
+  fMemberOfBusiness.Initialize;
 end;
 
 procedure TMainBusiness.LoadAvailableAddresses(const aStrings: TStrings);
@@ -101,12 +108,16 @@ begin
   try
     fAddressMapper.Clear;
     aStrings.Clear;
-    aStrings.Add('<Adresse ausw�hlen>');
-    var lSqlResult := fConnection.GetSelectResult(fAddressConfig.GetSelectSqlList);
+    aStrings.Add('<Adresse auswählen>');
+    var lSelectList: ISelectList<TDtoAddress>;
+    var lSqlResult: ISqlResult := nil;
+    if not Supports(fAddressConfig, ISelectList<TDtoAddress>, lSelectList) then
+      raise ENotImplemented.Create('fAddressConfig must implement ISelectList<TDtoPerson>.');
+    lSqlResult :=  fConnection.GetSelectResult(lSelectList.GetSelectListSQL);
     while lSqlResult.Next do
     begin
       var lRecord := default(TDtoAddress);
-      fAddressConfig.SetRecordFromResult(lSqlResult, lRecord);
+      fAddressConfig.GetRecordFromSqlResult(lSqlResult, lRecord);
       fAddressMapper.Add(lRecord.Id, aStrings.Add(lRecord.ToString));
     end;
   finally
@@ -144,19 +155,28 @@ end;
 function TMainBusiness.LoadList: TCrudCommandResult;
 begin
   Result := default(TCrudCommandResult);
-  fUI.LoadUIListBegin;
+  fUI.ListEnumBegin;
   try
-    var lSqlResult := fConnection.GetSelectResult(fPersonConfig.GetSelectSqlList);
+    var lSelectList: ISelectList<TDtoPerson>;
+    var lSqlResult: ISqlResult := nil;
+    if not Supports(fPersonConfig, ISelectList<TDtoPerson>, lSelectList) then
+      raise ENotImplemented.Create('fPersonConfig must implement ISelectList<TDtoPerson>.');
+    lSqlResult :=  fConnection.GetSelectResult(lSelectList.GetSelectListSQL);
     while lSqlResult.Next do
     begin
       var lRecord := default(TDtoPerson);
-      fPersonConfig.SetRecordFromResult(lSqlResult, lRecord);
+      fPersonConfig.GetRecordFromSqlResult(lSqlResult, lRecord);
       if fShowInactivePersons or lRecord.Aktiv then
-        fUI.LoadUIListAddRecord(TDtoPersonAggregated.Create(lRecord));
+        fUI.ListEnumProcessItem(TDtoPersonAggregated.Create(lRecord));
     end;
   finally
-    fUI.LoadUIListEnd;
+    fUI.ListEnumEnd;
   end;
+end;
+
+procedure TMainBusiness.LoadPersonsMemberOfs(const aPersonId: UInt32);
+begin
+  fMemberOfBusiness.LoadPersonsMemberOfs(aPersonId);
 end;
 
 function TMainBusiness.ReloadCurrentRecord(const aPersonId: UInt32): TCrudCommandResult;

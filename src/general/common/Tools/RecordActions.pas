@@ -52,13 +52,13 @@ begin
   Result := False;
   if not Assigned(fRecordSelect) then
   begin
-    fRecordSelect := fConnection.CreatePreparedQuery(fConfig.GetSelectSqlRecord);
+    fRecordSelect := fConnection.CreatePreparedQuery(fConfig.GetSelectRecordSQL);
   end;
-  fConfig.SetParametersForLoad(aRecordIdentity, fRecordSelect);
+  fConfig.SetSelectRecordSQLParameter(aRecordIdentity, fRecordSelect);
   var lSqlResult := fRecordSelect.Open;
   if lSqlResult.Next then
   begin
-    fConfig.SetRecordFromResult(lSqlResult, aRecord);
+    fConfig.GetRecordFromSqlResult(lSqlResult, aRecord);
     Result := True;
   end;
 end;

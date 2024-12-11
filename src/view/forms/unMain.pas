@@ -1,4 +1,4 @@
-unit unMain;
+﻿unit unMain;
 
 interface
 
@@ -7,7 +7,8 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
   System.Generics.Collections, CrudCommands, DtoPerson, ListviewAttachedData, Vcl.Menus, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.WinXPickers, System.Actions, Vcl.ActnList,
-  MainBusinessIntf, PersonAggregatedUI, DtoPersonAggregated, ComponentValueChangedObserver;
+  MainBusinessIntf, PersonAggregatedUI, DtoPersonAggregated, ComponentValueChangedObserver,
+  unPersonMemberOf, PersonMemberOfUI;
 
 type
   TPersonListItemData = record
@@ -64,6 +65,7 @@ type
     lbMembershipEndText: TLabel;
     acPersonStartNewRecord: TAction;
     Button1: TButton;
+    tsMemberOf: TTabSheet;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormActivate(Sender: TObject);
@@ -78,6 +80,8 @@ type
     procedure cbMembershipBeginKnownClick(Sender: TObject);
     procedure cbMembershipEndKnownClick(Sender: TObject);
     procedure acPersonStartNewRecordExecute(Sender: TObject);
+    procedure pcPersonDetailsChanging(Sender: TObject; var AllowChange: Boolean);
+    procedure pcPersonDetailsChange(Sender: TObject);
   private
     { Private-Deklarationen }
   strict private
@@ -89,6 +93,8 @@ type
     fMainBusinessIntf: IMainBusinessIntf;
     fDatetimePickerFormat: string;
     fPersonListviewAttachedData: TListviewAttachedData<UInt32, TPersonListItemData>;
+    fPersonMemberOf: TfraPersonMemberOf;
+    function GetMemberOfUI: IPersonMemberOfUI;
 
     procedure SetEditMode(const aEditMode: Boolean);
     procedure ControlValuesChanged(Sender: TObject);
@@ -97,9 +103,9 @@ type
 
     procedure Initialize(const aCommands: ICrudCommands<UInt32>); overload;
     procedure Initialize(const aCommands: IMainBusinessIntf); overload;
-    procedure LoadUIListBegin;
-    procedure LoadUIListAddRecord(const aRecord: TDtoPersonAggregated);
-    procedure LoadUIListEnd;
+    procedure ListEnumBegin;
+    procedure ListEnumProcessItem(const aRecord: TDtoPersonAggregated);
+    procedure ListEnumEnd;
     procedure DeleteRecordfromUI(const aPersonId: UInt32);
     procedure ClearRecordUI;
     procedure StartNewRecord;
@@ -275,6 +281,11 @@ end;
 
 procedure TfmMain.FormCreate(Sender: TObject);
 begin
+  fPersonMemberOf := TfraPersonMemberOf.Create(Self);
+  fPersonMemberOf.Parent := tsMemberOf;
+  fPersonMemberOf.Align := TAlign.alClient;
+
+
   dtPersonBirthday.MinDate := TVdmGlobals.GetDateTimePickerNullValue;
   dtMembershipBegin.MinDate := TVdmGlobals.GetDateTimePickerNullValue;
   dtMembershipEnd.MinDate := TVdmGlobals.GetDateTimePickerNullValue;
@@ -314,12 +325,17 @@ begin
   fComponentValueChangedObserver.Free;
 end;
 
+function TfmMain.GetMemberOfUI: IPersonMemberOfUI;
+begin
+  Result := fPersonMemberOf;
+end;
+
 function TfmMain.GetRecordFromUI(var aRecord: TDtoPersonAggregated): Boolean;
 begin
   if TStringTools.IsEmpty(edPersonFirstname.Text) and TStringTools.IsEmpty(edPersonLastname.Text) then
   begin
     edPersonFirstname.SetFocus;
-    TMessageDialogs.Ok('Vorname oder Nachname m�ssen angegeben sein.', TMsgDlgType.mtInformation);
+    TMessageDialogs.Ok('Vorname oder Nachname müssen angegeben sein.', TMsgDlgType.mtInformation);
     Exit(False);
   end;
   if (cbMembership.ItemIndex > 0) and TStringTools.IsEmpty(edMembershipNumber.Text) then
@@ -386,22 +402,25 @@ begin
   fCurrentRecordId := aPersonId;
   fNewRecordStarted := False;
   fMainBusinessIntf.LoadCurrentRecord(aPersonId);
+  if pcPersonDetails.ActivePage = tsMemberOf then
+  begin
+    fMainBusinessIntf.LoadPersonsMemberOfs(aPersonId);
+  end;
   SetEditMode(False);
 end;
 
-procedure TfmMain.LoadUIListBegin;
+procedure TfmMain.ListEnumBegin;
 begin
   lvPersonListview.Items.BeginUpdate;
   fPersonListviewAttachedData.Clear;
-  lvPersonListview.Items.Clear;
 end;
 
-procedure TfmMain.LoadUIListAddRecord(const aRecord: TDtoPersonAggregated);
+procedure TfmMain.ListEnumProcessItem(const aRecord: TDtoPersonAggregated);
 begin
   PersonEntryToListItem(aRecord.Person, nil);
 end;
 
-procedure TfmMain.LoadUIListEnd;
+procedure TfmMain.ListEnumEnd;
 begin
   lvPersonListview.Items.EndUpdate;
   if lvPersonListview.Items.Count > 0 then
@@ -445,20 +464,40 @@ begin
   end;
 end;
 
+procedure TfmMain.pcPersonDetailsChange(Sender: TObject);
+begin
+  if pcPersonDetails.ActivePage = tsMemberOf then
+  begin
+    fMainBusinessIntf.LoadPersonsMemberOfs(fCurrentRecordId);
+  end;
+end;
+
+procedure TfmMain.pcPersonDetailsChanging(Sender: TObject; var AllowChange: Boolean);
+begin
+  if pcPersonDetails.ActivePage = tsPersonaldata then
+  begin
+    if fInEditMode then
+    begin
+      AllowChange := False;
+      TMessageDialogs.Ok('Die geänderten Daten müssen müssen vorher gespeichert oder verworfen werden.', TMsgDlgType.mtInformation);
+    end;
+  end;
+end;
+
 procedure TfmMain.PersonEntryToListItem(const aPerson: TDtoPerson; const aItem: TListItem);
 begin
   var lPersonItemData := default(TPersonListItemData);
   lPersonItemData.PersonActive := aPerson.Aktiv;
-  if Assigned(aItem) then
+  var lItem := aItem;
+  if Assigned(lItem) then
   begin
     fPersonListviewAttachedData.UpdateItem(aItem, aPerson.Id, lPersonItemData);
-    aItem.Caption := aPerson.ToString;
   end
   else
   begin
-    var lItem := fPersonListviewAttachedData.AddItem(aPerson.Id, lPersonItemData);
-    lItem.Caption := aPerson.ToString;
+    lItem := fPersonListviewAttachedData.AddItem(aPerson.Id, lPersonItemData);
   end;
+  lItem.Caption := aPerson.ToString;
 end;
 
 procedure TfmMain.SetEditMode(const aEditMode: Boolean);
