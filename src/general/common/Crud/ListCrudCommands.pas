@@ -3,21 +3,20 @@ unit ListCrudCommands;
 interface
 
 uses System.SysUtils, System.Generics.Collections, SqlConnection, FilterSelect, SelectListFilter,
-  ListEnumerator;
+  ListEnumerator, CrudConfig, ListCrudCommands.Types, ValueConverter;
 
 type
-  TListEntryCrudState = (Unchanged, Updated, New, ToBeDeleted);
-
   TListEntry<T> = class
   strict private
     fData: T;
     fState: TListEntryCrudState;
+    fStateBeforeToBeDeleted: TListEntryCrudState;
   public
     constructor Create(const aData: T);
     constructor CreateNew(const aData: T);
     procedure Updated;
+    procedure ToggleToBeDeleted;
     procedure Resetted;
-    procedure ToBeDeleted;
     property Data: T read fData;
     property State: TListEntryCrudState read fState;
   end;
@@ -27,12 +26,17 @@ type
     destructor Destroy; override;
   end;
 
+  TListCrudCommandsDestinationFromSource<TS, TD> = reference to procedure(const aSource: TS; var aDestination: TD);
+  TListCrudCommandsSourceFromDestination<TD, TS> = reference to procedure(const aSource: TD; var aDestination: TS);
+  TListCrudCommandsEntryCallback<T> = reference to procedure(const aEntry: TListEntry<T>);
 
-  TListCrudCommands<TS; TD; FSelect, FLoop: record> = class(TFilterSelect<TS, FSelect, FLoop>)
+  TListCrudCommands<TS, TSIdent: record; TD; FSelect, FLoop: record> = class(TFilterSelect<TS, FSelect, FLoop>)
   strict private
+    fConnection: ISqlConnection;
+    fCrudConfig: ICrudConfig<TS, TSIdent>;
     fItems: TList<TListEntry<TD>>;
-    fGetItemFromSourceCallback: TFunc<TS, TD>;
-    fTargetEnumerator: IListEnumerator<TD>;
+    fValueConverter: IValueConverter<TS, TD>;
+    fTargetEnumerator: IListEnumerator<TListEntry<TD>>;
   strict protected
     function CreateListEntry(const aItem: TD): TListEntry<TD>; virtual;
     procedure FilterChanged; override;
@@ -41,43 +45,56 @@ type
     procedure ListEnumEnd; override;
   public
     constructor Create(const aConnection: ISqlConnection;
-      const aConfig: ISelectListFilter<TS, FSelect>;
-      const aGetItemFromSourceCallback: TFunc<TS, TD>);
+      const aCrudConfig: ICrudConfig<TS, TSIdent>;
+      const aValueConverter: IValueConverter<TS, TD>
+      );
     destructor Destroy; override;
     procedure Reload;
-    property TargetEnumerator: IListEnumerator<TD> read fTargetEnumerator write fTargetEnumerator;
+    procedure SaveChanges(const aDeleteEntryCallback: TListCrudCommandsEntryCallback<TD>);
+    property TargetEnumerator: IListEnumerator<TListEntry<TD>> read fTargetEnumerator write fTargetEnumerator;
     property Items: TList<TListEntry<TD>> read fItems;
   end;
 
-  TObjectListCrudCommands<TS; TD: class; FSelect, FLoop: record> = class(TListCrudCommands<TS, TD, FSelect, FLoop>)
+  TObjectListCrudCommands<TS, TSIdent: record; TD: class; FSelect, FLoop: record> =
+    class(TListCrudCommands<TS, TSIdent, TD, FSelect, FLoop>)
   strict protected
     function CreateListEntry(const aItem: TD): TListEntry<TD>; override;
   end;
 
 implementation
 
-{ TListCrudCommands<TS, TD, FSelect, FLoop> }
+uses RecordActions;
 
-constructor TListCrudCommands<TS, TD, FSelect, FLoop>.Create(const aConnection: ISqlConnection;
-  const aConfig: ISelectListFilter<TS, FSelect>; const aGetItemFromSourceCallback: TFunc<TS, TD>);
+{ TListCrudCommands<TS, TSIdent, TD, FSelect, FLoop> }
+
+constructor TListCrudCommands<TS, TSIdent, TD, FSelect, FLoop>.Create(const aConnection: ISqlConnection;
+  const aCrudConfig: ICrudConfig<TS, TSIdent>;
+  const aValueConverter: IValueConverter<TS, TD>
+  );
 begin
-  inherited Create(aConnection, aConfig);
-  fGetItemFromSourceCallback := aGetItemFromSourceCallback;
+  var lSelectListFilter: ISelectListFilter<TS, FSelect>;
+  if not Supports(aCrudConfig, ISelectListFilter<TS, TSIdent>, lSelectListFilter) then
+    raise ENotSupportedException.Create('aCrudConfig doesn''t support ISelectListFilter.');
+
+  inherited Create(aConnection, lSelectListFilter);
+  fConnection := aConnection;
+  fCrudConfig := aCrudConfig;
+  fValueConverter := aValueConverter;
 end;
 
-destructor TListCrudCommands<TS, TD, FSelect, FLoop>.Destroy;
+destructor TListCrudCommands<TS, TSIdent, TD, FSelect, FLoop>.Destroy;
 begin
   fItems.Free;
   inherited;
 end;
 
-procedure TListCrudCommands<TS, TD, FSelect, FLoop>.FilterChanged;
+procedure TListCrudCommands<TS, TSIdent, TD, FSelect, FLoop>.FilterChanged;
 begin
   inherited;
   ApplyFilter;
 end;
 
-procedure TListCrudCommands<TS, TD, FSelect, FLoop>.ListEnumBegin;
+procedure TListCrudCommands<TS, TSIdent, TD, FSelect, FLoop>.ListEnumBegin;
 begin
   inherited;
   if Assigned(fItems) then
@@ -92,32 +109,70 @@ begin
     fTargetEnumerator.ListEnumBegin;
 end;
 
-procedure TListCrudCommands<TS, TD, FSelect, FLoop>.ListEnumEnd;
+procedure TListCrudCommands<TS, TSIdent, TD, FSelect, FLoop>.ListEnumEnd;
 begin
   inherited;
   if Assigned(fTargetEnumerator) then
     fTargetEnumerator.ListEnumEnd;
 end;
 
-procedure TListCrudCommands<TS, TD, FSelect, FLoop>.ListEnumProcessItem(const aItem: TS);
+procedure TListCrudCommands<TS, TSIdent, TD, FSelect, FLoop>.ListEnumProcessItem(const aItem: TS);
 begin
   inherited;
-  var lTargetItem := fGetItemFromSourceCallback(aItem);
+  var lTargetItem := default(TD);
+  fValueConverter.Convert(aItem, lTargetItem);
   var lEntry := CreateListEntry(lTargetItem);
   fItems.Add(lEntry);
   if Assigned(fTargetEnumerator) then
-    fTargetEnumerator.ListEnumProcessItem(lTargetItem);
+    fTargetEnumerator.ListEnumProcessItem(lEntry);
 end;
 
-function TListCrudCommands<TS, TD, FSelect, FLoop>.CreateListEntry(const aItem: TD): TListEntry<TD>;
+function TListCrudCommands<TS, TSIdent, TD, FSelect, FLoop>.CreateListEntry(const aItem: TD): TListEntry<TD>;
 begin
   Result := TListEntry<TD>.Create(aItem);
 end;
 
-procedure TListCrudCommands<TS, TD, FSelect, FLoop>.Reload;
+procedure TListCrudCommands<TS, TSIdent, TD, FSelect, FLoop>.Reload;
 begin
   FreeAndNil(fItems);
   ApplyFilter;
+end;
+
+procedure TListCrudCommands<TS, TSIdent, TD, FSelect, FLoop>.SaveChanges(
+  const aDeleteEntryCallback: TListCrudCommandsEntryCallback<TD>);
+begin
+  var lRecordActions := TRecordActions<TS, TSIdent>.Create(fConnection, fCrudConfig);
+  try
+    var lTansaction := fConnection.StartTransaction;
+    for var i := fItems.Count - 1 downto 0 do
+    begin
+      var lEntry := fItems[i];
+      if lEntry.State = TListEntryCrudState.NewDeleted then
+      begin
+        aDeleteEntryCallback(lEntry);
+      end
+      else if lEntry.State in [TListEntryCrudState.Updated, TListEntryCrudState.New] then
+      begin
+        var lTS := default(TS);
+        var lTD := lEntry.Data;
+        fValueConverter.ConvertBack(lTD, lTS);
+        lRecordActions.SaveRecord(lTS, lTansaction);
+        fValueConverter.Convert(lTS, lTD);
+        lEntry.Resetted;
+      end
+      else if lEntry.State = TListEntryCrudState.ToBeDeleted then
+      begin
+        var lTS := default(TS);
+        fValueConverter.ConvertBack(lEntry.Data, lTS);
+        lRecordActions.DeleteRecord(fCrudConfig.GetRecordIdentity(lTS), lTansaction);
+        aDeleteEntryCallback(lEntry);
+        fItems.Delete(i);
+      end;
+      lTansaction.Commit;
+    end;
+  finally
+    lRecordActions.Free;
+  end;
 end;
 
 { TListEntry<T> }
@@ -141,12 +196,28 @@ begin
   fState := TListEntryCrudState.Unchanged;
 end;
 
-procedure TListEntry<T>.ToBeDeleted;
+procedure TListEntry<T>.ToggleToBeDeleted;
 begin
-  if fState = TListEntryCrudState.New then
-    fState := TListEntryCrudState.Unchanged
+  if fState = TListEntryCrudState.ToBeDeleted then
+  begin
+    fState := fStateBeforeToBeDeleted;
+  end
+  else if fState = TListEntryCrudState.NewDeleted then
+  begin
+    fState := TListEntryCrudState.New;
+  end
   else
-    fState := TListEntryCrudState.ToBeDeleted;
+  begin
+    fStateBeforeToBeDeleted := fState;
+    if fState = TListEntryCrudState.New then
+    begin
+      fState := TListEntryCrudState.NewDeleted;
+    end
+    else
+    begin
+      fState := TListEntryCrudState.ToBeDeleted;
+    end;
+  end;
 end;
 
 procedure TListEntry<T>.Updated;
@@ -163,9 +234,9 @@ begin
   inherited;
 end;
 
-{ TObjectListCrudCommands<TS, TD, FSelect, FLoop> }
+{ TObjectListCrudCommands<TS, TSIdent, TD, FSelect, FLoop> }
 
-function TObjectListCrudCommands<TS, TD, FSelect, FLoop>.CreateListEntry(const aItem: TD): TListEntry<TD>;
+function TObjectListCrudCommands<TS, TSIdent, TD, FSelect, FLoop>.CreateListEntry(const aItem: TD): TListEntry<TD>;
 begin
   Result := TObjectListEntry<TD>.Create(aItem);
 end;

@@ -9,7 +9,6 @@ type
   strict private
     function GetTablename: string;
     function GetIdentityColumns: TArray<string>;
-    function GetSelectSqlList: string;
     function GetSelectRecordSQL: string;
     procedure GetRecordFromSqlResult(const aSqlResult: ISqlResult; var aRecord: TDtoClubmembership);
     function IsNewRecord(const aRecord: TDtoClubmembership): TCrudConfigNewRecordResponse;
@@ -17,6 +16,7 @@ type
     procedure SetSelectRecordSQLParameter(const aRecordIdentity: UInt32; const aQuery: ISqlPreparedQuery);
     procedure SetValuesForDelete(const aRecordIdentity: UInt32; const aAccessor: TCrudAccessorDelete);
     procedure UpdateRecordIdentity(const aAccessor: TCrudAccessorInsert; var aRecord: TDtoClubmembership);
+    function GetRecordIdentity(const aRecord: TDtoClubmembership): UInt32;
   end;
 
 
@@ -27,11 +27,6 @@ implementation
 function TCrudConfigClubmembership.GetIdentityColumns: TArray<string>;
 begin
   Result := [];
-end;
-
-function TCrudConfigClubmembership.GetSelectSqlList: string;
-begin
-  raise ENotSupportedException.Create('TCrudConfigClubmembership.GetSelectSqlList');
 end;
 
 function TCrudConfigClubmembership.GetSelectRecordSQL: string;
@@ -67,6 +62,11 @@ begin
   aRecord.Enddate := aSqlResult.FieldByName('clmb_enddate').AsDateTime;
   aRecord.EnddateStr := aSqlResult.FieldByName('clmb_enddate_str').AsString;
   aRecord.Endreason := aSqlResult.FieldByName('clmb_endreason').AsString;
+end;
+
+function TCrudConfigClubmembership.GetRecordIdentity(const aRecord: TDtoClubmembership): UInt32;
+begin
+  Result := aRecord.Id;
 end;
 
 procedure TCrudConfigClubmembership.SetValues(const aRecord: TDtoClubmembership; const aAccessor: TCrudAccessorBase;

@@ -17,6 +17,7 @@ type
     procedure SetValuesForDelete(const aRecordIdentity: UInt32; const aAccessor: TCrudAccessorDelete);
     procedure UpdateRecordIdentity(const aAccessor: TCrudAccessorInsert; var aRecord: TDtoAddress);
     function GetSelectListSQL: string;
+    function GetRecordIdentity(const aRecord: TDtoAddress): UInt32;
   end;
 
 implementation
@@ -57,6 +58,11 @@ begin
   aRecord.Street := aSqlResult.FieldByName('adr_street').AsString;
   aRecord.Postalcode := aSqlResult.FieldByName('adr_postalcode').AsString;
   aRecord.City := aSqlResult.FieldByName('adr_city').AsString;
+end;
+
+function TCrudConfigAddress.GetRecordIdentity(const aRecord: TDtoAddress): UInt32;
+begin
+  Result := aRecord.Id;
 end;
 
 procedure TCrudConfigAddress.SetValues(const aRecord: TDtoAddress; const aAccessor: TCrudAccessorBase;

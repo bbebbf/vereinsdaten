@@ -2,7 +2,7 @@ unit FilterSelect;
 
 interface
 
-uses SqlConnection, SelectListFilter, ListEnumerator, ProgressObserver;
+uses SqlConnection, SelectListFilter, ListEnumerator, ProgressIndicator;
 
 type
   TFilterSelectItemMatchesFilter<T, F> = procedure(Sender: TObject; const aItem: T; const aFilter: F; var aItemMatches: Boolean) of object;
@@ -12,7 +12,7 @@ type
     fConnection: ISqlConnection;
     fConfig: ISelectListFilter<T, FSelect>;
     fEnumerator: IListEnumerator<T>;
-    fProgressObserver: IProgressObserver;
+    fProgressIndicator: IProgressIndicator;
     fProgressText: string;
     fSqlSelect: ISqlPreparedQuery;
     fFilterSelect: FSelect;
@@ -36,7 +36,7 @@ type
     property FilterSelect: FSelect read fFilterSelect write SetFilterSelect;
     property FilterLoop: FLoop read fFilterLoop write SetFilterLoop;
     property Enumerator: IListEnumerator<T> read fEnumerator write fEnumerator;
-    property ProgressObserver: IProgressObserver read fProgressObserver write fProgressObserver;
+    property ProgressIndicator: IProgressIndicator read fProgressIndicator write fProgressIndicator;
     property ProgressText: string read fProgressText write fProgressText;
     property OnItemMatchesFilter: TFilterSelectItemMatchesFilter<T, FLoop> read fOnItemMatchesFilter write fOnItemMatchesFilter;
   end;
@@ -86,7 +86,7 @@ procedure TFilterSelect<T, FSelect, FLoop>.EndUpdateFilter;
 begin
   var lMoreThanZero := fInFilterUpdate > 0;
   fInFilterUpdate := AtomicDecrement(fInFilterUpdate);
-  if fInFilterUpdate <= 0 then
+  if lMoreThanZero and (fInFilterUpdate <= 0) then
     FilterChanged;
 end;
 
@@ -117,8 +117,8 @@ end;
 
 procedure TFilterSelect<T, FSelect, FLoop>.ListEnumBegin;
 begin
-  if Assigned(fProgressObserver) then
-    fProgressObserver.ProgressBegin(-1, False, fProgressText);
+  if Assigned(fProgressIndicator) then
+    fProgressIndicator.ProgressBegin(-1, False, fProgressText);
   fItemCount := 0;
   if Assigned(fEnumerator) then
     fEnumerator.ListEnumBegin;
@@ -127,8 +127,8 @@ end;
 procedure TFilterSelect<T, FSelect, FLoop>.ListEnumProcessItem(const aItem: T);
 begin
   Inc(fItemCount);
-  if Assigned(fProgressObserver) then
-    fProgressObserver.ProgressStep(fItemCount);
+  if Assigned(fProgressIndicator) then
+    fProgressIndicator.ProgressStep(fItemCount);
   if Assigned(fEnumerator) then
     fEnumerator.ListEnumProcessItem(aItem);
 end;
@@ -142,8 +142,8 @@ end;
 
 procedure TFilterSelect<T, FSelect, FLoop>.ListEnumEnd;
 begin
-  if Assigned(fProgressObserver) then
-    fProgressObserver.ProgressEnd;
+  if Assigned(fProgressIndicator) then
+    fProgressIndicator.ProgressEnd;
   if Assigned(fEnumerator) then
     fEnumerator.ListEnumEnd;
 end;

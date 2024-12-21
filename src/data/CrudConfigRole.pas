@@ -23,7 +23,7 @@ end;
 
 function TCrudConfigRole.GetSelectListSQL: string;
 begin
-  Result := 'select * from role order by role_name';
+  Result := 'select * from role order by role_sorting, role_name';
 end;
 
 end.

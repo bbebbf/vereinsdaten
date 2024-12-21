@@ -4,33 +4,55 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
-  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.ExtCtrls,
-  ListviewAttachedData, DtoMember, DtoMemberAggregated, PersonMemberOfUI, MemberOfBusinessIntf, Vcl.StdCtrls;
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.ExtCtrls, Vcl.StdCtrls,
+  ListviewAttachedData, DtoMember, DtoMemberAggregated, PersonMemberOfUI, MemberOfBusinessIntf,
+  unPersonMemberOfsEditDlg, System.Actions, Vcl.ActnList, ListCrudCommands, Vcl.Menus;
 
 type
-  TMemberOfListItemData = record
-    Active: Boolean;
-  end;
-
   TfraPersonMemberOf = class(TFrame, IPersonMemberOfUI)
     lvMemberOf: TListView;
     pnCommands: TPanel;
     cbShowInactiveMemberOfs: TCheckBox;
+    alMemberOfsActionList: TActionList;
+    acNewMemberOf: TAction;
+    acEditMemberOf: TAction;
+    acDeleteMemberOf: TAction;
+    acSaveMemberOfs: TAction;
+    acReloadMemberOfs: TAction;
+    acShowInactiveMemberOfs: TAction;
+    btSaveMemberOfs: TButton;
+    btReloadMemberOfs: TButton;
+    btNewMemberOf: TButton;
+    btEditMemberOf: TButton;
+    btDeleteMemberOf: TButton;
+    PopupMenu: TPopupMenu;
+    Verbindunghinzufgen1: TMenuItem;
+    N1: TMenuItem;
+    Verbindungbearbeiten1: TMenuItem;
+    Verbindungentfernen1: TMenuItem;
     procedure lvMemberOfCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
-    procedure cbShowInactiveMemberOfsClick(Sender: TObject);
+    procedure acShowInactiveMemberOfsExecute(Sender: TObject);
+    procedure acEditMemberOfExecute(Sender: TObject);
+    procedure lvMemberOfDblClick(Sender: TObject);
+    procedure lvMemberOfSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
+    procedure acNewMemberOfExecute(Sender: TObject);
+    procedure acDeleteMemberOfExecute(Sender: TObject);
+    procedure acReloadMemberOfsExecute(Sender: TObject);
+    procedure acSaveMemberOfsExecute(Sender: TObject);
   private
     fBusinessIntf: IMemberOfBusinessIntf;
-    fMemberOfListviewAttachedData: TListviewAttachedData<UInt32, TMemberOfListItemData>;
-    fAvailableUnits: TStringList;
-    fAvailableRoles: TStringList;
+    fMemberOfListviewAttachedData: TListviewAttachedData<UInt32, TListEntry<TDtoMemberAggregated>>;
+    fDialog: TfmPersonMemberOfsEditDlg;
     procedure Initialize(const aCommands: IMemberOfBusinessIntf);
     procedure ListEnumBegin;
-    procedure ListEnumProcessItem(const aItem: TDtoMemberAggregated);
+    procedure ListEnumProcessItem(const aItem: TListEntry<TDtoMemberAggregated>);
     procedure ListEnumEnd;
 
-    procedure MemberEntryToListItem(const aMember: TDtoMemberAggregated; const aItem: TListItem);
+    procedure MemberEntryToListItem(const aEntry: TListEntry<TDtoMemberAggregated>; const aListItem: TListItem);
     function GetStringByIndex(const aStrings: TStrings; const aIndex: Integer): string;
+    procedure UpdateEditItemActions(const aEnabled: Boolean);
+    procedure UpdateListActions(const aEnabled: Boolean);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -40,27 +62,95 @@ implementation
 
 {$R *.dfm}
 
-uses VdmGlobals;
+uses VdmGlobals, ListCrudCommands.Types;
 
 { TfraPersonMemberOf }
 
-procedure TfraPersonMemberOf.cbShowInactiveMemberOfsClick(Sender: TObject);
+procedure TfraPersonMemberOf.acDeleteMemberOfExecute(Sender: TObject);
 begin
-  fBusinessIntf.ShowInactiveMemberOfs := not fBusinessIntf.ShowInactiveMemberOfs;
+  var lSelectedItem := lvMemberOf.Selected;
+  if not Assigned(lSelectedItem) then
+    Exit;
+  var lEntry: TListEntry<TDtoMemberAggregated>;
+  if not fMemberOfListviewAttachedData.TryGetExtraData(lSelectedItem, lEntry) then
+    Exit;
+
+  lEntry.ToggleToBeDeleted;
+  MemberEntryToListItem(lEntry, lSelectedItem);
+  UpdateListActions(True);
+end;
+
+procedure TfraPersonMemberOf.acEditMemberOfExecute(Sender: TObject);
+begin
+  var lSelectedItem := lvMemberOf.Selected;
+  if not Assigned(lSelectedItem) then
+    Exit;
+  var lEntry: TListEntry<TDtoMemberAggregated>;
+  if not fMemberOfListviewAttachedData.TryGetExtraData(lSelectedItem, lEntry) then
+    Exit;
+  if fDialog.Execute(lEntry.Data, False) then
+  begin
+    if lEntry.State in [TListEntryCrudState.New, TListEntryCrudState.ToBeDeleted] then
+    begin
+      lEntry.ToggleToBeDeleted;
+    end;
+    lEntry.Updated;
+    MemberEntryToListItem(lEntry, lSelectedItem);
+    UpdateListActions(True);
+  end;
+end;
+
+procedure TfraPersonMemberOf.acNewMemberOfExecute(Sender: TObject);
+begin
+  var lNewEntryCanceled := True;
+  var lNewEntry := fBusinessIntf.CreateNewEntry;
+  try
+    if fDialog.Execute(lNewEntry.Data, True) then
+    begin
+      lNewEntry.Updated;
+      lNewEntryCanceled := False;
+      MemberEntryToListItem(lNewEntry, nil);
+      fBusinessIntf.AddNewEntry(lNewEntry);
+      UpdateListActions(True);
+  end;
+  finally
+    if lNewEntryCanceled then
+      lNewEntry.Free;
+  end;
+end;
+
+procedure TfraPersonMemberOf.acReloadMemberOfsExecute(Sender: TObject);
+begin
+  fBusinessIntf.ReloadEntries;
+end;
+
+procedure TfraPersonMemberOf.acSaveMemberOfsExecute(Sender: TObject);
+begin
+  fBusinessIntf.SaveEntries(
+      procedure(const aEntry: TListEntry<TDtoMemberAggregated>)
+      begin
+        var lItem: TListItem;
+        if fMemberOfListviewAttachedData.TryGetItem(aEntry.Data.Id, lItem) then
+          lvMemberOf.Items.Delete(lItem.Index);
+      end
+    );
+end;
+
+procedure TfraPersonMemberOf.acShowInactiveMemberOfsExecute(Sender: TObject);
+begin
+  fBusinessIntf.ShowInactiveMemberOfs := acShowInactiveMemberOfs.Checked;
 end;
 
 constructor TfraPersonMemberOf.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  fMemberOfListviewAttachedData := TListviewAttachedData<UInt32, TMemberOfListItemData>.Create(lvMemberOf);
-  fAvailableUnits := TStringList.Create;
-  fAvailableRoles := TStringList.Create;
+  fMemberOfListviewAttachedData := TListviewAttachedData<UInt32, TListEntry<TDtoMemberAggregated>>.Create(lvMemberOf);
+  fDialog := TfmPersonMemberOfsEditDlg.Create(Self);
 end;
 
 destructor TfraPersonMemberOf.Destroy;
 begin
-  fAvailableRoles.Free;
-  fAvailableUnits.Free;
+  fDialog.Free;
   fMemberOfListviewAttachedData.Free;
   inherited;
 end;
@@ -68,21 +158,22 @@ end;
 procedure TfraPersonMemberOf.Initialize(const aCommands: IMemberOfBusinessIntf);
 begin
   fBusinessIntf := aCommands;
-  fBusinessIntf.LoadAvailableUnits(fAvailableUnits);
-  fBusinessIntf.LoadAvailableRoles(fAvailableRoles);
 end;
 
 procedure TfraPersonMemberOf.ListEnumBegin;
 begin
+  UpdateEditItemActions(False);
+  UpdateListActions(False);
+  lvMemberOf.Items.BeginUpdate;
   fMemberOfListviewAttachedData.Clear;
 end;
 
 procedure TfraPersonMemberOf.ListEnumEnd;
 begin
-
+  lvMemberOf.Items.EndUpdate;
 end;
 
-procedure TfraPersonMemberOf.ListEnumProcessItem(const aItem: TDtoMemberAggregated);
+procedure TfraPersonMemberOf.ListEnumProcessItem(const aItem: TListEntry<TDtoMemberAggregated>);
 begin
   MemberEntryToListItem(aItem, nil);
 end;
@@ -91,39 +182,61 @@ procedure TfraPersonMemberOf.lvMemberOfCustomDrawItem(Sender: TCustomListView; I
   var DefaultDraw: Boolean);
 begin
   DefaultDraw := True;
-  var lMemberOfListItemData := default(TMemberOfListItemData);
-  if fMemberOfListviewAttachedData.TryGetExtraData(Item, lMemberOfListItemData) then
-  begin
-    if not lMemberOfListItemData.Active then
-      Sender.Canvas.Font.Color := clLtGray;
-  end;
+  var lMemberOfListItemData: TListEntry<TDtoMemberAggregated> := nil;
+  if not fMemberOfListviewAttachedData.TryGetExtraData(Item, lMemberOfListItemData) then
+    Exit;
+
+  var lColor: TColor;
+  if TVdmGlobals.TryGetColorForCrudState(lMemberOfListItemData.State, lColor) then
+    Sender.Canvas.Font.Color := lColor;
 end;
 
-procedure TfraPersonMemberOf.MemberEntryToListItem(const aMember: TDtoMemberAggregated; const aItem: TListItem);
+procedure TfraPersonMemberOf.lvMemberOfDblClick(Sender: TObject);
 begin
-  var lMemberOfListItemData := default(TMemberOfListItemData);
-  lMemberOfListItemData.Active := aMember.Member.Active;
-  var lItem := aItem;
-  if Assigned(lItem) then
+  if Assigned(lvMemberOf.Selected) then
+    acEditMemberOf.Execute;
+end;
+
+procedure TfraPersonMemberOf.lvMemberOfSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
+begin
+  UpdateEditItemActions(Assigned(Item) and Selected);
+end;
+
+procedure TfraPersonMemberOf.MemberEntryToListItem(const aEntry: TListEntry<TDtoMemberAggregated>; const aListItem: TListItem);
+begin
+  var lListItem := aListItem;
+  if Assigned(lListItem) then
   begin
-    fMemberOfListviewAttachedData.UpdateItem(aItem, aMember.Id, lMemberOfListItemData);
+    fMemberOfListviewAttachedData.UpdateItem(lListItem, aEntry.Data.Id, aEntry);
   end
   else
   begin
-    lItem := fMemberOfListviewAttachedData.AddItem(aMember.Id, lMemberOfListItemData);
-    lItem.SubItems.Add('');
-    lItem.SubItems.Add('');
-    lItem.SubItems.Add('');
-    lItem.SubItems.Add('');
+    lListItem := fMemberOfListviewAttachedData.AddItem(aEntry.Data.Id, aEntry);
+    lListItem.SubItems.Add('');
+    lListItem.SubItems.Add('');
+    lListItem.SubItems.Add('');
+    lListItem.SubItems.Add('');
   end;
-  lItem.Caption := GetStringByIndex(fAvailableUnits, fBusinessIntf.GetUnitMapperIndex(aMember.Member.UnitId));
-  lItem.SubItems[0] := GetStringByIndex(fAvailableRoles, fBusinessIntf.GetRoleMapperIndex(aMember.Member.RoleId));
-  lItem.SubItems[1] := TVdmGlobals.GetDateAsString(aMember.Member.ActiveSince);
-  if aMember.Member.Active then
-    lItem.SubItems[2] := 'A'
+  lListItem.Caption := GetStringByIndex(aEntry.Data.AvailableUnits.Data.Strings, aEntry.Data.UnitIndex);
+  lListItem.SubItems[0] := GetStringByIndex(aEntry.Data.AvailableRoles.Data.Strings, aEntry.Data.RoleIndex);
+  lListItem.SubItems[1] := TVdmGlobals.GetDateAsString(aEntry.Data.Member.ActiveSince);
+  if aEntry.Data.Member.Active then
+    lListItem.SubItems[2] := 'A'
   else
-    lItem.SubItems[2] := 'I';
-  lItem.SubItems[3] := TVdmGlobals.GetDateAsString(aMember.Member.ActiveUntil);
+    lListItem.SubItems[2] := 'I';
+  lListItem.SubItems[3] := TVdmGlobals.GetDateAsString(aEntry.Data.Member.ActiveUntil);
+end;
+
+procedure TfraPersonMemberOf.UpdateEditItemActions(const aEnabled: Boolean);
+begin
+  acEditMemberOf.Enabled := aEnabled;
+  acDeleteMemberOf.Enabled := aEnabled;
+end;
+
+procedure TfraPersonMemberOf.UpdateListActions(const aEnabled: Boolean);
+begin
+  acSaveMemberOfs.Enabled := aEnabled;
+  acReloadMemberOfs.Enabled := aEnabled;
 end;
 
 function TfraPersonMemberOf.GetStringByIndex(const aStrings: TStrings; const aIndex: Integer): string;

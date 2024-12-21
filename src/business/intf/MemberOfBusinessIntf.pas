@@ -2,18 +2,19 @@ unit MemberOfBusinessIntf;
 
 interface
 
-uses System.Classes, CrudCommands, DtoMemberAggregated;
+uses ListCrudCommands, DtoMemberAggregated;
 
 type
-  IMemberOfBusinessIntf = interface(ICrudCommands<TDtoMemberAggregated>)
+  IMemberOfBusinessIntf = interface
     ['{6BF5D206-C946-4FDC-802C-70FD1B652F04}']
-    procedure LoadAvailableUnits(const aStrings: TStrings);
-    procedure LoadAvailableRoles(const aStrings: TStrings);
+    procedure Initialize;
     procedure LoadPersonsMemberOfs(const aPersonId: UInt32);
-    function GetUnitMapperIndex(const aUnitId: UInt32): Integer;
-    function GetRoleMapperIndex(const aRoleId: UInt32): Integer;
     function GetShowInactiveMemberOfs: Boolean;
     procedure SetShowInactiveMemberOfs(const aValue: Boolean);
+    function CreateNewEntry: TListEntry<TDtoMemberAggregated>;
+    procedure AddNewEntry(const aEntry: TListEntry<TDtoMemberAggregated>);
+    procedure ReloadEntries;
+    procedure SaveEntries(const aDeleteEntryCallback: TListCrudCommandsEntryCallback<TDtoMemberAggregated>);
     property ShowInactiveMemberOfs: Boolean read GetShowInactiveMemberOfs write SetShowInactiveMemberOfs;
   end;
 

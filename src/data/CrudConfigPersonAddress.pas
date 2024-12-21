@@ -9,7 +9,6 @@ type
   strict private
     function GetTablename: string;
     function GetIdentityColumns: TArray<string>;
-    function GetSelectSqlList: string;
     function GetSelectRecordSQL: string;
     procedure GetRecordFromSqlResult(const aSqlResult: ISqlResult; var aRecord: TDtoPersonAddress);
     function IsNewRecord(const aRecord: TDtoPersonAddress): TCrudConfigNewRecordResponse;
@@ -17,6 +16,7 @@ type
     procedure SetSelectRecordSQLParameter(const aRecordIdentity: UInt32; const aQuery: ISqlPreparedQuery);
     procedure SetValuesForDelete(const aRecordIdentity: UInt32; const aAccessor: TCrudAccessorDelete);
     procedure UpdateRecordIdentity(const aAccessor: TCrudAccessorInsert; var aRecord: TDtoPersonAddress);
+    function GetRecordIdentity(const aRecord: TDtoPersonAddress): UInt32;
   end;
 
 implementation
@@ -26,11 +26,6 @@ implementation
 function TCrudConfigPersonAddress.GetIdentityColumns: TArray<string>;
 begin
   Result := ['person_id'];
-end;
-
-function TCrudConfigPersonAddress.GetSelectSqlList: string;
-begin
-  raise ENotSupportedException.Create('TCrudConfigPersonAddress.GetSelectSqlList');
 end;
 
 function TCrudConfigPersonAddress.GetSelectRecordSQL: string;
@@ -52,6 +47,11 @@ procedure TCrudConfigPersonAddress.GetRecordFromSqlResult(const aSqlResult: ISql
 begin
   aRecord.PersonId := aSqlResult.FieldByName('person_id').AsLongWord;
   aRecord.AddressId := aSqlResult.FieldByName('adr_id').AsLongWord;
+end;
+
+function TCrudConfigPersonAddress.GetRecordIdentity(const aRecord: TDtoPersonAddress): UInt32;
+begin
+  raise ENotImplemented.Create('TCrudConfigPersonAddress.GetRecordIdentity');
 end;
 
 procedure TCrudConfigPersonAddress.SetValues(const aRecord: TDtoPersonAddress; const aAccessor: TCrudAccessorBase;

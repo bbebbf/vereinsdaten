@@ -2,75 +2,108 @@
 
 interface
 
-uses System.Classes, System.SysUtils, SqlConnection, CrudCommands, MemberOfBusinessIntf, PersonMemberOfUI,
-  ProgressObserver, KeyIndexMapper, CrudConfig, ListEnumerator,
-  DtoMemberAggregated, DtoMember, DtoUnit, DtoRole, ListCrudCommands, SelectList, SelectListFilter;
+uses System.Classes, System.SysUtils, System.Generics.Collections, SqlConnection, MemberOfBusinessIntf,
+  PersonMemberOfUI, KeyIndexStrings, CrudConfig,
+  DtoMemberAggregated, DtoMember, DtoUnit, DtoRole, ListCrudCommands, SelectList, SelectListFilter,
+  ValueConverter;
 
 type
   TMemberOfBusinessRecordFilter = record
     ShowInactiveMemberOfs: Boolean;
   end;
 
-  TMemberOfBusiness = class(TInterfacedObject, IMemberOfBusinessIntf)
+  TMemberOfBusiness = class(TInterfacedObject, IMemberOfBusinessIntf, IValueConverter<TDtoMember, TDtoMemberAggregated>)
   strict private
     fConnection: ISqlConnection;
-    fProgressObserver: IProgressObserver;
     fUI: IPersonMemberOfUI;
     fMemberConfig: ICrudConfig<TDtoMember, UInt32>;
-    fMemberConfigSelectListFilter: ISelectListFilter<TDtoMember, UInt32>;
-    fListCrudCommands: TObjectListCrudCommands<TDtoMember, TDtoMemberAggregated, UInt32, TMemberOfBusinessRecordFilter>;
-    fUnitMapper: TKeyIndexMapper<UInt32>;
+    fListCrudCommands: TObjectListCrudCommands<TDtoMember, UInt32, TDtoMemberAggregated, UInt32, TMemberOfBusinessRecordFilter>;
+    fUnitMapper: TKeyIndexStrings;
     fUnitListConfig: ISelectList<TDtoUnit>;
-    fRoleMapper: TKeyIndexMapper<UInt32>;
+    fRoleMapper: TKeyIndexStrings;
     fRoleListConfig: ISelectList<TDtoRole>;
     fCurrentPersonId: UInt32;
     fCurrentFilter: TMemberOfBusinessRecordFilter;
     procedure Initialize;
-    function LoadList: TCrudCommandResult;
-    function LoadCurrentRecord(const aRecordIdentity: TDtoMemberAggregated): TCrudCommandResult;
-    function SaveCurrentRecord(const aRecordIdentity: TDtoMemberAggregated): TCrudSaveRecordResult;
-    function ReloadCurrentRecord(const aRecordIdentity: TDtoMemberAggregated): TCrudCommandResult;
-    function DeleteRecord(const aRecordIdentity: TDtoMemberAggregated): TCrudCommandResult;
-    procedure LoadAvailableUnits(const aStrings: TStrings);
-    procedure LoadAvailableRoles(const aStrings: TStrings);
     procedure LoadPersonsMemberOfs(const aPersonId: UInt32);
-    function GetUnitMapperIndex(const aUnitId: UInt32): Integer;
-    function GetRoleMapperIndex(const aRoleId: UInt32): Integer;
     function GetShowInactiveMemberOfs: Boolean;
     procedure SetShowInactiveMemberOfs(const aValue: Boolean);
+    function CreateNewEntry: TListEntry<TDtoMemberAggregated>;
+    procedure AddNewEntry(const aEntry: TListEntry<TDtoMemberAggregated>);
+    procedure ReloadEntries;
+    procedure SaveEntries(const aDeleteEntryCallback: TListCrudCommandsEntryCallback<TDtoMemberAggregated>);
+    procedure Convert(const aValue: TDtoMember; var aTarget: TDtoMemberAggregated);
+    procedure ConvertBack(const aValue: TDtoMemberAggregated; var aTarget: TDtoMember);
 
-    function CreateMemberAggregated(aSource: TDtoMember): TDtoMemberAggregated;
+    procedure UpdateFilter;
     procedure OnItemMatchesFilter(Sender: TObject;
       const aItem: TDtoMember; const aFilter: TMemberOfBusinessRecordFilter; var aItemMatches: Boolean);
   public
-    constructor Create(const aConnection: ISqlConnection; const aUI: IPersonMemberOfUI;
-      const aProgressObserver: IProgressObserver);
+    constructor Create(const aConnection: ISqlConnection; const aUI: IPersonMemberOfUI);
     destructor Destroy; override;
   end;
 
 implementation
 
-uses CrudMemberConfig, CrudConfigUnit, CrudConfigRole;
+uses CrudMemberConfig, CrudConfigUnit, CrudConfigRole, KeyIndexMapper;
 
 { TMemberOfBusiness }
 
-constructor TMemberOfBusiness.Create(const aConnection: ISqlConnection; const aUI: IPersonMemberOfUI;
-  const aProgressObserver: IProgressObserver);
+constructor TMemberOfBusiness.Create(const aConnection: ISqlConnection; const aUI: IPersonMemberOfUI);
 begin
   inherited Create;
   fConnection := aConnection;
-  fProgressObserver := aProgressObserver;
   fUI := aUI;
   fMemberConfig := TCrudMemberConfig.Create;
-  Supports(fMemberConfig, ISelectListFilter<TDtoMember, UInt32>, fMemberConfigSelectListFilter);
-  fListCrudCommands := TObjectListCrudCommands<TDtoMember, TDtoMemberAggregated, UInt32, TMemberOfBusinessRecordFilter>.Create(
-    fConnection, fMemberConfigSelectListFilter, CreateMemberAggregated);
+  fListCrudCommands := TObjectListCrudCommands<TDtoMember, UInt32, TDtoMemberAggregated,
+    UInt32, TMemberOfBusinessRecordFilter>.Create(
+    fConnection, fMemberConfig, Self);
   fListCrudCommands.TargetEnumerator := fUI;
   fListCrudCommands.OnItemMatchesFilter := OnItemMatchesFilter;
   fUnitListConfig := TCrudConfigUnit.Create;
-  fUnitMapper := TKeyIndexMapper<UInt32>.Create(0);
   fRoleListConfig := TCrudConfigRole.Create;
-  fRoleMapper := TKeyIndexMapper<UInt32>.Create(0);
+  fUnitMapper := TKeyIndexStrings.Create(
+      function(var aData: TKeyIndexStringsMapperRecord): Boolean
+      begin
+        Result := True;
+        aData.Mapper := TKeyIndexMapper<UInt32>.Create(0);
+        aData.Strings := TStringList.Create;
+        try
+          aData.Strings.BeginUpdate;
+          aData.Strings.Add('<Einheit auswählen>');
+          var lSqlResult := fConnection.GetSelectResult(fUnitListConfig.GetSelectListSQL);
+          while lSqlResult.Next do
+          begin
+            var lRecord := default(TDtoUnit);
+            fUnitListConfig.GetRecordFromSqlResult(lSqlResult, lRecord);
+            aData.Mapper.Add(lRecord.Id, aData.Strings.Add(lRecord.ToString));
+          end;
+        finally
+          aData.Strings.EndUpdate;
+        end;
+      end
+    );
+  fRoleMapper := TKeyIndexStrings.Create(
+      function(var aData: TKeyIndexStringsMapperRecord): Boolean
+      begin
+        Result := True;
+        aData.Mapper := TKeyIndexMapper<UInt32>.Create(0);
+        aData.Strings := TStringList.Create;
+        try
+          aData.Strings.BeginUpdate;
+          aData.Strings.Add('<Rolle auswählen>');
+          var lSqlResult := fConnection.GetSelectResult(fRoleListConfig.GetSelectListSQL);
+          while lSqlResult.Next do
+          begin
+            var lRecord := default(TDtoRole);
+            fRoleListConfig.GetRecordFromSqlResult(lSqlResult, lRecord);
+            aData.Mapper.Add(lRecord.Id, aData.Strings.Add(lRecord.ToString));
+          end;
+        finally
+          aData.Strings.EndUpdate;
+        end;
+      end
+    );
 end;
 
 destructor TMemberOfBusiness.Destroy;
@@ -81,90 +114,43 @@ begin
   inherited;
 end;
 
-function TMemberOfBusiness.GetRoleMapperIndex(const aRoleId: UInt32): Integer;
-begin
-  Result := fRoleMapper.GetIndex(aRoleId);
-end;
-
 function TMemberOfBusiness.GetShowInactiveMemberOfs: Boolean;
 begin
   Result := fCurrentFilter.ShowInactiveMemberOfs;
 end;
 
-function TMemberOfBusiness.GetUnitMapperIndex(const aUnitId: UInt32): Integer;
+function TMemberOfBusiness.CreateNewEntry: TListEntry<TDtoMemberAggregated>;
 begin
-  Result := fUnitMapper.GetIndex(aUnitId);
+  Result := TObjectListEntry<TDtoMemberAggregated>.CreateNew(TDtoMemberAggregated.Create(fUnitMapper, fRoleMapper));
+  Result.Data.Active := True;
 end;
 
-function TMemberOfBusiness.CreateMemberAggregated(aSource: TDtoMember): TDtoMemberAggregated;
+procedure TMemberOfBusiness.Convert(const aValue: TDtoMember; var aTarget: TDtoMemberAggregated);
 begin
-  Result := TDtoMemberAggregated.Create(aSource);
+  if Assigned(aTarget) then
+  begin
+    aTarget.UpdateByDtoMember(aValue);
+  end
+  else
+  begin
+    aTarget := TDtoMemberAggregated.Create(fUnitMapper, fRoleMapper, aValue);
+  end;
+end;
+
+procedure TMemberOfBusiness.ConvertBack(const aValue: TDtoMemberAggregated; var aTarget: TDtoMember);
+begin
+  aTarget := aValue.Member;
+end;
+
+procedure TMemberOfBusiness.AddNewEntry(const aEntry: TListEntry<TDtoMemberAggregated>);
+begin
+  aEntry.Data.PersonId := fCurrentPersonId;
+  fListCrudCommands.Items.Add(aEntry);
 end;
 
 procedure TMemberOfBusiness.Initialize;
 begin
   fUI.Initialize(Self);
-end;
-
-procedure TMemberOfBusiness.LoadAvailableRoles(const aStrings: TStrings);
-begin
-  aStrings.BeginUpdate;
-  try
-    fRoleMapper.Clear;
-    aStrings.Clear;
-    aStrings.Add('<Rolle auswählen>');
-    var lSqlResult := fConnection.GetSelectResult(fRoleListConfig.GetSelectListSQL);
-    while lSqlResult.Next do
-    begin
-      var lRecord := default(TDtoRole);
-      fRoleListConfig.GetRecordFromSqlResult(lSqlResult, lRecord);
-      fRoleMapper.Add(lRecord.Id, aStrings.Add(lRecord.ToString));
-    end;
-  finally
-    aStrings.EndUpdate;
-  end;
-end;
-
-procedure TMemberOfBusiness.LoadAvailableUnits(const aStrings: TStrings);
-begin
-  aStrings.BeginUpdate;
-  try
-    fUnitMapper.Clear;
-    aStrings.Clear;
-    aStrings.Add('<Einheit auswählen>');
-    var lSqlResult := fConnection.GetSelectResult(fUnitListConfig.GetSelectListSQL);
-    while lSqlResult.Next do
-    begin
-      var lRecord := default(TDtoUnit);
-      fUnitListConfig.GetRecordFromSqlResult(lSqlResult, lRecord);
-      fUnitMapper.Add(lRecord.Id, aStrings.Add(lRecord.ToString));
-    end;
-  finally
-    aStrings.EndUpdate;
-  end;
-end;
-
-function TMemberOfBusiness.LoadCurrentRecord(const aRecordIdentity: TDtoMemberAggregated): TCrudCommandResult;
-begin
-
-end;
-
-function TMemberOfBusiness.LoadList: TCrudCommandResult;
-begin
-  fListCrudCommands.BeginUpdateFilter;
-  fListCrudCommands.FilterSelect := fCurrentPersonId;
-  fListCrudCommands.FilterLoop := fCurrentFilter;
-  fListCrudCommands.EndUpdateFilter;
-end;
-
-function TMemberOfBusiness.ReloadCurrentRecord(const aRecordIdentity: TDtoMemberAggregated): TCrudCommandResult;
-begin
-
-end;
-
-function TMemberOfBusiness.SaveCurrentRecord(const aRecordIdentity: TDtoMemberAggregated): TCrudSaveRecordResult;
-begin
-
 end;
 
 procedure TMemberOfBusiness.SetShowInactiveMemberOfs(const aValue: Boolean);
@@ -173,12 +159,15 @@ begin
     Exit;
 
   fCurrentFilter.ShowInactiveMemberOfs := aValue;
-  LoadList;
+  UpdateFilter;
 end;
 
-function TMemberOfBusiness.DeleteRecord(const aRecordIdentity: TDtoMemberAggregated): TCrudCommandResult;
+procedure TMemberOfBusiness.UpdateFilter;
 begin
-
+  fListCrudCommands.BeginUpdateFilter;
+  fListCrudCommands.FilterSelect := fCurrentPersonId;
+  fListCrudCommands.FilterLoop := fCurrentFilter;
+  fListCrudCommands.EndUpdateFilter;
 end;
 
 procedure TMemberOfBusiness.LoadPersonsMemberOfs(const aPersonId: UInt32);
@@ -187,13 +176,24 @@ begin
     Exit;
 
   fCurrentPersonId := aPersonId;
-  LoadList;
+  UpdateFilter;
 end;
 
 procedure TMemberOfBusiness.OnItemMatchesFilter(Sender: TObject; const aItem: TDtoMember;
   const aFilter: TMemberOfBusinessRecordFilter; var aItemMatches: Boolean);
 begin
   aItemMatches := aItem.Active or aFilter.ShowInactiveMemberOfs;
+end;
+
+procedure TMemberOfBusiness.SaveEntries(
+  const aDeleteEntryCallback: TListCrudCommandsEntryCallback<TDtoMemberAggregated>);
+begin
+  fListCrudCommands.SaveChanges(aDeleteEntryCallback);
+end;
+
+procedure TMemberOfBusiness.ReloadEntries;
+begin
+  fListCrudCommands.Reload;
 end;
 
 end.

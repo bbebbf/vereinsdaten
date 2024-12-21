@@ -80,7 +80,7 @@ object fmMain: TfmMain
         OnClick = cbShowInactivePersonsClick
       end
     end
-    object Button1: TButton
+    object btPersonStartNewRecord: TButton
       Left = 0
       Top = 623
       Width = 220
@@ -239,7 +239,6 @@ object fmMain: TfmMain
           Width = 26
           Height = 16
           TabOrder = 3
-          OnClick = cbPersonBirthdayKnownClick
         end
         object btPersonSave: TButton
           Left = 22
@@ -266,7 +265,6 @@ object fmMain: TfmMain
           Height = 16
           Caption = 'Aktiv'
           TabOrder = 5
-          OnClick = cbPersonBirthdayKnownClick
         end
         object cbPersonAddress: TComboBox
           Left = 23
@@ -336,7 +334,6 @@ object fmMain: TfmMain
           Width = 26
           Height = 16
           TabOrder = 13
-          OnClick = cbMembershipBeginKnownClick
         end
         object dtMembershipBegin: TDateTimePicker
           Left = 51
@@ -394,6 +391,19 @@ object fmMain: TfmMain
     Top = 85
     object Datei1: TMenuItem
       Caption = 'Datei'
+    end
+    object Stammdaten1: TMenuItem
+      Caption = 'Stammdaten'
+      object Adressen1: TMenuItem
+        Caption = 'Adressen'
+      end
+      object Einheiten1: TMenuItem
+        Caption = 'Einheiten'
+        OnClick = Einheiten1Click
+      end
+      object Rollen1: TMenuItem
+        Caption = 'Rollen'
+      end
     end
   end
   object alPersonActionList: TActionList

@@ -17,6 +17,7 @@ type
     procedure SetValues(const aRecord: TRecord; const aAccessor: TCrudAccessorBase; const aForUpdate: Boolean);
     procedure SetValuesForDelete(const aRecordIdentity: TRecordIdentity; const aAccessor: TCrudAccessorDelete);
     procedure UpdateRecordIdentity(const aAccessor: TCrudAccessorInsert; var aRecord: TRecord);
+    function GetRecordIdentity(const aRecord: TRecord): TRecordIdentity;
 
     property Tablename: string read GetTablename;
   end;

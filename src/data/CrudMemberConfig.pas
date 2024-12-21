@@ -20,6 +20,7 @@ type
     procedure GetRecordFromSqlResult(const aSqlResult: ISqlResult; var aData: TDtoMember);
     function GetSelectListSQL: string;
     procedure SetSelectListSQLParameter(const aFilter: UInt32; const aQuery: ISqlPreparedQuery);
+    function GetRecordIdentity(const aRecord: TDtoMember): UInt32;
   end;
 
 implementation
@@ -40,6 +41,11 @@ begin
   aData.Active := aSqlResult.FieldByName('mb_active').AsBoolean;
   aData.ActiveSince := aSqlResult.FieldByName('mb_active_since').AsDateTime;
   aData.ActiveUntil := aSqlResult.FieldByName('mb_active_until').AsDateTime;
+end;
+
+function TCrudMemberConfig.GetRecordIdentity(const aRecord: TDtoMember): UInt32;
+begin
+  Result := aRecord.Id;
 end;
 
 function TCrudMemberConfig.GetSelectListSQL: string;
@@ -83,13 +89,20 @@ end;
 procedure TCrudMemberConfig.SetValues(const aRecord: TDtoMember; const aAccessor: TCrudAccessorBase;
   const aForUpdate: Boolean);
 begin
-
+  if aForUpdate then
+    aAccessor.SetValue('mb_id', aRecord.Id);
+  aAccessor.SetValueZeroAsNull('person_id', aRecord.PersonId);
+  aAccessor.SetValueZeroAsNull('unit_id', aRecord.UnitId);
+  aAccessor.SetValueZeroAsNull('role_id', aRecord.RoleId);
+  aAccessor.SetValue('mb_active', aRecord.Active);
+  aAccessor.SetValueZeroAsNull('mb_active_since', aRecord.ActiveSince);
+  aAccessor.SetValueZeroAsNull('mb_active_until', aRecord.ActiveUntil);
 end;
 
 procedure TCrudMemberConfig.SetValuesForDelete(const aRecordIdentity: UInt32;
   const aAccessor: TCrudAccessorDelete);
 begin
-
+  aAccessor.SetValue('mb_id', aRecordIdentity);
 end;
 
 procedure TCrudMemberConfig.UpdateRecordIdentity(const aAccessor: TCrudAccessorInsert; var aRecord: TDtoMember);

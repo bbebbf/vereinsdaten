@@ -30,8 +30,6 @@ object fmProgressForm: TfmProgressForm
     Padding.Bottom = 7
     ParentBackground = False
     TabOrder = 0
-    ExplicitWidth = 524
-    ExplicitHeight = 162
     object lbMaintext: TLabel
       Left = 8
       Top = 8
@@ -65,7 +63,6 @@ object fmProgressForm: TfmProgressForm
       Font.Style = []
       ParentFont = False
       Layout = tlCenter
-      ExplicitTop = 72
       ExplicitWidth = 55
     end
     object pbProgress: TProgressBar
@@ -75,9 +72,6 @@ object fmProgressForm: TfmProgressForm
       Height = 17
       Align = alBottom
       TabOrder = 0
-      ExplicitLeft = 1
-      ExplicitTop = 47
-      ExplicitWidth = 522
     end
   end
 end

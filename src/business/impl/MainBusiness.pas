@@ -4,14 +4,14 @@ interface
 
 uses System.Classes, System.SysUtils, CrudCommands, CrudConfig, Transaction, MainBusinessIntf,
   DtoPersonAggregated, SqlConnection, PersonAggregatedUI, DtoPerson, RecordActions,
-  KeyIndexMapper, DtoPersonAddress, DtoAddress, DtoClubmembership, ProgressObserver, ClubmembershipTools,
-  MemberOfBusinessIntf;
+  KeyIndexMapper, DtoPersonAddress, DtoAddress, DtoClubmembership, ClubmembershipTools,
+  MemberOfBusinessIntf, ProgressIndicator;
 
 type
   TMainBusiness = class(TInterfacedObject, IMainBusinessIntf)
   strict private
     fConnection: ISqlConnection;
-    fProgressObserver: IProgressObserver;
+    fProgressIndicator: IProgressIndicator;
     fPersonConfig: ICrudConfig<TDtoPerson, UInt32>;
     fPersonRecordActions: TRecordActions<TDtoPerson, UInt32>;
     fPersonAddressConfig: ICrudConfig<TDtoPersonAddress, UInt32>;
@@ -41,7 +41,7 @@ type
     procedure CheckCurrentPersonId(const aPersonId: UInt32);
   public
     constructor Create(const aConnection: ISqlConnection; const aUI: IPersonAggregatedUI;
-      const aProgressObserver: IProgressObserver);
+      const aProgressIndicator: IProgressIndicator);
     destructor Destroy; override;
   end;
 
@@ -54,11 +54,11 @@ uses System.Generics.Collections, SelectList,
 { TMainBusiness }
 
 constructor TMainBusiness.Create(const aConnection: ISqlConnection; const aUI: IPersonAggregatedUI;
-  const aProgressObserver: IProgressObserver);
+  const aProgressIndicator: IProgressIndicator);
 begin
   inherited Create;
   fConnection := aConnection;
-  fProgressObserver := aProgressObserver;
+  fProgressIndicator := aProgressIndicator;
   fUI := aUI;
   fAddressMapper := TKeyIndexMapper<UInt32>.Create(0);
   fPersonConfig := TCrudConfigPerson.Create;
@@ -70,7 +70,7 @@ begin
   fClubmembershipRecordActions := TRecordActions<TDtoClubmembership, UInt32>.Create(fConnection, fClubmembershipConfig);
   fClubMembershipNumberChecker := TClubMembershipNumberChecker.Create(fConnection);
 
-  fMemberOfBusiness := TMemberOfBusiness.Create(fConnection, fUI.GetMemberOfUI, fProgressObserver);
+  fMemberOfBusiness := TMemberOfBusiness.Create(fConnection, fUI.GetMemberOfUI);
 end;
 
 destructor TMainBusiness.Destroy;

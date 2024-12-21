@@ -17,6 +17,7 @@ type
     procedure SetValuesForDelete(const aRecordIdentity: UInt32; const aAccessor: TCrudAccessorDelete);
     procedure UpdateRecordIdentity(const aAccessor: TCrudAccessorInsert; var aRecord: TDtoPerson);
     function GetSelectListSQL: string;
+    function GetRecordIdentity(const aRecord: TDtoPerson): UInt32;
   end;
 
 implementation
@@ -31,6 +32,11 @@ begin
   aRecord.Nachname := aSqlResult.FieldByName('person_nachname').AsString;
   aRecord.Aktiv := aSqlResult.FieldByName('person_active').AsBoolean;
   aRecord.Geburtsdatum := aSqlResult.FieldByName('person_birthday').AsDateTime;
+end;
+
+function TCrudConfigPerson.GetRecordIdentity(const aRecord: TDtoPerson): UInt32;
+begin
+  Result := aRecord.Id;
 end;
 
 function TCrudConfigPerson.GetIdentityColumns: TArray<string>;

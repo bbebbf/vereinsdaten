@@ -36,14 +36,14 @@ type
     fAutoIncPresent: Boolean;
     fValues: TDictionary<string, Variant>;
     function GetVariantValue<T>(const aValue: T): Variant;
-    procedure Prepare(aTransaction: ITransaction);
+    procedure Prepare(const aTransaction: ITransaction);
     function FindColumnInfoByParameterName(const aParameterName: string): TCrudAccessorColumnInfo;
     function TryAssignValuesToParameters(const aRaiseOnFailure: Boolean): Boolean;
   strict protected
     function FindColumnInfoByColumnName(const aColumnName: string): TCrudAccessorColumnInfo;
     procedure PrepareStmt(const aColumnInfos: TEnumerable<TCrudAccessorColumnInfo>; out aSql: string); virtual; abstract;
     procedure RaiseIfExecuteStmtIsInvalid; virtual;
-    function Execute(aTransaction: ITransaction): Boolean;
+    function Execute(const aTransaction: ITransaction): Boolean;
   public
     constructor Create(const aConnection: ISqlConnection; const aTablename: string;
       const aIdentityColumnNames: TArray<string> = []);
@@ -65,7 +65,7 @@ type
   strict protected
     procedure PrepareStmt(const aColumnInfos: TEnumerable<TCrudAccessorColumnInfo>; out aSql: string); override;
   public
-    function Insert(aTransaction: ITransaction = nil): Boolean;
+    function Insert(const aTransaction: ITransaction = nil): Boolean;
     property LastInsertedId: Int64 read fLastInsertedId;
   end;
 
@@ -73,14 +73,14 @@ type
   strict protected
     procedure PrepareStmt(const aColumnInfos: TEnumerable<TCrudAccessorColumnInfo>; out aSql: string); override;
   public
-    function Update(aTransaction: ITransaction = nil): Boolean;
+    function Update(const aTransaction: ITransaction = nil): Boolean;
   end;
 
   TCrudAccessorDelete = class(TCrudAccessorBase)
   strict protected
     procedure PrepareStmt(const aColumnInfos: TEnumerable<TCrudAccessorColumnInfo>; out aSql: string); override;
   public
-    function Delete(aTransaction: ITransaction = nil): Boolean;
+    function Delete(const aTransaction: ITransaction = nil): Boolean;
   end;
 
 implementation
@@ -114,7 +114,7 @@ begin
   inherited;
 end;
 
-function TCrudAccessorBase.Execute(aTransaction: ITransaction): Boolean;
+function TCrudAccessorBase.Execute(const aTransaction: ITransaction): Boolean;
 begin
   if not TryAssignValuesToParameters(False) then
   begin
@@ -122,7 +122,7 @@ begin
     TryAssignValuesToParameters(True);
   end;
   if not Assigned(fPreparedStmt) then
-    raise ECrudAccessorException.Create('Interal Sql statement is not prepared.');
+    raise ECrudAccessorException.Create('Internal Sql statement is not prepared.');
 
   RaiseIfExecuteStmtIsInvalid;
   Result := fPreparedStmt.Execute > 0;
@@ -146,7 +146,7 @@ begin
   end;
 end;
 
-procedure TCrudAccessorBase.Prepare(aTransaction: ITransaction);
+procedure TCrudAccessorBase.Prepare(const aTransaction: ITransaction);
 begin
   fPreparedStmt := nil;
   fColumnInfos.Clear;
@@ -271,7 +271,7 @@ end;
 
 { TCrudAccessorInsert }
 
-function TCrudAccessorInsert.Insert(aTransaction: ITransaction): Boolean;
+function TCrudAccessorInsert.Insert(const aTransaction: ITransaction): Boolean;
 begin
   Result := Execute(aTransaction);
   if AutoIncPresent then
@@ -300,7 +300,7 @@ end;
 
 { TCrudAccessorUpdate }
 
-function TCrudAccessorUpdate.Update(aTransaction: ITransaction): Boolean;
+function TCrudAccessorUpdate.Update(const aTransaction: ITransaction): Boolean;
 begin
   Result := Execute(aTransaction);
 end;
@@ -332,7 +332,7 @@ end;
 
 { TCrudAccessorDelete }
 
-function TCrudAccessorDelete.Delete(aTransaction: ITransaction): Boolean;
+function TCrudAccessorDelete.Delete(const aTransaction: ITransaction): Boolean;
 begin
   Result := Execute(aTransaction);
 end;

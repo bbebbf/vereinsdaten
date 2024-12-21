@@ -64,7 +64,7 @@ begin
   Result := default(TCrudCommandResult);
   fUI.ListEnumBegin;
   try
-    var lSqlResult: ISqlResult := nil; // fConnection.GetSelectResult(fConfig.GetSelectSqlList);
+    var lSqlResult: ISqlResult := nil;
     while lSqlResult.Next do
     begin
       var lRecord := default(TRecord);

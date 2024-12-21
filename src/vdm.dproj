@@ -195,7 +195,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="data\CrudConfigClubmembership.pas"/>
         <DCCReference Include="general\VdmGlobals.pas"/>
         <DCCReference Include="general\common\Tools\FileTools.pas"/>
-        <DCCReference Include="general\intf\ProgressObserver.pas"/>
+        <DCCReference Include="general\intf\ProgressIndicator.pas"/>
         <DCCReference Include="view\forms\unProgressForm.pas">
             <Form>fmProgressForm</Form>
         </DCCReference>
@@ -230,6 +230,20 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="general\intf\sql\SelectListFilter.pas"/>
         <DCCReference Include="data\CrudConfigUnit.pas"/>
         <DCCReference Include="data\CrudConfigRole.pas"/>
+        <DCCReference Include="view\forms\unPersonMemberOfsEditDlg.pas">
+            <Form>fmPersonMemberOfsEditDlg</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="general\common\Tools\DelayedExecute.pas"/>
+        <DCCReference Include="view\tools\CheckboxDatetimePickerHandler.pas"/>
+        <DCCReference Include="general\common\Tools\KeyIndexStrings.pas"/>
+        <DCCReference Include="general\common\Tools\LazyLoader.pas"/>
+        <DCCReference Include="view\forms\unSimpleMasterdataForm.pas">
+            <Form>fmSimpleMasterdataForm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="general\intf\ValueConverter.pas"/>
+        <DCCReference Include="general\common\Crud\ListCrudCommands.Types.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

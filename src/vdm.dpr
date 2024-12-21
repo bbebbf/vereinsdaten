@@ -33,7 +33,7 @@ uses
   CrudConfigClubmembership in 'data\CrudConfigClubmembership.pas',
   VdmGlobals in 'general\VdmGlobals.pas',
   FileTools in 'general\common\Tools\FileTools.pas',
-  ProgressObserver in 'general\intf\ProgressObserver.pas',
+  ProgressIndicator in 'general\intf\ProgressIndicator.pas',
   unProgressForm in 'view\forms\unProgressForm.pas' {fmProgressForm},
   ComponentValueChangedObserver in 'view\tools\ComponentValueChangedObserver.pas',
   ClubmembershipTools in 'data\ClubmembershipTools.pas',
@@ -61,7 +61,15 @@ uses
   SelectList in 'general\intf\sql\SelectList.pas',
   SelectListFilter in 'general\intf\sql\SelectListFilter.pas',
   CrudConfigUnit in 'data\CrudConfigUnit.pas',
-  CrudConfigRole in 'data\CrudConfigRole.pas';
+  CrudConfigRole in 'data\CrudConfigRole.pas',
+  unPersonMemberOfsEditDlg in 'view\forms\unPersonMemberOfsEditDlg.pas' {fmPersonMemberOfsEditDlg},
+  DelayedExecute in 'general\common\Tools\DelayedExecute.pas',
+  CheckboxDatetimePickerHandler in 'view\tools\CheckboxDatetimePickerHandler.pas',
+  KeyIndexStrings in 'general\common\Tools\KeyIndexStrings.pas',
+  LazyLoader in 'general\common\Tools\LazyLoader.pas',
+  unSimpleMasterdataForm in 'view\forms\unSimpleMasterdataForm.pas' {fmSimpleMasterdataForm},
+  ValueConverter in 'general\intf\ValueConverter.pas',
+  ListCrudCommands.Types in 'general\common\Crud\ListCrudCommands.Types.pas';
 
 {$R *.res}
 
