@@ -10,10 +10,11 @@ type
     fUI: ICrudUI<TEntry, TId>;
     procedure Initialize;
     function LoadList: TCrudCommandResult;
-    function LoadCurrentRecord(const aId: TId): TCrudCommandResult;
-    function SaveCurrentRecord(const aId: TId): TCrudSaveRecordResult;
-    function ReloadCurrentRecord(const aId: TId): TCrudCommandResult;
-    function DeleteRecord(const aId: TId): TCrudCommandResult;
+    function LoadCurrentEntry(const aId: TId): TCrudCommandResult;
+    function SaveCurrentEntry: TCrudSaveResult;
+    function ReloadCurrentEntry: TCrudCommandResult;
+    procedure StartNewEntry;
+    function DeleteEntry(const aId: TId): TCrudCommandResult;
   public
     constructor Create(const aUI: ICrudUI<TEntry, TId>);
   end;
@@ -40,22 +41,27 @@ begin
 
 end;
 
-function TMasterdataBusiness<TEntry, TId>.LoadCurrentRecord(const aId: TId): TCrudCommandResult;
+function TMasterdataBusiness<TEntry, TId>.LoadCurrentEntry(const aId: TId): TCrudCommandResult;
 begin
 
 end;
 
-function TMasterdataBusiness<TEntry, TId>.SaveCurrentRecord(const aId: TId): TCrudSaveRecordResult;
+function TMasterdataBusiness<TEntry, TId>.SaveCurrentEntry: TCrudSaveResult;
 begin
 
 end;
 
-function TMasterdataBusiness<TEntry, TId>.ReloadCurrentRecord(const aId: TId): TCrudCommandResult;
+procedure TMasterdataBusiness<TEntry, TId>.StartNewEntry;
 begin
 
 end;
 
-function TMasterdataBusiness<TEntry, TId>.DeleteRecord(const aId: TId): TCrudCommandResult;
+function TMasterdataBusiness<TEntry, TId>.ReloadCurrentEntry: TCrudCommandResult;
+begin
+
+end;
+
+function TMasterdataBusiness<TEntry, TId>.DeleteEntry(const aId: TId): TCrudCommandResult;
 begin
 
 end;

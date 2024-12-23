@@ -86,8 +86,8 @@ type
     procedure pcPersonDetailsChange(Sender: TObject);
   strict private
     fActivated: Boolean;
-    fCurrentRecordId: UInt32;
-    fNewRecordStarted: Boolean;
+//    fCurrentRecordId: UInt32;
+//    fNewRecordStarted: Boolean;
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
     fMainBusinessIntf: IMainBusinessIntf;
@@ -112,11 +112,10 @@ type
     procedure ListEnumEnd;
     procedure DeleteRecordfromUI(const aPersonId: UInt32);
     procedure ClearRecordUI;
-    procedure StartNewRecord;
     procedure SetRecordToUI(const aRecord: TDtoPersonAggregated; const aRecordAsNewEntry: Boolean);
     function GetRecordFromUI(var aRecord: TDtoPersonAggregated): Boolean;
     procedure LoadAvailableAdresses;
-    procedure LoadCurrentRecord(const aPersonId: UInt32);
+    procedure LoadCurrentEntry(const aPersonId: UInt32);
   public
     { Public-Deklarationen }
   end;
@@ -134,22 +133,18 @@ uses VdmGlobals, ConfigReader, StringTools, MessageDialogs;
 
 procedure TfmMain.acPersonReloadCurrentRecordExecute(Sender: TObject);
 begin
-  fMainBusinessIntf.ReloadCurrentRecord(fCurrentRecordId);
+  fMainBusinessIntf.ReloadCurrentEntry;
   SetEditMode(False);
 end;
 
 procedure TfmMain.acPersonSaveCurrentRecordExecute(Sender: TObject);
 begin
-  var lPersonId: UInt32 := 0;
-  if not fNewRecordStarted then
-    lPersonId := fCurrentRecordId;
-
-  var lResponse := fMainBusinessIntf.SaveCurrentRecord(lPersonId);
-  if lResponse.Status = TCrudSaveRecordStatus.Successful then
+  var lResponse := fMainBusinessIntf.SaveCurrentEntry;
+  if lResponse.Status = TCrudSaveStatus.Successful then
   begin
     SetEditMode(False);
   end
-  else if lResponse.Status = TCrudSaveRecordStatus.CancelledWithMessage then
+  else if lResponse.Status = TCrudSaveStatus.CancelledWithMessage then
   begin
     TMessageDialogs.Ok(lResponse.MessageText, TMsgDlgType.mtInformation);
   end;
@@ -157,7 +152,7 @@ end;
 
 procedure TfmMain.acPersonStartNewRecordExecute(Sender: TObject);
 begin
-  StartNewRecord;
+  fMainBusinessIntf.StartNewEntry;
   pcPersonDetails.ActivePage := tsPersonaldata;
   edPersonFirstname.SetFocus;
 end;
@@ -208,6 +203,8 @@ begin
   edMembershipEndText.Text := '';
 
   fComponentValueChangedObserver.EndUpdate;
+  tsPersonaldata.Caption := '...';
+  tsMemberOf.Caption := 'ist Mitglied von ...';
 end;
 
 procedure TfmMain.ControlValuesChanged(Sender: TObject);
@@ -282,7 +279,7 @@ begin
     begin
       if aData.Key then
       begin
-        LoadCurrentRecord(aData.Value);
+        LoadCurrentEntry(aData.Value);
       end
       else
       begin
@@ -375,14 +372,12 @@ begin
   fMainBusinessIntf.LoadAvailableAddresses(cbPersonAddress.Items);
 end;
 
-procedure TfmMain.LoadCurrentRecord(const aPersonId: UInt32);
+procedure TfmMain.LoadCurrentEntry(const aPersonId: UInt32);
 begin
-  fCurrentRecordId := aPersonId;
-  fNewRecordStarted := False;
-  fMainBusinessIntf.LoadCurrentRecord(aPersonId);
+  fMainBusinessIntf.LoadCurrentEntry(aPersonId);
   if pcPersonDetails.ActivePage = tsMemberOf then
   begin
-    fMainBusinessIntf.LoadPersonsMemberOfs(aPersonId);
+    fMainBusinessIntf.LoadPersonsMemberOfs;
   end;
   SetEditMode(False);
 end;
@@ -404,10 +399,6 @@ begin
   if lvPersonListview.Items.Count > 0 then
   begin
     lvPersonListview.Items[0].Selected := True;
-  end
-  else
-  begin
-    StartNewRecord;
   end;
 end;
 
@@ -439,7 +430,7 @@ procedure TfmMain.pcPersonDetailsChange(Sender: TObject);
 begin
   if pcPersonDetails.ActivePage = tsMemberOf then
   begin
-    fMainBusinessIntf.LoadPersonsMemberOfs(fCurrentRecordId);
+    fMainBusinessIntf.LoadPersonsMemberOfs;
   end;
 end;
 
@@ -476,8 +467,6 @@ begin
   fInEditMode := aEditMode;
   acPersonSaveCurrentRecord.Enabled := fInEditMode;
   acPersonReloadCurrentRecord.Enabled := fInEditMode;
-  if not fInEditMode then
-    fNewRecordStarted := False;
 end;
 
 procedure TfmMain.SetRecordToUI(const aRecord: TDtoPersonAggregated; const aRecordAsNewEntry: Boolean);
@@ -534,14 +523,6 @@ begin
 
   fComponentValueChangedObserver.EndUpdate;
   tsPersonaldata.Caption := aRecord.Person.ToString;
-  tsMemberOf.Caption := 'ist Mitglied von ...';
-end;
-
-procedure TfmMain.StartNewRecord;
-begin
-  fNewRecordStarted := True;
-  ClearRecordUI;
-  tsPersonaldata.Caption := '...';
   tsMemberOf.Caption := 'ist Mitglied von ...';
 end;
 

@@ -164,7 +164,7 @@ begin
       begin
         var lTS := default(TS);
         fValueConverter.ConvertBack(lEntry.Data, lTS);
-        lRecordActions.DeleteRecord(fCrudConfig.GetRecordIdentity(lTS), lTansaction);
+        lRecordActions.DeleteEntry(fCrudConfig.GetRecordIdentity(lTS), lTansaction);
         aDeleteEntryCallback(lEntry);
         fItems.Delete(i);
       end;

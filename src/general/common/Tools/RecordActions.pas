@@ -20,7 +20,7 @@ type
     destructor Destroy; override;
     function LoadRecord(const aRecordIdentity: TRecordIdentity; var aRecord: TRecord): Boolean;
     function SaveRecord(var aRecord: TRecord; aTransaction: ITransaction = nil): TRecordActionsSaveResponse;
-    function DeleteRecord(const aRecordIdentity: TRecordIdentity; aTransaction: ITransaction = nil): Boolean;
+    function DeleteEntry(const aRecordIdentity: TRecordIdentity; aTransaction: ITransaction = nil): Boolean;
   end;
 
 implementation
@@ -103,7 +103,7 @@ begin
   end;
 end;
 
-function TRecordActions<TRecord, TRecordIdentity>.DeleteRecord(const aRecordIdentity: TRecordIdentity;
+function TRecordActions<TRecord, TRecordIdentity>.DeleteEntry(const aRecordIdentity: TRecordIdentity;
   aTransaction: ITransaction): Boolean;
 begin
   Result := True;

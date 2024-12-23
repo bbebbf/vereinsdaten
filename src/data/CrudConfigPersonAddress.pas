@@ -51,7 +51,7 @@ end;
 
 function TCrudConfigPersonAddress.GetRecordIdentity(const aRecord: TDtoPersonAddress): UInt32;
 begin
-  raise ENotImplemented.Create('TCrudConfigPersonAddress.GetRecordIdentity');
+  Result := 0;
 end;
 
 procedure TCrudConfigPersonAddress.SetValues(const aRecord: TDtoPersonAddress; const aAccessor: TCrudAccessorBase;
