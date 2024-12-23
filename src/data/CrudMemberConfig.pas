@@ -12,7 +12,7 @@ type
     function GetTablename: string;
     function GetIdentityColumns: TArray<string>;
     function GetSelectRecordSQL: string;
-    function IsNewRecord(const aRecord: TDtoMember): TCrudConfigNewRecordResponse;
+    function IsNewRecord(const aRecordIdentity: UInt32): TCrudConfigNewRecordResponse;
     procedure SetValues(const aRecord: TDtoMember; const aAccessor: TCrudAccessorBase; const aForUpdate: Boolean);
     procedure SetSelectRecordSQLParameter(const aRecordIdentity: UInt32; const aQuery: ISqlPreparedQuery);
     procedure SetValuesForDelete(const aRecordIdentity: UInt32; const aAccessor: TCrudAccessorDelete);
@@ -68,9 +68,9 @@ begin
   Result := 'member';
 end;
 
-function TCrudMemberConfig.IsNewRecord(const aRecord: TDtoMember): TCrudConfigNewRecordResponse;
+function TCrudMemberConfig.IsNewRecord(const aRecordIdentity: UInt32): TCrudConfigNewRecordResponse;
 begin
-  if aRecord.Id = 0 then
+  if aRecordIdentity = 0 then
     Result := TCrudConfigNewRecordResponse.NewRecord
   else
     Result := TCrudConfigNewRecordResponse.ExistingRecord;

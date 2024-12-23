@@ -168,7 +168,6 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="general\common\MySql\MySqlConnection.pas"/>
         <DCCReference Include="general\intf\crud\CrudUI.pas"/>
         <DCCReference Include="general\intf\crud\CrudCommands.pas"/>
-        <DCCReference Include="general\common\Crud\DefaultCrudCommands.pas"/>
         <DCCReference Include="general\common\Crud\CrudAccessor.pas"/>
         <DCCReference Include="general\common\Tools\StringTools.pas"/>
         <DCCReference Include="general\intf\crud\CrudConfig.pas"/>
@@ -195,7 +194,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="data\CrudConfigClubmembership.pas"/>
         <DCCReference Include="general\VdmGlobals.pas"/>
         <DCCReference Include="general\common\Tools\FileTools.pas"/>
-        <DCCReference Include="general\intf\ProgressIndicator.pas"/>
+        <DCCReference Include="general\intf\tools\ProgressIndicator.pas"/>
         <DCCReference Include="view\forms\unProgressForm.pas">
             <Form>fmProgressForm</Form>
         </DCCReference>
@@ -218,7 +217,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         </DCCReference>
         <DCCReference Include="general\common\Crud\ListCrudCommands.pas"/>
         <DCCReference Include="general\common\Db\FilterSelect.pas"/>
-        <DCCReference Include="general\intf\ListEnumerator.pas"/>
+        <DCCReference Include="general\intf\tools\ListEnumerator.pas"/>
         <DCCReference Include="view\intf\PersonMemberOfUI.pas"/>
         <DCCReference Include="data\DtoMemberAggregated.pas"/>
         <DCCReference Include="business\intf\MemberOfBusinessIntf.pas"/>
@@ -238,12 +237,12 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="view\tools\CheckboxDatetimePickerHandler.pas"/>
         <DCCReference Include="general\common\Tools\KeyIndexStrings.pas"/>
         <DCCReference Include="general\common\Tools\LazyLoader.pas"/>
-        <DCCReference Include="view\forms\unSimpleMasterdataForm.pas">
-            <Form>fmSimpleMasterdataForm</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
-        <DCCReference Include="general\intf\ValueConverter.pas"/>
+        <DCCReference Include="general\intf\tools\ValueConverter.pas"/>
         <DCCReference Include="general\common\Crud\ListCrudCommands.Types.pas"/>
+        <DCCReference Include="data\DtoUnitAggregated.pas"/>
+        <DCCReference Include="general\common\Tools\DelegatedConverter.pas"/>
+        <DCCReference Include="business\intf\MasterdataBusinessIntf.pas"/>
+        <DCCReference Include="business\impl\MasterdataBusiness.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

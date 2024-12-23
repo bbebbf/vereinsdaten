@@ -5,7 +5,7 @@ interface
 uses System.Classes, System.SysUtils, CrudCommands, CrudConfig, Transaction, MainBusinessIntf,
   DtoPersonAggregated, SqlConnection, PersonAggregatedUI, DtoPerson, RecordActions,
   KeyIndexMapper, DtoPersonAddress, DtoAddress, DtoClubmembership, ClubmembershipTools,
-  MemberOfBusinessIntf, ProgressIndicator;
+  MemberOfBusinessIntf, ProgressIndicator, DtoUnitAggregated;
 
 type
   TMainBusiness = class(TInterfacedObject, IMainBusinessIntf)
@@ -158,10 +158,9 @@ begin
   fUI.ListEnumBegin;
   try
     var lSelectList: ISelectList<TDtoPerson>;
-    var lSqlResult: ISqlResult := nil;
     if not Supports(fPersonConfig, ISelectList<TDtoPerson>, lSelectList) then
       raise ENotImplemented.Create('fPersonConfig must implement ISelectList<TDtoPerson>.');
-    lSqlResult :=  fConnection.GetSelectResult(lSelectList.GetSelectListSQL);
+    var lSqlResult :=  fConnection.GetSelectResult(lSelectList.GetSelectListSQL);
     while lSqlResult.Next do
     begin
       var lRecord := default(TDtoPerson);

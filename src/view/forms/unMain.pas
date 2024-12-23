@@ -84,7 +84,6 @@ type
     procedure acPersonStartNewRecordExecute(Sender: TObject);
     procedure pcPersonDetailsChanging(Sender: TObject; var AllowChange: Boolean);
     procedure pcPersonDetailsChange(Sender: TObject);
-    procedure Einheiten1Click(Sender: TObject);
   strict private
     fActivated: Boolean;
     fCurrentRecordId: UInt32;
@@ -129,7 +128,7 @@ implementation
 
 {$R *.dfm}
 
-uses VdmGlobals, ConfigReader, StringTools, MessageDialogs, unSimpleMasterdataForm;
+uses VdmGlobals, ConfigReader, StringTools, MessageDialogs;
 
 { TfmMain }
 
@@ -224,16 +223,6 @@ end;
 procedure TfmMain.DeleteRecordfromUI(const aPersonId: UInt32);
 begin
 
-end;
-
-procedure TfmMain.Einheiten1Click(Sender: TObject);
-begin
-  var lDialog := TfmSimpleMasterdataForm.Create(Self);
-  try
-    lDialog.ShowModal;
-  finally
-    lDialog.Free;
-  end;
 end;
 
 procedure TfmMain.FormActivate(Sender: TObject);
@@ -371,14 +360,14 @@ begin
   aRecord.MembershipEndReason := edMembershipEndReason.Text;
 end;
 
-procedure TfmMain.Initialize(const aCommands: IMainBusinessIntf);
-begin
-  fMainBusinessIntf := aCommands;
-end;
-
 procedure TfmMain.Initialize(const aCommands: ICrudCommands<UInt32>);
 begin
 
+end;
+
+procedure TfmMain.Initialize(const aCommands: IMainBusinessIntf);
+begin
+  fMainBusinessIntf := aCommands;
 end;
 
 procedure TfmMain.LoadAvailableAdresses;

@@ -8,7 +8,6 @@ uses
   MySqlConnection in 'general\common\MySql\MySqlConnection.pas',
   CrudUI in 'general\intf\crud\CrudUI.pas',
   CrudCommands in 'general\intf\crud\CrudCommands.pas',
-  DefaultCrudCommands in 'general\common\Crud\DefaultCrudCommands.pas',
   CrudAccessor in 'general\common\Crud\CrudAccessor.pas',
   StringTools in 'general\common\Tools\StringTools.pas',
   CrudConfig in 'general\intf\crud\CrudConfig.pas',
@@ -33,7 +32,7 @@ uses
   CrudConfigClubmembership in 'data\CrudConfigClubmembership.pas',
   VdmGlobals in 'general\VdmGlobals.pas',
   FileTools in 'general\common\Tools\FileTools.pas',
-  ProgressIndicator in 'general\intf\ProgressIndicator.pas',
+  ProgressIndicator in 'general\intf\tools\ProgressIndicator.pas',
   unProgressForm in 'view\forms\unProgressForm.pas' {fmProgressForm},
   ComponentValueChangedObserver in 'view\tools\ComponentValueChangedObserver.pas',
   ClubmembershipTools in 'data\ClubmembershipTools.pas',
@@ -50,7 +49,7 @@ uses
   unPersonMemberOf in 'view\frames\unPersonMemberOf.pas' {fraPersonMemberOf: TFrame},
   ListCrudCommands in 'general\common\Crud\ListCrudCommands.pas',
   FilterSelect in 'general\common\Db\FilterSelect.pas',
-  ListEnumerator in 'general\intf\ListEnumerator.pas',
+  ListEnumerator in 'general\intf\tools\ListEnumerator.pas',
   PersonMemberOfUI in 'view\intf\PersonMemberOfUI.pas',
   DtoMemberAggregated in 'data\DtoMemberAggregated.pas',
   MemberOfBusinessIntf in 'business\intf\MemberOfBusinessIntf.pas',
@@ -67,9 +66,12 @@ uses
   CheckboxDatetimePickerHandler in 'view\tools\CheckboxDatetimePickerHandler.pas',
   KeyIndexStrings in 'general\common\Tools\KeyIndexStrings.pas',
   LazyLoader in 'general\common\Tools\LazyLoader.pas',
-  unSimpleMasterdataForm in 'view\forms\unSimpleMasterdataForm.pas' {fmSimpleMasterdataForm},
-  ValueConverter in 'general\intf\ValueConverter.pas',
-  ListCrudCommands.Types in 'general\common\Crud\ListCrudCommands.Types.pas';
+  ValueConverter in 'general\intf\tools\ValueConverter.pas',
+  ListCrudCommands.Types in 'general\common\Crud\ListCrudCommands.Types.pas',
+  DtoUnitAggregated in 'data\DtoUnitAggregated.pas',
+  DelegatedConverter in 'general\common\Tools\DelegatedConverter.pas',
+  MasterdataBusinessIntf in 'business\intf\MasterdataBusinessIntf.pas',
+  MasterdataBusiness in 'business\impl\MasterdataBusiness.pas';
 
 {$R *.res}
 

@@ -66,7 +66,7 @@ end;
 function TRecordActions<TRecord, TRecordIdentity>.SaveRecord(var aRecord: TRecord;
   aTransaction: ITransaction): TRecordActionsSaveResponse;
 begin
-  var lNewRecordResponse := fConfig.IsNewRecord(aRecord);
+  var lNewRecordResponse := fConfig.IsNewRecord(fConfig.GetRecordIdentity(aRecord));
   if lNewRecordResponse = TCrudConfigNewRecordResponse.NewRecord then
   begin
     fConfig.SetValues(aRecord, fInsertAccessor, False);

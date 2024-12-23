@@ -2,7 +2,7 @@ unit MainBusinessIntf;
 
 interface
 
-uses System.Classes, CrudCommands;
+uses System.Classes, CrudCommands, DtoUnitAggregated;
 
 type
   IMainBusinessIntf = interface(ICrudCommands<UInt32>)

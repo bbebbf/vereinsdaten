@@ -16,7 +16,7 @@ type
     class function CreateFailedRecord(const aMessageText: string = ''): TCrudSaveRecordResult; static;
   end;
 
-  ICrudCommands<T> = interface
+  ICrudCommands<T: record> = interface
     ['{FB07E098-86FA-4B9F-8C65-04384425558B}']
     procedure Initialize;
     function LoadList: TCrudCommandResult;

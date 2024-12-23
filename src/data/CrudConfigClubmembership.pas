@@ -11,7 +11,7 @@ type
     function GetIdentityColumns: TArray<string>;
     function GetSelectRecordSQL: string;
     procedure GetRecordFromSqlResult(const aSqlResult: ISqlResult; var aRecord: TDtoClubmembership);
-    function IsNewRecord(const aRecord: TDtoClubmembership): TCrudConfigNewRecordResponse;
+    function IsNewRecord(const aRecordIdentity: UInt32): TCrudConfigNewRecordResponse;
     procedure SetValues(const aRecord: TDtoClubmembership; const aAccessor: TCrudAccessorBase; const aForUpdate: Boolean);
     procedure SetSelectRecordSQLParameter(const aRecordIdentity: UInt32; const aQuery: ISqlPreparedQuery);
     procedure SetValuesForDelete(const aRecordIdentity: UInt32; const aAccessor: TCrudAccessorDelete);
@@ -39,9 +39,9 @@ begin
   Result := 'clubmembership';
 end;
 
-function TCrudConfigClubmembership.IsNewRecord(const aRecord: TDtoClubmembership): TCrudConfigNewRecordResponse;
+function TCrudConfigClubmembership.IsNewRecord(const aRecordIdentity: UInt32): TCrudConfigNewRecordResponse;
 begin
-  if aRecord.Id = 0 then
+  if aRecordIdentity = 0 then
     Result := TCrudConfigNewRecordResponse.NewRecord
   else
     Result := TCrudConfigNewRecordResponse.ExistingRecord;

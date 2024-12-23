@@ -11,7 +11,7 @@ type
     function GetIdentityColumns: TArray<string>;
     function GetSelectRecordSQL: string;
     procedure GetRecordFromSqlResult(const aSqlResult: ISqlResult; var aRecord: TDtoPersonAddress);
-    function IsNewRecord(const aRecord: TDtoPersonAddress): TCrudConfigNewRecordResponse;
+    function IsNewRecord(const aRecordIdentity: UInt32): TCrudConfigNewRecordResponse;
     procedure SetValues(const aRecord: TDtoPersonAddress; const aAccessor: TCrudAccessorBase; const aForUpdate: Boolean);
     procedure SetSelectRecordSQLParameter(const aRecordIdentity: UInt32; const aQuery: ISqlPreparedQuery);
     procedure SetValuesForDelete(const aRecordIdentity: UInt32; const aAccessor: TCrudAccessorDelete);
@@ -38,7 +38,7 @@ begin
   Result := 'person_address';
 end;
 
-function TCrudConfigPersonAddress.IsNewRecord(const aRecord: TDtoPersonAddress): TCrudConfigNewRecordResponse;
+function TCrudConfigPersonAddress.IsNewRecord(const aRecordIdentity: UInt32): TCrudConfigNewRecordResponse;
 begin
   Result := TCrudConfigNewRecordResponse.Unknown;
 end;

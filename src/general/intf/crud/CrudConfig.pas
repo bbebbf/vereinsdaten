@@ -13,7 +13,7 @@ type
     function GetIdentityColumns: TArray<string>;
     function GetSelectRecordSQL: string;
     procedure SetSelectRecordSQLParameter(const aRecordIdentity: TRecordIdentity; const aQuery: ISqlPreparedQuery);
-    function IsNewRecord(const aRecord: TRecord): TCrudConfigNewRecordResponse;
+    function IsNewRecord(const aRecordIdentity: TRecordIdentity): TCrudConfigNewRecordResponse;
     procedure SetValues(const aRecord: TRecord; const aAccessor: TCrudAccessorBase; const aForUpdate: Boolean);
     procedure SetValuesForDelete(const aRecordIdentity: TRecordIdentity; const aAccessor: TCrudAccessorDelete);
     procedure UpdateRecordIdentity(const aAccessor: TCrudAccessorInsert; var aRecord: TRecord);
