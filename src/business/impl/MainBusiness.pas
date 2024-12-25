@@ -5,7 +5,7 @@ interface
 uses System.Classes, System.SysUtils, CrudCommands, CrudConfig, Transaction, MainBusinessIntf,
   DtoPersonAggregated, SqlConnection, PersonAggregatedUI, DtoPerson, RecordActions,
   KeyIndexMapper, DtoPersonAddress, DtoAddress, DtoClubmembership, ClubmembershipTools,
-  MemberOfBusinessIntf, ProgressIndicator, DtoUnitAggregated;
+  MemberOfBusinessIntf, ProgressIndicator, DtoUnitAggregated, CrudUI;
 
 type
   TMainBusiness = class(TInterfacedObject, IMainBusinessIntf)
@@ -39,6 +39,7 @@ type
     function GetShowInactivePersons: Boolean;
     procedure SetShowInactivePersons(const aValue: Boolean);
     procedure LoadPersonsMemberOfs;
+    procedure CallDialogUnits(const aCrudUI: ICrudUI<TDtoUnitAggregated, UInt32>);
   public
     constructor Create(const aConnection: ISqlConnection; const aUI: IPersonAggregatedUI;
       const aProgressIndicator: IProgressIndicator);
@@ -49,9 +50,17 @@ implementation
 
 uses System.Generics.Collections, SelectList,
   CrudConfigPerson, CrudConfigAddress, CrudConfigPersonAddress, CrudConfigClubmembership,
-  MemberOfBusiness;
+  MemberOfBusiness, EntryCrudConfig, CrudConfigUnitAggregated, CrudBusiness;
 
 { TMainBusiness }
+
+procedure TMainBusiness.CallDialogUnits(const aCrudUI: ICrudUI<TDtoUnitAggregated, UInt32>);
+begin
+  var lConfig: IEntryCrudConfig<TDtoUnitAggregated, UInt32> := TCrudConfigUnitAggregated.Create(fConnection);
+  var lBusiness: ICrudCommands<UInt32> := TCrudBusiness<TDtoUnitAggregated, UInt32>.Create(
+    aCrudUI, lConfig);
+  lBusiness.Initialize;
+end;
 
 constructor TMainBusiness.Create(const aConnection: ISqlConnection; const aUI: IPersonAggregatedUI;
   const aProgressIndicator: IProgressIndicator);
@@ -144,12 +153,12 @@ begin
     begin
       fCurrentEntry.SetDtoClubmembership(lMembershipRecord);
     end;
-    fUI.SetRecordToUI(fCurrentEntry, False);
+    fUI.SetEntryToUI(fCurrentEntry, False);
   end
   else
   begin
-    fUI.ClearRecordUI;
-    fUI.DeleteRecordfromUI(aPersonId);
+    fUI.ClearEntryFromUI;
+    fUI.DeleteEntryFromUI(aPersonId);
   end;
 end;
 
@@ -157,9 +166,8 @@ function TMainBusiness.LoadList: TCrudCommandResult;
 begin
   Result := default(TCrudCommandResult);
   fNewEntryStarted := False;
-  fUI.ClearRecordUI;
+  fUI.ClearEntryFromUI;
   fUI.ListEnumBegin;
-  var lEntriesFound := False;
   try
     var lSelectList: ISelectList<TDtoPerson>;
     if not Supports(fPersonConfig, ISelectList<TDtoPerson>, lSelectList) then
@@ -172,7 +180,6 @@ begin
       if fShowInactivePersons or lRecord.Aktiv then
       begin
         fUI.ListEnumProcessItem(TDtoPersonAggregated.Create(lRecord));
-        lEntriesFound := True;
       end;
     end;
   finally
@@ -190,7 +197,7 @@ end;
 
 function TMainBusiness.ReloadCurrentEntry: TCrudCommandResult;
 begin
-  fUI.SetRecordToUI(fCurrentEntry, False);
+  fUI.SetEntryToUI(fCurrentEntry, False);
 end;
 
 function TMainBusiness.SaveCurrentEntry: TCrudSaveResult;
@@ -205,7 +212,7 @@ begin
       lUpdatedEntry := fCurrentEntry.Clone;
     lUpdatedEntryCloned := True;
 
-    if not fUI.GetRecordFromUI(lUpdatedEntry) then
+    if not fUI.GetEntryFromUI(lUpdatedEntry) then
     begin
       Exit(TCrudSaveResult.CreateRecord(TCrudSaveStatus.Cancelled));
     end;
@@ -302,7 +309,7 @@ begin
       end
       else
       begin
-        fUI.SetRecordToUI(fCurrentEntry, lNewPersonCreated);
+        fUI.SetEntryToUI(fCurrentEntry, lNewPersonCreated);
       end;
     end;
   finally
@@ -321,6 +328,7 @@ end;
 procedure TMainBusiness.StartNewEntry;
 begin
   fNewEntryStarted := True;
+  fUI.ClearEntryFromUI;
 end;
 
 end.

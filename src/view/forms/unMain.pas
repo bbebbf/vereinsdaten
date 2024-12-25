@@ -84,10 +84,9 @@ type
     procedure acPersonStartNewRecordExecute(Sender: TObject);
     procedure pcPersonDetailsChanging(Sender: TObject; var AllowChange: Boolean);
     procedure pcPersonDetailsChange(Sender: TObject);
+    procedure Einheiten1Click(Sender: TObject);
   strict private
     fActivated: Boolean;
-//    fCurrentRecordId: UInt32;
-//    fNewRecordStarted: Boolean;
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
     fMainBusinessIntf: IMainBusinessIntf;
@@ -103,17 +102,17 @@ type
     procedure SetEditMode(const aEditMode: Boolean);
     procedure ControlValuesChanged(Sender: TObject);
     procedure ControlValuesUnchanged(Sender: TObject);
-    procedure PersonEntryToListItem(const aPerson: TDtoPerson; const aItem: TListItem);
+    function PersonEntryToListItem(const aPerson: TDtoPerson; const aItem: TListItem): TListItem;
 
     procedure Initialize(const aCommands: ICrudCommands<UInt32>); overload;
     procedure Initialize(const aCommands: IMainBusinessIntf); overload;
     procedure ListEnumBegin;
     procedure ListEnumProcessItem(const aRecord: TDtoPersonAggregated);
     procedure ListEnumEnd;
-    procedure DeleteRecordfromUI(const aPersonId: UInt32);
-    procedure ClearRecordUI;
-    procedure SetRecordToUI(const aRecord: TDtoPersonAggregated; const aRecordAsNewEntry: Boolean);
-    function GetRecordFromUI(var aRecord: TDtoPersonAggregated): Boolean;
+    procedure DeleteEntryFromUI(const aPersonId: UInt32);
+    procedure ClearEntryFromUI;
+    procedure SetEntryToUI(const aRecord: TDtoPersonAggregated; const aAsNewEntry: Boolean);
+    function GetEntryFromUI(var aRecord: TDtoPersonAggregated): Boolean;
     procedure LoadAvailableAdresses;
     procedure LoadCurrentEntry(const aPersonId: UInt32);
   public
@@ -127,7 +126,7 @@ implementation
 
 {$R *.dfm}
 
-uses VdmGlobals, ConfigReader, StringTools, MessageDialogs;
+uses VdmGlobals, ConfigReader, StringTools, MessageDialogs, unUnit;
 
 { TfmMain }
 
@@ -178,7 +177,7 @@ begin
   fMainBusinessIntf.ShowInactivePersons := cbShowInactivePersons.Checked;
 end;
 
-procedure TfmMain.ClearRecordUI;
+procedure TfmMain.ClearEntryFromUI;
 begin
   fComponentValueChangedObserver.BeginUpdate;
 
@@ -217,9 +216,20 @@ begin
   SetEditMode(False);
 end;
 
-procedure TfmMain.DeleteRecordfromUI(const aPersonId: UInt32);
+procedure TfmMain.DeleteEntryFromUI(const aPersonId: UInt32);
 begin
 
+end;
+
+procedure TfmMain.Einheiten1Click(Sender: TObject);
+begin
+  var lDialogUnit := TfmUnit.Create(Self);
+  try
+    fMainBusinessIntf.CallDialogUnits(lDialogUnit);
+    lDialogUnit.ShowModal;
+  finally
+    lDialogUnit.Free;
+  end;
 end;
 
 procedure TfmMain.FormActivate(Sender: TObject);
@@ -283,7 +293,7 @@ begin
       end
       else
       begin
-        ClearRecordUI;
+        ClearEntryFromUI;
       end;
     end,
     200
@@ -295,6 +305,9 @@ end;
 
 procedure TfmMain.FormDestroy(Sender: TObject);
 begin
+  fPersonBirthdayHandler.Free;
+  fActiveSinceHandler.Free;
+  fActiveUntilHandler.Free;
   fDelayedExecute.Free;
   fPersonListviewAttachedData.Free;
   fComponentValueChangedObserver.Free;
@@ -305,7 +318,7 @@ begin
   Result := fPersonMemberOf;
 end;
 
-function TfmMain.GetRecordFromUI(var aRecord: TDtoPersonAggregated): Boolean;
+function TfmMain.GetEntryFromUI(var aRecord: TDtoPersonAggregated): Boolean;
 begin
   if TStringTools.IsEmpty(edPersonFirstname.Text) and TStringTools.IsEmpty(edPersonLastname.Text) then
   begin
@@ -325,10 +338,7 @@ begin
   aRecord.Firstname := edPersonFirstname.Text;
   aRecord.Praeposition := edPersonPraeposition.Text;
   aRecord.Lastname := edPersonLastname.Text;
-  if cbPersonBirthdayKnown.Checked then
-    aRecord.Birthday := dtPersonBirthday.Date
-  else
-    aRecord.Birthday := 0;
+  aRecord.Birthday := fPersonBirthdayHandler.Datetime;
   aRecord.Active := cbPersonActive.Checked;
   aRecord.AddressIndex := cbPersonAddress.ItemIndex;
 
@@ -340,18 +350,14 @@ begin
   aRecord.MembershipNoMembership := cbMembership.ItemIndex <= 0;
   aRecord.MembershipActive := cbMembership.ItemIndex = 1;
   aRecord.MembershipNumber := StrToIntDef(edMembershipNumber.Text, 0);
-  if cbMembershipBeginKnown.Checked then
-    aRecord.MembershipBeginDate := dtMembershipBegin.Date
-  else
-    aRecord.MembershipBeginDate := 0;
+  aRecord.MembershipBeginDate := fActiveSinceHandler.Datetime;
+  aRecord.MembershipEndDate := fActiveUntilHandler.Datetime;
   if cbMembershipEndKnown.Checked then
   begin
-    aRecord.MembershipEndDate := dtMembershipEnd.Date;
     aRecord.MembershipEndDateText := '';
   end
   else
   begin
-    aRecord.MembershipEndDate := 0;
     aRecord.MembershipEndDateText := edMembershipEndText.Text;
   end;
   aRecord.MembershipEndReason := edMembershipEndReason.Text;
@@ -446,20 +452,20 @@ begin
   end;
 end;
 
-procedure TfmMain.PersonEntryToListItem(const aPerson: TDtoPerson; const aItem: TListItem);
+function TfmMain.PersonEntryToListItem(const aPerson: TDtoPerson; const aItem: TListItem): TListItem;
 begin
   var lPersonItemData := default(TPersonListItemData);
   lPersonItemData.PersonActive := aPerson.Aktiv;
-  var lItem := aItem;
-  if Assigned(lItem) then
+  Result := aItem;
+  if Assigned(Result) then
   begin
     fPersonListviewAttachedData.UpdateItem(aItem, aPerson.Id, lPersonItemData);
   end
   else
   begin
-    lItem := fPersonListviewAttachedData.AddItem(aPerson.Id, lPersonItemData);
+    Result := fPersonListviewAttachedData.AddItem(aPerson.Id, lPersonItemData);
   end;
-  lItem.Caption := aPerson.ToString;
+  Result.Caption := aPerson.ToString;
 end;
 
 procedure TfmMain.SetEditMode(const aEditMode: Boolean);
@@ -469,7 +475,7 @@ begin
   acPersonReloadCurrentRecord.Enabled := fInEditMode;
 end;
 
-procedure TfmMain.SetRecordToUI(const aRecord: TDtoPersonAggregated; const aRecordAsNewEntry: Boolean);
+procedure TfmMain.SetEntryToUI(const aRecord: TDtoPersonAggregated; const aAsNewEntry: Boolean);
 begin
   fComponentValueChangedObserver.BeginUpdate;
 
@@ -478,9 +484,11 @@ begin
   edPersonLastname.Text := aRecord.Lastname;
   fPersonBirthdayHandler.Datetime := aRecord.Birthday;
 
-  if aRecordAsNewEntry then
+  if aAsNewEntry then
   begin
-    PersonEntryToListItem(aRecord.Person, nil)
+    var lNewItem := PersonEntryToListItem(aRecord.Person, nil);
+    lNewItem.Selected := True;
+    lNewItem.MakeVisible(False);
   end
   else
   begin

@@ -70,8 +70,10 @@ uses
   ListCrudCommands.Types in 'general\common\Crud\ListCrudCommands.Types.pas',
   DtoUnitAggregated in 'data\DtoUnitAggregated.pas',
   DelegatedConverter in 'general\common\Tools\DelegatedConverter.pas',
-  MasterdataBusinessIntf in 'business\intf\MasterdataBusinessIntf.pas',
-  MasterdataBusiness in 'business\impl\MasterdataBusiness.pas';
+  CrudBusiness in 'business\impl\CrudBusiness.pas',
+  EntryCrudConfig in 'general\intf\crud\EntryCrudConfig.pas',
+  unUnit in 'view\forms\unUnit.pas' {fmUnit},
+  CrudConfigUnitAggregated in 'data\CrudConfigUnitAggregated.pas';
 
 {$R *.res}
 

@@ -399,6 +399,7 @@ object fmMain: TfmMain
       end
       object Einheiten1: TMenuItem
         Caption = 'Einheiten'
+        OnClick = Einheiten1Click
       end
       object Rollen1: TMenuItem
         Caption = 'Rollen'
