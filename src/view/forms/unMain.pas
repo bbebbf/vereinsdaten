@@ -33,7 +33,7 @@ type
     dtPersonBirthday: TDateTimePicker;
     lbPersonBirthday: TLabel;
     cbPersonBirthdayKnown: TCheckBox;
-    alPersonActionList: TActionList;
+    alActionList: TActionList;
     acPersonSaveCurrentRecord: TAction;
     acPersonReloadCurrentRecord: TAction;
     btPersonSave: TButton;
@@ -70,6 +70,9 @@ type
     Einheiten1: TMenuItem;
     Rollen1: TMenuItem;
     Adressen1: TMenuItem;
+    acMasterdataUnits: TAction;
+    acMasterdataAddresses: TAction;
+    acMasterdataRoles: TAction;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormActivate(Sender: TObject);
@@ -84,7 +87,7 @@ type
     procedure acPersonStartNewRecordExecute(Sender: TObject);
     procedure pcPersonDetailsChanging(Sender: TObject; var AllowChange: Boolean);
     procedure pcPersonDetailsChange(Sender: TObject);
-    procedure Einheiten1Click(Sender: TObject);
+    procedure acMasterdataUnitsExecute(Sender: TObject);
   strict private
     fActivated: Boolean;
     fComponentValueChangedObserver: TComponentValueChangedObserver;
@@ -129,6 +132,17 @@ implementation
 uses VdmGlobals, ConfigReader, StringTools, MessageDialogs, unUnit;
 
 { TfmMain }
+
+procedure TfmMain.acMasterdataUnitsExecute(Sender: TObject);
+begin
+  var lDialogUnit := TfmUnit.Create(Self);
+  try
+    fMainBusinessIntf.CallDialogUnits(lDialogUnit);
+    lDialogUnit.ShowModal;
+  finally
+    lDialogUnit.Free;
+  end;
+end;
 
 procedure TfmMain.acPersonReloadCurrentRecordExecute(Sender: TObject);
 begin
@@ -219,17 +233,6 @@ end;
 procedure TfmMain.DeleteEntryFromUI(const aPersonId: UInt32);
 begin
 
-end;
-
-procedure TfmMain.Einheiten1Click(Sender: TObject);
-begin
-  var lDialogUnit := TfmUnit.Create(Self);
-  try
-    fMainBusinessIntf.CallDialogUnits(lDialogUnit);
-    lDialogUnit.ShowModal;
-  finally
-    lDialogUnit.Free;
-  end;
 end;
 
 procedure TfmMain.FormActivate(Sender: TObject);

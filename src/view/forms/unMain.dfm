@@ -61,6 +61,8 @@ object fmMain: TfmMain
       ViewStyle = vsReport
       OnCustomDrawItem = lvPersonListviewCustomDrawItem
       OnSelectItem = lvPersonListviewSelectItem
+      ExplicitLeft = 1
+      ExplicitTop = 36
     end
     object pnFilter: TPanel
       Left = 0
@@ -395,18 +397,17 @@ object fmMain: TfmMain
     object Stammdaten1: TMenuItem
       Caption = 'Stammdaten'
       object Adressen1: TMenuItem
-        Caption = 'Adressen'
+        Action = acMasterdataAddresses
       end
       object Einheiten1: TMenuItem
-        Caption = 'Einheiten'
-        OnClick = Einheiten1Click
+        Action = acMasterdataUnits
       end
       object Rollen1: TMenuItem
-        Caption = 'Rollen'
+        Action = acMasterdataRoles
       end
     end
   end
-  object alPersonActionList: TActionList
+  object alActionList: TActionList
     Left = 52
     Top = 154
     object acPersonSaveCurrentRecord: TAction
@@ -420,6 +421,16 @@ object fmMain: TfmMain
     object acPersonStartNewRecord: TAction
       Caption = 'Neuen Datensatz starten'
       OnExecute = acPersonStartNewRecordExecute
+    end
+    object acMasterdataUnits: TAction
+      Caption = 'Einheiten bearbeiten'
+      OnExecute = acMasterdataUnitsExecute
+    end
+    object acMasterdataAddresses: TAction
+      Caption = 'Adressen bearbeiten'
+    end
+    object acMasterdataRoles: TAction
+      Caption = 'Rollen bearbeiten'
     end
   end
 end
