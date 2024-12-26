@@ -25,6 +25,8 @@ type
     function ReloadCurrentEntry: TCrudCommandResult;
     function DeleteEntry(const aEntryId: T): TCrudCommandResult;
     procedure StartNewEntry;
+    function GetDataChanged: Boolean;
+    property DataChanged: Boolean read GetDataChanged;
   end;
 
 implementation

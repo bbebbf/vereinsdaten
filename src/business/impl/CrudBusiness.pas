@@ -11,6 +11,7 @@ type
     fConfig: IEntryCrudConfig<TEntry, TListEntry, TId>;
     fNewEntryStarted: Boolean;
     fCurrentEntry: TEntry;
+    fDataChanged: Boolean;
     procedure Initialize;
     function LoadList: TCrudCommandResult;
     function LoadCurrentEntry(const aId: TId): TCrudCommandResult;
@@ -18,6 +19,7 @@ type
     function ReloadCurrentEntry: TCrudCommandResult;
     procedure StartNewEntry;
     function DeleteEntry(const aId: TId): TCrudCommandResult;
+    function GetDataChanged: Boolean;
   public
     constructor Create(const aUI: ICrudUI<TEntry, TListEntry, TId>; const aConfig: IEntryCrudConfig<TEntry, TListEntry, TId>);
     destructor Destroy; override;
@@ -43,6 +45,11 @@ begin
   fConfig := nil;
   fUI := nil;
   inherited;
+end;
+
+function TCrudBusiness<TEntry, TListEntry, TId>.GetDataChanged: Boolean;
+begin
+  Result := fDataChanged;
 end;
 
 procedure TCrudBusiness<TEntry, TListEntry, TId>.Initialize;
@@ -122,6 +129,7 @@ begin
       lDestroyTempSavingEntry := False;
       fUI.SetEntryToUI(fCurrentEntry, fNewEntryStarted);
       fNewEntryStarted := False;
+      fDataChanged := True;
     end;
   finally
     if lDestroyTempSavingEntry then

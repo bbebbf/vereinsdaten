@@ -13,9 +13,16 @@ type
     Stammdaten1: TMenuItem;
     StatusBar: TStatusBar;
     ActionList: TActionList;
+    acMasterdataAddress: TAction;
+    acMasterdataUnit: TAction;
+    acMasterdataRole: TAction;
+    Adressenbearbeiten1: TMenuItem;
+    Einheitenbearbeiten1: TMenuItem;
+    Rollenbearbeiten1: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormActivate(Sender: TObject);
+    procedure acMasterdataUnitExecute(Sender: TObject);
   strict private
     fActivated: Boolean;
     fConnection: ISqlConnection;
@@ -32,9 +39,27 @@ var
 
 implementation
 
-uses Vdm.Globals, ConfigReader;
+uses Vdm.Globals, ConfigReader, unUnit, CrudCommands, CrudBusiness, EntryCrudConfig,
+  DtoUnit, DtoUnitAggregated, CrudConfigUnitAggregated;
 
 {$R *.dfm}
+
+procedure TfmMain.acMasterdataUnitExecute(Sender: TObject);
+begin
+  var lDialog := TfmUnit.Create(Self);
+  try
+    var lCrudConfig: IEntryCrudConfig<TDtoUnitAggregated, TDtoUnit, UInt32> := TCrudConfigUnitAggregated.Create(fConnection);
+    var lBusiness: ICrudCommands<UInt32> := TCrudBusiness<TDtoUnitAggregated, TDtoUnit, UInt32>.Create(lDialog, lCrudConfig);
+    lBusiness.Initialize;
+    lDialog.ShowModal;
+    if lBusiness.DataChanged then
+    begin
+      fPersonBusinessIntf.ClearUnitCache;
+    end;
+  finally
+    lDialog.Free;
+  end;
+end;
 
 procedure TfmMain.FormActivate(Sender: TObject);
 begin

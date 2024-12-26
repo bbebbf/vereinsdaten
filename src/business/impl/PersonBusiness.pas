@@ -27,6 +27,7 @@ type
     fShowInactivePersons: Boolean;
     fClubMembershipNumberChecker: TClubMembershipNumberChecker;
     fMemberOfBusiness: IMemberOfBusinessIntf;
+    fDataChanged: Boolean;
 
     procedure Initialize;
     function LoadList: TCrudCommandResult;
@@ -35,6 +36,7 @@ type
     function ReloadCurrentEntry: TCrudCommandResult;
     procedure StartNewEntry;
     function DeleteEntry(const aPersonId: UInt32): TCrudCommandResult;
+    function GetDataChanged: Boolean;
     procedure LoadAvailableAddresses(const aStrings: TStrings);
     function GetShowInactivePersons: Boolean;
     procedure SetShowInactivePersons(const aValue: Boolean);
@@ -91,6 +93,11 @@ begin
   fProgressIndicator := nil;
   fConnection := nil;
   inherited;
+end;
+
+function TPersonBusiness.GetDataChanged: Boolean;
+begin
+  Result := fDataChanged;
 end;
 
 function TPersonBusiness.GetShowInactivePersons: Boolean;
@@ -288,6 +295,7 @@ begin
         fCurrentEntry.Free;
         fCurrentEntry := lUpdatedEntry;
         lUpdatedEntryCloned := False;
+        fDataChanged := True;
       except
         lSaveTransaction := nil;
         lNewAddressCreated := False;
