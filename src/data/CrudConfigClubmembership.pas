@@ -2,10 +2,10 @@ unit CrudConfigClubmembership;
 
 interface
 
-uses System.SysUtils, CrudConfig, CrudAccessor, SqlConnection, DtoClubmembership;
+uses InterfacedBase, CrudConfig, CrudAccessor, SqlConnection, DtoClubmembership;
 
 type
-  TCrudConfigClubmembership = class(TInterfacedObject, ICrudConfig<TDtoClubmembership, UInt32>)
+  TCrudConfigClubmembership = class(TInterfacedBase, ICrudConfig<TDtoClubmembership, UInt32>)
   strict private
     function GetTablename: string;
     function GetIdentityColumns: TArray<string>;

@@ -107,10 +107,12 @@ type
     procedure ControlValuesUnchanged(Sender: TObject);
     function PersonEntryToListItem(const aPerson: TDtoPerson; const aItem: TListItem): TListItem;
 
-    procedure Initialize(const aCommands: ICrudCommands<UInt32>); overload;
-    procedure Initialize(const aCommands: IMainBusinessIntf); overload;
+    procedure SetCrudCommands(const aCommands: ICrudCommands<UInt32>);
+    procedure UnsetCrudCommands;
+    procedure SetMainBusinessIntf(const aCommands: IMainBusinessIntf);
+    procedure UnsetMainBusinessIntf;
     procedure ListEnumBegin;
-    procedure ListEnumProcessItem(const aRecord: TDtoPersonAggregated);
+    procedure ListEnumProcessItem(const aRecord: TDtoPerson);
     procedure ListEnumEnd;
     procedure DeleteEntryFromUI(const aPersonId: UInt32);
     procedure ClearEntryFromUI;
@@ -137,8 +139,9 @@ procedure TfmMain.acMasterdataUnitsExecute(Sender: TObject);
 begin
   var lDialogUnit := TfmUnit.Create(Self);
   try
-    fMainBusinessIntf.CallDialogUnits(lDialogUnit);
+    fMainBusinessIntf.ConfigureDialogUnits(lDialogUnit);
     lDialogUnit.ShowModal;
+    fMainBusinessIntf.ClearUnitCache;
   finally
     lDialogUnit.Free;
   end;
@@ -366,14 +369,24 @@ begin
   aRecord.MembershipEndReason := edMembershipEndReason.Text;
 end;
 
-procedure TfmMain.Initialize(const aCommands: ICrudCommands<UInt32>);
+procedure TfmMain.SetCrudCommands(const aCommands: ICrudCommands<UInt32>);
 begin
 
 end;
 
-procedure TfmMain.Initialize(const aCommands: IMainBusinessIntf);
+procedure TfmMain.SetMainBusinessIntf(const aCommands: IMainBusinessIntf);
 begin
   fMainBusinessIntf := aCommands;
+end;
+
+procedure TfmMain.UnsetCrudCommands;
+begin
+
+end;
+
+procedure TfmMain.UnsetMainBusinessIntf;
+begin
+  fMainBusinessIntf := nil;
 end;
 
 procedure TfmMain.LoadAvailableAdresses;
@@ -397,9 +410,9 @@ begin
   fPersonListviewAttachedData.Clear;
 end;
 
-procedure TfmMain.ListEnumProcessItem(const aRecord: TDtoPersonAggregated);
+procedure TfmMain.ListEnumProcessItem(const aRecord: TDtoPerson);
 begin
-  PersonEntryToListItem(aRecord.Person, nil);
+  PersonEntryToListItem(aRecord, nil);
 end;
 
 procedure TfmMain.ListEnumEnd;

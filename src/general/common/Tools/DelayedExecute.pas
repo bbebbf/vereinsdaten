@@ -10,7 +10,7 @@ type
   TDelayedWorker<T> = class(TThread)
   strict private
     fCriticalSection: TCriticalSection;
-    fWaitEvent: TSimpleEvent;
+    fWaitEvent: TLightweightEvent;
     fDelayMilliseconds: Integer;
     fAction: TDelayedAction<T>;
     fData: T;
@@ -44,8 +44,9 @@ end;
 
 destructor TDelayedExecute<T>.Destroy;
 begin
-  fWorker.FreeOnTerminate := True;
   fWorker.Terminate;
+  fWorker.WaitFor;
+  fWorker.Free;
   inherited;
 end;
 
@@ -60,7 +61,7 @@ constructor TDelayedWorker<T>.Create(const aAction: TDelayedAction<T>; const aDe
 begin
   inherited Create;
   fCriticalSection := TCriticalSection.Create;
-  fWaitEvent := TSimpleEvent.Create;
+  fWaitEvent := TLightweightEvent.Create;
   fAction := aAction;
   fDelayMilliseconds := aDelayMilliseconds;
 end;
@@ -106,7 +107,7 @@ begin
   fCriticalSection.Enter;
   try
     Result := False;
-    if fWaitEvent.WaitFor(0) = TWaitResult.wrSignaled then
+    if fWaitEvent.IsSet then
     begin
       Result := True;
       aData := fData;

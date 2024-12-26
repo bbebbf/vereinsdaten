@@ -61,8 +61,6 @@ object fmMain: TfmMain
       ViewStyle = vsReport
       OnCustomDrawItem = lvPersonListviewCustomDrawItem
       OnSelectItem = lvPersonListviewSelectItem
-      ExplicitLeft = 1
-      ExplicitTop = 36
     end
     object pnFilter: TPanel
       Left = 0

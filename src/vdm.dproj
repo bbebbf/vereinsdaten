@@ -4,7 +4,7 @@
         <ProjectVersion>20.1</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Debug</Config>
+        <Config Condition="'$(Config)'==''">FastMM</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
         <ProjectName Condition="'$(ProjectName)'==''">vdm</ProjectName>
         <TargetedPlatforms>3</TargetedPlatforms>
@@ -41,7 +41,7 @@
         <Cfg_1>true</Cfg_1>
         <Base>true</Base>
     </PropertyGroup>
-    <PropertyGroup Condition="'$(Config)'=='FastMM4' or '$(Cfg_3)'!=''">
+    <PropertyGroup Condition="'$(Config)'=='FastMM' or '$(Cfg_3)'!=''">
         <Cfg_3>true</Cfg_3>
         <CfgParent>Cfg_1</CfgParent>
         <Cfg_1>true</Cfg_1>
@@ -130,7 +130,9 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <VerInfo_Keys>CompanyName=Bernd Berends;FileDescription=Vereinsdaten-Manager;FileVersion=0.3.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Bernd Berends;FileDescription=Vereinsdaten-Manager;FileVersion=0.4.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_MinorVer>4</VerInfo_MinorVer>
+        <Icon_MainIcon>resources\vdm_Icon.ico</Icon_MainIcon>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
@@ -138,11 +140,12 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_3_Win32)'!=''">
-        <DCC_Define>FastMM4;$(DCC_Define)</DCC_Define>
+        <DCC_Define>FastMM;$(DCC_Define)</DCC_Define>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <VerInfo_Keys>CompanyName=Bernd Berends;FileDescription=Vereinsdaten-Manager;FileVersion=0.3.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
         <Icon_MainIcon>resources\vdm_Icon.ico</Icon_MainIcon>
+        <DCC_UnitSearchPath>.\3rdparty\FastMM;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
@@ -212,7 +215,6 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="general\common\Db\ListSelector.pas"/>
         <DCCReference Include="view\frames\unPersonMemberOf.pas">
             <Form>fraPersonMemberOf</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="general\common\Crud\ListCrudCommands.pas"/>
@@ -231,7 +233,6 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="data\CrudConfigRole.pas"/>
         <DCCReference Include="view\forms\unPersonMemberOfsEditDlg.pas">
             <Form>fmPersonMemberOfsEditDlg</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="general\common\Tools\DelayedExecute.pas"/>
         <DCCReference Include="view\tools\CheckboxDatetimePickerHandler.pas"/>
@@ -245,9 +246,9 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="general\intf\crud\EntryCrudConfig.pas"/>
         <DCCReference Include="view\forms\unUnit.pas">
             <Form>fmUnit</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="data\CrudConfigUnitAggregated.pas"/>
+        <DCCReference Include="general\common\Tools\InterfacedBase.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -259,7 +260,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
         </BuildConfiguration>
-        <BuildConfiguration Include="FastMM4">
+        <BuildConfiguration Include="FastMM">
             <Key>Cfg_3</Key>
             <CfgParent>Cfg_1</CfgParent>
         </BuildConfiguration>
@@ -279,6 +280,12 @@ $(PostBuildEvent)]]></PostBuildEvent>
             </Delphi.Personality>
             <Deployment Version="4">
                 <DeployFile LocalName="..\out\bin\Win32\Debug\vdm.exe" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win32">
+                        <RemoteName>vdm.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="..\out\bin\Win32\FastMM\vdm.exe" Configuration="FastMM" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>vdm.exe</RemoteName>
                         <Overwrite>true</Overwrite>
@@ -1281,7 +1288,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <PostBuildEvent>powershell.exe -executionPolicy bypass -File ..\build\post-build-release.ps1 $(OUTPUTDIR) ..</PostBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
-    <PropertyGroup Condition="'$(Config)'=='FastMM4' And '$(Platform)'=='Win32'">
+    <PropertyGroup Condition="'$(Config)'=='FastMM' And '$(Platform)'=='Win32'">
         <PreBuildEvent/>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
@@ -1289,7 +1296,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <PostBuildEvent>powershell.exe -executionPolicy bypass -File ..\build\post-build-release.ps1 $(OUTPUTDIR) ..</PostBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
-    <PropertyGroup Condition="'$(Config)'=='FastMM4' And '$(Platform)'=='Win64'">
+    <PropertyGroup Condition="'$(Config)'=='FastMM' And '$(Platform)'=='Win64'">
         <PreBuildEvent/>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>

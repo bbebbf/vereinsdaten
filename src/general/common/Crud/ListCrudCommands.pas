@@ -45,6 +45,7 @@ type
     procedure ListEnumEnd; override;
   public
     constructor Create(const aConnection: ISqlConnection;
+      const aSelectListFilter: ISelectListFilter<TS, FSelect>;
       const aCrudConfig: ICrudConfig<TS, TSIdent>;
       const aValueConverter: IValueConverter<TS, TD>
       );
@@ -68,15 +69,12 @@ uses RecordActions;
 { TListCrudCommands<TS, TSIdent, TD, FSelect, FLoop> }
 
 constructor TListCrudCommands<TS, TSIdent, TD, FSelect, FLoop>.Create(const aConnection: ISqlConnection;
+  const aSelectListFilter: ISelectListFilter<TS, FSelect>;
   const aCrudConfig: ICrudConfig<TS, TSIdent>;
   const aValueConverter: IValueConverter<TS, TD>
   );
 begin
-  var lSelectListFilter: ISelectListFilter<TS, FSelect>;
-  if not Supports(aCrudConfig, ISelectListFilter<TS, TSIdent>, lSelectListFilter) then
-    raise ENotSupportedException.Create('aCrudConfig doesn''t support ISelectListFilter.');
-
-  inherited Create(aConnection, lSelectListFilter);
+  inherited Create(aConnection, aSelectListFilter);
   fConnection := aConnection;
   fCrudConfig := aCrudConfig;
   fValueConverter := aValueConverter;

@@ -3,10 +3,10 @@ unit SshTunnelSqlConnection;
 interface
 
 uses
-  System.SysUtils, Data.DB, SqlConnection, Transaction, SshTunnel;
+  InterfacedBase, Data.DB, SqlConnection, Transaction, SshTunnel;
 
 type
-  TSshTunnelSqlConnection = class(TInterfacedObject, ISqlConnection)
+  TSshTunnelSqlConnection = class(TInterfacedBase, ISqlConnection)
   strict private
     fSqlConnection: ISqlConnection;
     fSshTunnel: ISshTunnel;

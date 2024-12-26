@@ -2,10 +2,10 @@ unit CrudConfigAddress;
 
 interface
 
-uses System.SysUtils, CrudConfig, CrudAccessor, SqlConnection, SelectList, DtoAddress;
+uses InterfacedBase, CrudConfig, CrudAccessor, SqlConnection, SelectList, DtoAddress;
 
 type
-  TCrudConfigAddress = class(TInterfacedObject, ICrudConfig<TDtoAddress, UInt32>, ISelectList<TDtoAddress>)
+  TCrudConfigAddress = class(TInterfacedBase, ICrudConfig<TDtoAddress, UInt32>, ISelectList<TDtoAddress>)
   strict private
     function GetTablename: string;
     function GetIdentityColumns: TArray<string>;

@@ -44,7 +44,7 @@ type
     fBusinessIntf: IMemberOfBusinessIntf;
     fMemberOfListviewAttachedData: TListviewAttachedData<UInt32, TListEntry<TDtoMemberAggregated>>;
     fDialog: TfmPersonMemberOfsEditDlg;
-    procedure Initialize(const aCommands: IMemberOfBusinessIntf);
+    procedure SetCommands(const aCommands: IMemberOfBusinessIntf);
     procedure ListEnumBegin;
     procedure ListEnumProcessItem(const aItem: TListEntry<TDtoMemberAggregated>);
     procedure ListEnumEnd;
@@ -155,7 +155,7 @@ begin
   inherited;
 end;
 
-procedure TfraPersonMemberOf.Initialize(const aCommands: IMemberOfBusinessIntf);
+procedure TfraPersonMemberOf.SetCommands(const aCommands: IMemberOfBusinessIntf);
 begin
   fBusinessIntf := aCommands;
 end;

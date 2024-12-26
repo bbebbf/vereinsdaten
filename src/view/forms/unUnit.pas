@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
-  System.Generics.Collections, CrudCommands, DtoUnitAggregated, ListviewAttachedData, Vcl.Menus, Vcl.ExtCtrls,
+  System.Generics.Collections, CrudCommands, DtoUnit, DtoUnitAggregated, ListviewAttachedData, Vcl.Menus, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.WinXPickers, System.Actions, Vcl.ActnList,
   ComponentValueChangedObserver, CrudUI, DelayedExecute, CheckboxDatetimePickerHandler;
 
@@ -14,7 +14,7 @@ type
     UnitActive: Boolean;
   end;
 
-  TfmUnit = class(TForm, ICrudUI<TDtoUnitAggregated, UInt32>)
+  TfmUnit = class(TForm, ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32>)
     pnListview: TPanel;
     Splitter1: TSplitter;
     pnDetails: TPanel;
@@ -58,11 +58,12 @@ type
     procedure SetEditMode(const aEditMode: Boolean);
     procedure ControlValuesChanged(Sender: TObject);
     procedure ControlValuesUnchanged(Sender: TObject);
-    function EntryToListItem(const aEntry: TDtoUnitAggregated; const aItem: TListItem): TListItem;
+    function EntryToListItem(const aEntry: TDtoUnit; const aItem: TListItem): TListItem;
 
-    procedure Initialize(const aCommands: ICrudCommands<UInt32>);
+    procedure SetCrudCommands(const aCommands: ICrudCommands<UInt32>);
+    procedure UnsetCrudCommands;
     procedure ListEnumBegin;
-    procedure ListEnumProcessItem(const aEntry: TDtoUnitAggregated);
+    procedure ListEnumProcessItem(const aEntry: TDtoUnit);
     procedure ListEnumEnd;
     procedure DeleteEntryFromUI(const aUnitId: UInt32);
     procedure ClearEntryFromUI;
@@ -201,9 +202,14 @@ begin
   aEntry.ActiveUntil := fActiveUntilHandler.Datetime;
 end;
 
-procedure TfmUnit.Initialize(const aCommands: ICrudCommands<UInt32>);
+procedure TfmUnit.SetCrudCommands(const aCommands: ICrudCommands<UInt32>);
 begin
   fBusinessIntf := aCommands;
+end;
+
+procedure TfmUnit.UnsetCrudCommands;
+begin
+  fBusinessIntf := nil;
 end;
 
 procedure TfmUnit.LoadCurrentEntry(const aEntryId: UInt32);
@@ -218,7 +224,7 @@ begin
   fListviewAttachedData.Clear;
 end;
 
-procedure TfmUnit.ListEnumProcessItem(const aEntry: TDtoUnitAggregated);
+procedure TfmUnit.ListEnumProcessItem(const aEntry: TDtoUnit);
 begin
   EntryToListItem(aEntry, nil);
 end;
@@ -256,7 +262,7 @@ begin
   fDelayedExecute.SetData(TPair<Boolean, UInt32>.Create(lEntryFound, lEntryId));
 end;
 
-function TfmUnit.EntryToListItem(const aEntry: TDtoUnitAggregated; const aItem: TListItem): TListItem;
+function TfmUnit.EntryToListItem(const aEntry: TDtoUnit; const aItem: TListItem): TListItem;
 begin
   var lItemData := default(TUnitListItemData);
   lItemData.UnitActive := aEntry.Active;
@@ -290,13 +296,13 @@ begin
 
   if aAsNewEntry then
   begin
-    var lNewItem := EntryToListItem(aEntry, nil);
+    var lNewItem := EntryToListItem(aEntry.&Unit, nil);
     lNewItem.Selected := True;
     lNewItem.MakeVisible(False);
   end
   else
   begin
-    EntryToListItem(aEntry, lvListview.Selected);
+    EntryToListItem(aEntry.&Unit, lvListview.Selected);
   end;
 
   fComponentValueChangedObserver.EndUpdate;

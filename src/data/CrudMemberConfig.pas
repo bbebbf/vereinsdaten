@@ -2,10 +2,10 @@ unit CrudMemberConfig;
 
 interface
 
-uses System.SysUtils, SqlConnection, CrudAccessor, CrudConfig, SelectListFilter, DtoMember;
+uses InterfacedBase, SqlConnection, CrudAccessor, CrudConfig, SelectListFilter, DtoMember;
 
 type
-  TCrudMemberConfig = class(TInterfacedObject,
+  TCrudMemberConfig = class(TInterfacedBase,
     ICrudConfig<TDtoMember, UInt32>,
     ISelectListFilter<TDtoMember, UInt32>)
   strict private

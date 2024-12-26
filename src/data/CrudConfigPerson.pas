@@ -2,10 +2,10 @@ unit CrudConfigPerson;
 
 interface
 
-uses System.SysUtils, CrudConfig, SelectList, CrudAccessor, SqlConnection, DtoPerson, Vdm.Types;
+uses InterfacedBase, CrudConfig, SelectList, CrudAccessor, SqlConnection, DtoPerson, Vdm.Types;
 
 type
-  TCrudConfigPerson = class(TInterfacedObject, ICrudConfig<TDtoPerson, UInt32>, ISelectList<TDtoPerson>)
+  TCrudConfigPerson = class(TInterfacedBase, ICrudConfig<TDtoPerson, UInt32>, ISelectList<TDtoPerson>)
   strict private
     function GetTablename: string;
     function GetIdentityColumns: TArray<string>;

@@ -2,7 +2,7 @@ unit MainBusinessIntf;
 
 interface
 
-uses System.Classes, CrudCommands, CrudUI, DtoUnitAggregated;
+uses System.Classes, CrudCommands, CrudUI, DtoUnit, DtoUnitAggregated;
 
 type
   IMainBusinessIntf = interface(ICrudCommands<UInt32>)
@@ -11,7 +11,9 @@ type
     procedure SetShowInactivePersons(const aValue: Boolean);
     procedure LoadAvailableAddresses(const aStrings: TStrings);
     procedure LoadPersonsMemberOfs;
-    procedure CallDialogUnits(const aCrudUI: ICrudUI<TDtoUnitAggregated, UInt32>);
+    procedure ConfigureDialogUnits(const aCrudUI: ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32>);
+    procedure ClearUnitCache;
+    procedure ClearRoleCache;
     property ShowInactivePersons: Boolean read GetShowInactivePersons write SetShowInactivePersons;
   end;
 

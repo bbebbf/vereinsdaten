@@ -2,12 +2,12 @@ unit DelegatedConverter;
 
 interface
 
-uses System.SysUtils, ValueConverter;
+uses InterfacedBase, ValueConverter;
 
 type
   TDelegatedConverterProc<S, T> = reference to procedure(const aValue: S; var aTarget: T);
 
-  TDelegatedConverter<S, T> = class(TInterfacedObject, IValueConverter<S, T>)
+  TDelegatedConverter<S, T> = class(TInterfacedBase, IValueConverter<S, T>)
   strict private
     fConvert: TDelegatedConverterProc<S, T>;
     fConvertBack: TDelegatedConverterProc<T, S>;

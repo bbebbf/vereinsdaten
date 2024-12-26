@@ -1,6 +1,9 @@
 program vdm;
 
 uses
+  {$ifdef FASTMM}
+  FastMM4,
+  {$endif FASTMM}
   Vcl.Forms,
   FireDAC.VCLUI.Wait,
   SqlConnection in 'general\intf\sql\SqlConnection.pas',
@@ -73,7 +76,8 @@ uses
   CrudBusiness in 'business\impl\CrudBusiness.pas',
   EntryCrudConfig in 'general\intf\crud\EntryCrudConfig.pas',
   unUnit in 'view\forms\unUnit.pas' {fmUnit},
-  CrudConfigUnitAggregated in 'data\CrudConfigUnitAggregated.pas';
+  CrudConfigUnitAggregated in 'data\CrudConfigUnitAggregated.pas',
+  InterfacedBase in 'general\common\Tools\InterfacedBase.pas';
 
 {$R *.res}
 
@@ -90,8 +94,13 @@ begin
 
     lConnectProgress.ProgressEnd;
     var lMainBusiness: IMainBusinessIntf := TMainBusiness.Create(lConnection, fmMain, lConnectProgress);
-    lMainBusiness.Initialize;
-    Application.Run;
+    try
+      lMainBusiness.Initialize;
+      Application.Run;
+
+    finally
+      lMainBusiness := nil;
+    end;
   finally
     lConnectProgress.Free;
   end;

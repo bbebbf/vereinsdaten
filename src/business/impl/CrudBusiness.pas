@@ -2,13 +2,13 @@
 
 interface
 
-uses System.SysUtils, SqlConnection, CrudCommands, CrudUI, EntryCrudConfig;
+uses InterfacedBase, SqlConnection, CrudCommands, CrudUI, EntryCrudConfig;
 
 type
-  TCrudBusiness<TEntry: class; TId: record> = class(TInterfacedObject, ICrudCommands<TId>)
+  TCrudBusiness<TEntry; TListEntry; TId: record> = class(TInterfacedBase, ICrudCommands<TId>)
   strict private
-    fUI: ICrudUI<TEntry, TId>;
-    fConfig: IEntryCrudConfig<TEntry, TId>;
+    fUI: ICrudUI<TEntry, TListEntry, TId>;
+    fConfig: IEntryCrudConfig<TEntry, TListEntry, TId>;
     fNewEntryStarted: Boolean;
     fCurrentEntry: TEntry;
     procedure Initialize;
@@ -19,31 +19,40 @@ type
     procedure StartNewEntry;
     function DeleteEntry(const aId: TId): TCrudCommandResult;
   public
-    constructor Create(const aUI: ICrudUI<TEntry, TId>; const aConfig: IEntryCrudConfig<TEntry, TId>);
+    constructor Create(const aUI: ICrudUI<TEntry, TListEntry, TId>; const aConfig: IEntryCrudConfig<TEntry, TListEntry, TId>);
+    destructor Destroy; override;
   end;
 
 implementation
 
-{ TCrudBusiness<TEntry, TId> }
+uses System.SysUtils;
 
-constructor TCrudBusiness<TEntry, TId>.Create(const aUI: ICrudUI<TEntry, TId>;
-  const aConfig: IEntryCrudConfig<TEntry, TId>);
+{ TCrudBusiness<TEntry, TListEntry, TId> }
+
+constructor TCrudBusiness<TEntry, TListEntry, TId>.Create(const aUI: ICrudUI<TEntry, TListEntry, TId>;
+  const aConfig: IEntryCrudConfig<TEntry, TListEntry, TId>);
 begin
   inherited Create;
   fUI := aUI;
   fConfig := aConfig;
 end;
 
-procedure TCrudBusiness<TEntry, TId>.Initialize;
+destructor TCrudBusiness<TEntry, TListEntry, TId>.Destroy;
+begin
+  fConfig.DestroyEntry(fCurrentEntry);
+  inherited;
+end;
+
+procedure TCrudBusiness<TEntry, TListEntry, TId>.Initialize;
 begin
   var lCrudCommands: ICrudCommands<TId>;
   if not Supports(Self, ICrudCommands<TId>, lCrudCommands) then
     raise ENotImplemented.Create('ICrudCommands<TId> is not implemented.');
 
-  fUI.Initialize(lCrudCommands)
+  fUI.SetCrudCommands(lCrudCommands)
 end;
 
-function TCrudBusiness<TEntry, TId>.LoadList: TCrudCommandResult;
+function TCrudBusiness<TEntry, TListEntry, TId>.LoadList: TCrudCommandResult;
 begin
   Result := default(TCrudCommandResult);
   fNewEntryStarted := False;
@@ -53,18 +62,20 @@ begin
     var lSqlResult := fConfig.GetListSqlResult;
     while lSqlResult.Next do
     begin
-      var lEntry := fConfig.GetEntryFromListSqlResult(lSqlResult);
-      if fConfig.IsEntryValidForList(lEntry) then
-        fUI.ListEnumProcessItem(lEntry)
-      else
-        fConfig.DestroyEntry(lEntry);
+      var lEntry := fConfig.GetListEntryFromSqlResult(lSqlResult);
+      try
+        if fConfig.IsEntryValidForList(lEntry) then
+          fUI.ListEnumProcessItem(lEntry);
+      finally
+        fConfig.DestroyListEntry(lEntry);
+      end;
     end;
   finally
     fUI.ListEnumEnd;
   end;
 end;
 
-function TCrudBusiness<TEntry, TId>.LoadCurrentEntry(const aId: TId): TCrudCommandResult;
+function TCrudBusiness<TEntry, TListEntry, TId>.LoadCurrentEntry(const aId: TId): TCrudCommandResult;
 begin
   fConfig.DestroyEntry(fCurrentEntry);
   fNewEntryStarted := False;
@@ -79,7 +90,7 @@ begin
   end;
 end;
 
-function TCrudBusiness<TEntry, TId>.SaveCurrentEntry: TCrudSaveResult;
+function TCrudBusiness<TEntry, TListEntry, TId>.SaveCurrentEntry: TCrudSaveResult;
 begin
   var lDestroyTempSavingEntry := True;
   var lTempSavingEntry: TEntry;
@@ -116,18 +127,18 @@ begin
   end;
 end;
 
-procedure TCrudBusiness<TEntry, TId>.StartNewEntry;
+procedure TCrudBusiness<TEntry, TListEntry, TId>.StartNewEntry;
 begin
   fNewEntryStarted := True;
   fUI.ClearEntryFromUI;
 end;
 
-function TCrudBusiness<TEntry, TId>.ReloadCurrentEntry: TCrudCommandResult;
+function TCrudBusiness<TEntry, TListEntry, TId>.ReloadCurrentEntry: TCrudCommandResult;
 begin
   fUI.SetEntryToUI(fCurrentEntry, False);
 end;
 
-function TCrudBusiness<TEntry, TId>.DeleteEntry(const aId: TId): TCrudCommandResult;
+function TCrudBusiness<TEntry, TListEntry, TId>.DeleteEntry(const aId: TId): TCrudCommandResult;
 begin
 
 end;

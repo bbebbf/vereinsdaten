@@ -5,11 +5,11 @@ unit MySqlConnection;
 interface
 
 uses
-  System.SysUtils, Data.DB, SqlConnection, Transaction,
+  InterfacedBase, Data.DB, SqlConnection, Transaction,
   FireDAC.Comp.Client, FireDAC.Stan.Param;
 
 type
-  TMySqlResult = class(TInterfacedObject, ISqlResult)
+  TMySqlResult = class(TInterfacedBase, ISqlResult)
   strict private
     fQuery: TFDCustomQuery;
     fOwnsQuery: Boolean;
@@ -24,7 +24,7 @@ type
     destructor Destroy; override;
   end;
 
-  TMySqlTransaction = class(TInterfacedObject, ITransaction)
+  TMySqlTransaction = class(TInterfacedBase, ITransaction)
   private
     fTransaction: TFDCustomTransaction;
   strict private
@@ -35,7 +35,7 @@ type
     destructor Destroy; override;
   end;
 
-  TMySqlParameter = class(TInterfacedObject, ISqlParameter)
+  TMySqlParameter = class(TInterfacedBase, ISqlParameter)
   private
     fParameter: TFDParam;
   strict private
@@ -48,7 +48,7 @@ type
     constructor Create(const aParameter: TFDParam);
   end;
 
-  TMySqlPreparedCommand = class(TInterfacedObject, ISqlPreparedCommand)
+  TMySqlPreparedCommand = class(TInterfacedBase, ISqlPreparedCommand)
   strict private
     fCommand: TFDCommand;
     procedure Prepare;
@@ -61,7 +61,7 @@ type
     destructor Destroy; override;
   end;
 
-  TMySqlPreparedQuery = class(TInterfacedObject, ISqlPreparedQuery)
+  TMySqlPreparedQuery = class(TInterfacedBase, ISqlPreparedQuery)
   strict private
     fQuery: TFDCustomQuery;
     procedure Prepare;
@@ -79,7 +79,7 @@ type
     function GetConnectionString: string; override;
   end;
 
-  TMySqlConnection = class(TInterfacedObject, ISqlConnection)
+  TMySqlConnection = class(TInterfacedBase, ISqlConnection)
   strict private
     fParameters: TSqlConnectionParametersBase;
     fConnection: TFDConnection;
@@ -102,7 +102,7 @@ type
 
 implementation
 
-uses System.Classes, FireDAC.Stan.Def, FireDAC.DApt, FireDAC.Stan.Async, FireDAC.Phys.MySQL;
+uses System.Classes, System.SysUtils, FireDAC.Stan.Def, FireDAC.DApt, FireDAC.Stan.Async, FireDAC.Phys.MySQL;
 
 { TMySqlConnection }
 

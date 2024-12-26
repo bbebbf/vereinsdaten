@@ -15,10 +15,10 @@ function CreateSshTunnelProcess(const aRemoteHost: string; const aRemotePort, aL
 
 implementation
 
-uses System.SysUtils, Winapi.Windows, WindowsProcess;
+uses System.SysUtils, InterfacedBase, Winapi.Windows, WindowsProcess;
 
 type
-  TSshTunnel = class(TInterfacedObject, ISshTunnel)
+  TSshTunnel = class(TInterfacedBase, ISshTunnel)
   strict private
     fRemoteHost: string;
     fRemotePort: Integer;

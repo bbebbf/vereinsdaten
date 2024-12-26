@@ -2,10 +2,10 @@ unit CrudConfigRole;
 
 interface
 
-uses System.SysUtils, SelectList, SqlConnection, DtoRole;
+uses InterfacedBase, SelectList, SqlConnection, DtoRole;
 
 type
-  TCrudConfigRole = class(TInterfacedObject, ISelectList<TDtoRole>)
+  TCrudConfigRole = class(TInterfacedBase, ISelectList<TDtoRole>)
   strict private
     procedure GetRecordFromSqlResult(const aSqlResult: ISqlResult; var aData: TDtoRole);
     function GetSelectListSQL: string;

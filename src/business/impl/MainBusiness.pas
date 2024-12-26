@@ -2,13 +2,13 @@
 
 interface
 
-uses System.Classes, System.SysUtils, CrudCommands, CrudConfig, Transaction, MainBusinessIntf,
+uses System.Classes, InterfacedBase, CrudCommands, CrudConfig, Transaction, MainBusinessIntf,
   DtoPersonAggregated, SqlConnection, PersonAggregatedUI, DtoPerson, RecordActions,
   KeyIndexMapper, DtoPersonAddress, DtoAddress, DtoClubmembership, ClubmembershipTools,
-  MemberOfBusinessIntf, ProgressIndicator, DtoUnitAggregated, CrudUI;
+  MemberOfBusinessIntf, ProgressIndicator, DtoUnit, DtoUnitAggregated, CrudUI;
 
 type
-  TMainBusiness = class(TInterfacedObject, IMainBusinessIntf)
+  TMainBusiness = class(TInterfacedBase, IMainBusinessIntf)
   strict private
     fConnection: ISqlConnection;
     fProgressIndicator: IProgressIndicator;
@@ -39,7 +39,9 @@ type
     function GetShowInactivePersons: Boolean;
     procedure SetShowInactivePersons(const aValue: Boolean);
     procedure LoadPersonsMemberOfs;
-    procedure CallDialogUnits(const aCrudUI: ICrudUI<TDtoUnitAggregated, UInt32>);
+    procedure ConfigureDialogUnits(const aCrudUI: ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32>);
+    procedure ClearUnitCache;
+    procedure ClearRoleCache;
   public
     constructor Create(const aConnection: ISqlConnection; const aUI: IPersonAggregatedUI;
       const aProgressIndicator: IProgressIndicator);
@@ -48,19 +50,11 @@ type
 
 implementation
 
-uses System.Generics.Collections, SelectList,
+uses System.SysUtils, System.Generics.Collections, SelectList,
   CrudConfigPerson, CrudConfigAddress, CrudConfigPersonAddress, CrudConfigClubmembership,
   MemberOfBusiness, EntryCrudConfig, CrudConfigUnitAggregated, CrudBusiness;
 
 { TMainBusiness }
-
-procedure TMainBusiness.CallDialogUnits(const aCrudUI: ICrudUI<TDtoUnitAggregated, UInt32>);
-begin
-  var lConfig: IEntryCrudConfig<TDtoUnitAggregated, UInt32> := TCrudConfigUnitAggregated.Create(fConnection);
-  var lBusiness: ICrudCommands<UInt32> := TCrudBusiness<TDtoUnitAggregated, UInt32>.Create(
-    aCrudUI, lConfig);
-  lBusiness.Initialize;
-end;
 
 constructor TMainBusiness.Create(const aConnection: ISqlConnection; const aUI: IPersonAggregatedUI;
   const aProgressIndicator: IProgressIndicator);
@@ -91,7 +85,6 @@ begin
   fPersonAddressRecordActions.Free;
   fPersonRecordActions.Free;
   fAddressMapper.Free;
-  fConnection := nil;
   inherited;
 end;
 
@@ -107,7 +100,7 @@ end;
 
 procedure TMainBusiness.Initialize;
 begin
-  fUI.Initialize(Self);
+  fUI.SetMainBusinessIntf(Self);
   fMemberOfBusiness.Initialize;
 end;
 
@@ -179,7 +172,7 @@ begin
       fPersonConfig.GetRecordFromSqlResult(lSqlResult, lRecord);
       if fShowInactivePersons or lRecord.Aktiv then
       begin
-        fUI.ListEnumProcessItem(TDtoPersonAggregated.Create(lRecord));
+        fUI.ListEnumProcessItem(lRecord);
       end;
     end;
   finally
@@ -329,6 +322,24 @@ procedure TMainBusiness.StartNewEntry;
 begin
   fNewEntryStarted := True;
   fUI.ClearEntryFromUI;
+end;
+
+procedure TMainBusiness.ClearRoleCache;
+begin
+  fMemberOfBusiness.ClearRoleCache;
+end;
+
+procedure TMainBusiness.ClearUnitCache;
+begin
+  fMemberOfBusiness.ClearUnitCache;
+end;
+
+procedure TMainBusiness.ConfigureDialogUnits(const aCrudUI: ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32>);
+begin
+  var lConfig: IEntryCrudConfig<TDtoUnitAggregated, TDtoUnit, UInt32> := TCrudConfigUnitAggregated.Create(fConnection);
+  var lBusiness: ICrudCommands<UInt32> := TCrudBusiness<TDtoUnitAggregated, TDtoUnit, UInt32>.Create(
+    aCrudUI, lConfig);
+  lBusiness.Initialize;
 end;
 
 end.

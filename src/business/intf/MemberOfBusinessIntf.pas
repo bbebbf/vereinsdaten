@@ -15,6 +15,8 @@ type
     procedure AddNewEntry(const aEntry: TListEntry<TDtoMemberAggregated>);
     procedure ReloadEntries;
     procedure SaveEntries(const aDeleteEntryCallback: TListCrudCommandsEntryCallback<TDtoMemberAggregated>);
+    procedure ClearUnitCache;
+    procedure ClearRoleCache;
     property ShowInactiveMemberOfs: Boolean read GetShowInactiveMemberOfs write SetShowInactiveMemberOfs;
   end;
 

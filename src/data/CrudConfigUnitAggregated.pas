@@ -2,20 +2,21 @@ unit CrudConfigUnitAggregated;
 
 interface
 
-uses System.SysUtils, EntryCrudConfig, DtoUnitAggregated, SqlConnection, CrudConfigUnit, CrudConfig, DtoUnit,
+uses InterfacedBase, EntryCrudConfig, DtoUnitAggregated, SqlConnection, CrudConfigUnit, CrudConfig, DtoUnit,
   RecordActions;
 
 type
-  TCrudConfigUnitAggregated = class(TInterfacedObject, IEntryCrudConfig<TDtoUnitAggregated, UInt32>)
+  TCrudConfigUnitAggregated = class(TInterfacedBase, IEntryCrudConfig<TDtoUnitAggregated, TDtoUnit, UInt32>)
   strict private
     fConnection: ISqlConnection;
     fCrudConfigUnit: ICrudConfig<TDtoUnit, UInt32>;
     fUnitRecordActions: TRecordActions<TDtoUnit, UInt32>;
     function GetListSqlResult: ISqlResult;
-    function GetEntryFromListSqlResult(const aSqlResult: ISqlResult): TDtoUnitAggregated;
-    function IsEntryValidForList(const aEntry: TDtoUnitAggregated): Boolean;
+    function GetListEntryFromSqlResult(const aSqlResult: ISqlResult): TDtoUnit;
+    function IsEntryValidForList(const aEntry: TDtoUnit): Boolean;
     function IsEntryValidForSaving(const aEntry: TDtoUnitAggregated): Boolean;
     procedure DestroyEntry(var aEntry: TDtoUnitAggregated);
+    procedure DestroyListEntry(var aEntry: TDtoUnit);
     function TryLoadEntry(const aId: UInt32; out aEntry: TDtoUnitAggregated): Boolean;
     function CreateEntry: TDtoUnitAggregated;
     function CloneEntry(const aEntry: TDtoUnitAggregated): TDtoUnitAggregated;
@@ -29,7 +30,7 @@ type
 
 implementation
 
-uses SelectList;
+uses System.SysUtils, SelectList;
 
 { TCrudConfigUnitAggregated }
 
@@ -67,11 +68,15 @@ begin
   FreeAndNil(aEntry);
 end;
 
-function TCrudConfigUnitAggregated.GetEntryFromListSqlResult(const aSqlResult: ISqlResult): TDtoUnitAggregated;
+procedure TCrudConfigUnitAggregated.DestroyListEntry(var aEntry: TDtoUnit);
 begin
-  var lUnit := default(TDtoUnit);
-  fCrudConfigUnit.GetRecordFromSqlResult(aSqlResult, lUnit);
-  Result := TDtoUnitAggregated.Create(lUnit);
+  aEntry := default(TDtoUnit);
+end;
+
+function TCrudConfigUnitAggregated.GetListEntryFromSqlResult(const aSqlResult: ISqlResult): TDtoUnit;
+begin
+  Result := default(TDtoUnit);
+  fCrudConfigUnit.GetRecordFromSqlResult(aSqlResult, Result);
 end;
 
 function TCrudConfigUnitAggregated.GetListSqlResult: ISqlResult;
@@ -87,7 +92,7 @@ begin
   Result := not Assigned(aEntry);
 end;
 
-function TCrudConfigUnitAggregated.IsEntryValidForList(const aEntry: TDtoUnitAggregated): Boolean;
+function TCrudConfigUnitAggregated.IsEntryValidForList(const aEntry: TDtoUnit): Boolean;
 begin
   Result := True;
 end;

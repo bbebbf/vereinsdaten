@@ -2,7 +2,7 @@
 
 interface
 
-uses System.Classes, System.SysUtils, System.Generics.Collections, SqlConnection, MemberOfBusinessIntf,
+uses System.Classes, System.Generics.Collections, InterfacedBase, SqlConnection, MemberOfBusinessIntf,
   PersonMemberOfUI, KeyIndexStrings, CrudConfig,
   DtoMemberAggregated, DtoMember, DtoUnit, DtoRole, ListCrudCommands, SelectList, SelectListFilter,
   ValueConverter;
@@ -12,7 +12,7 @@ type
     ShowInactiveMemberOfs: Boolean;
   end;
 
-  TMemberOfBusiness = class(TInterfacedObject, IMemberOfBusinessIntf, IValueConverter<TDtoMember, TDtoMemberAggregated>)
+  TMemberOfBusiness = class(TInterfacedBase, IMemberOfBusinessIntf)
   strict private
     fConnection: ISqlConnection;
     fUI: IPersonMemberOfUI;
@@ -24,6 +24,8 @@ type
     fRoleListConfig: ISelectList<TDtoRole>;
     fCurrentPersonId: UInt32;
     fCurrentFilter: TMemberOfBusinessRecordFilter;
+    fSelectListFilter: ISelectListFilter<TDtoMember, UInt32>;
+    fValueConverter: IValueConverter<TDtoMember, TDtoMemberAggregated>;
     procedure Initialize;
     procedure LoadPersonsMemberOfs(const aPersonId: UInt32);
     function GetShowInactiveMemberOfs: Boolean;
@@ -32,8 +34,8 @@ type
     procedure AddNewEntry(const aEntry: TListEntry<TDtoMemberAggregated>);
     procedure ReloadEntries;
     procedure SaveEntries(const aDeleteEntryCallback: TListCrudCommandsEntryCallback<TDtoMemberAggregated>);
-    procedure Convert(const aValue: TDtoMember; var aTarget: TDtoMemberAggregated);
-    procedure ConvertBack(const aValue: TDtoMemberAggregated; var aTarget: TDtoMember);
+    procedure ClearUnitCache;
+    procedure ClearRoleCache;
 
     procedure UpdateFilter;
     procedure OnItemMatchesFilter(Sender: TObject;
@@ -45,7 +47,18 @@ type
 
 implementation
 
-uses CrudMemberConfig, CrudConfigUnit, CrudConfigRole, KeyIndexMapper;
+uses System.SysUtils, CrudMemberConfig, CrudConfigUnit, CrudConfigRole, KeyIndexMapper;
+
+type
+  TDtoMemberConverter = class(TInterfacedBase, IValueConverter<TDtoMember, TDtoMemberAggregated>)
+  strict private
+    fUnitMapper: TKeyIndexStrings;
+    fRoleMapper: TKeyIndexStrings;
+    procedure Convert(const aValue: TDtoMember; var aTarget: TDtoMemberAggregated);
+    procedure ConvertBack(const aValue: TDtoMemberAggregated; var aTarget: TDtoMember);
+  public
+    constructor Create(const aUnitMapper, aRoleMapper: TKeyIndexStrings);
+  end;
 
 { TMemberOfBusiness }
 
@@ -55,11 +68,10 @@ begin
   fConnection := aConnection;
   fUI := aUI;
   fMemberConfig := TCrudMemberConfig.Create;
-  fListCrudCommands := TObjectListCrudCommands<TDtoMember, UInt32, TDtoMemberAggregated,
-    UInt32, TMemberOfBusinessRecordFilter>.Create(
-    fConnection, fMemberConfig, Self);
-  fListCrudCommands.TargetEnumerator := fUI;
-  fListCrudCommands.OnItemMatchesFilter := OnItemMatchesFilter;
+
+  if not Supports(fMemberConfig, ISelectListFilter<TDtoMember, UInt32>, fSelectListFilter) then
+    raise ENotSupportedException.Create('aCrudConfig doesn''t support ISelectListFilter.');
+
   fUnitListConfig := TCrudConfigUnit.Create;
   fRoleListConfig := TCrudConfigRole.Create;
   fUnitMapper := TKeyIndexStrings.Create(
@@ -104,14 +116,31 @@ begin
         end;
       end
     );
+
+  fValueConverter := TDtoMemberConverter.Create(fUnitMapper, fRoleMapper);
+  fListCrudCommands := TObjectListCrudCommands<TDtoMember, UInt32, TDtoMemberAggregated,
+    UInt32, TMemberOfBusinessRecordFilter>.Create(
+    fConnection, fSelectListFilter, fMemberConfig, fValueConverter);
+  fListCrudCommands.TargetEnumerator := fUI;
+  fListCrudCommands.OnItemMatchesFilter := OnItemMatchesFilter;
 end;
 
 destructor TMemberOfBusiness.Destroy;
 begin
+  fListCrudCommands.Free;
   fRoleMapper.Free;
   fUnitMapper.Free;
-  fListCrudCommands.Free;
   inherited;
+end;
+
+procedure TMemberOfBusiness.ClearRoleCache;
+begin
+  fRoleMapper.Invalidate;
+end;
+
+procedure TMemberOfBusiness.ClearUnitCache;
+begin
+  fUnitMapper.Invalidate;
 end;
 
 function TMemberOfBusiness.GetShowInactiveMemberOfs: Boolean;
@@ -125,23 +154,6 @@ begin
   Result.Data.Active := True;
 end;
 
-procedure TMemberOfBusiness.Convert(const aValue: TDtoMember; var aTarget: TDtoMemberAggregated);
-begin
-  if Assigned(aTarget) then
-  begin
-    aTarget.UpdateByDtoMember(aValue);
-  end
-  else
-  begin
-    aTarget := TDtoMemberAggregated.Create(fUnitMapper, fRoleMapper, aValue);
-  end;
-end;
-
-procedure TMemberOfBusiness.ConvertBack(const aValue: TDtoMemberAggregated; var aTarget: TDtoMember);
-begin
-  aTarget := aValue.Member;
-end;
-
 procedure TMemberOfBusiness.AddNewEntry(const aEntry: TListEntry<TDtoMemberAggregated>);
 begin
   aEntry.Data.PersonId := fCurrentPersonId;
@@ -150,7 +162,7 @@ end;
 
 procedure TMemberOfBusiness.Initialize;
 begin
-  fUI.Initialize(Self);
+  fUI.SetCommands(Self);
 end;
 
 procedure TMemberOfBusiness.SetShowInactiveMemberOfs(const aValue: Boolean);
@@ -194,6 +206,32 @@ end;
 procedure TMemberOfBusiness.ReloadEntries;
 begin
   fListCrudCommands.Reload;
+end;
+
+{ TDtoMemberConverter }
+
+constructor TDtoMemberConverter.Create(const aUnitMapper, aRoleMapper: TKeyIndexStrings);
+begin
+  inherited Create;
+  fUnitMapper := aUnitMapper;
+  fRoleMapper := aRoleMapper;
+end;
+
+procedure TDtoMemberConverter.Convert(const aValue: TDtoMember; var aTarget: TDtoMemberAggregated);
+begin
+  if Assigned(aTarget) then
+  begin
+    aTarget.UpdateByDtoMember(aValue);
+  end
+  else
+  begin
+    aTarget := TDtoMemberAggregated.Create(fUnitMapper, fRoleMapper, aValue);
+  end;
+end;
+
+procedure TDtoMemberConverter.ConvertBack(const aValue: TDtoMemberAggregated; var aTarget: TDtoMember);
+begin
+  aTarget := aValue.Member;
 end;
 
 end.

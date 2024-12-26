@@ -5,7 +5,7 @@ interface
 uses System.SysUtils, ValueConverter;
 
 type
-  TGenericConverter<S, T> = class(TInterfacedObject, IValueConverter<S, T>)
+  TGenericConverter<S, T> = class(TInterfacedBase, IValueConverter<S, T>)
   end;
 
 

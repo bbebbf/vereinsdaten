@@ -71,3 +71,4 @@ modules/
 dunitx-results.xml
 /docker/.env
 /docker/data/*
+/out/bin
