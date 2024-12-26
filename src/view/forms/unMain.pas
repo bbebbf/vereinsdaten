@@ -23,6 +23,7 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure acMasterdataUnitExecute(Sender: TObject);
+    procedure acMasterdataRoleExecute(Sender: TObject);
   strict private
     fActivated: Boolean;
     fConnection: ISqlConnection;
@@ -40,9 +41,26 @@ var
 implementation
 
 uses Vdm.Globals, ConfigReader, unUnit, CrudCommands, CrudBusiness, EntryCrudConfig,
-  DtoUnit, DtoUnitAggregated, CrudConfigUnitAggregated;
+  DtoUnit, DtoUnitAggregated, CrudConfigUnitAggregated, DtoRole, CrudConfigRoleEntry, unRole;
 
 {$R *.dfm}
+
+procedure TfmMain.acMasterdataRoleExecute(Sender: TObject);
+begin
+  var lDialog := TfmRole.Create(Self);
+  try
+    var lCrudConfig: IEntryCrudConfig<TDtoRole, TDtoRole, UInt32> := TCrudConfigRoleEntry.Create(fConnection);
+    var lBusiness: ICrudCommands<UInt32> := TCrudBusiness<TDtoRole, TDtoRole, UInt32>.Create(lDialog, lCrudConfig);
+    lBusiness.Initialize;
+    lDialog.ShowModal;
+    if lBusiness.DataChanged then
+    begin
+      fPersonBusinessIntf.ClearUnitCache;
+    end;
+  finally
+    lDialog.Free;
+  end;
+end;
 
 procedure TfmMain.acMasterdataUnitExecute(Sender: TObject);
 begin

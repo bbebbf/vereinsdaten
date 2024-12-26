@@ -54,6 +54,7 @@ object fmMain: TfmMain
     end
     object acMasterdataRole: TAction
       Caption = 'Rollen bearbeiten'
+      OnExecute = acMasterdataRoleExecute
     end
   end
 end

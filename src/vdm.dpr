@@ -78,7 +78,9 @@ uses
   unUnit in 'view\forms\unUnit.pas' {fmUnit},
   CrudConfigUnitAggregated in 'data\CrudConfigUnitAggregated.pas',
   InterfacedBase in 'general\common\Tools\InterfacedBase.pas',
-  unMain in 'view\forms\unMain.pas' {fmMain};
+  unMain in 'view\forms\unMain.pas' {fmMain},
+  unRole in 'view\forms\unRole.pas' {fmRole},
+  CrudConfigRoleEntry in 'data\CrudConfigRoleEntry.pas';
 
 {$R *.res}
 

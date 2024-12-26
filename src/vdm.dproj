@@ -253,6 +253,11 @@ $(PostBuildEvent)]]></PostBuildEvent>
             <Form>fmMain</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="view\forms\unRole.pas">
+            <Form>fmRole</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="data\CrudConfigRoleEntry.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

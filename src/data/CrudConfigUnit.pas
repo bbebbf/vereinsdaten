@@ -77,7 +77,7 @@ procedure TCrudConfigUnit.SetValues(const aRecord: TDtoUnit; const aAccessor: TC
 begin
   if aForUpdate then
     aAccessor.SetValue('unit_id', aRecord.Id);
-  aAccessor.SetValueEmptyStrAsNull('unit_name', aRecord.Name);
+  aAccessor.SetValue('unit_name', aRecord.Name);
   aAccessor.SetValue('unit_active', aRecord.Active);
   aAccessor.SetValueZeroAsNull('unit_active_since', aRecord.ActiveSince);
   aAccessor.SetValueZeroAsNull('unit_active_until', aRecord.ActiveUntil);
