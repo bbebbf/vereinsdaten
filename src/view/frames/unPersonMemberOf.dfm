@@ -39,7 +39,6 @@ object fraPersonMemberOf: TfraPersonMemberOf
     OnCustomDrawItem = lvMemberOfCustomDrawItem
     OnDblClick = lvMemberOfDblClick
     OnSelectItem = lvMemberOfSelectItem
-    ExplicitTop = -6
   end
   object pnCommands: TPanel
     Left = 0

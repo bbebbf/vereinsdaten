@@ -21,7 +21,7 @@ type
 
 implementation
 
-uses VdmGlobals;
+uses Vdm.Globals;
 
 { TCheckboxDatetimePickerHandler }
 

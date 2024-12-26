@@ -1,4 +1,4 @@
-unit VdmGlobals;
+unit Vdm.Globals;
 
 interface
 

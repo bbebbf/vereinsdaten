@@ -186,16 +186,16 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="data\DtoPersonAggregated.pas"/>
         <DCCReference Include="view\tools\ListviewAttachedData.pas"/>
         <DCCReference Include="view\intf\PersonAggregatedUI.pas"/>
-        <DCCReference Include="business\intf\MainBusinessIntf.pas"/>
-        <DCCReference Include="business\impl\MainBusiness.pas"/>
+        <DCCReference Include="business\intf\PersonBusinessIntf.pas"/>
+        <DCCReference Include="business\impl\PersonBusiness.pas"/>
         <DCCReference Include="general\common\Tools\RecordActions.pas"/>
         <DCCReference Include="general\common\Tools\ConfigReader.pas"/>
-        <DCCReference Include="view\forms\unMain.pas">
-            <Form>fmMain</Form>
+        <DCCReference Include="view\frames\unPerson.pas">
+            <Form>fraPerson</Form>
         </DCCReference>
         <DCCReference Include="data\DtoClubmembership.pas"/>
         <DCCReference Include="data\CrudConfigClubmembership.pas"/>
-        <DCCReference Include="general\VdmGlobals.pas"/>
+        <DCCReference Include="general\Vdm.Globals.pas"/>
         <DCCReference Include="general\common\Tools\FileTools.pas"/>
         <DCCReference Include="general\intf\tools\ProgressIndicator.pas"/>
         <DCCReference Include="view\forms\unProgressForm.pas">
@@ -249,6 +249,10 @@ $(PostBuildEvent)]]></PostBuildEvent>
         </DCCReference>
         <DCCReference Include="data\CrudConfigUnitAggregated.pas"/>
         <DCCReference Include="general\common\Tools\InterfacedBase.pas"/>
+        <DCCReference Include="view\forms\unMain.pas">
+            <Form>fmMain</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

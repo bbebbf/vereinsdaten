@@ -1,11 +1,11 @@
-﻿unit MainBusiness;
+﻿unit PersonBusiness;
 
 interface
 
-uses System.Classes, InterfacedBase, CrudCommands, CrudConfig, Transaction, MainBusinessIntf,
+uses System.Classes, InterfacedBase, CrudCommands, CrudConfig, Transaction, PersonBusinessIntf,
   DtoPersonAggregated, SqlConnection, PersonAggregatedUI, DtoPerson, RecordActions,
   KeyIndexMapper, DtoPersonAddress, DtoAddress, DtoClubmembership, ClubmembershipTools,
-  MemberOfBusinessIntf, ProgressIndicator, DtoUnit, DtoUnitAggregated, CrudUI;
+  MemberOfBusinessIntf, ProgressIndicator;
 
 type
   TPersonBusiness = class(TInterfacedBase, IPersonBusinessIntf)
@@ -39,7 +39,6 @@ type
     function GetShowInactivePersons: Boolean;
     procedure SetShowInactivePersons(const aValue: Boolean);
     procedure LoadPersonsMemberOfs;
-    procedure ConfigureDialogUnits(const aCrudUI: ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32>);
     procedure ClearUnitCache;
     procedure ClearRoleCache;
   public
@@ -338,14 +337,6 @@ end;
 procedure TPersonBusiness.ClearUnitCache;
 begin
   fMemberOfBusiness.ClearUnitCache;
-end;
-
-procedure TPersonBusiness.ConfigureDialogUnits(const aCrudUI: ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32>);
-begin
-  var lConfig: IEntryCrudConfig<TDtoUnitAggregated, TDtoUnit, UInt32> := TCrudConfigUnitAggregated.Create(fConnection);
-  var lBusiness: ICrudCommands<UInt32> := TCrudBusiness<TDtoUnitAggregated, TDtoUnit, UInt32>.Create(
-    aCrudUI, lConfig);
-  lBusiness.Initialize;
 end;
 
 end.

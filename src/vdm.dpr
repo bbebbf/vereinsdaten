@@ -26,14 +26,14 @@ uses
   DtoPersonAggregated in 'data\DtoPersonAggregated.pas',
   ListviewAttachedData in 'view\tools\ListviewAttachedData.pas',
   PersonAggregatedUI in 'view\intf\PersonAggregatedUI.pas',
-  MainBusinessIntf in 'business\intf\MainBusinessIntf.pas',
-  MainBusiness in 'business\impl\MainBusiness.pas',
+  PersonBusinessIntf in 'business\intf\PersonBusinessIntf.pas',
+  PersonBusiness in 'business\impl\PersonBusiness.pas',
   RecordActions in 'general\common\Tools\RecordActions.pas',
   ConfigReader in 'general\common\Tools\ConfigReader.pas',
-  unMain in 'view\forms\unMain.pas' {fmMain},
+  unPerson in 'view\frames\unPerson.pas' {fraPerson},
   DtoClubmembership in 'data\DtoClubmembership.pas',
   CrudConfigClubmembership in 'data\CrudConfigClubmembership.pas',
-  VdmGlobals in 'general\VdmGlobals.pas',
+  Vdm.Globals in 'general\Vdm.Globals.pas',
   FileTools in 'general\common\Tools\FileTools.pas',
   ProgressIndicator in 'general\intf\tools\ProgressIndicator.pas',
   unProgressForm in 'view\forms\unProgressForm.pas' {fmProgressForm},
@@ -77,7 +77,8 @@ uses
   EntryCrudConfig in 'general\intf\crud\EntryCrudConfig.pas',
   unUnit in 'view\forms\unUnit.pas' {fmUnit},
   CrudConfigUnitAggregated in 'data\CrudConfigUnitAggregated.pas',
-  InterfacedBase in 'general\common\Tools\InterfacedBase.pas';
+  InterfacedBase in 'general\common\Tools\InterfacedBase.pas',
+  unMain in 'view\forms\unMain.pas' {fmMain};
 
 {$R *.res}
 
@@ -91,16 +92,11 @@ begin
     var lConnection := TConnectionFactory.CreateConnection;
     if not lConnection.Connect then
       Exit;
-
     lConnectProgress.ProgressEnd;
-    var lMainBusiness: IMainBusinessIntf := TMainBusiness.Create(lConnection, fmMain, lConnectProgress);
-    try
-      lMainBusiness.Initialize;
-      Application.Run;
 
-    finally
-      lMainBusiness := nil;
-    end;
+    fmMain.Connection := lConnection;
+    fmMain.ProgressIndicator := lConnectProgress;
+    Application.Run;
   finally
     lConnectProgress.Free;
   end;

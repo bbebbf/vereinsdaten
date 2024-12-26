@@ -61,7 +61,6 @@ type
     function EntryToListItem(const aEntry: TDtoUnit; const aItem: TListItem): TListItem;
 
     procedure SetCrudCommands(const aCommands: ICrudCommands<UInt32>);
-    procedure UnsetCrudCommands;
     procedure ListEnumBegin;
     procedure ListEnumProcessItem(const aEntry: TDtoUnit);
     procedure ListEnumEnd;
@@ -205,11 +204,6 @@ end;
 procedure TfmUnit.SetCrudCommands(const aCommands: ICrudCommands<UInt32>);
 begin
   fBusinessIntf := aCommands;
-end;
-
-procedure TfmUnit.UnsetCrudCommands;
-begin
-  fBusinessIntf := nil;
 end;
 
 procedure TfmUnit.LoadCurrentEntry(const aEntryId: UInt32);

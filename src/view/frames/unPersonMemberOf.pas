@@ -62,7 +62,7 @@ implementation
 
 {$R *.dfm}
 
-uses VdmGlobals, ListCrudCommands.Types;
+uses Vdm.Globals, ListCrudCommands.Types;
 
 { TfraPersonMemberOf }
 
@@ -122,6 +122,7 @@ end;
 procedure TfraPersonMemberOf.acReloadMemberOfsExecute(Sender: TObject);
 begin
   fBusinessIntf.ReloadEntries;
+  UpdateListActions(False);
 end;
 
 procedure TfraPersonMemberOf.acSaveMemberOfsExecute(Sender: TObject);
@@ -134,6 +135,7 @@ begin
           lvMemberOf.Items.Delete(lItem.Index);
       end
     );
+  UpdateListActions(False);
 end;
 
 procedure TfraPersonMemberOf.acShowInactiveMemberOfsExecute(Sender: TObject);
