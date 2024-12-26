@@ -72,19 +72,25 @@ begin
   fClubmembershipConfig := TCrudConfigClubmembership.Create;
   fClubmembershipRecordActions := TRecordActions<TDtoClubmembership, UInt32>.Create(fConnection, fClubmembershipConfig);
   fClubMembershipNumberChecker := TClubMembershipNumberChecker.Create(fConnection);
-
   fMemberOfBusiness := TMemberOfBusiness.Create(fConnection, fUI.GetMemberOfUI);
 end;
 
 destructor TMainBusiness.Destroy;
 begin
   fCurrentEntry.Free;
-  fAddressRecordActions.Free;
+  fMemberOfBusiness := nil;
   fClubMembershipNumberChecker.Free;
   fClubmembershipRecordActions.Free;
+  fClubmembershipConfig := nil;
+  fAddressConfig := nil;
   fPersonAddressRecordActions.Free;
+  fPersonAddressConfig := nil;
   fPersonRecordActions.Free;
+  fPersonConfig := nil;
   fAddressMapper.Free;
+  fUI := nil;
+  fProgressIndicator := nil;
+  fConnection := nil;
   inherited;
 end;
 

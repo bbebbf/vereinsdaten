@@ -107,6 +107,7 @@ end;
 
 destructor TCrudAccessorBase.Destroy;
 begin
+  fConnection := nil;
   fIdentityColumnNames.Free;
   fValues.Free;
   fParamsDict.Free;

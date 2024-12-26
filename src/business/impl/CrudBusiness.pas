@@ -40,6 +40,8 @@ end;
 destructor TCrudBusiness<TEntry, TListEntry, TId>.Destroy;
 begin
   fConfig.DestroyEntry(fCurrentEntry);
+  fConfig := nil;
+  fUI := nil;
   inherited;
 end;
 

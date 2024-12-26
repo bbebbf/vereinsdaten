@@ -83,6 +83,9 @@ end;
 destructor TListCrudCommands<TS, TSIdent, TD, FSelect, FLoop>.Destroy;
 begin
   fItems.Free;
+  fValueConverter := nil;
+  fCrudConfig := nil;
+  fConnection := nil;
   inherited;
 end;
 

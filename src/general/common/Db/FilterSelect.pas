@@ -31,6 +31,7 @@ type
     function ItemMatchesFilter(const aItem: T; const aFilter: FLoop): Boolean;
   public
     constructor Create(const aConnection: ISqlConnection; const aConfig: ISelectListFilter<T, FSelect>);
+    destructor Destroy; override;
     procedure BeginUpdateFilter;
     procedure EndUpdateFilter;
     property FilterSelect: FSelect read fFilterSelect write SetFilterSelect;
@@ -53,6 +54,13 @@ begin
   inherited Create;
   fConnection := aConnection;
   fConfig := aConfig;
+end;
+
+destructor TFilterSelect<T, FSelect, FLoop>.Destroy;
+begin
+  fConfig := nil;
+  fConnection := nil;
+  inherited;
 end;
 
 procedure TFilterSelect<T, FSelect, FLoop>.ApplyFilter;

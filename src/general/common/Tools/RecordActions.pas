@@ -43,6 +43,8 @@ begin
   fDeleteAccessor.Free;
   fUpdateAccessor.Free;
   fInsertAccessor.Free;
+  fConfig := nil;
+  fConnection := nil;
   inherited;
 end;
 

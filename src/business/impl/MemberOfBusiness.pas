@@ -128,8 +128,15 @@ end;
 destructor TMemberOfBusiness.Destroy;
 begin
   fListCrudCommands.Free;
+  fValueConverter := nil;
   fRoleMapper.Free;
   fUnitMapper.Free;
+  fRoleListConfig := nil;
+  fUnitListConfig := nil;
+  fSelectListFilter := nil;
+  fMemberConfig := nil;
+  fUI := nil;
+  fConnection := nil;
   inherited;
 end;
 
