@@ -94,7 +94,7 @@ begin
   Application.CreateForm(TfmMain, fmMain);
   var lConnectProgress := TfmProgressForm.Create(Application);
   try
-    lConnectProgress.ProgressBegin(0, False, 'Datenbankverbing wird hergestellt ...');
+    lConnectProgress.ProgressBegin(0, False, 'Datenbankverbindung wird hergestellt ...');
     var lConnection := TConnectionFactory.CreateConnection;
     if not lConnection.Connect then
       Exit;
