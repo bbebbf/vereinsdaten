@@ -13,6 +13,7 @@ type
     class function GetDateTimeAsString(const aValue: TDateTime): string;
     class function TryGetColorForCrudState(const aState: TListEntryCrudState; out aColor: TColor): Boolean;
     class function GetInactiveColor: TColor;
+    class function MinusOneToZero(const aIndex: Integer): Integer;
   end;
 
 implementation
@@ -56,6 +57,14 @@ begin
   var lFileVersion: TFileVersionRecord;
   if TFileTools.GetFileVersion(ParamStr(0), lFileVersion) then
     Result := Result + ' ' + lFileVersion.ToString;
+end;
+
+class function TVdmGlobals.MinusOneToZero(const aIndex: Integer): Integer;
+begin
+  if aIndex = -1 then
+    Result := 0
+  else
+    Result := aIndex;
 end;
 
 class function TVdmGlobals.TryGetColorForCrudState(const aState: TListEntryCrudState; out aColor: TColor): Boolean;

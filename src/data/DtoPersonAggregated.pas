@@ -2,14 +2,15 @@ unit DtoPersonAggregated;
 
 interface
 
-uses DtoPerson, DtoClubmembership;
+uses DtoPerson, DtoClubmembership, KeyIndexStrings;
 
 type
   TDtoPersonAggregated = class
   strict private
     fPerson: TDtoPerson;
     fExistingAddressId: UInt32;
-    fAddressIndex: Integer;
+    fAddressId: UInt32;
+    fAvailableAddresses: TKeyIndexStrings;
     fCreateNewAddress: Boolean;
     fNewAddressStreet: string;
     fNewAddressPostalcode: string;
@@ -22,11 +23,15 @@ type
     fMembershipEndDate: TDate;
     fMembershipEndDateText: string;
     fMembershipEndReason: string;
+
+    function GetAddressIndex: Integer;
+    procedure SetAddressIndex(const aValue: Integer);
   public
-    constructor Create(const aPerson: TDtoPerson);
+    constructor Create(const aPerson: TDtoPerson; const aExistingAddressId: UInt32; const aAvailableAddresses: TKeyIndexStrings);
     function Clone: TDtoPersonAggregated;
     function GetDtoClubmembership: TDtoClubmembership;
     procedure SetDtoClubmembership(const aValue: TDtoClubmembership);
+    procedure UpdateExistingAddressId;
     property Person: TDtoPerson read fPerson;
     property Id: UInt32 read fPerson.NameId.Id write fPerson.NameId.Id;
     property Firstname: string read fPerson.NameId.Vorname write fPerson.NameId.Vorname;
@@ -35,8 +40,10 @@ type
     property Active: Boolean read fPerson.Aktiv write fPerson.Aktiv;
     property Birthday: TDate read fPerson.Geburtsdatum write fPerson.Geburtsdatum;
 
-    property ExistingAddressId: UInt32 read fExistingAddressId write fExistingAddressId;
-    property AddressIndex: Integer read fAddressIndex write fAddressIndex;
+    property ExistingAddressId: UInt32 read fExistingAddressId;
+    property AddressId: UInt32 read fAddressId write fAddressId;
+    property AvailableAddresses: TKeyIndexStrings read fAvailableAddresses;
+    property AddressIndex: Integer read GetAddressIndex write SetAddressIndex;
     property CreateNewAddress: Boolean read fCreateNewAddress write fCreateNewAddress;
     property NewAddressStreet: string read fNewAddressStreet write fNewAddressStreet;
     property NewAddressPostalcode: string read fNewAddressPostalcode write fNewAddressPostalcode;
@@ -56,19 +63,20 @@ implementation
 
 { TDtoPersonAggregated }
 
-constructor TDtoPersonAggregated.Create(const aPerson: TDtoPerson);
+constructor TDtoPersonAggregated.Create(const aPerson: TDtoPerson; const aExistingAddressId: UInt32;
+  const aAvailableAddresses: TKeyIndexStrings);
 begin
   inherited Create;
   fPerson := aPerson;
-  fAddressIndex := -1;
+  fExistingAddressId := aExistingAddressId;
+  fAvailableAddresses := aAvailableAddresses;
 end;
 
 function TDtoPersonAggregated.Clone: TDtoPersonAggregated;
 begin
-  Result := TDtoPersonAggregated.Create(fPerson);
+  Result := TDtoPersonAggregated.Create(fPerson, fExistingAddressId, fAvailableAddresses);
 
-  Result.ExistingAddressId := fExistingAddressId;
-  Result.AddressIndex := fAddressIndex;
+  Result.AddressId := fAddressId;
   Result.CreateNewAddress := fCreateNewAddress;
   Result.NewAddressStreet := fNewAddressStreet;
   Result.NewAddressPostalcode := fNewAddressPostalcode;
@@ -84,6 +92,16 @@ begin
   Result.MembershipEndReason := fMembershipEndReason;
 end;
 
+function TDtoPersonAggregated.GetAddressIndex: Integer;
+begin
+  Result := fAvailableAddresses.Data.Mapper.GetIndex(fAddressId);
+end;
+
+procedure TDtoPersonAggregated.SetAddressIndex(const aValue: Integer);
+begin
+  fAddressId := fAvailableAddresses.Data.Mapper.GetKey(aValue);
+end;
+
 function TDtoPersonAggregated.GetDtoClubmembership: TDtoClubmembership;
 begin
   Result := default(TDtoClubmembership);
@@ -95,6 +113,11 @@ begin
   Result.Enddate := fMembershipEndDate;
   Result.EnddateStr := fMembershipEndDateText;
   Result.Endreason := fMembershipEndReason;
+end;
+
+procedure TDtoPersonAggregated.UpdateExistingAddressId;
+begin
+  fExistingAddressId := fAddressId;
 end;
 
 procedure TDtoPersonAggregated.SetDtoClubmembership(const aValue: TDtoClubmembership);

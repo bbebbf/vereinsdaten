@@ -4,7 +4,7 @@ interface
 
 uses System.Classes, InterfacedBase, CrudCommands, CrudConfig, Transaction, PersonBusinessIntf,
   DtoPersonAggregated, SqlConnection, PersonAggregatedUI, DtoPerson, RecordActions,
-  KeyIndexMapper, DtoPersonAddress, DtoAddress, DtoClubmembership, ClubmembershipTools,
+  KeyIndexStrings, DtoPersonAddress, DtoAddress, DtoClubmembership, ClubmembershipTools,
   MemberOfBusinessIntf, ProgressIndicator;
 
 type
@@ -23,7 +23,7 @@ type
     fUI: IPersonAggregatedUI;
     fCurrentEntry: TDtoPersonAggregated;
     fNewEntryStarted: Boolean;
-    fAddressMapper: TKeyIndexMapper<UInt32>;
+    fAddressMapper: TKeyIndexStrings;
     fShowInactivePersons: Boolean;
     fClubMembershipNumberChecker: TClubMembershipNumberChecker;
     fMemberOfBusiness: IMemberOfBusinessIntf;
@@ -37,12 +37,13 @@ type
     procedure StartNewEntry;
     function DeleteEntry(const aPersonId: UInt32): TCrudCommandResult;
     function GetDataChanged: Boolean;
-    procedure LoadAvailableAddresses(const aStrings: TStrings);
     function GetShowInactivePersons: Boolean;
     procedure SetShowInactivePersons(const aValue: Boolean);
     procedure LoadPersonsMemberOfs;
+    procedure ClearAddressCache;
     procedure ClearUnitCache;
     procedure ClearRoleCache;
+    function GetAvailableAddresses: TKeyIndexStrings;
   public
     constructor Create(const aConnection: ISqlConnection; const aUI: IPersonAggregatedUI;
       const aProgressIndicator: IProgressIndicator);
@@ -51,7 +52,7 @@ type
 
 implementation
 
-uses System.SysUtils, System.Generics.Collections, SelectList,
+uses System.SysUtils, System.Generics.Collections, SelectList, KeyIndexMapper,
   CrudConfigPerson, CrudConfigAddress, CrudConfigPersonAddress, CrudConfigClubmembership,
   MemberOfBusiness, EntryCrudConfig, CrudConfigUnitAggregated, CrudBusiness;
 
@@ -64,7 +65,31 @@ begin
   fConnection := aConnection;
   fProgressIndicator := aProgressIndicator;
   fUI := aUI;
-  fAddressMapper := TKeyIndexMapper<UInt32>.Create(0);
+  fAddressMapper := TKeyIndexStrings.Create(
+      function(var aData: TKeyIndexStringsMapperRecord): Boolean
+      begin
+        Result := True;
+        aData.Mapper := TKeyIndexMapper<UInt32>.Create(0);
+        aData.Strings := TStringList.Create;
+        try
+          aData.Strings.BeginUpdate;
+          aData.Strings.Add('<Adresse auswählen>');
+          var lSelectList: ISelectList<TDtoAddress>;
+          var lSqlResult: ISqlResult := nil;
+          if not Supports(fAddressConfig, ISelectList<TDtoAddress>, lSelectList) then
+            raise ENotImplemented.Create('fAddressConfig must implement ISelectList<TDtoPerson>.');
+          lSqlResult :=  fConnection.GetSelectResult(lSelectList.GetSelectListSQL);
+          while lSqlResult.Next do
+          begin
+            var lRecord := default(TDtoAddress);
+            fAddressConfig.GetRecordFromSqlResult(lSqlResult, lRecord);
+            aData.Mapper.Add(lRecord.Id, aData.Strings.Add(lRecord.ToString));
+          end;
+        finally
+          aData.Strings.EndUpdate;
+        end;
+      end
+  );
   fPersonConfig := TCrudConfigPerson.Create;
   fPersonRecordActions := TRecordActions<TDtoPerson, UInt32>.Create(fConnection, fPersonConfig);
   fPersonAddressConfig := TCrudConfigPersonAddress.Create;
@@ -95,6 +120,11 @@ begin
   inherited;
 end;
 
+function TPersonBusiness.GetAvailableAddresses: TKeyIndexStrings;
+begin
+  Result := fAddressMapper;
+end;
+
 function TPersonBusiness.GetDataChanged: Boolean;
 begin
   Result := fDataChanged;
@@ -113,31 +143,7 @@ end;
 procedure TPersonBusiness.Initialize;
 begin
   fUI.SetPersonBusinessIntf(Self);
-  fUI.LoadAvailableAdresses;
   fMemberOfBusiness.Initialize;
-end;
-
-procedure TPersonBusiness.LoadAvailableAddresses(const aStrings: TStrings);
-begin
-  aStrings.BeginUpdate;
-  try
-    fAddressMapper.Clear;
-    aStrings.Clear;
-    aStrings.Add('<Adresse auswählen>');
-    var lSelectList: ISelectList<TDtoAddress>;
-    var lSqlResult: ISqlResult := nil;
-    if not Supports(fAddressConfig, ISelectList<TDtoAddress>, lSelectList) then
-      raise ENotImplemented.Create('fAddressConfig must implement ISelectList<TDtoPerson>.');
-    lSqlResult :=  fConnection.GetSelectResult(lSelectList.GetSelectListSQL);
-    while lSqlResult.Next do
-    begin
-      var lRecord := default(TDtoAddress);
-      fAddressConfig.GetRecordFromSqlResult(lSqlResult, lRecord);
-      fAddressMapper.Add(lRecord.Id, aStrings.Add(lRecord.ToString));
-    end;
-  finally
-    aStrings.EndUpdate;
-  end;
 end;
 
 function TPersonBusiness.LoadCurrentEntry(const aPersonId: UInt32): TCrudCommandResult;
@@ -147,13 +153,14 @@ begin
   var lRecord := default(TDtoPerson);
   if fPersonRecordActions.LoadRecord(aPersonId, lRecord) then
   begin
-    fCurrentEntry := TDtoPersonAggregated.Create(lRecord);
     var lPersonAddressRecord := default(TDtoPersonAddress);
-    if fPersonAddressRecordActions.LoadRecord(fCurrentEntry.Id, lPersonAddressRecord) then
+    var lExistingAddressId: UInt32 := 0;
+    if fPersonAddressRecordActions.LoadRecord(aPersonId, lPersonAddressRecord) then
     begin
-      fCurrentEntry.ExistingAddressId := lPersonAddressRecord.AddressId;
-      fCurrentEntry.AddressIndex := fAddressMapper.GetIndex(lPersonAddressRecord.AddressId);
+      lExistingAddressId := lPersonAddressRecord.AddressId;
     end;
+    fCurrentEntry := TDtoPersonAggregated.Create(lRecord, lExistingAddressId, fAddressMapper);
+    fCurrentEntry.AddressId := lExistingAddressId;
     var lMembershipRecord := default(TDtoClubmembership);
     if fClubmembershipRecordActions.LoadRecord(fCurrentEntry.Id, lMembershipRecord) then
     begin
@@ -213,7 +220,7 @@ begin
   var lUpdatedEntry: TDtoPersonAggregated := nil;
   try
     if fNewEntryStarted then
-      lUpdatedEntry := TDtoPersonAggregated.Create(default(TDtoPerson))
+      lUpdatedEntry := TDtoPersonAggregated.Create(default(TDtoPerson), 0, fAddressMapper)
     else
       lUpdatedEntry := fCurrentEntry.Clone;
     lUpdatedEntryCloned := True;
@@ -239,6 +246,7 @@ begin
     try
       try
         var lPersonAddressRecord := default(TDtoPersonAddress);
+        var lSaveAdressRelation := True;
         var lDeleteAdressRelation := False;
         if lUpdatedEntry.CreateNewAddress then
         begin
@@ -255,8 +263,9 @@ begin
         end
         else
         begin
-          lPersonAddressRecord.AddressId := fAddressMapper.GetKey(lUpdatedEntry.AddressIndex);
-          lDeleteAdressRelation := (lUpdatedEntry.ExistingAddressId > 0) and (lPersonAddressRecord.AddressId = 0);
+          lPersonAddressRecord.AddressId := lUpdatedEntry.AddressId;
+          lSaveAdressRelation := lUpdatedEntry.ExistingAddressId  <> lUpdatedEntry.AddressId;
+          lDeleteAdressRelation := (lUpdatedEntry.ExistingAddressId > 0) and (lUpdatedEntry.AddressId = 0);
         end;
 
         var lRecord := lUpdatedEntry.Person;
@@ -270,11 +279,13 @@ begin
         if lDeleteAdressRelation then
         begin
           fPersonAddressRecordActions.DeleteEntry(lPersonAddressRecord.PersonId, lSaveTransaction);
-          lUpdatedEntry.AddressIndex := -1;
+          lUpdatedEntry.AddressId := 0;
+          lUpdatedEntry.UpdateExistingAddressId;
         end
-        else if lPersonAddressRecord.AddressId > 0 then
+        else if lSaveAdressRelation then
         begin
           fPersonAddressRecordActions.SaveRecord(lPersonAddressRecord, lSaveTransaction);
+          lUpdatedEntry.UpdateExistingAddressId;
         end;
 
         var lMembershipRecord := lUpdatedEntry.GetDtoClubmembership;
@@ -307,7 +318,7 @@ begin
     finally
       if lNewAddressCreated then
       begin
-        fUI.LoadAvailableAdresses;
+        fAddressMapper.Invalidate;
         fUI.LoadCurrentEntry(fCurrentEntry.Id);
       end
       else if lReloadAddress then
@@ -336,6 +347,11 @@ procedure TPersonBusiness.StartNewEntry;
 begin
   fNewEntryStarted := True;
   fUI.ClearEntryFromUI;
+end;
+
+procedure TPersonBusiness.ClearAddressCache;
+begin
+  fAddressMapper.Invalidate;
 end;
 
 procedure TPersonBusiness.ClearRoleCache;

@@ -77,7 +77,7 @@ type
   strict private
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
-    fMainBusinessIntf: IPersonBusinessIntf;
+    fBusinessIntf: IPersonBusinessIntf;
     fPersonListviewAttachedData: TListviewAttachedData<UInt32, TPersonListItemData>;
     fPersonMemberOf: TfraPersonMemberOf;
     fDelayedExecute: TDelayedExecute<TPair<Boolean, UInt32>>;
@@ -101,7 +101,6 @@ type
     procedure ClearEntryFromUI;
     procedure SetEntryToUI(const aRecord: TDtoPersonAggregated; const aAsNewEntry: Boolean);
     function GetEntryFromUI(var aRecord: TDtoPersonAggregated): Boolean;
-    procedure LoadAvailableAdresses;
     procedure LoadCurrentEntry(const aPersonId: UInt32);
   public
     constructor Create(AOwner: TComponent); override;
@@ -182,13 +181,13 @@ end;
 
 procedure TfraPerson.acPersonReloadCurrentRecordExecute(Sender: TObject);
 begin
-  fMainBusinessIntf.ReloadCurrentEntry;
+  fBusinessIntf.ReloadCurrentEntry;
   SetEditMode(False);
 end;
 
 procedure TfraPerson.acPersonSaveCurrentRecordExecute(Sender: TObject);
 begin
-  var lResponse := fMainBusinessIntf.SaveCurrentEntry;
+  var lResponse := fBusinessIntf.SaveCurrentEntry;
   if lResponse.Status = TCrudSaveStatus.Successful then
   begin
     SetEditMode(False);
@@ -201,7 +200,7 @@ end;
 
 procedure TfraPerson.acPersonStartNewRecordExecute(Sender: TObject);
 begin
-  fMainBusinessIntf.StartNewEntry;
+  fBusinessIntf.StartNewEntry;
   pcPersonDetails.ActivePage := tsPersonaldata;
   edPersonFirstname.SetFocus;
 end;
@@ -224,12 +223,13 @@ end;
 
 procedure TfraPerson.cbShowInactivePersonsClick(Sender: TObject);
 begin
-  fMainBusinessIntf.ShowInactivePersons := cbShowInactivePersons.Checked;
+  fBusinessIntf.ShowInactivePersons := cbShowInactivePersons.Checked;
 end;
 
 procedure TfraPerson.ClearEntryFromUI;
 begin
   fComponentValueChangedObserver.BeginUpdate;
+  cbPersonAddress.Items.Assign(fBusinessIntf.AvailableAddresses.Data.Strings);
 
   edPersonFirstname.Text := '';
   edPersonPraeposition.Text := '';
@@ -328,20 +328,15 @@ end;
 
 procedure TfraPerson.SetPersonBusinessIntf(const aCommands: IPersonBusinessIntf);
 begin
-  fMainBusinessIntf := aCommands;
-end;
-
-procedure TfraPerson.LoadAvailableAdresses;
-begin
-  fMainBusinessIntf.LoadAvailableAddresses(cbPersonAddress.Items);
+  fBusinessIntf := aCommands;
 end;
 
 procedure TfraPerson.LoadCurrentEntry(const aPersonId: UInt32);
 begin
-  fMainBusinessIntf.LoadCurrentEntry(aPersonId);
+  fBusinessIntf.LoadCurrentEntry(aPersonId);
   if pcPersonDetails.ActivePage = tsMemberOf then
   begin
-    fMainBusinessIntf.LoadPersonsMemberOfs;
+    fBusinessIntf.LoadPersonsMemberOfs;
   end;
   SetEditMode(False);
 end;
@@ -394,7 +389,7 @@ procedure TfraPerson.pcPersonDetailsChange(Sender: TObject);
 begin
   if pcPersonDetails.ActivePage = tsMemberOf then
   begin
-    fMainBusinessIntf.LoadPersonsMemberOfs;
+    fBusinessIntf.LoadPersonsMemberOfs;
   end;
 end;
 
@@ -436,6 +431,7 @@ end;
 procedure TfraPerson.SetEntryToUI(const aRecord: TDtoPersonAggregated; const aAsNewEntry: Boolean);
 begin
   fComponentValueChangedObserver.BeginUpdate;
+  cbPersonAddress.Items.Assign(fBusinessIntf.AvailableAddresses.Data.Strings);
 
   edPersonFirstname.Text := aRecord.Firstname;
   edPersonPraeposition.Text := aRecord.Praeposition;
@@ -453,7 +449,7 @@ begin
     PersonEntryToListItem(aRecord.Person, lvPersonListview.Selected);
   end;
   cbPersonActive.Checked := aRecord.Active;
-  cbPersonAddress.ItemIndex := aRecord.AddressIndex;
+  cbPersonAddress.ItemIndex := TVdmGlobals.MinusOneToZero(aRecord.AddressIndex);
   cbCreateNewAddress.Checked := False;
   edNewAddressStreet.Text := '';
   edNewAddressPostalcode.Text := '';

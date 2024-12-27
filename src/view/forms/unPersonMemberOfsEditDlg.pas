@@ -28,7 +28,6 @@ type
   private
     fActiveSinceHandler: TCheckboxDatetimePickerHandler;
     fActiveUntilHandler: TCheckboxDatetimePickerHandler;
-    function MinusOneToZero(const aIndex: Integer): Integer;
   public
     procedure FillAvailableUnits(const aUnits: TStrings);
     procedure FillAvailableRoles(const aRoles: TStrings);
@@ -37,7 +36,7 @@ type
 
 implementation
 
-uses MessageDialogs;
+uses MessageDialogs, Vdm.Globals;
 
 {$R *.dfm}
 
@@ -59,8 +58,8 @@ begin
   Result := False;
   cbUnit.Items.Assign(aMemberRecord.AvailableUnits.Data.Strings);
   cbRole.Items.Assign(aMemberRecord.AvailableRoles.Data.Strings);
-  cbUnit.ItemIndex := MinusOneToZero(aMemberRecord.UnitIndex);
-  cbRole.ItemIndex := MinusOneToZero(aMemberRecord.RoleIndex);
+  cbUnit.ItemIndex := TVdmGlobals.MinusOneToZero(aMemberRecord.UnitIndex);
+  cbRole.ItemIndex := TVdmGlobals.MinusOneToZero(aMemberRecord.RoleIndex);
   cbActive.Checked := aMemberRecord.Member.Active;
   fActiveSinceHandler.Datetime := aMemberRecord.Member.ActiveSince;
   fActiveUntilHandler.Datetime := aMemberRecord.Member.ActiveUntil;
@@ -103,14 +102,6 @@ procedure TfmPersonMemberOfsEditDlg.FormDestroy(Sender: TObject);
 begin
   fActiveSinceHandler.Free;
   fActiveUntilHandler.Free;
-end;
-
-function TfmPersonMemberOfsEditDlg.MinusOneToZero(const aIndex: Integer): Integer;
-begin
-  if aIndex = -1 then
-    Result := 0
-  else
-    Result := aIndex;
 end;
 
 end.

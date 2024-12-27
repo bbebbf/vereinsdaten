@@ -57,6 +57,7 @@ begin
     lDialog.ShowModal;
     if lBusiness.DataChanged then
     begin
+      fPersonBusinessIntf.ClearAddressCache;
     end;
   finally
     lDialog.Free;

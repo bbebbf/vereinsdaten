@@ -9,7 +9,6 @@ type
     NameId: TDtoPersonNameId;
     Aktiv: Boolean;
     Geburtsdatum: TDate;
-    AddressId: UInt32;
     function ToString: string;
   end;
 
