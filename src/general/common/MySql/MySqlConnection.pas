@@ -272,8 +272,9 @@ end;
 
 destructor TMySqlTransaction.Destroy;
 begin
-  if fTransaction.Active then
+  if Assigned(fTransaction) and fTransaction.Active then
     Rollback;
+  fTransaction.Free;
   inherited;
 end;
 
@@ -281,12 +282,14 @@ procedure TMySqlTransaction.Commit;
 begin
   if fTransaction.Active then
     fTransaction.Commit;
+  FreeAndNil(fTransaction);
 end;
 
 procedure TMySqlTransaction.Rollback;
 begin
   if fTransaction.Active then
     fTransaction.Rollback;
+  FreeAndNil(fTransaction);
 end;
 
 { TMySqlConnectionParameters }
