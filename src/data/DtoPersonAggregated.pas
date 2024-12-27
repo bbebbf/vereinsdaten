@@ -28,10 +28,10 @@ type
     function GetDtoClubmembership: TDtoClubmembership;
     procedure SetDtoClubmembership(const aValue: TDtoClubmembership);
     property Person: TDtoPerson read fPerson;
-    property Id: UInt32 read fPerson.Id write fPerson.Id;
-    property Firstname: string read fPerson.Vorname write fPerson.Vorname;
-    property Praeposition: string read fPerson.Praeposition write fPerson.Praeposition;
-    property Lastname: string read fPerson.Nachname write fPerson.Nachname;
+    property Id: UInt32 read fPerson.NameId.Id write fPerson.NameId.Id;
+    property Firstname: string read fPerson.NameId.Vorname write fPerson.NameId.Vorname;
+    property Praeposition: string read fPerson.NameId.Praeposition write fPerson.NameId.Praeposition;
+    property Lastname: string read fPerson.NameId.Nachname write fPerson.NameId.Nachname;
     property Active: Boolean read fPerson.Aktiv write fPerson.Aktiv;
     property Birthday: TDate read fPerson.Geburtsdatum write fPerson.Geburtsdatum;
 
@@ -88,7 +88,7 @@ function TDtoPersonAggregated.GetDtoClubmembership: TDtoClubmembership;
 begin
   Result := default(TDtoClubmembership);
   Result.Id := fMembershipId;
-  Result.PersonId := fPerson.Id;
+  Result.PersonId := fPerson.NameId.Id;
   Result.Active := fMembershipActive;
   Result.Number := fMembershipNumber;
   Result.Startdate := fMembershipBeginDate;

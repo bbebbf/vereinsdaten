@@ -11,6 +11,7 @@ type
     fConnection: ISqlConnection;
     fCrudConfigUnit: ICrudConfig<TDtoUnit, UInt32>;
     fUnitRecordActions: TRecordActions<TDtoUnit, UInt32>;
+    fMemberSelectQuery: ISqlPreparedQuery;
     function GetListSqlResult: ISqlResult;
     function GetListEntryFromSqlResult(const aSqlResult: ISqlResult): TDtoUnit;
     function IsEntryValidForList(const aEntry: TDtoUnit): Boolean;
@@ -116,9 +117,37 @@ function TCrudConfigUnitAggregated.TryLoadEntry(const aId: UInt32; out aEntry: T
 begin
   var lUnit := default(TDtoUnit);
   Result := fUnitRecordActions.LoadRecord(aId, lUnit);
-  if Result then
+  if not Result then
+    Exit;
+
+  aEntry := TDtoUnitAggregated.Create(lUnit);
+  if not Assigned(fMemberSelectQuery) then
   begin
-    aEntry := TDtoUnitAggregated.Create(lUnit);
+    fMemberSelectQuery := fConnection.CreatePreparedQuery(
+        'SELECT m.mb_active, m.mb_active_since, m.mb_active_until' +
+        ',p.person_id, p.person_vorname, p.person_praeposition, p.person_nachname, p.person_active, r.role_name' +
+        ' FROM `member` AS m' +
+        ' INNER JOIN `person` AS p ON p.person_id = m.person_id' +
+        ' LEFT JOIN `role` AS r ON r.role_id = m.role_id' +
+        ' WHERE m.unit_id = :UnitId' +
+        ' ORDER BY m.mb_active DESC, IFNULL(r.role_sorting, 10000), m.mb_active_since DESC' +
+        ' ,p.person_active DESC, p.person_nachname, p.person_vorname'
+      );
+  end;
+  fMemberSelectQuery.ParamByName('UnitId').Value := lUnit.Id;
+  var lSqlResult := fMemberSelectQuery.Open;
+  while lSqlResult.Next do
+  begin
+    var lMemberRec := default(TDtoUnitAggregatedPersonMemberOf);
+    lMemberRec.MemberActive := lSqlResult.FieldByName('mb_active').AsBoolean;
+    lMemberRec.MemberActiveSince := lSqlResult.FieldByName('mb_active_since').AsDateTime;
+    lMemberRec.MemberActiveUntil := lSqlResult.FieldByName('mb_active_until').AsDateTime;
+    lMemberRec.PersonNameId.Id := lSqlResult.FieldByName('person_id').AsLargeInt;
+    lMemberRec.PersonNameId.Vorname := lSqlResult.FieldByName('person_vorname').AsString;
+    lMemberRec.PersonNameId.Praeposition := lSqlResult.FieldByName('person_praeposition').AsString;
+    lMemberRec.PersonNameId.Nachname := lSqlResult.FieldByName('person_nachname').AsString;
+    lMemberRec.RoleName := lSqlResult.FieldByName('role_name').AsString;
+    aEntry.MemberOfList.Add(lMemberRec);
   end;
 end;
 

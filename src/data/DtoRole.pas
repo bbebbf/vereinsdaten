@@ -19,7 +19,7 @@ uses System.SysUtils;
 function TDtoRole.ToString: string;
 begin
   Result := Name;
-{$ifdef DEBUG}
+{$ifdef INTERNAL_DB_ID_VISIBLE}
   Result := Result + ' (' + IntToStr(Id) + ')';
 {$endif}
 end;

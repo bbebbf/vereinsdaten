@@ -4,7 +4,7 @@
         <ProjectVersion>20.1</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">FastMM</Config>
+        <Config Condition="'$(Config)'==''">Debug</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
         <ProjectName Condition="'$(ProjectName)'==''">vdm</ProjectName>
         <TargetedPlatforms>3</TargetedPlatforms>
@@ -114,7 +114,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <AppDPIAwarenessMode>none</AppDPIAwarenessMode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
-        <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
+        <DCC_Define>DEBUG;INTERNAL_DB_ID_VISIBLE;$(DCC_Define)</DCC_Define>
         <DCC_DebugDCUs>true</DCC_DebugDCUs>
         <DCC_Optimize>false</DCC_Optimize>
         <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
@@ -258,6 +258,13 @@ $(PostBuildEvent)]]></PostBuildEvent>
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="data\CrudConfigRoleEntry.pas"/>
+        <DCCReference Include="data\DtoPersonNameId.pas"/>
+        <DCCReference Include="data\DtoAddressAggregated.pas"/>
+        <DCCReference Include="data\CrudConfigAddressAggregated.pas"/>
+        <DCCReference Include="view\forms\unAddress.pas">
+            <Form>fmAddress</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

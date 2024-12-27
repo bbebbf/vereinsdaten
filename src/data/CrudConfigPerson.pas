@@ -26,17 +26,17 @@ implementation
 
 procedure TCrudConfigPerson.GetRecordFromSqlResult(const aSqlResult: ISqlResult; var aRecord: TDtoPerson);
 begin
-  aRecord.Id := aSqlResult.FieldByName('person_id').AsLongWord;
-  aRecord.Vorname := aSqlResult.FieldByName('person_vorname').AsString;
-  aRecord.Praeposition := aSqlResult.FieldByName('person_praeposition').AsString;
-  aRecord.Nachname := aSqlResult.FieldByName('person_nachname').AsString;
+  aRecord.NameId.Id := aSqlResult.FieldByName('person_id').AsLongWord;
+  aRecord.NameId.Vorname := aSqlResult.FieldByName('person_vorname').AsString;
+  aRecord.NameId.Praeposition := aSqlResult.FieldByName('person_praeposition').AsString;
+  aRecord.NameId.Nachname := aSqlResult.FieldByName('person_nachname').AsString;
   aRecord.Aktiv := aSqlResult.FieldByName('person_active').AsBoolean;
   aRecord.Geburtsdatum := aSqlResult.FieldByName('person_birthday').AsDateTime;
 end;
 
 function TCrudConfigPerson.GetRecordIdentity(const aRecord: TDtoPerson): UInt32;
 begin
-  Result := aRecord.Id;
+  Result := aRecord.NameId.Id;
 end;
 
 function TCrudConfigPerson.GetIdentityColumns: TArray<string>;
@@ -71,10 +71,10 @@ procedure TCrudConfigPerson.SetValues(const aRecord: TDtoPerson; const aAccessor
   const aForUpdate: Boolean);
 begin
   if aForUpdate then
-    aAccessor.SetValue('person_id', aRecord.Id);
-  aAccessor.SetValueEmptyStrAsNull('person_vorname', aRecord.Vorname);
-  aAccessor.SetValueEmptyStrAsNull('person_praeposition', aRecord.Praeposition);
-  aAccessor.SetValueEmptyStrAsNull('person_nachname', aRecord.Nachname);
+    aAccessor.SetValue('person_id', aRecord.NameId.Id);
+  aAccessor.SetValueEmptyStrAsNull('person_vorname', aRecord.NameId.Vorname);
+  aAccessor.SetValueEmptyStrAsNull('person_praeposition', aRecord.NameId.Praeposition);
+  aAccessor.SetValueEmptyStrAsNull('person_nachname', aRecord.NameId.Nachname);
   aAccessor.SetValue('person_active', aRecord.Aktiv);
   aAccessor.SetValueZeroAsNull('person_birthday', aRecord.Geburtsdatum)
 end;
@@ -91,7 +91,7 @@ end;
 
 procedure TCrudConfigPerson.UpdateRecordIdentity(const aAccessor: TCrudAccessorInsert; var aRecord: TDtoPerson);
 begin
-  aRecord.Id := aAccessor.LastInsertedId;
+  aRecord.NameId.Id := aAccessor.LastInsertedId;
 end;
 
 end.

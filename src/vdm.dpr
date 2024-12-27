@@ -80,7 +80,11 @@ uses
   InterfacedBase in 'general\common\Tools\InterfacedBase.pas',
   unMain in 'view\forms\unMain.pas' {fmMain},
   unRole in 'view\forms\unRole.pas' {fmRole},
-  CrudConfigRoleEntry in 'data\CrudConfigRoleEntry.pas';
+  CrudConfigRoleEntry in 'data\CrudConfigRoleEntry.pas',
+  DtoPersonNameId in 'data\DtoPersonNameId.pas',
+  DtoAddressAggregated in 'data\DtoAddressAggregated.pas',
+  CrudConfigAddressAggregated in 'data\CrudConfigAddressAggregated.pas',
+  unAddress in 'view\forms\unAddress.pas' {fmAddress};
 
 {$R *.res}
 

@@ -20,7 +20,7 @@ uses System.SysUtils, StringTools;
 function TDtoAddress.ToString: string;
 begin
   Result := TStringTools.Combine(Street, ', ', TStringTools.Combine(Postalcode, ' ', City));
-{$ifdef DEBUG}
+{$ifdef INTERNAL_DB_ID_VISIBLE}
   Result := Result + ' (' + IntToStr(Id) + ')';
 {$endif}
 end;

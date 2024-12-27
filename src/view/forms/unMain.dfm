@@ -47,6 +47,7 @@ object fmMain: TfmMain
     Top = 208
     object acMasterdataAddress: TAction
       Caption = 'Adressen bearbeiten'
+      OnExecute = acMasterdataAddressExecute
     end
     object acMasterdataUnit: TAction
       Caption = 'Einheiten bearbeiten'

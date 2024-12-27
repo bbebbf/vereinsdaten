@@ -113,6 +113,7 @@ end;
 procedure TPersonBusiness.Initialize;
 begin
   fUI.SetPersonBusinessIntf(Self);
+  fUI.LoadAvailableAdresses;
   fMemberOfBusiness.Initialize;
 end;
 
@@ -223,7 +224,7 @@ begin
     end;
     if not lUpdatedEntry.MembershipNoMembership then
     begin
-      var lResponse := fClubMembershipNumberChecker.IsMembershipNumberOccupied(lUpdatedEntry.Person.Id,
+      var lResponse := fClubMembershipNumberChecker.IsMembershipNumberOccupied(lUpdatedEntry.Person.NameId.Id,
         lUpdatedEntry.MembershipNumber);
       if lResponse.NumberIsOccupied then
       begin
@@ -261,7 +262,7 @@ begin
         var lRecord := lUpdatedEntry.Person;
         if fPersonRecordActions.SaveRecord(lRecord, lSaveTransaction) = TRecordActionsSaveResponse.Created then
         begin
-          lUpdatedEntry.Id := lRecord.Id;
+          lUpdatedEntry.Id := lRecord.NameId.Id;
           lNewPersonCreated := True;
         end;
         lPersonAddressRecord.PersonId := lUpdatedEntry.Id;

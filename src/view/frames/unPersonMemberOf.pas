@@ -190,7 +190,13 @@ begin
 
   var lColor: TColor;
   if TVdmGlobals.TryGetColorForCrudState(lMemberOfListItemData.State, lColor) then
+  begin
     Sender.Canvas.Font.Color := lColor;
+    Exit;
+  end;
+
+  if not lMemberOfListItemData.Data.Member.Active then
+    Sender.Canvas.Font.Color := TVdmGlobals.GetInactiveColor;
 end;
 
 procedure TfraPersonMemberOf.lvMemberOfDblClick(Sender: TObject);

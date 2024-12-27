@@ -1,24 +1,23 @@
-﻿unit unUnit;
+﻿unit unAddress;
 
 interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
-  System.Generics.Collections, CrudCommands, DtoUnit, DtoUnitAggregated, ListviewAttachedData, Vcl.Menus, Vcl.ExtCtrls,
+  System.Generics.Collections, CrudCommands, DtoAddress, DtoAddressAggregated, ListviewAttachedData, Vcl.Menus, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.WinXPickers, System.Actions, Vcl.ActnList,
-  ComponentValueChangedObserver, CrudUI, DelayedExecute, CheckboxDatetimePickerHandler;
+  ComponentValueChangedObserver, CrudUI, DelayedExecute;
 
 type
-  TUnitListItemData = record
-    UnitActive: Boolean;
+  TAddressListItemData = record
   end;
 
   TMemberOfListItemData = record
     MemberActive: Boolean;
   end;
 
-  TfmUnit = class(TForm, ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32>)
+  TfmAddress = class(TForm, ICrudUI<TDtoAddressAggregated, TDtoAddress, UInt32>)
     pnListview: TPanel;
     Splitter1: TSplitter;
     pnDetails: TPanel;
@@ -27,20 +26,16 @@ type
     acSaveCurrentEntry: TAction;
     acReloadCurrentEntry: TAction;
     pnFilter: TPanel;
-    acStartNewEntry: TAction;
-    btStartNewRecord: TButton;
-    lbUnitName: TLabel;
-    edUnitName: TEdit;
-    cbUnitActiveSinceKnown: TCheckBox;
-    dtUnitActiveSince: TDateTimePicker;
-    lbUnitActiveSince: TLabel;
-    cbUnitActive: TCheckBox;
-    lbUnitActiveUntil: TLabel;
-    dtUnitActiveUntil: TDateTimePicker;
-    cbUnitActiveUntilKnown: TCheckBox;
     btSave: TButton;
     btReload: TButton;
     lvMemberOf: TListView;
+    edAddressStreet: TEdit;
+    lbAddressPostalcode: TLabel;
+    edAddressPostalcode: TEdit;
+    lbAddressCity: TLabel;
+    edAddressCity: TEdit;
+    lbAddressStreet: TLabel;
+    acDeleteCurrentEntry: TAction;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormActivate(Sender: TObject);
@@ -57,25 +52,23 @@ type
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
     fBusinessIntf: ICrudCommands<UInt32>;
-    fListviewAttachedData: TListviewAttachedData<UInt32, TUnitListItemData>;
+    fListviewAttachedData: TListviewAttachedData<UInt32, TAddressListItemData>;
     fMemberOfListviewAttachedData: TListviewAttachedData<UInt32, TMemberOfListItemData>;
     fDelayedExecute: TDelayedExecute<TPair<Boolean, UInt32>>;
-    fActiveSinceHandler: TCheckboxDatetimePickerHandler;
-    fActiveUntilHandler: TCheckboxDatetimePickerHandler;
 
     procedure SetEditMode(const aEditMode: Boolean);
     procedure ControlValuesChanged(Sender: TObject);
     procedure ControlValuesUnchanged(Sender: TObject);
-    function EntryToListItem(const aEntry: TDtoUnit; const aItem: TListItem): TListItem;
+    function EntryToListItem(const aEntry: TDtoAddress; const aItem: TListItem): TListItem;
 
     procedure SetCrudCommands(const aCommands: ICrudCommands<UInt32>);
     procedure ListEnumBegin;
-    procedure ListEnumProcessItem(const aEntry: TDtoUnit);
+    procedure ListEnumProcessItem(const aEntry: TDtoAddress);
     procedure ListEnumEnd;
     procedure DeleteEntryFromUI(const aUnitId: UInt32);
     procedure ClearEntryFromUI;
-    procedure SetEntryToUI(const aEntry: TDtoUnitAggregated; const aAsNewEntry: Boolean);
-    function GetEntryFromUI(var aEntry: TDtoUnitAggregated): Boolean;
+    procedure SetEntryToUI(const aEntry: TDtoAddressAggregated; const aAsNewEntry: Boolean);
+    function GetEntryFromUI(var aEntry: TDtoAddressAggregated): Boolean;
     procedure LoadCurrentEntry(const aEntryId: UInt32);
   public
     { Public-Deklarationen }
@@ -87,15 +80,15 @@ implementation
 
 uses StringTools, MessageDialogs, Vdm.Globals;
 
-{ TfmUnit }
+{ TfmAddress }
 
-procedure TfmUnit.acReloadCurrentEntryExecute(Sender: TObject);
+procedure TfmAddress.acReloadCurrentEntryExecute(Sender: TObject);
 begin
   fBusinessIntf.ReloadCurrentEntry;
   SetEditMode(False);
 end;
 
-procedure TfmUnit.acSaveCurrentEntryExecute(Sender: TObject);
+procedure TfmAddress.acSaveCurrentEntryExecute(Sender: TObject);
 begin
   var lResponse := fBusinessIntf.SaveCurrentEntry;
   if lResponse.Status = TCrudSaveStatus.Successful then
@@ -108,41 +101,38 @@ begin
   end;
 end;
 
-procedure TfmUnit.acStartNewEntryExecute(Sender: TObject);
+procedure TfmAddress.acStartNewEntryExecute(Sender: TObject);
 begin
   fBusinessIntf.StartNewEntry;
   SetEditMode(False);
 end;
 
-procedure TfmUnit.ClearEntryFromUI;
+procedure TfmAddress.ClearEntryFromUI;
 begin
   fComponentValueChangedObserver.BeginUpdate;
 
-  edUnitName.Text := '';
-  cbUnitActive.Checked := True;
-  fActiveSinceHandler.Clear;
-  fActiveUntilHandler.Clear;
-  edUnitName.SetFocus;
+  edAddressStreet.Text := '';
+  edAddressStreet.SetFocus;
   fComponentValueChangedObserver.EndUpdate;
   lvMemberOf.Items.Clear;
 end;
 
-procedure TfmUnit.ControlValuesChanged(Sender: TObject);
+procedure TfmAddress.ControlValuesChanged(Sender: TObject);
 begin
   SetEditMode(True);
 end;
 
-procedure TfmUnit.ControlValuesUnchanged(Sender: TObject);
+procedure TfmAddress.ControlValuesUnchanged(Sender: TObject);
 begin
   SetEditMode(False);
 end;
 
-procedure TfmUnit.DeleteEntryFromUI(const aUnitId: UInt32);
+procedure TfmAddress.DeleteEntryFromUI(const aUnitId: UInt32);
 begin
 
 end;
 
-procedure TfmUnit.FormActivate(Sender: TObject);
+procedure TfmAddress.FormActivate(Sender: TObject);
 begin
   if fActivated then
     Exit;
@@ -152,23 +142,17 @@ begin
   fBusinessIntf.LoadList;
 end;
 
-procedure TfmUnit.FormCreate(Sender: TObject);
+procedure TfmAddress.FormCreate(Sender: TObject);
 begin
-  fActiveSinceHandler := TCheckboxDatetimePickerHandler.Create(cbUnitActiveSinceKnown, dtUnitActiveSince);
-  fActiveUntilHandler := TCheckboxDatetimePickerHandler.Create(cbUnitActiveUntilKnown, dtUnitActiveUntil);
-
   fComponentValueChangedObserver := TComponentValueChangedObserver.Create;
   fComponentValueChangedObserver.OnValuesChanged := ControlValuesChanged;
   fComponentValueChangedObserver.OnValuesUnchanged := ControlValuesUnchanged;
 
-  fComponentValueChangedObserver.RegisterEdit(edUnitName);
-  fComponentValueChangedObserver.RegisterCheckbox(cbUnitActive);
-  fComponentValueChangedObserver.RegisterCheckbox(cbUnitActiveSinceKnown);
-  fComponentValueChangedObserver.RegisterDateTimePicker(dtUnitActiveSince);
-  fComponentValueChangedObserver.RegisterCheckbox(cbUnitActiveUntilKnown);
-  fComponentValueChangedObserver.RegisterDateTimePicker(dtUnitActiveUntil);
+  fComponentValueChangedObserver.RegisterEdit(edAddressStreet);
+  fComponentValueChangedObserver.RegisterEdit(edAddressPostalcode);
+  fComponentValueChangedObserver.RegisterEdit(edAddressCity);
 
-  fListviewAttachedData := TListviewAttachedData<UInt32, TUnitListItemData>.Create(lvListview);
+  fListviewAttachedData := TListviewAttachedData<UInt32, TAddressListItemData>.Create(lvListview);
   fMemberOfListviewAttachedData := TListviewAttachedData<UInt32, TMemberOfListItemData>.Create(lvMemberOf);
 
   fDelayedExecute := TDelayedExecute<TPair<Boolean, UInt32>>.Create(
@@ -187,55 +171,52 @@ begin
   );
 end;
 
-procedure TfmUnit.FormDestroy(Sender: TObject);
+procedure TfmAddress.FormDestroy(Sender: TObject);
 begin
-  fActiveSinceHandler.Free;
-  fActiveUntilHandler.Free;
   fDelayedExecute.Free;
   fMemberOfListviewAttachedData.Free;
   fListviewAttachedData.Free;
   fComponentValueChangedObserver.Free;
 end;
 
-function TfmUnit.GetEntryFromUI(var aEntry: TDtoUnitAggregated): Boolean;
+function TfmAddress.GetEntryFromUI(var aEntry: TDtoAddressAggregated): Boolean;
 begin
-  if TStringTools.IsEmpty(edUnitName.Text) then
+  if TStringTools.IsEmpty(edAddressCity.Text) then
   begin
-    edUnitName.SetFocus;
-    TMessageDialogs.Ok('Die Bezeichnung muss angegeben sein.', TMsgDlgType.mtInformation);
+    edAddressCity.SetFocus;
+    TMessageDialogs.Ok('Der Ortsname muss angegeben sein.', TMsgDlgType.mtInformation);
     Exit(False);
   end;
 
   Result := True;
-  aEntry.Name := edUnitName.Text;
-  aEntry.Active := cbUnitActive.Checked;
-  aEntry.ActiveSince := fActiveSinceHandler.Datetime;
-  aEntry.ActiveUntil := fActiveUntilHandler.Datetime;
+  aEntry.Street := edAddressStreet.Text;
+  aEntry.Postalcode := edAddressPostalcode.Text;
+  aEntry.City := edAddressCity.Text;
 end;
 
-procedure TfmUnit.SetCrudCommands(const aCommands: ICrudCommands<UInt32>);
+procedure TfmAddress.SetCrudCommands(const aCommands: ICrudCommands<UInt32>);
 begin
   fBusinessIntf := aCommands;
 end;
 
-procedure TfmUnit.LoadCurrentEntry(const aEntryId: UInt32);
+procedure TfmAddress.LoadCurrentEntry(const aEntryId: UInt32);
 begin
   fBusinessIntf.LoadCurrentEntry(aEntryId);
   SetEditMode(False);
 end;
 
-procedure TfmUnit.ListEnumBegin;
+procedure TfmAddress.ListEnumBegin;
 begin
   lvListview.Items.BeginUpdate;
   fListviewAttachedData.Clear;
 end;
 
-procedure TfmUnit.ListEnumProcessItem(const aEntry: TDtoUnit);
+procedure TfmAddress.ListEnumProcessItem(const aEntry: TDtoAddress);
 begin
   EntryToListItem(aEntry, nil);
 end;
 
-procedure TfmUnit.ListEnumEnd;
+procedure TfmAddress.ListEnumEnd;
 begin
   lvListview.Items.EndUpdate;
   if lvListview.Items.Count > 0 then
@@ -244,19 +225,17 @@ begin
   end;
 end;
 
-procedure TfmUnit.lvListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
+procedure TfmAddress.lvListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
   var DefaultDraw: Boolean);
 begin
   DefaultDraw := true;
-  var lListItemData: TUnitListItemData;
+  var lListItemData: TAddressListItemData;
   if fListviewAttachedData.TryGetExtraData(Item, lListItemData) then
   begin
-    if not lListItemData.UnitActive then
-      Sender.Canvas.Font.Color := clLtGray;
   end;
 end;
 
-procedure TfmUnit.lvListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
+procedure TfmAddress.lvListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
 begin
   var lEntryFound := False;
   var lEntryId: UInt32 := 0;
@@ -268,7 +247,7 @@ begin
   fDelayedExecute.SetData(TPair<Boolean, UInt32>.Create(lEntryFound, lEntryId));
 end;
 
-procedure TfmUnit.lvMemberOfCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
+procedure TfmAddress.lvMemberOfCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
   var DefaultDraw: Boolean);
 begin
   DefaultDraw := true;
@@ -280,10 +259,10 @@ begin
   end;
 end;
 
-function TfmUnit.EntryToListItem(const aEntry: TDtoUnit; const aItem: TListItem): TListItem;
+function TfmAddress.EntryToListItem(const aEntry: TDtoAddress; const aItem: TListItem): TListItem;
 begin
-  var lItemData := default(TUnitListItemData);
-  lItemData.UnitActive := aEntry.Active;
+  var lItemData := default(TAddressListItemData);
+//  lItemData.UnitActive := aEntry.Active;
   Result := aItem;
   if Assigned(Result) then
   begin
@@ -292,35 +271,39 @@ begin
   else
   begin
     Result := fListviewAttachedData.AddItem(aEntry.Id, lItemData);
+    Result.SubItems.Add('');
+    Result.SubItems.Add('');
   end;
-  Result.Caption := aEntry.ToString;
+  Result.Caption := aEntry.City;
+  Result.SubItems[0] := aEntry.Street;
+  Result.SubItems[1] := aEntry.Postalcode;
 end;
 
-procedure TfmUnit.SetEditMode(const aEditMode: Boolean);
+procedure TfmAddress.SetEditMode(const aEditMode: Boolean);
 begin
   fInEditMode := aEditMode;
   acSaveCurrentEntry.Enabled := fInEditMode;
   acReloadCurrentEntry.Enabled := fInEditMode;
+  acDeleteCurrentEntry.Enabled := not fInEditMode;
 end;
 
-procedure TfmUnit.SetEntryToUI(const aEntry: TDtoUnitAggregated; const aAsNewEntry: Boolean);
+procedure TfmAddress.SetEntryToUI(const aEntry: TDtoAddressAggregated; const aAsNewEntry: Boolean);
 begin
   fComponentValueChangedObserver.BeginUpdate;
 
-  edUnitName.Text := aEntry.Name;
-  cbUnitActive.Checked := aEntry.Active;
-  fActiveSinceHandler.Datetime := aEntry.ActiveSince;
-  fActiveUntilHandler.Datetime := aEntry.ActiveUntil;
+  edAddressStreet.Text := aEntry.Street;
+  edAddressPostalcode.Text := aEntry.Postalcode;
+  edAddressCity.Text := aEntry.City;
 
   if aAsNewEntry then
   begin
-    var lNewItem := EntryToListItem(aEntry.&Unit, nil);
+    var lNewItem := EntryToListItem(aEntry.Address, nil);
     lNewItem.Selected := True;
     lNewItem.MakeVisible(False);
   end
   else
   begin
-    EntryToListItem(aEntry.&Unit, lvListview.Selected);
+    EntryToListItem(aEntry.Address, lvListview.Selected);
   end;
 
   fComponentValueChangedObserver.EndUpdate;
@@ -331,16 +314,9 @@ begin
     for var lMemberOfEntry in aEntry.MemberOfList do
     begin
       var lMemberOfListItemData := default(TMemberOfListItemData);
-      lMemberOfListItemData.MemberActive := lMemberOfEntry.MemberActive;
+      lMemberOfListItemData.MemberActive := lMemberOfEntry.PersonActive;
       var lItem := fMemberOfListviewAttachedData.AddItem(lMemberOfEntry.PersonNameId.Id, lMemberOfListItemData);
       lItem.Caption := lMemberOfEntry.PersonNameId.ToString;
-      lItem.SubItems.Add(lMemberOfEntry.RoleName);
-      lItem.SubItems.Add(TVdmGlobals.GetDateAsString(lMemberOfEntry.MemberActiveSince));
-      if lMemberOfEntry.MemberActive then
-        lItem.SubItems.Add('A')
-      else
-        lItem.SubItems.Add('I');
-      lItem.SubItems.Add(TVdmGlobals.GetDateAsString(lMemberOfEntry.MemberActiveUntil));
     end;
   finally
     lvMemberOf.Items.EndUpdate;

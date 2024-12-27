@@ -1,10 +1,10 @@
 object fmUnit: TfmUnit
   Left = 0
   Top = 0
-  BorderStyle = bsDialog
+  BorderIcons = [biSystemMenu]
   Caption = 'Einheiten bearbeiten'
   ClientHeight = 695
-  ClientWidth = 995
+  ClientWidth = 1098
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -33,6 +33,7 @@ object fmUnit: TfmUnit
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 0
+    ExplicitHeight = 687
     object lvListview: TListView
       Left = 0
       Top = 41
@@ -50,8 +51,6 @@ object fmUnit: TfmUnit
       ViewStyle = vsReport
       OnCustomDrawItem = lvListviewCustomDrawItem
       OnSelectItem = lvListviewSelectItem
-      ExplicitWidth = 220
-      ExplicitHeight = 582
     end
     object pnFilter: TPanel
       Left = 0
@@ -61,7 +60,6 @@ object fmUnit: TfmUnit
       Align = alTop
       BevelOuter = bvNone
       TabOrder = 0
-      ExplicitWidth = 220
     end
     object btStartNewRecord: TButton
       Left = 0
@@ -71,20 +69,19 @@ object fmUnit: TfmUnit
       Action = acStartNewEntry
       Align = alBottom
       TabOrder = 2
-      ExplicitTop = 615
-      ExplicitWidth = 220
+      ExplicitTop = 662
     end
   end
   object pnDetails: TPanel
     Left = 357
     Top = 0
-    Width = 638
+    Width = 741
     Height = 695
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
-    ExplicitLeft = 226
-    ExplicitWidth = 768
+    ExplicitWidth = 636
+    ExplicitHeight = 687
     object lbUnitName: TLabel
       Left = 23
       Top = 19
@@ -173,6 +170,40 @@ object fmUnit: TfmUnit
       Action = acReloadCurrentEntry
       Cancel = True
       TabOrder = 7
+    end
+    object lvMemberOf: TListView
+      Left = 0
+      Top = 240
+      Width = 741
+      Height = 455
+      Align = alBottom
+      Columns = <
+        item
+          Caption = 'Person'
+          Width = 200
+        end
+        item
+          Caption = 'Rolle'
+          Width = 200
+        end
+        item
+          Caption = 'Eintritt'
+          Width = 120
+        end
+        item
+          Caption = 'Status'
+          Width = 70
+        end
+        item
+          Caption = 'Austritt'
+          Width = 120
+        end>
+      ReadOnly = True
+      RowSelect = True
+      TabOrder = 8
+      ViewStyle = vsReport
+      OnCustomDrawItem = lvMemberOfCustomDrawItem
+      ExplicitWidth = 760
     end
   end
   object alActionList: TActionList

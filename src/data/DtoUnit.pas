@@ -21,7 +21,7 @@ uses System.SysUtils;
 function TDtoUnit.ToString: string;
 begin
   Result := Name;
-{$ifdef DEBUG}
+{$ifdef INTERNAL_DB_ID_VISIBLE}
   Result := Result + ' (' + IntToStr(Id) + ')';
 {$endif}
 end;

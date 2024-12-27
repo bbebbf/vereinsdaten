@@ -12,6 +12,7 @@ type
     class function GetDateAsString(const aValue: TDateTime): string;
     class function GetDateTimeAsString(const aValue: TDateTime): string;
     class function TryGetColorForCrudState(const aState: TListEntryCrudState; out aColor: TColor): Boolean;
+    class function GetInactiveColor: TColor;
   end;
 
 implementation
@@ -42,6 +43,11 @@ end;
 class function TVdmGlobals.GetDateTimePickerNullValue: TDateTime;
 begin
   Result := 1;
+end;
+
+class function TVdmGlobals.GetInactiveColor: TColor;
+begin
+  Result := TColorRec.Silver;
 end;
 
 class function TVdmGlobals.GetVdmApplicationTitle: string;

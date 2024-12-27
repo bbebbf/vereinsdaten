@@ -24,6 +24,7 @@ type
     procedure FormActivate(Sender: TObject);
     procedure acMasterdataUnitExecute(Sender: TObject);
     procedure acMasterdataRoleExecute(Sender: TObject);
+    procedure acMasterdataAddressExecute(Sender: TObject);
   strict private
     fActivated: Boolean;
     fConnection: ISqlConnection;
@@ -41,9 +42,26 @@ var
 implementation
 
 uses Vdm.Globals, ConfigReader, unUnit, CrudCommands, CrudBusiness, EntryCrudConfig,
-  DtoUnit, DtoUnitAggregated, CrudConfigUnitAggregated, DtoRole, CrudConfigRoleEntry, unRole;
+  DtoUnit, DtoUnitAggregated, CrudConfigUnitAggregated, DtoRole, CrudConfigRoleEntry, unRole,
+  DtoAddress, DtoAddressAggregated, unAddress, CrudConfigAddressAggregated;
 
 {$R *.dfm}
+
+procedure TfmMain.acMasterdataAddressExecute(Sender: TObject);
+begin
+  var lDialog := TfmAddress.Create(Self);
+  try
+    var lCrudConfig: IEntryCrudConfig<TDtoAddressAggregated, TDtoAddress, UInt32> := TCrudConfigAddressAggregated.Create(fConnection);
+    var lBusiness: ICrudCommands<UInt32> := TCrudBusiness<TDtoAddressAggregated, TDtoAddress, UInt32>.Create(lDialog, lCrudConfig);
+    lBusiness.Initialize;
+    lDialog.ShowModal;
+    if lBusiness.DataChanged then
+    begin
+    end;
+  finally
+    lDialog.Free;
+  end;
+end;
 
 procedure TfmMain.acMasterdataRoleExecute(Sender: TObject);
 begin

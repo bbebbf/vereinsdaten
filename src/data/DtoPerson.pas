@@ -2,12 +2,11 @@ unit DtoPerson;
 
 interface
 
+uses DtoPersonNameId;
+
 type
   TDtoPerson = record
-    Id: UInt32;
-    Vorname: string;
-    Praeposition: string;
-    Nachname: string;
+    NameId: TDtoPersonNameId;
     Aktiv: Boolean;
     Geburtsdatum: TDate;
     AddressId: UInt32;
@@ -22,10 +21,7 @@ uses System.SysUtils, StringTools;
 
 function TDtoPerson.ToString: string;
 begin
-  Result := TStringTools.Combine(Nachname, ', ', TStringTools.Combine(Vorname, ' ', Praeposition));
-{$ifdef DEBUG}
-  Result := Result + ' (' + IntToStr(Id) + ')';
-{$endif}
+  Result := NameId.ToString;
 end;
 
 end.

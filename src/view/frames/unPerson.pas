@@ -112,7 +112,7 @@ implementation
 
 {$R *.dfm}
 
-uses StringTools, MessageDialogs;
+uses StringTools, MessageDialogs, Vdm.Globals;
 
 constructor TfraPerson.Create(AOwner: TComponent);
 begin
@@ -374,7 +374,7 @@ begin
   if fPersonListviewAttachedData.TryGetExtraData(Item, lPersonListItemData) then
   begin
     if not lPersonListItemData.PersonActive then
-      Sender.Canvas.Font.Color := clLtGray;
+      Sender.Canvas.Font.Color := TVdmGlobals.GetInactiveColor;
   end;
 end;
 
@@ -417,11 +417,11 @@ begin
   Result := aItem;
   if Assigned(Result) then
   begin
-    fPersonListviewAttachedData.UpdateItem(aItem, aPerson.Id, lPersonItemData);
+    fPersonListviewAttachedData.UpdateItem(aItem, aPerson.NameId.Id, lPersonItemData);
   end
   else
   begin
-    Result := fPersonListviewAttachedData.AddItem(aPerson.Id, lPersonItemData);
+    Result := fPersonListviewAttachedData.AddItem(aPerson.NameId.Id, lPersonItemData);
   end;
   Result.Caption := aPerson.ToString;
 end;

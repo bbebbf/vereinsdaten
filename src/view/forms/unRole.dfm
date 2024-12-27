@@ -1,10 +1,10 @@
 object fmRole: TfmRole
   Left = 0
   Top = 0
-  BorderStyle = bsDialog
+  BorderIcons = [biSystemMenu]
   Caption = 'Rollen bearbeiten'
-  ClientHeight = 695
-  ClientWidth = 995
+  ClientHeight = 252
+  ClientWidth = 850
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -20,7 +20,7 @@ object fmRole: TfmRole
     Left = 350
     Top = 0
     Width = 7
-    Height = 695
+    Height = 252
     Beveled = True
     ExplicitLeft = 185
     ExplicitHeight = 528
@@ -29,15 +29,16 @@ object fmRole: TfmRole
     Left = 0
     Top = 0
     Width = 350
-    Height = 695
+    Height = 252
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 0
+    ExplicitHeight = 244
     object lvListview: TListView
       Left = 0
       Top = 41
       Width = 350
-      Height = 629
+      Height = 186
       Align = alClient
       Columns = <
         item
@@ -61,23 +62,25 @@ object fmRole: TfmRole
     end
     object btStartNewRecord: TButton
       Left = 0
-      Top = 670
+      Top = 227
       Width = 350
       Height = 25
       Action = acStartNewEntry
       Align = alBottom
       TabOrder = 2
+      ExplicitTop = 219
     end
   end
   object pnDetails: TPanel
     Left = 357
     Top = 0
-    Width = 638
-    Height = 695
+    Width = 493
+    Height = 252
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
-    ExplicitLeft = 356
+    ExplicitWidth = 491
+    ExplicitHeight = 244
     object lbRoleName: TLabel
       Left = 23
       Top = 19
