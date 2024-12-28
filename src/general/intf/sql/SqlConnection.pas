@@ -9,6 +9,7 @@ uses Data.DB, Transaction;
 type
   ISqlResult = interface
     ['{FB4B44B9-6188-4F3A-A542-70453B7A1286}']
+    procedure ConfigureDatasource(const aDataSource: TDataSource);
     function Next: Boolean;
     function GetFieldCount: Integer;
     function FieldByName(const aName: string): TField;

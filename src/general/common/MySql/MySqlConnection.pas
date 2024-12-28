@@ -14,6 +14,7 @@ type
     fQuery: TFDCustomQuery;
     fOwnsQuery: Boolean;
     fCursorStarted: Boolean;
+    procedure ConfigureDatasource(const aDataSource: TDataSource);
     function GetFieldCount: Integer;
     function Next: Boolean;
     function FieldByName(const aName: string): TField;
@@ -206,6 +207,11 @@ begin
   if fOwnsQuery then
     fQuery.Free;
   inherited;
+end;
+
+procedure TMySqlResult.ConfigureDatasource(const aDataSource: TDataSource);
+begin
+  aDataSource.DataSet := fQuery;
 end;
 
 function TMySqlResult.FieldByIndex(const aIndex: Integer): TField;
