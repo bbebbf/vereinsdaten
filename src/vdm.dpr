@@ -84,7 +84,10 @@ uses
   DtoPersonNameId in 'data\DtoPersonNameId.pas',
   DtoAddressAggregated in 'data\DtoAddressAggregated.pas',
   CrudConfigAddressAggregated in 'data\CrudConfigAddressAggregated.pas',
-  unAddress in 'view\forms\unAddress.pas' {fmAddress};
+  unAddress in 'view\forms\unAddress.pas' {fmAddress},
+  RecordActionsVersioning in 'general\common\Tools\RecordActionsVersioning.pas',
+  VersionInfoConfig in 'general\intf\tools\VersionInfoConfig.pas',
+  Vdm.Versioning.Types in 'general\Vdm.Versioning.Types.pas';
 
 {$R *.res}
 

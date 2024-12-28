@@ -273,6 +273,9 @@ $(PostBuildEvent)]]></PostBuildEvent>
             <Form>fmAddress</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="general\common\Tools\RecordActionsVersioning.pas"/>
+        <DCCReference Include="general\intf\tools\VersionInfoConfig.pas"/>
+        <DCCReference Include="general\Vdm.Versioning.Types.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

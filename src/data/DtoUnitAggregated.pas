@@ -2,7 +2,7 @@ unit DtoUnitAggregated;
 
 interface
 
-uses System.Generics.Collections, Vdm.Types, DtoPersonNameId, DtoUnit;
+uses System.Generics.Collections, Vdm.Versioning.Types, DtoPersonNameId, DtoUnit;
 
 type
   TDtoUnitAggregatedPersonMemberOf = record
@@ -21,6 +21,7 @@ type
   public
     constructor Create(const aUnit: TDtoUnit; const aVersionInfo: TEntryVersionInfo);
     destructor Destroy; override;
+    procedure UpdateVersionInfo(const aVersionInfo: TEntryVersionInfo);
     function ToString: string; override;
     procedure UpdateByDtoUnit(const aUnit: TDtoUnit);
     property VersionInfo: TEntryVersionInfo read fVersionInfo;
@@ -59,6 +60,11 @@ end;
 procedure TDtoUnitAggregated.UpdateByDtoUnit(const aUnit: TDtoUnit);
 begin
   fUnit := aUnit;
+end;
+
+procedure TDtoUnitAggregated.UpdateVersionInfo(const aVersionInfo: TEntryVersionInfo);
+begin
+  fVersionInfo := aVersionInfo;
 end;
 
 end.

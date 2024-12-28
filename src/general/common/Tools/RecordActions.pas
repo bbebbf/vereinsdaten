@@ -18,9 +18,10 @@ type
   public
     constructor Create(const aConnection: ISqlConnection; const aConfig: ICrudConfig<TRecord, TRecordIdentity>);
     destructor Destroy; override;
-    function LoadRecord(const aRecordIdentity: TRecordIdentity; var aRecord: TRecord): Boolean;
-    function SaveRecord(var aRecord: TRecord; aTransaction: ITransaction = nil): TRecordActionsSaveResponse;
-    function DeleteEntry(const aRecordIdentity: TRecordIdentity; aTransaction: ITransaction = nil): Boolean;
+    function LoadRecord(const aRecordIdentity: TRecordIdentity; var aRecord: TRecord;
+      const aTransaction: ITransaction = nil): Boolean;
+    function SaveRecord(var aRecord: TRecord; const aTransaction: ITransaction = nil): TRecordActionsSaveResponse;
+    function DeleteEntry(const aRecordIdentity: TRecordIdentity; const aTransaction: ITransaction = nil): Boolean;
   end;
 
 implementation
@@ -49,12 +50,12 @@ begin
 end;
 
 function TRecordActions<TRecord, TRecordIdentity>.LoadRecord(const aRecordIdentity: TRecordIdentity;
-  var aRecord: TRecord): Boolean;
+  var aRecord: TRecord; const aTransaction: ITransaction): Boolean;
 begin
   Result := False;
   if not Assigned(fRecordSelect) then
   begin
-    fRecordSelect := fConnection.CreatePreparedQuery(fConfig.GetSelectRecordSQL);
+    fRecordSelect := fConnection.CreatePreparedQuery(fConfig.GetSelectRecordSQL, aTransaction);
   end;
   fConfig.SetSelectRecordSQLParameter(aRecordIdentity, fRecordSelect);
   var lSqlResult := fRecordSelect.Open;
@@ -66,7 +67,7 @@ begin
 end;
 
 function TRecordActions<TRecord, TRecordIdentity>.SaveRecord(var aRecord: TRecord;
-  aTransaction: ITransaction): TRecordActionsSaveResponse;
+  const aTransaction: ITransaction): TRecordActionsSaveResponse;
 begin
   var lNewRecordResponse := fConfig.IsNewRecord(fConfig.GetRecordIdentity(aRecord));
   if lNewRecordResponse = TCrudConfigNewRecordResponse.NewRecord then
@@ -106,7 +107,7 @@ begin
 end;
 
 function TRecordActions<TRecord, TRecordIdentity>.DeleteEntry(const aRecordIdentity: TRecordIdentity;
-  aTransaction: ITransaction): Boolean;
+  const aTransaction: ITransaction): Boolean;
 begin
   Result := True;
   fConfig.SetValuesForDelete(aRecordIdentity, fDeleteAccessor);

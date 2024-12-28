@@ -3,14 +3,15 @@ unit CrudConfigUnitAggregated;
 interface
 
 uses InterfacedBase, EntryCrudConfig, DtoUnitAggregated, SqlConnection, CrudConfigUnit, CrudConfig, DtoUnit,
-  RecordActions, Vdm.Types;
+  RecordActionsVersioning, Vdm.Types, VersionInfoConfig, Vdm.Versioning.Types;
 
 type
   TCrudConfigUnitAggregated = class(TInterfacedBase, IEntryCrudConfig<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>)
   strict private
     fConnection: ISqlConnection;
     fCrudConfigUnit: ICrudConfig<TDtoUnit, UInt32>;
-    fUnitRecordActions: TRecordActions<TDtoUnit, UInt32>;
+    fVersionInfoConfig: IVersionInfoConfig<TDtoUnit, UInt32>;
+    fUnitRecordActions: TRecordActionsVersioning<TDtoUnit, UInt32>;
     fMemberSelectQuery: ISqlPreparedQuery;
     function GetListSqlResult: ISqlResult;
     function GetListEntryFromSqlResult(const aSqlResult: ISqlResult): TDtoUnit;
@@ -33,6 +34,15 @@ implementation
 
 uses System.SysUtils, SelectList;
 
+type
+  TVersionInfoConfig = class(TInterfacedBase, IVersionInfoConfig<TDtoUnit, UInt32>)
+  strict private
+    function GetVersioningEntityId: TEntryVersionInfoEntity;
+    function GetRecordIdentity(const aRecord: TDtoUnit): UInt32;
+    function GetVersioningIdentityColumnName: string;
+    procedure SetVersionInfoParameter(const aRecordIdentity: UInt32; const aParameter: ISqlParameter);
+  end;
+
 { TCrudConfigUnitAggregated }
 
 constructor TCrudConfigUnitAggregated.Create(const aConnection: ISqlConnection);
@@ -40,7 +50,8 @@ begin
   inherited Create;
   fConnection := aConnection;
   fCrudConfigUnit := TCrudConfigUnit.Create;
-  fUnitRecordActions := TRecordActions<TDtoUnit, UInt32>.Create(fConnection, fCrudConfigUnit);
+  fVersionInfoConfig := TVersionInfoConfig.Create;
+  fUnitRecordActions := TRecordActionsVersioning<TDtoUnit, UInt32>.Create(fConnection, fCrudConfigUnit, fVersionInfoConfig);
 end;
 
 destructor TCrudConfigUnitAggregated.Destroy;
@@ -107,20 +118,23 @@ function TCrudConfigUnitAggregated.SaveEntry(var aEntry: TDtoUnitAggregated): Bo
 begin
   Result := True;
   var lUnit := aEntry.&Unit;
-  if fUnitRecordActions.SaveRecord(lUnit) = TRecordActionsSaveResponse.Created then
+  var lEntryVersionInfo := aEntry.VersionInfo;
+  if fUnitRecordActions.SaveRecord(lUnit, lEntryVersionInfo).State = TRecordActionsVersioningResponseState.SaveSucceededCreated then
   begin
     aEntry.Id := lUnit.Id;
   end;
+  aEntry.UpdateVersionInfo(lEntryVersionInfo);
 end;
 
 function TCrudConfigUnitAggregated.TryLoadEntry(const aId: UInt32; out aEntry: TDtoUnitAggregated): Boolean;
 begin
   var lUnit := default(TDtoUnit);
-  Result := fUnitRecordActions.LoadRecord(aId, lUnit);
+  var lResponse := fUnitRecordActions.LoadRecord(aId, lUnit);
+  Result := lResponse.State = TRecordActionsVersioningResponseState.LoadSucceeded;
   if not Result then
     Exit;
 
-  aEntry := TDtoUnitAggregated.Create(lUnit, default(TEntryVersionInfo));
+  aEntry := TDtoUnitAggregated.Create(lUnit, lResponse.EntryVersionInfo);
   if not Assigned(fMemberSelectQuery) then
   begin
     fMemberSelectQuery := fConnection.CreatePreparedQuery(
@@ -149,6 +163,28 @@ begin
     lMemberRec.RoleName := lSqlResult.FieldByName('role_name').AsString;
     aEntry.MemberOfList.Add(lMemberRec);
   end;
+end;
+
+{ TVersionInfoConfig }
+
+function TVersionInfoConfig.GetRecordIdentity(const aRecord: TDtoUnit): UInt32;
+begin
+  Result := aRecord.Id;
+end;
+
+function TVersionInfoConfig.GetVersioningEntityId: TEntryVersionInfoEntity;
+begin
+  Result := TEntryVersionInfoEntity.Units;
+end;
+
+function TVersionInfoConfig.GetVersioningIdentityColumnName: string;
+begin
+  Result := 'unit_id';
+end;
+
+procedure TVersionInfoConfig.SetVersionInfoParameter(const aRecordIdentity: UInt32; const aParameter: ISqlParameter);
+begin
+  aParameter.Value := aRecordIdentity;
 end;
 
 end.
