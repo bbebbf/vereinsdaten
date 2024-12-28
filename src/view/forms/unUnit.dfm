@@ -34,15 +34,27 @@ object fmUnit: TfmUnit
     BevelOuter = bvNone
     TabOrder = 0
     ExplicitHeight = 687
+    object lbListviewItemCount: TLabel
+      Left = 0
+      Top = 645
+      Width = 350
+      Height = 25
+      Align = alBottom
+      Alignment = taCenter
+      AutoSize = False
+      Caption = '000'
+      ExplicitTop = 586
+      ExplicitWidth = 285
+    end
     object lvListview: TListView
       Left = 0
       Top = 41
       Width = 350
-      Height = 629
+      Height = 604
       Align = alClient
       Columns = <
         item
-          AutoSize = True
+          Width = 320
         end>
       ReadOnly = True
       RowSelect = True
@@ -51,6 +63,7 @@ object fmUnit: TfmUnit
       ViewStyle = vsReport
       OnCustomDrawItem = lvListviewCustomDrawItem
       OnSelectItem = lvListviewSelectItem
+      ExplicitHeight = 560
     end
     object pnFilter: TPanel
       Left = 0
@@ -60,6 +73,15 @@ object fmUnit: TfmUnit
       Align = alTop
       BevelOuter = bvNone
       TabOrder = 0
+      object cbShowInactiveUnits: TCheckBox
+        Left = 16
+        Top = 13
+        Width = 169
+        Height = 17
+        Caption = 'Inaktive Einheiten anzeigen'
+        TabOrder = 0
+        Visible = False
+      end
     end
     object btStartNewRecord: TButton
       Left = 0
@@ -80,7 +102,7 @@ object fmUnit: TfmUnit
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
-    ExplicitWidth = 636
+    ExplicitWidth = 739
     ExplicitHeight = 687
     object lbUnitName: TLabel
       Left = 23
@@ -203,7 +225,7 @@ object fmUnit: TfmUnit
       TabOrder = 8
       ViewStyle = vsReport
       OnCustomDrawItem = lvMemberOfCustomDrawItem
-      ExplicitWidth = 760
+      ExplicitLeft = -1
     end
   end
   object alActionList: TActionList

@@ -36,6 +36,7 @@ type
     edAddressCity: TEdit;
     lbAddressStreet: TLabel;
     acDeleteCurrentEntry: TAction;
+    lbListviewItemCount: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormActivate(Sender: TObject);
@@ -112,7 +113,8 @@ begin
   fComponentValueChangedObserver.BeginUpdate;
 
   edAddressStreet.Text := '';
-  edAddressStreet.SetFocus;
+  edAddressPostalcode.Text := '';
+  edAddressCity.Text := '';
   fComponentValueChangedObserver.EndUpdate;
   lvMemberOf.Items.Clear;
 end;
@@ -223,6 +225,9 @@ begin
   begin
     lvListview.Items[0].Selected := True;
   end;
+  lvListview.Items.EndUpdate;
+  lbListviewItemCount.Caption := IntToStr(lvListview.Items.Count) + ' Datensätze';
+  lvListview.SetFocus;
 end;
 
 procedure TfmAddress.lvListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;

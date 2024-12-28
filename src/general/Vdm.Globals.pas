@@ -13,6 +13,7 @@ type
     class function GetDateTimeAsString(const aValue: TDateTime): string;
     class function TryGetColorForCrudState(const aState: TListEntryCrudState; out aColor: TColor): Boolean;
     class function GetInactiveColor: TColor;
+    class function GetActiveStateAsString(const aState: Boolean): string;
     class function MinusOneToZero(const aIndex: Integer): Integer;
   end;
 
@@ -24,6 +25,14 @@ const
   VdmApplicationTitle: string = 'Vereinsdaten-Manager';
 
 { TVdmGlobals }
+
+class function TVdmGlobals.GetActiveStateAsString(const aState: Boolean): string;
+begin
+  if aState then
+    Result := 'Aktiv'
+  else
+    Result := 'Inaktiv';
+end;
 
 class function TVdmGlobals.GetDateAsString(const aValue: TDateTime): string;
 begin

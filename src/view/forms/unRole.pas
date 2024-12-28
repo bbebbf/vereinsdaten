@@ -27,6 +27,7 @@ type
     btReload: TButton;
     edRoleSorting: TEdit;
     lbSorting: TLabel;
+    lbListviewItemCount: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormActivate(Sender: TObject);
@@ -98,8 +99,7 @@ begin
   fComponentValueChangedObserver.BeginUpdate;
 
   edRoleName.Text := '';
-  edRoleSorting.Text := '0';
-  edRoleName.SetFocus;
+  edRoleSorting.Text := '';
   fComponentValueChangedObserver.EndUpdate;
 end;
 
@@ -211,11 +211,13 @@ end;
 
 procedure TfmRole.ListEnumEnd;
 begin
-  lvListview.Items.EndUpdate;
   if lvListview.Items.Count > 0 then
   begin
     lvListview.Items[0].Selected := True;
   end;
+  lvListview.Items.EndUpdate;
+  lbListviewItemCount.Caption := IntToStr(lvListview.Items.Count) + ' Datensätze';
+  lvListview.SetFocus;
 end;
 
 procedure TfmRole.lvListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);

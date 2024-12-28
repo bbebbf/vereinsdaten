@@ -41,6 +41,8 @@ type
     btSave: TButton;
     btReload: TButton;
     lvMemberOf: TListView;
+    cbShowInactiveUnits: TCheckBox;
+    lbListviewItemCount: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormActivate(Sender: TObject);
@@ -122,7 +124,6 @@ begin
   cbUnitActive.Checked := True;
   fActiveSinceHandler.Clear;
   fActiveUntilHandler.Clear;
-  edUnitName.SetFocus;
   fComponentValueChangedObserver.EndUpdate;
   lvMemberOf.Items.Clear;
 end;
@@ -237,11 +238,13 @@ end;
 
 procedure TfmUnit.ListEnumEnd;
 begin
-  lvListview.Items.EndUpdate;
   if lvListview.Items.Count > 0 then
   begin
     lvListview.Items[0].Selected := True;
   end;
+  lvListview.Items.EndUpdate;
+  lbListviewItemCount.Caption := IntToStr(lvListview.Items.Count) + ' Datensätze';
+  lvListview.SetFocus;
 end;
 
 procedure TfmUnit.lvListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
@@ -336,10 +339,7 @@ begin
       lItem.Caption := lMemberOfEntry.PersonNameId.ToString;
       lItem.SubItems.Add(lMemberOfEntry.RoleName);
       lItem.SubItems.Add(TVdmGlobals.GetDateAsString(lMemberOfEntry.MemberActiveSince));
-      if lMemberOfEntry.MemberActive then
-        lItem.SubItems.Add('A')
-      else
-        lItem.SubItems.Add('I');
+      lItem.SubItems.Add(TVdmGlobals.GetActiveStateAsString(lMemberOfEntry.MemberActive));
       lItem.SubItems.Add(TVdmGlobals.GetDateAsString(lMemberOfEntry.MemberActiveUntil));
     end;
   finally

@@ -33,11 +33,24 @@ object fmAddress: TfmAddress
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 0
+    ExplicitHeight = 687
+    object lbListviewItemCount: TLabel
+      Left = 0
+      Top = 670
+      Width = 570
+      Height = 25
+      Align = alBottom
+      Alignment = taCenter
+      AutoSize = False
+      Caption = '000'
+      ExplicitTop = 586
+      ExplicitWidth = 285
+    end
     object lvListview: TListView
       Left = 0
       Top = 41
       Width = 570
-      Height = 654
+      Height = 629
       Align = alClient
       Columns = <
         item
@@ -58,8 +71,7 @@ object fmAddress: TfmAddress
       ViewStyle = vsReport
       OnCustomDrawItem = lvListviewCustomDrawItem
       OnSelectItem = lvListviewSelectItem
-      ExplicitLeft = 1
-      ExplicitTop = 47
+      ExplicitHeight = 576
     end
     object pnFilter: TPanel
       Left = 0
@@ -69,7 +81,6 @@ object fmAddress: TfmAddress
       Align = alTop
       BevelOuter = bvNone
       TabOrder = 0
-      ExplicitWidth = 650
     end
   end
   object pnDetails: TPanel
@@ -80,8 +91,8 @@ object fmAddress: TfmAddress
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
-    ExplicitLeft = 657
-    ExplicitWidth = 441
+    ExplicitWidth = 385
+    ExplicitHeight = 687
     object lbAddressPostalcode: TLabel
       Left = 23
       Top = 86
@@ -138,7 +149,6 @@ object fmAddress: TfmAddress
       TabOrder = 5
       ViewStyle = vsReport
       OnCustomDrawItem = lvMemberOfCustomDrawItem
-      ExplicitWidth = 441
     end
     object edAddressStreet: TEdit
       Left = 23

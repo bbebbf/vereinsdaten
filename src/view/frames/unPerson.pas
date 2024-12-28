@@ -63,6 +63,7 @@ type
     acPersonStartNewRecord: TAction;
     btPersonStartNewRecord: TButton;
     tsMemberOf: TTabSheet;
+    lbListviewItemCount: TLabel;
     procedure lvPersonListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure lvPersonListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
@@ -354,11 +355,13 @@ end;
 
 procedure TfraPerson.ListEnumEnd;
 begin
-  lvPersonListview.Items.EndUpdate;
   if lvPersonListview.Items.Count > 0 then
   begin
     lvPersonListview.Items[0].Selected := True;
   end;
+  lvPersonListview.Items.EndUpdate;
+  lbListviewItemCount.Caption := IntToStr(lvPersonListview.Items.Count) + ' Datensätze';
+  lvPersonListview.SetFocus;
 end;
 
 procedure TfraPerson.lvPersonListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;

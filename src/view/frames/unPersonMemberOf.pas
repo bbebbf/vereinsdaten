@@ -228,10 +228,7 @@ begin
   lListItem.Caption := GetStringByIndex(aEntry.Data.AvailableUnits.Data.Strings, aEntry.Data.UnitIndex);
   lListItem.SubItems[0] := GetStringByIndex(aEntry.Data.AvailableRoles.Data.Strings, aEntry.Data.RoleIndex);
   lListItem.SubItems[1] := TVdmGlobals.GetDateAsString(aEntry.Data.Member.ActiveSince);
-  if aEntry.Data.Member.Active then
-    lListItem.SubItems[2] := 'A'
-  else
-    lListItem.SubItems[2] := 'I';
+  lListItem.SubItems[2] := TVdmGlobals.GetActiveStateAsString(aEntry.Data.Member.Active);
   lListItem.SubItems[3] := TVdmGlobals.GetDateAsString(aEntry.Data.Member.ActiveUntil);
 end;
 

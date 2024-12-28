@@ -17,7 +17,7 @@ object fmRole: TfmRole
   OnDestroy = FormDestroy
   TextHeight = 15
   object Splitter1: TSplitter
-    Left = 350
+    Left = 300
     Top = 0
     Width = 7
     Height = 252
@@ -28,21 +28,33 @@ object fmRole: TfmRole
   object pnListview: TPanel
     Left = 0
     Top = 0
-    Width = 350
+    Width = 300
     Height = 252
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitHeight = 244
+    ExplicitLeft = 1
+    ExplicitTop = -8
+    object lbListviewItemCount: TLabel
+      Left = 0
+      Top = 202
+      Width = 300
+      Height = 25
+      Align = alBottom
+      Alignment = taCenter
+      AutoSize = False
+      Caption = '000'
+      ExplicitTop = 188
+    end
     object lvListview: TListView
       Left = 0
       Top = 41
-      Width = 350
-      Height = 186
+      Width = 300
+      Height = 161
       Align = alClient
       Columns = <
         item
-          AutoSize = True
+          Width = 275
         end>
       ReadOnly = True
       RowSelect = True
@@ -50,11 +62,12 @@ object fmRole: TfmRole
       TabOrder = 1
       ViewStyle = vsReport
       OnSelectItem = lvListviewSelectItem
+      ExplicitHeight = 144
     end
     object pnFilter: TPanel
       Left = 0
       Top = 0
-      Width = 350
+      Width = 300
       Height = 41
       Align = alTop
       BevelOuter = bvNone
@@ -63,23 +76,24 @@ object fmRole: TfmRole
     object btStartNewRecord: TButton
       Left = 0
       Top = 227
-      Width = 350
+      Width = 300
       Height = 25
       Action = acStartNewEntry
       Align = alBottom
       TabOrder = 2
-      ExplicitTop = 219
+      ExplicitLeft = 1
+      ExplicitTop = 210
     end
   end
   object pnDetails: TPanel
-    Left = 357
+    Left = 307
     Top = 0
-    Width = 493
+    Width = 543
     Height = 252
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
-    ExplicitWidth = 491
+    ExplicitWidth = 541
     ExplicitHeight = 244
     object lbRoleName: TLabel
       Left = 23
