@@ -2,7 +2,7 @@ unit DtoUnitAggregated;
 
 interface
 
-uses System.Generics.Collections, DtoPersonNameId, DtoUnit;
+uses System.Generics.Collections, Vdm.Types, DtoPersonNameId, DtoUnit;
 
 type
   TDtoUnitAggregatedPersonMemberOf = record
@@ -16,12 +16,14 @@ type
   TDtoUnitAggregated = class
   strict private
     fUnit: TDtoUnit;
+    fVersionInfo: TEntryVersionInfo;
     fMemberOfList: TList<TDtoUnitAggregatedPersonMemberOf>;
   public
-    constructor Create(const aUnit: TDtoUnit);
+    constructor Create(const aUnit: TDtoUnit; const aVersionInfo: TEntryVersionInfo);
     destructor Destroy; override;
     function ToString: string; override;
     procedure UpdateByDtoUnit(const aUnit: TDtoUnit);
+    property VersionInfo: TEntryVersionInfo read fVersionInfo;
     property &Unit: TDtoUnit read fUnit;
     property Id: UInt32 read fUnit.Id write fUnit.Id;
     property Name: string read fUnit.Name write fUnit.Name;
@@ -35,10 +37,11 @@ implementation
 
 { TDtoUnitAggregated }
 
-constructor TDtoUnitAggregated.Create(const aUnit: TDtoUnit);
+constructor TDtoUnitAggregated.Create(const aUnit: TDtoUnit; const aVersionInfo: TEntryVersionInfo);
 begin
   inherited Create;
   fUnit := aUnit;
+  fVersionInfo := aVersionInfo;
   fMemberOfList := TList<TDtoUnitAggregatedPersonMemberOf>.Create;
 end;
 

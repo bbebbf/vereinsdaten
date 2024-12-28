@@ -51,12 +51,12 @@ end;
 
 function TCrudConfigUnitAggregated.CloneEntry(const aEntry: TDtoUnitAggregated): TDtoUnitAggregated;
 begin
-  Result := TDtoUnitAggregated.Create(aEntry.&Unit);
+  Result := TDtoUnitAggregated.Create(aEntry.&Unit, aEntry.VersionInfo);
 end;
 
 function TCrudConfigUnitAggregated.CreateEntry: TDtoUnitAggregated;
 begin
-  Result := TDtoUnitAggregated.Create(default(TDtoUnit));
+  Result := TDtoUnitAggregated.Create(default(TDtoUnit), default(TEntryVersionInfo));
 end;
 
 function TCrudConfigUnitAggregated.DeleteEntry(const aId: UInt32): Boolean;
@@ -120,7 +120,7 @@ begin
   if not Result then
     Exit;
 
-  aEntry := TDtoUnitAggregated.Create(lUnit);
+  aEntry := TDtoUnitAggregated.Create(lUnit, default(TEntryVersionInfo));
   if not Assigned(fMemberSelectQuery) then
   begin
     fMemberSelectQuery := fConnection.CreatePreparedQuery(
