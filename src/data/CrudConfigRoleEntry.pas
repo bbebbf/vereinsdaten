@@ -2,17 +2,17 @@ unit CrudConfigRoleEntry;
 
 interface
 
-uses InterfacedBase, EntryCrudConfig, SqlConnection, CrudConfigRole, CrudConfig, DtoRole, RecordActions;
+uses InterfacedBase, EntryCrudConfig, SqlConnection, CrudConfigRole, CrudConfig, DtoRole, RecordActions, Vdm.Types;
 
 type
-  TCrudConfigRoleEntry = class(TInterfacedBase, IEntryCrudConfig<TDtoRole, TDtoRole, UInt32>)
+  TCrudConfigRoleEntry = class(TInterfacedBase, IEntryCrudConfig<TDtoRole, TDtoRole, UInt32, TVoid>)
   strict private
     fConnection: ISqlConnection;
     fCrudConfig: ICrudConfig<TDtoRole, UInt32>;
     fRecordActions: TRecordActions<TDtoRole, UInt32>;
     function GetListSqlResult: ISqlResult;
     function GetListEntryFromSqlResult(const aSqlResult: ISqlResult): TDtoRole;
-    function IsEntryValidForList(const aEntry: TDtoRole): Boolean;
+    function IsEntryValidForList(const aEntry: TDtoRole; const aListFilter: TVoid): Boolean;
     function IsEntryValidForSaving(const aEntry: TDtoRole): Boolean;
     procedure DestroyEntry(var aEntry: TDtoRole);
     procedure DestroyListEntry(var aEntry: TDtoRole);
@@ -92,7 +92,7 @@ begin
   Result := False;
 end;
 
-function TCrudConfigRoleEntry.IsEntryValidForList(const aEntry: TDtoRole): Boolean;
+function TCrudConfigRoleEntry.IsEntryValidForList(const aEntry: TDtoRole; const aListFilter: TVoid): Boolean;
 begin
   Result := True;
 end;

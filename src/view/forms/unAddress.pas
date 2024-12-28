@@ -7,7 +7,7 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
   System.Generics.Collections, CrudCommands, DtoAddress, DtoAddressAggregated, ListviewAttachedData, Vcl.Menus, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.WinXPickers, System.Actions, Vcl.ActnList,
-  ComponentValueChangedObserver, CrudUI, DelayedExecute;
+  ComponentValueChangedObserver, CrudUI, DelayedExecute, Vdm.Types;
 
 type
   TAddressListItemData = record
@@ -17,7 +17,7 @@ type
     MemberActive: Boolean;
   end;
 
-  TfmAddress = class(TForm, ICrudUI<TDtoAddressAggregated, TDtoAddress, UInt32>)
+  TfmAddress = class(TForm, ICrudUI<TDtoAddressAggregated, TDtoAddress, UInt32, TVoid>)
     pnListview: TPanel;
     Splitter1: TSplitter;
     pnDetails: TPanel;
@@ -52,7 +52,7 @@ type
     fActivated: Boolean;
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
-    fBusinessIntf: ICrudCommands<UInt32>;
+    fBusinessIntf: ICrudCommands<UInt32, TVoid>;
     fListviewAttachedData: TListviewAttachedData<UInt32, TAddressListItemData>;
     fMemberOfListviewAttachedData: TListviewAttachedData<UInt32, TMemberOfListItemData>;
     fDelayedExecute: TDelayedExecute<TPair<Boolean, UInt32>>;
@@ -62,7 +62,7 @@ type
     procedure ControlValuesUnchanged(Sender: TObject);
     function EntryToListItem(const aEntry: TDtoAddress; const aItem: TListItem): TListItem;
 
-    procedure SetCrudCommands(const aCommands: ICrudCommands<UInt32>);
+    procedure SetCrudCommands(const aCommands: ICrudCommands<UInt32, TVoid>);
     procedure ListEnumBegin;
     procedure ListEnumProcessItem(const aEntry: TDtoAddress);
     procedure ListEnumEnd;
@@ -196,7 +196,7 @@ begin
   aEntry.City := edAddressCity.Text;
 end;
 
-procedure TfmAddress.SetCrudCommands(const aCommands: ICrudCommands<UInt32>);
+procedure TfmAddress.SetCrudCommands(const aCommands: ICrudCommands<UInt32, TVoid>);
 begin
   fBusinessIntf := aCommands;
 end;

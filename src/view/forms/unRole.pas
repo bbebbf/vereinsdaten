@@ -10,7 +10,7 @@ uses
   ComponentValueChangedObserver, CrudUI, DelayedExecute, Vdm.Types;
 
 type
-  TfmRole = class(TForm, ICrudUI<TDtoRole, TDtoRole, UInt32>)
+  TfmRole = class(TForm, ICrudUI<TDtoRole, TDtoRole, UInt32, TVoid>)
     pnListview: TPanel;
     Splitter1: TSplitter;
     pnDetails: TPanel;
@@ -39,7 +39,7 @@ type
     fActivated: Boolean;
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
-    fBusinessIntf: ICrudCommands<UInt32>;
+    fBusinessIntf: ICrudCommands<UInt32, TVoid>;
     fListviewAttachedData: TListviewAttachedData<UInt32, TVoid>;
     fDelayedExecute: TDelayedExecute<TPair<Boolean, UInt32>>;
 
@@ -48,7 +48,7 @@ type
     procedure ControlValuesUnchanged(Sender: TObject);
     function EntryToListItem(const aEntry: TDtoRole; const aItem: TListItem): TListItem;
 
-    procedure SetCrudCommands(const aCommands: ICrudCommands<UInt32>);
+    procedure SetCrudCommands(const aCommands: ICrudCommands<UInt32, TVoid>);
     procedure ListEnumBegin;
     procedure ListEnumProcessItem(const aEntry: TDtoRole);
     procedure ListEnumEnd;
@@ -187,7 +187,7 @@ begin
   aEntry.Sorting := lSortingInteger;
 end;
 
-procedure TfmRole.SetCrudCommands(const aCommands: ICrudCommands<UInt32>);
+procedure TfmRole.SetCrudCommands(const aCommands: ICrudCommands<UInt32, TVoid>);
 begin
   fBusinessIntf := aCommands;
 end;

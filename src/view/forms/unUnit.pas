@@ -7,7 +7,7 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
   System.Generics.Collections, CrudCommands, DtoUnit, DtoUnitAggregated, ListviewAttachedData, Vcl.Menus, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.WinXPickers, System.Actions, Vcl.ActnList,
-  ComponentValueChangedObserver, CrudUI, DelayedExecute, CheckboxDatetimePickerHandler;
+  ComponentValueChangedObserver, CrudUI, DelayedExecute, CheckboxDatetimePickerHandler, Vdm.Types;
 
 type
   TUnitListItemData = record
@@ -18,7 +18,7 @@ type
     MemberActive: Boolean;
   end;
 
-  TfmUnit = class(TForm, ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32>)
+  TfmUnit = class(TForm, ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>)
     pnListview: TPanel;
     Splitter1: TSplitter;
     pnDetails: TPanel;
@@ -54,11 +54,12 @@ type
     procedure acStartNewEntryExecute(Sender: TObject);
     procedure lvMemberOfCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
+    procedure cbShowInactiveUnitsClick(Sender: TObject);
   strict private
     fActivated: Boolean;
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
-    fBusinessIntf: ICrudCommands<UInt32>;
+    fBusinessIntf: ICrudCommands<UInt32, TUnitFilter>;
     fListviewAttachedData: TListviewAttachedData<UInt32, TUnitListItemData>;
     fMemberOfListviewAttachedData: TListviewAttachedData<UInt32, TMemberOfListItemData>;
     fDelayedExecute: TDelayedExecute<TPair<Boolean, UInt32>>;
@@ -70,7 +71,7 @@ type
     procedure ControlValuesUnchanged(Sender: TObject);
     function EntryToListItem(const aEntry: TDtoUnit; const aItem: TListItem): TListItem;
 
-    procedure SetCrudCommands(const aCommands: ICrudCommands<UInt32>);
+    procedure SetCrudCommands(const aCommands: ICrudCommands<UInt32, TUnitFilter>);
     procedure ListEnumBegin;
     procedure ListEnumProcessItem(const aEntry: TDtoUnit);
     procedure ListEnumEnd;
@@ -114,6 +115,13 @@ procedure TfmUnit.acStartNewEntryExecute(Sender: TObject);
 begin
   fBusinessIntf.StartNewEntry;
   SetEditMode(False);
+end;
+
+procedure TfmUnit.cbShowInactiveUnitsClick(Sender: TObject);
+begin
+  var lListFilter := fBusinessIntf.ListFilter;
+  lListFilter.ShowInactiveUnits := cbShowInactiveUnits.Checked;
+  fBusinessIntf.ListFilter := lListFilter;
 end;
 
 procedure TfmUnit.ClearEntryFromUI;
@@ -214,7 +222,7 @@ begin
   aEntry.ActiveUntil := fActiveUntilHandler.Datetime;
 end;
 
-procedure TfmUnit.SetCrudCommands(const aCommands: ICrudCommands<UInt32>);
+procedure TfmUnit.SetCrudCommands(const aCommands: ICrudCommands<UInt32, TUnitFilter>);
 begin
   fBusinessIntf := aCommands;
 end;

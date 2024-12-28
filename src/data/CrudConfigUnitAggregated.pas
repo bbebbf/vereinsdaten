@@ -3,10 +3,10 @@ unit CrudConfigUnitAggregated;
 interface
 
 uses InterfacedBase, EntryCrudConfig, DtoUnitAggregated, SqlConnection, CrudConfigUnit, CrudConfig, DtoUnit,
-  RecordActions;
+  RecordActions, Vdm.Types;
 
 type
-  TCrudConfigUnitAggregated = class(TInterfacedBase, IEntryCrudConfig<TDtoUnitAggregated, TDtoUnit, UInt32>)
+  TCrudConfigUnitAggregated = class(TInterfacedBase, IEntryCrudConfig<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>)
   strict private
     fConnection: ISqlConnection;
     fCrudConfigUnit: ICrudConfig<TDtoUnit, UInt32>;
@@ -14,7 +14,7 @@ type
     fMemberSelectQuery: ISqlPreparedQuery;
     function GetListSqlResult: ISqlResult;
     function GetListEntryFromSqlResult(const aSqlResult: ISqlResult): TDtoUnit;
-    function IsEntryValidForList(const aEntry: TDtoUnit): Boolean;
+    function IsEntryValidForList(const aEntry: TDtoUnit; const aListFilter: TUnitFilter): Boolean;
     function IsEntryValidForSaving(const aEntry: TDtoUnitAggregated): Boolean;
     procedure DestroyEntry(var aEntry: TDtoUnitAggregated);
     procedure DestroyListEntry(var aEntry: TDtoUnit);
@@ -93,9 +93,9 @@ begin
   Result := not Assigned(aEntry);
 end;
 
-function TCrudConfigUnitAggregated.IsEntryValidForList(const aEntry: TDtoUnit): Boolean;
+function TCrudConfigUnitAggregated.IsEntryValidForList(const aEntry: TDtoUnit; const aListFilter: TUnitFilter): Boolean;
 begin
-  Result := True;
+  Result := aEntry.Active or aListFilter.ShowInactiveUnits;
 end;
 
 function TCrudConfigUnitAggregated.IsEntryValidForSaving(const aEntry: TDtoUnitAggregated): Boolean;

@@ -8,7 +8,7 @@ uses
   System.Generics.Collections, CrudCommands, DtoPerson, ListviewAttachedData, Vcl.Menus, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.WinXPickers, System.Actions, Vcl.ActnList,
   PersonBusinessIntf, PersonAggregatedUI, DtoPersonAggregated, ComponentValueChangedObserver,
-  unPersonMemberOf, PersonMemberOfUI, DelayedExecute, CheckboxDatetimePickerHandler;
+  unPersonMemberOf, PersonMemberOfUI, DelayedExecute, CheckboxDatetimePickerHandler, Vdm.Types;
 
 type
   TPersonListItemData = record
@@ -93,7 +93,7 @@ type
     procedure ControlValuesUnchanged(Sender: TObject);
     function PersonEntryToListItem(const aPerson: TDtoPerson; const aItem: TListItem): TListItem;
 
-    procedure SetCrudCommands(const aCommands: ICrudCommands<UInt32>);
+    procedure SetCrudCommands(const aCommands: ICrudCommands<UInt32, TVoid>);
     procedure SetPersonBusinessIntf(const aCommands: IPersonBusinessIntf);
     procedure ListEnumBegin;
     procedure ListEnumProcessItem(const aRecord: TDtoPerson);
@@ -322,7 +322,7 @@ begin
   aRecord.MembershipEndReason := edMembershipEndReason.Text;
 end;
 
-procedure TfraPerson.SetCrudCommands(const aCommands: ICrudCommands<UInt32>);
+procedure TfraPerson.SetCrudCommands(const aCommands: ICrudCommands<UInt32, TVoid>);
 begin
 
 end;

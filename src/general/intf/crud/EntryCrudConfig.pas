@@ -5,11 +5,11 @@ interface
 uses SqlConnection;
 
 type
-  IEntryCrudConfig<TEntry; TListEntry; TId: record> = interface
+  IEntryCrudConfig<TEntry; TListEntry; TId, TListFilter: record> = interface
     ['{C5610CB4-146B-4494-B061-082C5F259563}']
     function GetListSqlResult: ISqlResult;
     function GetListEntryFromSqlResult(const aSqlResult: ISqlResult): TListEntry;
-    function IsEntryValidForList(const aEntry: TListEntry): Boolean;
+    function IsEntryValidForList(const aEntry: TListEntry; const aListFilter: TListFilter): Boolean;
     function IsEntryValidForSaving(const aEntry: TEntry): Boolean;
     procedure DestroyEntry(var aEntry: TEntry);
     procedure DestroyListEntry(var aEntry: TListEntry);

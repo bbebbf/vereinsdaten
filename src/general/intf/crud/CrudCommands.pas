@@ -16,7 +16,7 @@ type
     class function CreateFailedRecord(const aMessageText: string = ''): TCrudSaveResult; static;
   end;
 
-  ICrudCommands<T: record> = interface
+  ICrudCommands<T, F: record> = interface
     ['{FB07E098-86FA-4B9F-8C65-04384425558B}']
     procedure Initialize;
     function LoadList: TCrudCommandResult;
@@ -26,7 +26,10 @@ type
     function DeleteEntry(const aEntryId: T): TCrudCommandResult;
     procedure StartNewEntry;
     function GetDataChanged: Boolean;
+    function GetListFilter: F;
+    procedure SetListFilter(const aValue: F);
     property DataChanged: Boolean read GetDataChanged;
+    property ListFilter: F read GetListFilter write SetListFilter;
   end;
 
 implementation

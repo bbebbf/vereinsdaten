@@ -3,10 +3,10 @@ unit CrudConfigAddressAggregated;
 interface
 
 uses InterfacedBase, EntryCrudConfig, DtoAddressAggregated, SqlConnection, CrudConfigAddress, CrudConfig,
-  RecordActions, DtoAddress;
+  RecordActions, DtoAddress, Vdm.Types;
 
 type
-  TCrudConfigAddressAggregated = class(TInterfacedBase, IEntryCrudConfig<TDtoAddressAggregated, TDtoAddress, UInt32>)
+  TCrudConfigAddressAggregated = class(TInterfacedBase, IEntryCrudConfig<TDtoAddressAggregated, TDtoAddress, UInt32, TVoid>)
   strict private
     fConnection: ISqlConnection;
     fCrudConfig: ICrudConfig<TDtoAddress, UInt32>;
@@ -14,7 +14,7 @@ type
     fMemberSelectQuery: ISqlPreparedQuery;
     function GetListSqlResult: ISqlResult;
     function GetListEntryFromSqlResult(const aSqlResult: ISqlResult): TDtoAddress;
-    function IsEntryValidForList(const aEntry: TDtoAddress): Boolean;
+    function IsEntryValidForList(const aEntry: TDtoAddress; const aListFilter: TVoid): Boolean;
     function IsEntryValidForSaving(const aEntry: TDtoAddressAggregated): Boolean;
     procedure DestroyEntry(var aEntry: TDtoAddressAggregated);
     procedure DestroyListEntry(var aEntry: TDtoAddress);
@@ -93,7 +93,7 @@ begin
   Result := not Assigned(aEntry);
 end;
 
-function TCrudConfigAddressAggregated.IsEntryValidForList(const aEntry: TDtoAddress): Boolean;
+function TCrudConfigAddressAggregated.IsEntryValidForList(const aEntry: TDtoAddress; const aListFilter: TVoid): Boolean;
 begin
   Result := True;
 end;

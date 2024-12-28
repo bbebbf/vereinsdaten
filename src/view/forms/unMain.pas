@@ -43,7 +43,7 @@ implementation
 
 uses Vdm.Globals, ConfigReader, unUnit, CrudCommands, CrudBusiness, EntryCrudConfig,
   DtoUnit, DtoUnitAggregated, CrudConfigUnitAggregated, DtoRole, CrudConfigRoleEntry, unRole,
-  DtoAddress, DtoAddressAggregated, unAddress, CrudConfigAddressAggregated;
+  DtoAddress, DtoAddressAggregated, unAddress, CrudConfigAddressAggregated, Vdm.Types;
 
 {$R *.dfm}
 
@@ -51,8 +51,8 @@ procedure TfmMain.acMasterdataAddressExecute(Sender: TObject);
 begin
   var lDialog := TfmAddress.Create(Self);
   try
-    var lCrudConfig: IEntryCrudConfig<TDtoAddressAggregated, TDtoAddress, UInt32> := TCrudConfigAddressAggregated.Create(fConnection);
-    var lBusiness: ICrudCommands<UInt32> := TCrudBusiness<TDtoAddressAggregated, TDtoAddress, UInt32>.Create(lDialog, lCrudConfig);
+    var lCrudConfig: IEntryCrudConfig<TDtoAddressAggregated, TDtoAddress, UInt32, TVoid> := TCrudConfigAddressAggregated.Create(fConnection);
+    var lBusiness: ICrudCommands<UInt32, TVoid> := TCrudBusiness<TDtoAddressAggregated, TDtoAddress, UInt32, TVoid>.Create(lDialog, lCrudConfig);
     lBusiness.Initialize;
     lDialog.ShowModal;
     if lBusiness.DataChanged then
@@ -68,8 +68,8 @@ procedure TfmMain.acMasterdataRoleExecute(Sender: TObject);
 begin
   var lDialog := TfmRole.Create(Self);
   try
-    var lCrudConfig: IEntryCrudConfig<TDtoRole, TDtoRole, UInt32> := TCrudConfigRoleEntry.Create(fConnection);
-    var lBusiness: ICrudCommands<UInt32> := TCrudBusiness<TDtoRole, TDtoRole, UInt32>.Create(lDialog, lCrudConfig);
+    var lCrudConfig: IEntryCrudConfig<TDtoRole, TDtoRole, UInt32, TVoid> := TCrudConfigRoleEntry.Create(fConnection);
+    var lBusiness: ICrudCommands<UInt32, TVoid> := TCrudBusiness<TDtoRole, TDtoRole, UInt32, TVoid>.Create(lDialog, lCrudConfig);
     lBusiness.Initialize;
     lDialog.ShowModal;
     if lBusiness.DataChanged then
@@ -85,8 +85,8 @@ procedure TfmMain.acMasterdataUnitExecute(Sender: TObject);
 begin
   var lDialog := TfmUnit.Create(Self);
   try
-    var lCrudConfig: IEntryCrudConfig<TDtoUnitAggregated, TDtoUnit, UInt32> := TCrudConfigUnitAggregated.Create(fConnection);
-    var lBusiness: ICrudCommands<UInt32> := TCrudBusiness<TDtoUnitAggregated, TDtoUnit, UInt32>.Create(lDialog, lCrudConfig);
+    var lCrudConfig: IEntryCrudConfig<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter> := TCrudConfigUnitAggregated.Create(fConnection);
+    var lBusiness: ICrudCommands<UInt32, TUnitFilter> := TCrudBusiness<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>.Create(lDialog, lCrudConfig);
     lBusiness.Initialize;
     lDialog.ShowModal;
     if lBusiness.DataChanged then

@@ -5,13 +5,14 @@ interface
 uses InterfacedBase, SqlConnection, CrudCommands, CrudUI, EntryCrudConfig;
 
 type
-  TCrudBusiness<TEntry; TListEntry; TId: record> = class(TInterfacedBase, ICrudCommands<TId>)
+  TCrudBusiness<TEntry; TListEntry; TId, TListFilter: record> = class(TInterfacedBase, ICrudCommands<TId, TListFilter>)
   strict private
-    fUI: ICrudUI<TEntry, TListEntry, TId>;
-    fConfig: IEntryCrudConfig<TEntry, TListEntry, TId>;
+    fUI: ICrudUI<TEntry, TListEntry, TId, TListFilter>;
+    fConfig: IEntryCrudConfig<TEntry, TListEntry, TId, TListFilter>;
     fNewEntryStarted: Boolean;
     fCurrentEntry: TEntry;
     fDataChanged: Boolean;
+    fListFilter: TListFilter;
     procedure Initialize;
     function LoadList: TCrudCommandResult;
     function LoadCurrentEntry(const aId: TId): TCrudCommandResult;
@@ -20,8 +21,10 @@ type
     procedure StartNewEntry;
     function DeleteEntry(const aId: TId): TCrudCommandResult;
     function GetDataChanged: Boolean;
+    function GetListFilter: TListFilter;
+    procedure SetListFilter(const aValue: TListFilter);
   public
-    constructor Create(const aUI: ICrudUI<TEntry, TListEntry, TId>; const aConfig: IEntryCrudConfig<TEntry, TListEntry, TId>);
+    constructor Create(const aUI: ICrudUI<TEntry, TListEntry, TId, TListFilter>; const aConfig: IEntryCrudConfig<TEntry, TListEntry, TId, TListFilter>);
     destructor Destroy; override;
   end;
 
@@ -29,17 +32,17 @@ implementation
 
 uses System.SysUtils;
 
-{ TCrudBusiness<TEntry, TListEntry, TId> }
+{ TCrudBusiness<TEntry, TListEntry, TId, TListFilter> }
 
-constructor TCrudBusiness<TEntry, TListEntry, TId>.Create(const aUI: ICrudUI<TEntry, TListEntry, TId>;
-  const aConfig: IEntryCrudConfig<TEntry, TListEntry, TId>);
+constructor TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.Create(const aUI: ICrudUI<TEntry, TListEntry, TId, TListFilter>;
+  const aConfig: IEntryCrudConfig<TEntry, TListEntry, TId, TListFilter>);
 begin
   inherited Create;
   fUI := aUI;
   fConfig := aConfig;
 end;
 
-destructor TCrudBusiness<TEntry, TListEntry, TId>.Destroy;
+destructor TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.Destroy;
 begin
   fConfig.DestroyEntry(fCurrentEntry);
   fConfig := nil;
@@ -47,21 +50,26 @@ begin
   inherited;
 end;
 
-function TCrudBusiness<TEntry, TListEntry, TId>.GetDataChanged: Boolean;
+function TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.GetDataChanged: Boolean;
 begin
   Result := fDataChanged;
 end;
 
-procedure TCrudBusiness<TEntry, TListEntry, TId>.Initialize;
+function TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.GetListFilter: TListFilter;
 begin
-  var lCrudCommands: ICrudCommands<TId>;
-  if not Supports(Self, ICrudCommands<TId>, lCrudCommands) then
-    raise ENotImplemented.Create('ICrudCommands<TId> is not implemented.');
+  Result := fListFilter;
+end;
+
+procedure TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.Initialize;
+begin
+  var lCrudCommands: ICrudCommands<TId, TListFilter>;
+  if not Supports(Self, ICrudCommands<TId, TListFilter>, lCrudCommands) then
+    raise ENotImplemented.Create('ICrudCommands<TId, TListFilter> is not implemented.');
 
   fUI.SetCrudCommands(lCrudCommands)
 end;
 
-function TCrudBusiness<TEntry, TListEntry, TId>.LoadList: TCrudCommandResult;
+function TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.LoadList: TCrudCommandResult;
 begin
   Result := default(TCrudCommandResult);
   fNewEntryStarted := False;
@@ -73,7 +81,7 @@ begin
     begin
       var lEntry := fConfig.GetListEntryFromSqlResult(lSqlResult);
       try
-        if fConfig.IsEntryValidForList(lEntry) then
+        if fConfig.IsEntryValidForList(lEntry, fListFilter) then
           fUI.ListEnumProcessItem(lEntry);
       finally
         fConfig.DestroyListEntry(lEntry);
@@ -84,7 +92,7 @@ begin
   end;
 end;
 
-function TCrudBusiness<TEntry, TListEntry, TId>.LoadCurrentEntry(const aId: TId): TCrudCommandResult;
+function TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.LoadCurrentEntry(const aId: TId): TCrudCommandResult;
 begin
   fConfig.DestroyEntry(fCurrentEntry);
   fNewEntryStarted := False;
@@ -99,7 +107,7 @@ begin
   end;
 end;
 
-function TCrudBusiness<TEntry, TListEntry, TId>.SaveCurrentEntry: TCrudSaveResult;
+function TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.SaveCurrentEntry: TCrudSaveResult;
 begin
   var lDestroyTempSavingEntry := True;
   var lTempSavingEntry: TEntry;
@@ -137,18 +145,26 @@ begin
   end;
 end;
 
-procedure TCrudBusiness<TEntry, TListEntry, TId>.StartNewEntry;
+procedure TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.SetListFilter(const aValue: TListFilter);
+begin
+  if CompareMem(@fListFilter, @aValue, SizeOf(TListFilter)) then
+    Exit;
+  fListFilter := aValue;
+  LoadList;
+end;
+
+procedure TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.StartNewEntry;
 begin
   fNewEntryStarted := True;
   fUI.ClearEntryFromUI;
 end;
 
-function TCrudBusiness<TEntry, TListEntry, TId>.ReloadCurrentEntry: TCrudCommandResult;
+function TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.ReloadCurrentEntry: TCrudCommandResult;
 begin
   fUI.SetEntryToUI(fCurrentEntry, False);
 end;
 
-function TCrudBusiness<TEntry, TListEntry, TId>.DeleteEntry(const aId: TId): TCrudCommandResult;
+function TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.DeleteEntry(const aId: TId): TCrudCommandResult;
 begin
 
 end;

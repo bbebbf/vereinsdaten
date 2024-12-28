@@ -63,7 +63,6 @@ object fmUnit: TfmUnit
       ViewStyle = vsReport
       OnCustomDrawItem = lvListviewCustomDrawItem
       OnSelectItem = lvListviewSelectItem
-      ExplicitHeight = 560
     end
     object pnFilter: TPanel
       Left = 0
@@ -80,7 +79,7 @@ object fmUnit: TfmUnit
         Height = 17
         Caption = 'Inaktive Einheiten anzeigen'
         TabOrder = 0
-        Visible = False
+        OnClick = cbShowInactiveUnitsClick
       end
     end
     object btStartNewRecord: TButton
@@ -225,7 +224,6 @@ object fmUnit: TfmUnit
       TabOrder = 8
       ViewStyle = vsReport
       OnCustomDrawItem = lvMemberOfCustomDrawItem
-      ExplicitLeft = -1
     end
   end
   object alActionList: TActionList

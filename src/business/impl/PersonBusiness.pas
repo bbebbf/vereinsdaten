@@ -5,7 +5,7 @@ interface
 uses System.Classes, InterfacedBase, CrudCommands, CrudConfig, Transaction, PersonBusinessIntf,
   DtoPersonAggregated, SqlConnection, PersonAggregatedUI, DtoPerson, RecordActions,
   KeyIndexStrings, DtoPersonAddress, DtoAddress, DtoClubmembership, ClubmembershipTools,
-  MemberOfBusinessIntf, ProgressIndicator;
+  MemberOfBusinessIntf, ProgressIndicator, Vdm.Types;
 
 type
   TPersonBusiness = class(TInterfacedBase, IPersonBusinessIntf)
@@ -44,6 +44,8 @@ type
     procedure ClearUnitCache;
     procedure ClearRoleCache;
     function GetAvailableAddresses: TKeyIndexStrings;
+    function GetListFilter: TVoid;
+    procedure SetListFilter(const aValue: TVoid);
   public
     constructor Create(const aConnection: ISqlConnection; const aUI: IPersonAggregatedUI;
       const aProgressIndicator: IProgressIndicator);
@@ -128,6 +130,11 @@ end;
 function TPersonBusiness.GetDataChanged: Boolean;
 begin
   Result := fDataChanged;
+end;
+
+function TPersonBusiness.GetListFilter: TVoid;
+begin
+  raise ENotImplemented.Create('TPersonBusiness.GetListFilter: TVoid');
 end;
 
 function TPersonBusiness.GetShowInactivePersons: Boolean;
@@ -335,6 +342,11 @@ begin
       lUpdatedEntry.Free;
     fNewEntryStarted := False;
   end;
+end;
+
+procedure TPersonBusiness.SetListFilter(const aValue: TVoid);
+begin
+  raise ENotImplemented.Create('TPersonBusiness.SetListFilter(const aValue: TVoid)');
 end;
 
 procedure TPersonBusiness.SetShowInactivePersons(const aValue: Boolean);

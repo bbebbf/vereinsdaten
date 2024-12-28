@@ -2,10 +2,10 @@ unit PersonBusinessIntf;
 
 interface
 
-uses CrudCommands, KeyIndexStrings;
+uses CrudCommands, KeyIndexStrings, Vdm.Types;
 
 type
-  IPersonBusinessIntf = interface(ICrudCommands<UInt32>)
+  IPersonBusinessIntf = interface(ICrudCommands<UInt32, TVoid>)
     ['{47719CB5-C17A-4DF3-A0CC-E2D0567F0F88}']
     function GetAvailableAddresses: TKeyIndexStrings;
     function GetShowInactivePersons: Boolean;
