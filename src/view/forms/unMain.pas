@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.Menus, System.Actions, Vcl.ActnList,
-  unPerson, SqlConnection, ProgressIndicator, PersonBusinessIntf, PersonBusiness;
+  unPerson, SqlConnection, ProgressIndicator, PersonBusinessIntf, PersonBusiness, Vcl.ExtCtrls;
 
 type
   TfmMain = class(TForm)
@@ -19,6 +19,7 @@ type
     Adressenbearbeiten1: TMenuItem;
     Einheitenbearbeiten1: TMenuItem;
     Rollenbearbeiten1: TMenuItem;
+    shaTestConnectionWarning: TShape;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormActivate(Sender: TObject);
@@ -41,7 +42,7 @@ var
 
 implementation
 
-uses Vdm.Globals, ConfigReader, unUnit, CrudCommands, CrudBusiness, EntryCrudConfig,
+uses System.UITypes, Vdm.Globals, ConfigReader, unUnit, CrudCommands, CrudBusiness, EntryCrudConfig,
   DtoUnit, DtoUnitAggregated, CrudConfigUnitAggregated, DtoRole, CrudConfigRoleEntry, unRole,
   DtoAddress, DtoAddressAggregated, unAddress, CrudConfigAddressAggregated, Vdm.Types;
 
@@ -112,6 +113,15 @@ end;
 procedure TfmMain.FormCreate(Sender: TObject);
 begin
   Caption := TVdmGlobals.GetVdmApplicationTitle;
+
+  shaTestConnectionWarning.Visible := TConfigReader.Instance.Connection.ShapeVisible;
+  if shaTestConnectionWarning.Visible then
+  begin
+    var lColor: TColor;
+    if not TryStringToColor('$' + TConfigReader.Instance.Connection.ShapeColor, lColor) then
+      lColor := TColorRec.SysHighlight;
+    shaTestConnectionWarning.Brush.Color := lColor;
+  end;
 
   var lConnectionInfo := 'Server: ' + TConfigReader.Instance.Connection.Host +
     ':' + IntToStr(TConfigReader.Instance.Connection.Port);

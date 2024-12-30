@@ -11,6 +11,8 @@ type
     Password: string;
     SshRemoteHost: string;
     SshRemotePort: Integer;
+    ShapeVisible: Boolean;
+    ShapeColor: string;
   end;
 
   TConfigReader = class(TNoRefCountObject)
@@ -83,6 +85,8 @@ begin
       fConnection.Password := lIniFile.ReadString('Connection', 'Password', '');
       fConnection.SshRemoteHost := lIniFile.ReadString('Connection', 'SshRemoteHost', '');
       fConnection.SshRemotePort := lIniFile.ReadInteger('Connection', 'SshRemotePort', 0);
+      fConnection.ShapeVisible := lIniFile.ValueExists('Connection', 'ShapeColor');
+      fConnection.ShapeColor := lIniFile.ReadString('Connection', 'ShapeColor', '');
       fFound := True;
     finally
       lIniFile.Free;
@@ -101,6 +105,7 @@ begin
       lIniFile.WriteString('Connection', 'Password', '');
       lIniFile.WriteString('Connection', 'SshRemoteHost', '');
       lIniFile.WriteInteger('Connection', 'SshRemotePort', 0);
+      lIniFile.WriteString('Connection', 'ShapeColor', '0000ff');
     finally
       lIniFile.Free;
     end;

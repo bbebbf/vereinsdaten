@@ -16,6 +16,18 @@ object fmMain: TfmMain
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   TextHeight = 15
+  object shaTestConnectionWarning: TShape
+    Left = 0
+    Top = 397
+    Width = 624
+    Height = 25
+    Align = alBottom
+    Brush.Color = clHighlight
+    Pen.Style = psClear
+    ExplicitLeft = 192
+    ExplicitTop = 296
+    ExplicitWidth = 257
+  end
   object StatusBar: TStatusBar
     Left = 0
     Top = 422
