@@ -68,6 +68,8 @@ end;
 function TCrudConfigUnitAggregated.CloneEntry(const aEntry: TDtoUnitAggregated): TDtoUnitAggregated;
 begin
   Result := TDtoUnitAggregated.Create(aEntry.&Unit);
+  for var lEntry in aEntry.MemberOfList do
+    Result.MemberOfList.Add(lEntry);
   Result.VersionInfo.Assign(aEntry.VersionInfo);
 end;
 

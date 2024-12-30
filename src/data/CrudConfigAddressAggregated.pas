@@ -69,6 +69,8 @@ end;
 function TCrudConfigAddressAggregated.CloneEntry(const aEntry: TDtoAddressAggregated): TDtoAddressAggregated;
 begin
   Result := TDtoAddressAggregated.Create(aEntry.Address);
+  for var lEntry in aEntry.MemberOfList do
+    Result.MemberOfList.Add(lEntry);
   Result.VersionInfo.Assign(aEntry.VersionInfo);
 end;
 
