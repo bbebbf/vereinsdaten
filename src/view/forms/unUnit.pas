@@ -7,7 +7,8 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
   System.Generics.Collections, CrudCommands, DtoUnit, DtoUnitAggregated, ListviewAttachedData, Vcl.Menus, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.WinXPickers, System.Actions, Vcl.ActnList,
-  ComponentValueChangedObserver, CrudUI, DelayedExecute, CheckboxDatetimePickerHandler, Vdm.Types;
+  ComponentValueChangedObserver, CrudUI, DelayedExecute, CheckboxDatetimePickerHandler, Vdm.Types,
+  Vdm.Versioning.Types, VersionInfoEntryUI;
 
 type
   TUnitListItemData = record
@@ -18,7 +19,7 @@ type
     MemberActive: Boolean;
   end;
 
-  TfmUnit = class(TForm, ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>)
+  TfmUnit = class(TForm, ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>, IVersionInfoEntryUI)
     pnListview: TPanel;
     Splitter1: TSplitter;
     pnDetails: TPanel;
@@ -43,6 +44,7 @@ type
     lvMemberOf: TListView;
     cbShowInactiveUnits: TCheckBox;
     lbListviewItemCount: TLabel;
+    lbVersionInfo: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormActivate(Sender: TObject);
@@ -80,6 +82,9 @@ type
     procedure SetEntryToUI(const aEntry: TDtoUnitAggregated; const aAsNewEntry: Boolean);
     function GetEntryFromUI(var aEntry: TDtoUnitAggregated): Boolean;
     procedure LoadCurrentEntry(const aEntryId: UInt32);
+
+    procedure SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry; const aVersionInfoEntryIndex: UInt16);
+    procedure ClearVersionInfoEntryFromUI(const aVersionInfoEntryIndex: UInt16);
   public
     { Public-Deklarationen }
   end;
@@ -88,7 +93,7 @@ implementation
 
 {$R *.dfm}
 
-uses StringTools, MessageDialogs, Vdm.Globals;
+uses StringTools, MessageDialogs, Vdm.Globals, VclUITools;
 
 { TfmUnit }
 
@@ -108,6 +113,11 @@ begin
   else if lResponse.Status = TCrudSaveStatus.CancelledWithMessage then
   begin
     TMessageDialogs.Ok(lResponse.MessageText, TMsgDlgType.mtInformation);
+  end
+  else if lResponse.Status = TCrudSaveStatus.CancelledOnConflict then
+  begin
+    TMessageDialogs.Ok('Versionkonflikt: ' +
+      lResponse.ConflictedVersionInfoEntry.ToString, TMsgDlgType.mtWarning);
   end;
 end;
 
@@ -353,6 +363,17 @@ begin
   finally
     lvMemberOf.Items.EndUpdate;
   end;
+end;
+
+procedure TfmUnit.SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry;
+  const aVersionInfoEntryIndex: UInt16);
+begin
+  TVclUITools.VersionInfoToLabel(lbVersionInfo, aVersionInfoEntry);
+end;
+
+procedure TfmUnit.ClearVersionInfoEntryFromUI(const aVersionInfoEntryIndex: UInt16);
+begin
+  TVclUITools.VersionInfoToLabel(lbVersionInfo, nil);
 end;
 
 end.

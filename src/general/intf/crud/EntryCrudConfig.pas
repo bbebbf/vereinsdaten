@@ -2,7 +2,7 @@ unit EntryCrudConfig;
 
 interface
 
-uses SqlConnection;
+uses SqlConnection, CrudCommands;
 
 type
   IEntryCrudConfig<TEntry; TListEntry; TId, TListFilter: record> = interface
@@ -17,7 +17,7 @@ type
     function CreateEntry: TEntry;
     function CloneEntry(const aEntry: TEntry): TEntry;
     function IsEntryUndefined(const aEntry: TEntry): Boolean;
-    function SaveEntry(var aEntry: TEntry): Boolean;
+    function SaveEntry(var aEntry: TEntry): TCrudSaveResult;
     function DeleteEntry(const aId: TId): Boolean;
   end;
 

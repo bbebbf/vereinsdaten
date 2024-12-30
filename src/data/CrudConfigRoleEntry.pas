@@ -2,7 +2,8 @@ unit CrudConfigRoleEntry;
 
 interface
 
-uses InterfacedBase, EntryCrudConfig, SqlConnection, CrudConfigRole, CrudConfig, DtoRole, RecordActions, Vdm.Types;
+uses InterfacedBase, EntryCrudConfig, SqlConnection, CrudConfigRole, CrudConfig, DtoRole, RecordActions,
+  Vdm.Types, CrudCommands;
 
 type
   TCrudConfigRoleEntry = class(TInterfacedBase, IEntryCrudConfig<TDtoRole, TDtoRole, UInt32, TVoid>)
@@ -20,7 +21,7 @@ type
     function CreateEntry: TDtoRole;
     function CloneEntry(const aEntry: TDtoRole): TDtoRole;
     function IsEntryUndefined(const aEntry: TDtoRole): Boolean;
-    function SaveEntry(var aEntry: TDtoRole): Boolean;
+    function SaveEntry(var aEntry: TDtoRole): TCrudSaveResult;
     function DeleteEntry(const aId: UInt32): Boolean;
   public
     constructor Create(const aConnection: ISqlConnection);
@@ -102,9 +103,9 @@ begin
   Result := True;
 end;
 
-function TCrudConfigRoleEntry.SaveEntry(var aEntry: TDtoRole): Boolean;
+function TCrudConfigRoleEntry.SaveEntry(var aEntry: TDtoRole): TCrudSaveResult;
 begin
-  Result := True;
+  Result := default(TCrudSaveResult);
   if fRecordActions.SaveRecord(aEntry) = TRecordActionsSaveResponse.Created then
   begin
   end;

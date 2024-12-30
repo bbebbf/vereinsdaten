@@ -17,7 +17,6 @@ type
   TRecordActionsVersioningSaveResponse = record
     Kind: TRecordActionsVersioningSaveKind;
     VersioningState: TRecordActionsVersioningResponseVersioningState;
-    ConflictedEntryVersionInfo: TEntryVersionInfo;
   end;
 
   TRecordActionsVersioningDeleteResponse = record

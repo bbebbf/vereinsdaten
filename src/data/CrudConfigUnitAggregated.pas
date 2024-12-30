@@ -3,10 +3,12 @@ unit CrudConfigUnitAggregated;
 interface
 
 uses InterfacedBase, EntryCrudConfig, DtoUnitAggregated, SqlConnection, CrudConfigUnit, CrudConfig, DtoUnit,
-  RecordActionsVersioning, Vdm.Types, Vdm.Versioning.Types;
+  RecordActionsVersioning, Vdm.Types, Vdm.Versioning.Types, VersionInfoEntryConfig, CrudCommands;
 
 type
-  TCrudConfigUnitAggregated = class(TInterfacedBase, IEntryCrudConfig<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>)
+  TCrudConfigUnitAggregated = class(TInterfacedBase,
+    IEntryCrudConfig<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>,
+    IVersionInfoEntryConfig<TDtoUnitAggregated>)
   strict private
     fConnection: ISqlConnection;
     fCrudConfigUnit: ICrudConfig<TDtoUnit, UInt32>;
@@ -23,8 +25,11 @@ type
     function CreateEntry: TDtoUnitAggregated;
     function CloneEntry(const aEntry: TDtoUnitAggregated): TDtoUnitAggregated;
     function IsEntryUndefined(const aEntry: TDtoUnitAggregated): Boolean;
-    function SaveEntry(var aEntry: TDtoUnitAggregated): Boolean;
+    function SaveEntry(var aEntry: TDtoUnitAggregated): TCrudSaveResult;
     function DeleteEntry(const aId: UInt32): Boolean;
+
+    function GetVersionInfoEntry(const aEntry: TDtoUnitAggregated; out aVersionInfoEntry: TVersionInfoEntry): Boolean;
+    procedure AssignVersionInfoEntry(const aSourceEntry, aTargetEntry: TDtoUnitAggregated);
   public
     constructor Create(const aConnection: ISqlConnection);
     destructor Destroy; override;
@@ -100,6 +105,18 @@ begin
   Result := fConnection.GetSelectResult(lSelectList.GetSelectListSQL);
 end;
 
+function TCrudConfigUnitAggregated.GetVersionInfoEntry(const aEntry: TDtoUnitAggregated;
+  out aVersionInfoEntry: TVersionInfoEntry): Boolean;
+begin
+  Result := True;
+  aVersionInfoEntry := aEntry.VersionInfo;
+end;
+
+procedure TCrudConfigUnitAggregated.AssignVersionInfoEntry(const aSourceEntry, aTargetEntry: TDtoUnitAggregated);
+begin
+  aTargetEntry.VersionInfo.Assign(aSourceEntry.VersionInfo);
+end;
+
 function TCrudConfigUnitAggregated.IsEntryUndefined(const aEntry: TDtoUnitAggregated): Boolean;
 begin
   Result := not Assigned(aEntry);
@@ -115,15 +132,14 @@ begin
   Result := True;
 end;
 
-function TCrudConfigUnitAggregated.SaveEntry(var aEntry: TDtoUnitAggregated): Boolean;
+function TCrudConfigUnitAggregated.SaveEntry(var aEntry: TDtoUnitAggregated): TCrudSaveResult;
 begin
-  Result := True;
+  Result := default(TCrudSaveResult);
   var lUnit := aEntry.&Unit;
   var lResponse := fUnitRecordActions.SaveRecord(lUnit, aEntry.VersionInfo);
   if lResponse.VersioningState = TRecordActionsVersioningResponseVersioningState.ConflictDetected then
   begin
-    aEntry.VersionInfo.RegisterVersionConflict(lResponse.ConflictedEntryVersionInfo);
-    Exit(False);
+    Exit(TCrudSaveResult.CreateConflictedRecord(aEntry.VersionInfo));
   end;
   if lResponse.Kind = TRecordActionsVersioningSaveKind.Created then
   begin

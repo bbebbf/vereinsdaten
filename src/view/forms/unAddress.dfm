@@ -71,7 +71,6 @@ object fmAddress: TfmAddress
       ViewStyle = vsReport
       OnCustomDrawItem = lvListviewCustomDrawItem
       OnSelectItem = lvListviewSelectItem
-      ExplicitHeight = 576
     end
     object pnFilter: TPanel
       Left = 0
@@ -113,6 +112,15 @@ object fmAddress: TfmAddress
       Width = 33
       Height = 15
       Caption = 'Stra'#223'e'
+    end
+    object lbVersionInfo: TLabel
+      Left = 23
+      Top = 191
+      Width = 322
+      Height = 38
+      AutoSize = False
+      Caption = 'lbVersionInfo'
+      WordWrap = True
     end
     object btSave: TButton
       Left = 23

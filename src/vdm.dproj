@@ -278,6 +278,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="general\common\Tools\VersionInfoAccessor.pas"/>
         <DCCReference Include="general\intf\tools\VersionInfoEntryUI.pas"/>
         <DCCReference Include="view\tools\VclUITools.pas"/>
+        <DCCReference Include="general\intf\tools\VersionInfoEntryConfig.pas"/>
         <None Include="inc\CompilerDirectives.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>

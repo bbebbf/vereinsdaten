@@ -89,7 +89,8 @@ uses
   Vdm.Versioning.Types in 'general\Vdm.Versioning.Types.pas',
   VersionInfoAccessor in 'general\common\Tools\VersionInfoAccessor.pas',
   VersionInfoEntryUI in 'general\intf\tools\VersionInfoEntryUI.pas',
-  VclUITools in 'view\tools\VclUITools.pas';
+  VclUITools in 'view\tools\VclUITools.pas',
+  VersionInfoEntryConfig in 'general\intf\tools\VersionInfoEntryConfig.pas';
 
 {$R *.res}
 

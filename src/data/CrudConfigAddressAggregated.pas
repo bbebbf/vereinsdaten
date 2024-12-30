@@ -3,10 +3,12 @@ unit CrudConfigAddressAggregated;
 interface
 
 uses InterfacedBase, EntryCrudConfig, DtoAddressAggregated, SqlConnection, CrudConfigAddress, CrudConfig,
-  RecordActionsVersioning, DtoAddress, Vdm.Types, Vdm.Versioning.Types;
+  RecordActionsVersioning, DtoAddress, Vdm.Types, Vdm.Versioning.Types, CrudCommands, VersionInfoEntryConfig;
 
 type
-  TCrudConfigAddressAggregated = class(TInterfacedBase, IEntryCrudConfig<TDtoAddressAggregated, TDtoAddress, UInt32, TVoid>)
+  TCrudConfigAddressAggregated = class(TInterfacedBase,
+    IEntryCrudConfig<TDtoAddressAggregated, TDtoAddress, UInt32, TVoid>,
+    IVersionInfoEntryConfig<TDtoAddressAggregated>)
   strict private
     fConnection: ISqlConnection;
     fCrudConfig: ICrudConfig<TDtoAddress, UInt32>;
@@ -23,8 +25,11 @@ type
     function CreateEntry: TDtoAddressAggregated;
     function CloneEntry(const aEntry: TDtoAddressAggregated): TDtoAddressAggregated;
     function IsEntryUndefined(const aEntry: TDtoAddressAggregated): Boolean;
-    function SaveEntry(var aEntry: TDtoAddressAggregated): Boolean;
+    function SaveEntry(var aEntry: TDtoAddressAggregated): TCrudSaveResult;
     function DeleteEntry(const aId: UInt32): Boolean;
+
+    function GetVersionInfoEntry(const aEntry: TDtoAddressAggregated; out aVersionInfoEntry: TVersionInfoEntry): Boolean;
+    procedure AssignVersionInfoEntry(const aSourceEntry, aTargetEntry: TDtoAddressAggregated);
   public
     constructor Create(const aConnection: ISqlConnection);
     destructor Destroy; override;
@@ -101,6 +106,18 @@ begin
   Result := fConnection.GetSelectResult(lSelectList.GetSelectListSQL);
 end;
 
+function TCrudConfigAddressAggregated.GetVersionInfoEntry(const aEntry: TDtoAddressAggregated;
+  out aVersionInfoEntry: TVersionInfoEntry): Boolean;
+begin
+  Result := True;
+  aVersionInfoEntry := aEntry.VersionInfo;
+end;
+
+procedure TCrudConfigAddressAggregated.AssignVersionInfoEntry(const aSourceEntry, aTargetEntry: TDtoAddressAggregated);
+begin
+  aTargetEntry.VersionInfo.Assign(aSourceEntry.VersionInfo);
+end;
+
 function TCrudConfigAddressAggregated.IsEntryUndefined(const aEntry: TDtoAddressAggregated): Boolean;
 begin
   Result := not Assigned(aEntry);
@@ -116,14 +133,14 @@ begin
   Result := True;
 end;
 
-function TCrudConfigAddressAggregated.SaveEntry(var aEntry: TDtoAddressAggregated): Boolean;
+function TCrudConfigAddressAggregated.SaveEntry(var aEntry: TDtoAddressAggregated): TCrudSaveResult;
 begin
-  Result := True;
+  Result := default(TCrudSaveResult);
   var lRecord := aEntry.Address;
   var lResponse := fRecordActions.SaveRecord(lRecord, aEntry.VersionInfo);
   if lResponse.VersioningState = TRecordActionsVersioningResponseVersioningState.ConflictDetected then
   begin
-    Exit(False);
+    Exit(TCrudSaveResult.CreateConflictedRecord(aEntry.VersionInfo));
   end;
   if lResponse.Kind = TRecordActionsVersioningSaveKind.Created then
   begin

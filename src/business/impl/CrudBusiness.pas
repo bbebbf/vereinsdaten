@@ -2,7 +2,7 @@
 
 interface
 
-uses InterfacedBase, SqlConnection, CrudCommands, CrudUI, EntryCrudConfig;
+uses InterfacedBase, SqlConnection, CrudCommands, CrudUI, EntryCrudConfig, Vdm.Versioning.Types;
 
 type
   TCrudBusiness<TEntry; TListEntry; TId, TListFilter: record> = class(TInterfacedBase, ICrudCommands<TId, TListFilter>)
@@ -23,6 +23,10 @@ type
     function GetDataChanged: Boolean;
     function GetListFilter: TListFilter;
     procedure SetListFilter(const aValue: TListFilter);
+
+    procedure AssignVersionInfoEntry(const aSourceEntry, aTargetEntry: TEntry);
+    procedure SetVersionInfoEntryToUI(const aEntry: TEntry);
+    procedure ClearVersionInfoEntryFromUI;
   public
     constructor Create(const aUI: ICrudUI<TEntry, TListEntry, TId, TListFilter>; const aConfig: IEntryCrudConfig<TEntry, TListEntry, TId, TListFilter>);
     destructor Destroy; override;
@@ -30,7 +34,7 @@ type
 
 implementation
 
-uses System.SysUtils;
+uses System.SysUtils, VersionInfoEntryConfig, VersionInfoEntryUI;
 
 { TCrudBusiness<TEntry, TListEntry, TId, TListFilter> }
 
@@ -99,16 +103,19 @@ begin
   if fConfig.TryLoadEntry(aId, fCurrentEntry) then
   begin
     fUI.SetEntryToUI(fCurrentEntry, False);
+    SetVersionInfoEntryToUI(fCurrentEntry);
   end
   else
   begin
     fUI.ClearEntryFromUI;
     fUI.DeleteEntryFromUI(aId);
+    ClearVersionInfoEntryFromUI;
   end;
 end;
 
 function TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.SaveCurrentEntry: TCrudSaveResult;
 begin
+  Result := default(TCrudSaveResult);
   var lDestroyTempSavingEntry := True;
   var lTempSavingEntry: TEntry;
   try
@@ -130,14 +137,30 @@ begin
       Exit(TCrudSaveResult.CreateRecord(TCrudSaveStatus.Cancelled));
     end;
 
-    if fConfig.SaveEntry(lTempSavingEntry) then
+    var lResponse := fConfig.SaveEntry(lTempSavingEntry);
+    if fNewEntryStarted then
+    begin
+      SetVersionInfoEntryToUI(lTempSavingEntry);
+    end
+    else
+    begin
+      AssignVersionInfoEntry(lTempSavingEntry, fCurrentEntry);
+    end;
+    if lResponse.Status = TCrudSaveStatus.Successful then
     begin
       fConfig.DestroyEntry(fCurrentEntry);
       fCurrentEntry := lTempSavingEntry;
       lDestroyTempSavingEntry := False;
       fUI.SetEntryToUI(fCurrentEntry, fNewEntryStarted);
+      SetVersionInfoEntryToUI(fCurrentEntry);
       fNewEntryStarted := False;
       fDataChanged := True;
+    end
+    else if lResponse.Status = TCrudSaveStatus.CancelledOnConflict then
+    begin
+      fUI.SetEntryToUI(fCurrentEntry, fNewEntryStarted);
+      SetVersionInfoEntryToUI(fCurrentEntry);
+      Exit(lResponse);
     end;
   finally
     if lDestroyTempSavingEntry then
@@ -167,6 +190,42 @@ end;
 function TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.DeleteEntry(const aId: TId): TCrudCommandResult;
 begin
 
+end;
+
+procedure TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.SetVersionInfoEntryToUI(
+  const aEntry: TEntry);
+begin
+  if fConfig.IsEntryUndefined(aEntry) then
+    Exit;
+
+  var lVersionInfoEntryConfig: IVersionInfoEntryConfig<TEntry>;
+  if Supports(fConfig, IVersionInfoEntryConfig<TEntry>, lVersionInfoEntryConfig) then
+  begin
+    var lVersionInfoEntry: TVersionInfoEntry;
+    if lVersionInfoEntryConfig.GetVersionInfoEntry(aEntry, lVersionInfoEntry) then
+    begin
+      var lVersionInfoEntryUI: IVersionInfoEntryUI;
+      if Supports(fUI, IVersionInfoEntryUI, lVersionInfoEntryUI) then
+        lVersionInfoEntryUI.SetVersionInfoEntryToUI(lVersionInfoEntry);
+    end;
+  end;
+end;
+
+procedure TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.AssignVersionInfoEntry(const aSourceEntry,
+  aTargetEntry: TEntry);
+begin
+  var lVersionInfoEntryConfig: IVersionInfoEntryConfig<TEntry>;
+  if Supports(fConfig, IVersionInfoEntryConfig<TEntry>, lVersionInfoEntryConfig) then
+  begin
+    lVersionInfoEntryConfig.AssignVersionInfoEntry(aSourceEntry, aTargetEntry);
+  end;
+end;
+
+procedure TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.ClearVersionInfoEntryFromUI;
+begin
+  var lVersionInfoEntryUI: IVersionInfoEntryUI;
+  if Supports(fUI, IVersionInfoEntryUI, lVersionInfoEntryUI) then
+    lVersionInfoEntryUI.ClearVersionInfoEntryFromUI;
 end;
 
 end.

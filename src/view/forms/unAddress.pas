@@ -7,7 +7,7 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
   System.Generics.Collections, CrudCommands, DtoAddress, DtoAddressAggregated, ListviewAttachedData, Vcl.Menus, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.WinXPickers, System.Actions, Vcl.ActnList,
-  ComponentValueChangedObserver, CrudUI, DelayedExecute, Vdm.Types;
+  ComponentValueChangedObserver, CrudUI, DelayedExecute, Vdm.Types, Vdm.Versioning.Types, VersionInfoEntryUI;
 
 type
   TAddressListItemData = record
@@ -17,7 +17,7 @@ type
     MemberActive: Boolean;
   end;
 
-  TfmAddress = class(TForm, ICrudUI<TDtoAddressAggregated, TDtoAddress, UInt32, TVoid>)
+  TfmAddress = class(TForm, ICrudUI<TDtoAddressAggregated, TDtoAddress, UInt32, TVoid>, IVersionInfoEntryUI)
     pnListview: TPanel;
     Splitter1: TSplitter;
     pnDetails: TPanel;
@@ -37,6 +37,7 @@ type
     lbAddressStreet: TLabel;
     acDeleteCurrentEntry: TAction;
     lbListviewItemCount: TLabel;
+    lbVersionInfo: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormActivate(Sender: TObject);
@@ -71,6 +72,9 @@ type
     procedure SetEntryToUI(const aEntry: TDtoAddressAggregated; const aAsNewEntry: Boolean);
     function GetEntryFromUI(var aEntry: TDtoAddressAggregated): Boolean;
     procedure LoadCurrentEntry(const aEntryId: UInt32);
+
+    procedure SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry; const aVersionInfoEntryIndex: UInt16);
+    procedure ClearVersionInfoEntryFromUI(const aVersionInfoEntryIndex: UInt16);
   public
     { Public-Deklarationen }
   end;
@@ -79,7 +83,7 @@ implementation
 
 {$R *.dfm}
 
-uses StringTools, MessageDialogs, Vdm.Globals;
+uses StringTools, MessageDialogs, Vdm.Globals, VclUITools;
 
 { TfmAddress }
 
@@ -99,6 +103,11 @@ begin
   else if lResponse.Status = TCrudSaveStatus.CancelledWithMessage then
   begin
     TMessageDialogs.Ok(lResponse.MessageText, TMsgDlgType.mtInformation);
+  end
+  else if lResponse.Status = TCrudSaveStatus.CancelledOnConflict then
+  begin
+    TMessageDialogs.Ok('Versionkonflikt: ' +
+      lResponse.ConflictedVersionInfoEntry.ToString, TMsgDlgType.mtWarning);
   end;
 end;
 
@@ -267,7 +276,6 @@ end;
 function TfmAddress.EntryToListItem(const aEntry: TDtoAddress; const aItem: TListItem): TListItem;
 begin
   var lItemData := default(TAddressListItemData);
-//  lItemData.UnitActive := aEntry.Active;
   Result := aItem;
   if Assigned(Result) then
   begin
@@ -326,6 +334,17 @@ begin
   finally
     lvMemberOf.Items.EndUpdate;
   end;
+end;
+
+procedure TfmAddress.SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry;
+  const aVersionInfoEntryIndex: UInt16);
+begin
+  TVclUITools.VersionInfoToLabel(lbVersionInfo, aVersionInfoEntry);
+end;
+
+procedure TfmAddress.ClearVersionInfoEntryFromUI(const aVersionInfoEntryIndex: UInt16);
+begin
+  TVclUITools.VersionInfoToLabel(lbVersionInfo, nil);
 end;
 
 end.

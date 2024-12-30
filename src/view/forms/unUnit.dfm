@@ -124,6 +124,13 @@ object fmUnit: TfmUnit
       Height = 15
       Caption = 'Aktiv bis'
     end
+    object lbVersionInfo: TLabel
+      Left = 23
+      Top = 235
+      Width = 69
+      Height = 15
+      Caption = 'lbVersionInfo'
+    end
     object edUnitName: TEdit
       Left = 23
       Top = 40
@@ -194,9 +201,9 @@ object fmUnit: TfmUnit
     end
     object lvMemberOf: TListView
       Left = 0
-      Top = 240
+      Top = 272
       Width = 741
-      Height = 455
+      Height = 423
       Align = alBottom
       Columns = <
         item
