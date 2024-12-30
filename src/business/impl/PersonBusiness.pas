@@ -3,9 +3,9 @@
 interface
 
 uses System.Classes, InterfacedBase, CrudCommands, CrudConfig, Transaction, PersonBusinessIntf,
-  DtoPersonAggregated, SqlConnection, PersonAggregatedUI, DtoPerson, RecordActions,
+  DtoPersonAggregated, SqlConnection, PersonAggregatedUI, DtoPerson, RecordActions, RecordActionsVersioning,
   KeyIndexStrings, DtoPersonAddress, DtoAddress, DtoClubmembership, ClubmembershipTools,
-  MemberOfBusinessIntf, ProgressIndicator, Vdm.Types;
+  MemberOfBusinessIntf, ProgressIndicator, Vdm.Types, Vdm.Versioning.Types;
 
 type
   TPersonBusiness = class(TInterfacedBase, IPersonBusinessIntf)
@@ -13,7 +13,8 @@ type
     fConnection: ISqlConnection;
     fProgressIndicator: IProgressIndicator;
     fPersonConfig: ICrudConfig<TDtoPerson, UInt32>;
-    fPersonRecordActions: TRecordActions<TDtoPerson, UInt32>;
+    fPersonBaseVersionInfoConfig: IVersionInfoConfig<TDtoPerson, UInt32>;
+    fPersonRecordActions: TRecordActionsVersioning<TDtoPerson, UInt32>;
     fPersonAddressConfig: ICrudConfig<TDtoPersonAddress, UInt32>;
     fPersonAddressRecordActions: TRecordActions<TDtoPersonAddress, UInt32>;
     fAddressConfig: ICrudConfig<TDtoAddress, UInt32>;
@@ -46,6 +47,11 @@ type
     function GetAvailableAddresses: TKeyIndexStrings;
     function GetListFilter: TVoid;
     procedure SetListFilter(const aValue: TVoid);
+
+    procedure SetCurrentEntryToUI(const aNewPersonCreated: Boolean);
+    procedure ClearEntryFromUI;
+    procedure SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry);
+    procedure ClearVersionInfoEntryFromUI;
   public
     constructor Create(const aConnection: ISqlConnection; const aUI: IPersonAggregatedUI;
       const aProgressIndicator: IProgressIndicator);
@@ -56,7 +62,17 @@ implementation
 
 uses System.SysUtils, System.Generics.Collections, SelectList, KeyIndexMapper,
   CrudConfigPerson, CrudConfigAddress, CrudConfigPersonAddress, CrudConfigClubmembership,
-  MemberOfBusiness, EntryCrudConfig, CrudConfigUnitAggregated, CrudBusiness;
+  MemberOfBusiness, EntryCrudConfig, CrudConfigUnitAggregated, CrudBusiness,
+  VersionInfoEntryUI;
+
+type
+  TPersonBasedataVersionInfoConfig = class(TInterfacedBase, IVersionInfoConfig<TDtoPerson, UInt32>)
+  strict private
+    function GetVersioningEntityId: TEntryVersionInfoEntity;
+    function GetRecordIdentity(const aRecord: TDtoPerson): UInt32;
+    function GetVersioningIdentityColumnName: string;
+    procedure SetVersionInfoParameter(const aRecordIdentity: UInt32; const aParameter: ISqlParameter);
+  end;
 
 { TPersonBusiness }
 
@@ -93,7 +109,8 @@ begin
       end
   );
   fPersonConfig := TCrudConfigPerson.Create;
-  fPersonRecordActions := TRecordActions<TDtoPerson, UInt32>.Create(fConnection, fPersonConfig);
+  fPersonBaseVersionInfoConfig := TPersonBasedataVersionInfoConfig.Create;
+  fPersonRecordActions := TRecordActionsVersioning<TDtoPerson, UInt32>.Create(fConnection, fPersonConfig, fPersonBaseVersionInfoConfig);
   fPersonAddressConfig := TCrudConfigPersonAddress.Create;
   fPersonAddressRecordActions := TRecordActions<TDtoPersonAddress, UInt32>.Create(fConnection, fPersonAddressConfig);
   fAddressConfig := TCrudConfigAddress.Create;
@@ -158,7 +175,8 @@ begin
   FreeAndNil(fCurrentEntry);
   fNewEntryStarted := False;
   var lRecord := default(TDtoPerson);
-  if fPersonRecordActions.LoadRecord(aPersonId, lRecord) then
+  var lResponse := fPersonRecordActions.LoadRecord(aPersonId, lRecord);
+  if lResponse.Succeeded then
   begin
     var lPersonAddressRecord := default(TDtoPersonAddress);
     var lExistingAddressId: UInt32 := 0;
@@ -167,17 +185,18 @@ begin
       lExistingAddressId := lPersonAddressRecord.AddressId;
     end;
     fCurrentEntry := TDtoPersonAggregated.Create(lRecord, lExistingAddressId, fAddressMapper);
+    fCurrentEntry.VersionInfoBaseData.UpdateVersionInfo(lResponse.EntryVersionInfo);
     fCurrentEntry.AddressId := lExistingAddressId;
     var lMembershipRecord := default(TDtoClubmembership);
     if fClubmembershipRecordActions.LoadRecord(fCurrentEntry.Id, lMembershipRecord) then
     begin
       fCurrentEntry.SetDtoClubmembership(lMembershipRecord);
     end;
-    fUI.SetEntryToUI(fCurrentEntry, False);
+    SetCurrentEntryToUI(False);
   end
   else
   begin
-    fUI.ClearEntryFromUI;
+    ClearEntryFromUI;
     fUI.DeleteEntryFromUI(aPersonId);
   end;
 end;
@@ -186,7 +205,7 @@ function TPersonBusiness.LoadList: TCrudCommandResult;
 begin
   Result := default(TCrudCommandResult);
   fNewEntryStarted := False;
-  fUI.ClearEntryFromUI;
+  ClearEntryFromUI;
   fUI.ListEnumBegin;
   try
     var lSelectList: ISelectList<TDtoPerson>;
@@ -209,15 +228,15 @@ end;
 
 procedure TPersonBusiness.LoadPersonsMemberOfs;
 begin
-  var lPersonId: UInt32 := 0;
-  if not fNewEntryStarted then
-    lPersonId := fCurrentEntry.Id;
-  fMemberOfBusiness.LoadPersonsMemberOfs(lPersonId);
+  if fNewEntryStarted then
+    fMemberOfBusiness.LoadPersonsMemberOfs(0, nil)
+  else
+    fMemberOfBusiness.LoadPersonsMemberOfs(fCurrentEntry.Id, fCurrentEntry.VersionInfoMenberOfs);
 end;
 
 function TPersonBusiness.ReloadCurrentEntry: TCrudCommandResult;
 begin
-  fUI.SetEntryToUI(fCurrentEntry, False);
+  SetCurrentEntryToUI(False);
 end;
 
 function TPersonBusiness.SaveCurrentEntry: TCrudSaveResult;
@@ -276,7 +295,16 @@ begin
         end;
 
         var lRecord := lUpdatedEntry.Person;
-        if fPersonRecordActions.SaveRecord(lRecord, lSaveTransaction) = TRecordActionsSaveResponse.Created then
+        var lResponse := fPersonRecordActions.SaveRecord(lRecord, lUpdatedEntry.VersionInfoBaseData, lSaveTransaction);
+        if lResponse.VersioningState = TRecordActionsVersioningResponseVersioningState.ConflictDetected then
+        begin
+          if fNewEntryStarted then
+            SetVersionInfoEntryToUI(lUpdatedEntry.VersionInfoBaseData)
+          else
+            fCurrentEntry.VersionInfoBaseData.Assign(lUpdatedEntry.VersionInfoBaseData);
+          Exit(TCrudSaveResult.CreateConflictedRecord(lUpdatedEntry.VersionInfoBaseData));
+        end;
+        if lResponse.Kind = TRecordActionsVersioningSaveKind.Created then
         begin
           lUpdatedEntry.Id := lRecord.NameId.Id;
           lNewPersonCreated := True;
@@ -334,7 +362,7 @@ begin
       end
       else
       begin
-        fUI.SetEntryToUI(fCurrentEntry, lNewPersonCreated);
+        SetCurrentEntryToUI(lNewPersonCreated);
       end;
     end;
   finally
@@ -342,6 +370,32 @@ begin
       lUpdatedEntry.Free;
     fNewEntryStarted := False;
   end;
+end;
+
+procedure TPersonBusiness.SetCurrentEntryToUI(const aNewPersonCreated: Boolean);
+begin
+  fUI.SetEntryToUI(fCurrentEntry, aNewPersonCreated);
+  SetVersionInfoEntryToUI(fCurrentEntry.VersionInfoBaseData);
+end;
+
+procedure TPersonBusiness.ClearEntryFromUI;
+begin
+  fUI.ClearEntryFromUI;
+  ClearVersionInfoEntryFromUI;
+end;
+
+procedure TPersonBusiness.SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry);
+begin
+  var lVersionInfoEntryUI: IVersionInfoEntryUI;
+  if Supports(fUI, IVersionInfoEntryUI, lVersionInfoEntryUI) then
+    lVersionInfoEntryUI.SetVersionInfoEntryToUI(aVersionInfoEntry);
+end;
+
+procedure TPersonBusiness.ClearVersionInfoEntryFromUI;
+begin
+  var lVersionInfoEntryUI: IVersionInfoEntryUI;
+  if Supports(fUI, IVersionInfoEntryUI, lVersionInfoEntryUI) then
+    lVersionInfoEntryUI.ClearVersionInfoEntryFromUI;
 end;
 
 procedure TPersonBusiness.SetListFilter(const aValue: TVoid);
@@ -358,7 +412,7 @@ end;
 procedure TPersonBusiness.StartNewEntry;
 begin
   fNewEntryStarted := True;
-  fUI.ClearEntryFromUI;
+  ClearEntryFromUI;
 end;
 
 procedure TPersonBusiness.ClearAddressCache;
@@ -374,6 +428,29 @@ end;
 procedure TPersonBusiness.ClearUnitCache;
 begin
   fMemberOfBusiness.ClearUnitCache;
+end;
+
+{ TPersonBasedataVersionInfoConfig }
+
+function TPersonBasedataVersionInfoConfig.GetRecordIdentity(const aRecord: TDtoPerson): UInt32;
+begin
+  Result := aRecord.NameId.Id;
+end;
+
+function TPersonBasedataVersionInfoConfig.GetVersioningEntityId: TEntryVersionInfoEntity;
+begin
+  Result := TEntryVersionInfoEntity.PersonBaseData;
+end;
+
+function TPersonBasedataVersionInfoConfig.GetVersioningIdentityColumnName: string;
+begin
+  Result := 'person_id'
+end;
+
+procedure TPersonBasedataVersionInfoConfig.SetVersionInfoParameter(const aRecordIdentity: UInt32;
+  const aParameter: ISqlParameter);
+begin
+  aParameter.Value := aRecordIdentity;
 end;
 
 end.

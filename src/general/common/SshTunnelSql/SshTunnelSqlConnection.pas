@@ -14,8 +14,8 @@ type
     fRemotePort: Integer;
     function GetParameters: TSqlConnectionParametersBase;
     function Connect: Boolean;
-    function CreatePreparedCommand(const aSqlCommand: string; const aTransaction: ITransaction = nil): ISqlPreparedCommand;
-    function CreatePreparedQuery(const aSqlCommand: string; const aTransaction: ITransaction = nil): ISqlPreparedQuery;
+    function CreatePreparedCommand(const aSqlCommand: string): ISqlPreparedCommand;
+    function CreatePreparedQuery(const aSqlCommand: string): ISqlPreparedQuery;
     function GetSelectResult(const aSqlSelect: string;
       const aTransaction: ITransaction = nil): ISqlResult;
     function ExecuteCommand(const aSqlCommand: string;
@@ -62,16 +62,14 @@ begin
   Result := fSqlConnection.Connect;
 end;
 
-function TSshTunnelSqlConnection.CreatePreparedCommand(const aSqlCommand: string;
-  const aTransaction: ITransaction): ISqlPreparedCommand;
+function TSshTunnelSqlConnection.CreatePreparedCommand(const aSqlCommand: string): ISqlPreparedCommand;
 begin
-  Result := fSqlConnection.CreatePreparedCommand(aSqlCommand, aTransaction);
+  Result := fSqlConnection.CreatePreparedCommand(aSqlCommand);
 end;
 
-function TSshTunnelSqlConnection.CreatePreparedQuery(const aSqlCommand: string;
-  const aTransaction: ITransaction): ISqlPreparedQuery;
+function TSshTunnelSqlConnection.CreatePreparedQuery(const aSqlCommand: string): ISqlPreparedQuery;
 begin
-  Result := fSqlConnection.CreatePreparedQuery(aSqlCommand, aTransaction);
+  Result := fSqlConnection.CreatePreparedQuery(aSqlCommand);
 end;
 
 function TSshTunnelSqlConnection.ExecuteCommand(const aSqlCommand: string; const aTransaction: ITransaction): Integer;

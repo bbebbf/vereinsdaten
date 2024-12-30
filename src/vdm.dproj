@@ -4,7 +4,7 @@
         <ProjectVersion>20.1</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Debug</Config>
+        <Config Condition="'$(Config)'==''">FastMM</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
         <ProjectName Condition="'$(ProjectName)'==''">vdm</ProjectName>
         <TargetedPlatforms>3</TargetedPlatforms>
@@ -274,8 +274,11 @@ $(PostBuildEvent)]]></PostBuildEvent>
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="general\common\Tools\RecordActionsVersioning.pas"/>
-        <DCCReference Include="general\intf\tools\VersionInfoConfig.pas"/>
         <DCCReference Include="general\Vdm.Versioning.Types.pas"/>
+        <DCCReference Include="general\common\Tools\VersionInfoAccessor.pas"/>
+        <DCCReference Include="general\intf\tools\VersionInfoEntryUI.pas"/>
+        <DCCReference Include="view\tools\VclUITools.pas"/>
+        <None Include="inc\CompilerDirectives.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -321,6 +324,18 @@ $(PostBuildEvent)]]></PostBuildEvent>
                 <DeployFile LocalName="..\out\bin\Win32\Release\vdm.exe" Configuration="Release" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>vdm.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="inc\CompilerDirectives.inc" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="inc\CompilerDirectives.inc" Configuration="FastMM" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>

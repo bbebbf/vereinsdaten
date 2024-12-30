@@ -86,8 +86,10 @@ uses
   CrudConfigAddressAggregated in 'data\CrudConfigAddressAggregated.pas',
   unAddress in 'view\forms\unAddress.pas' {fmAddress},
   RecordActionsVersioning in 'general\common\Tools\RecordActionsVersioning.pas',
-  VersionInfoConfig in 'general\intf\tools\VersionInfoConfig.pas',
-  Vdm.Versioning.Types in 'general\Vdm.Versioning.Types.pas';
+  Vdm.Versioning.Types in 'general\Vdm.Versioning.Types.pas',
+  VersionInfoAccessor in 'general\common\Tools\VersionInfoAccessor.pas',
+  VersionInfoEntryUI in 'general\intf\tools\VersionInfoEntryUI.pas',
+  VclUITools in 'view\tools\VclUITools.pas';
 
 {$R *.res}
 

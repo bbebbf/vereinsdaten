@@ -55,8 +55,6 @@ object fraPerson: TfraPerson
       ViewStyle = vsReport
       OnCustomDrawItem = lvPersonListviewCustomDrawItem
       OnSelectItem = lvPersonListviewSelectItem
-      ExplicitLeft = 5
-      ExplicitTop = 35
     end
     object pnFilter: TPanel
       Left = 0
@@ -84,8 +82,6 @@ object fraPerson: TfraPerson
       Action = acPersonStartNewRecord
       Align = alBottom
       TabOrder = 2
-      ExplicitLeft = 1
-      ExplicitTop = 607
     end
   end
   object pnPersonDetails: TPanel
@@ -191,6 +187,13 @@ object fraPerson: TfraPerson
           Width = 111
           Height = 15
           Caption = 'Austrittsdatum (Text)'
+        end
+        object lbBasedataVersionInfo: TLabel
+          Left = 22
+          Top = 535
+          Width = 116
+          Height = 15
+          Caption = 'lbBasedataVersionInfo'
         end
         object edPersonFirstname: TEdit
           Left = 23

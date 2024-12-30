@@ -2,18 +2,22 @@ unit CrudCommands;
 
 interface
 
+uses Vdm.Versioning.Types;
+
 type
   TCrudCommandResult = record
     Sucessful: Boolean;
   end;
 
-  TCrudSaveStatus = (Successful, Cancelled, CancelledWithMessage, Failed);
+  TCrudSaveStatus = (Successful, Cancelled, CancelledWithMessage, CancelledOnConflict, Failed);
   TCrudSaveResult = record
     Status: TCrudSaveStatus;
+    ConflictedVersionInfoEntry: TVersionInfoEntry;
     MessageText: string;
     class function CreateRecord(const aStatus: TCrudSaveStatus): TCrudSaveResult; static;
     class function CreateCancelledRecord(const aMessageText: string): TCrudSaveResult; static;
     class function CreateFailedRecord(const aMessageText: string = ''): TCrudSaveResult; static;
+    class function CreateConflictedRecord(const aConflictedVersionInfoEntry: TVersionInfoEntry): TCrudSaveResult; static;
   end;
 
   ICrudCommands<T, F: record> = interface
@@ -41,6 +45,14 @@ begin
   Result := default(TCrudSaveResult);
   Result.Status := TCrudSaveStatus.CancelledWithMessage;
   Result.MessageText := aMessageText;
+end;
+
+class function TCrudSaveResult.CreateConflictedRecord(
+  const aConflictedVersionInfoEntry: TVersionInfoEntry): TCrudSaveResult;
+begin
+  Result := default(TCrudSaveResult);
+  Result.Status := TCrudSaveStatus.CancelledOnConflict;
+  Result.ConflictedVersionInfoEntry := aConflictedVersionInfoEntry;
 end;
 
 class function TCrudSaveResult.CreateFailedRecord(const aMessageText: string): TCrudSaveResult;

@@ -36,7 +36,7 @@ type
     fAutoIncPresent: Boolean;
     fValues: TDictionary<string, Variant>;
     function GetVariantValue<T>(const aValue: T): Variant;
-    procedure Prepare(const aTransaction: ITransaction);
+    procedure Prepare;
     function FindColumnInfoByParameterName(const aParameterName: string): TCrudAccessorColumnInfo;
     function TryAssignValuesToParameters(const aRaiseOnFailure: Boolean): Boolean;
   strict protected
@@ -119,14 +119,14 @@ function TCrudAccessorBase.Execute(const aTransaction: ITransaction): Boolean;
 begin
   if not TryAssignValuesToParameters(False) then
   begin
-    Prepare(aTransaction);
+    Prepare;
     TryAssignValuesToParameters(True);
   end;
   if not Assigned(fPreparedStmt) then
     raise ECrudAccessorException.Create('Internal Sql statement is not prepared.');
 
   RaiseIfExecuteStmtIsInvalid;
-  Result := fPreparedStmt.Execute > 0;
+  Result := fPreparedStmt.Execute(aTransaction) > 0;
 end;
 
 function TCrudAccessorBase.TryAssignValuesToParameters(const aRaiseOnFailure: Boolean): Boolean;
@@ -147,7 +147,7 @@ begin
   end;
 end;
 
-procedure TCrudAccessorBase.Prepare(const aTransaction: ITransaction);
+procedure TCrudAccessorBase.Prepare;
 begin
   fPreparedStmt := nil;
   fColumnInfos.Clear;
@@ -173,7 +173,7 @@ begin
 
   var lSqlStatement := '';
   PrepareStmt(fColumnInfos.Values, lSqlStatement);
-  fPreparedStmt := fConnection.CreatePreparedCommand(lSqlStatement, aTransaction);
+  fPreparedStmt := fConnection.CreatePreparedCommand(lSqlStatement);
   for var i := 0 to fPreparedStmt.ParamCount - 1 do
   begin
     var lColumnInfo := FindColumnInfoByParameterName(fPreparedStmt.Params[i].Name);

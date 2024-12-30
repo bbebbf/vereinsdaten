@@ -55,10 +55,10 @@ begin
   Result := False;
   if not Assigned(fRecordSelect) then
   begin
-    fRecordSelect := fConnection.CreatePreparedQuery(fConfig.GetSelectRecordSQL, aTransaction);
+    fRecordSelect := fConnection.CreatePreparedQuery(fConfig.GetSelectRecordSQL);
   end;
   fConfig.SetSelectRecordSQLParameter(aRecordIdentity, fRecordSelect);
-  var lSqlResult := fRecordSelect.Open;
+  var lSqlResult := fRecordSelect.Open(aTransaction);
   if lSqlResult.Next then
   begin
     fConfig.GetRecordFromSqlResult(lSqlResult, aRecord);

@@ -39,6 +39,7 @@ object fraPersonMemberOf: TfraPersonMemberOf
     OnCustomDrawItem = lvMemberOfCustomDrawItem
     OnDblClick = lvMemberOfDblClick
     OnSelectItem = lvMemberOfSelectItem
+    ExplicitTop = -6
   end
   object pnCommands: TPanel
     Left = 0
@@ -50,6 +51,13 @@ object fraPersonMemberOf: TfraPersonMemberOf
     DesignSize = (
       941
       98)
+    object lbMemberOfsVersionInfo: TLabel
+      Left = 367
+      Top = 61
+      Width = 132
+      Height = 15
+      Caption = 'lbMemberOfsVersionInfo'
+    end
     object cbShowInactiveMemberOfs: TCheckBox
       Left = 728
       Top = 64

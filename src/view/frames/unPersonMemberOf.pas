@@ -6,10 +6,11 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.ExtCtrls, Vcl.StdCtrls,
   ListviewAttachedData, DtoMember, DtoMemberAggregated, PersonMemberOfUI, MemberOfBusinessIntf,
-  unPersonMemberOfsEditDlg, System.Actions, Vcl.ActnList, ListCrudCommands, Vcl.Menus;
+  unPersonMemberOfsEditDlg, System.Actions, Vcl.ActnList, ListCrudCommands, Vcl.Menus,
+  Vdm.Versioning.Types, VersionInfoEntryUI;
 
 type
-  TfraPersonMemberOf = class(TFrame, IPersonMemberOfUI)
+  TfraPersonMemberOf = class(TFrame, IPersonMemberOfUI, IVersionInfoEntryUI)
     lvMemberOf: TListView;
     pnCommands: TPanel;
     cbShowInactiveMemberOfs: TCheckBox;
@@ -30,6 +31,7 @@ type
     N1: TMenuItem;
     Verbindungbearbeiten1: TMenuItem;
     Verbindungentfernen1: TMenuItem;
+    lbMemberOfsVersionInfo: TLabel;
     procedure lvMemberOfCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure acShowInactiveMemberOfsExecute(Sender: TObject);
@@ -49,6 +51,9 @@ type
     procedure ListEnumProcessItem(const aItem: TListEntry<TDtoMemberAggregated>);
     procedure ListEnumEnd;
 
+    procedure SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry; const aVersionInfoEntryIndex: UInt16);
+    procedure ClearVersionInfoEntryFromUI(const aVersionInfoEntryIndex: UInt16);
+
     procedure MemberEntryToListItem(const aEntry: TListEntry<TDtoMemberAggregated>; const aListItem: TListItem);
     function GetStringByIndex(const aStrings: TStrings; const aIndex: Integer): string;
     procedure UpdateEditItemActions(const aEnabled: Boolean);
@@ -62,7 +67,7 @@ implementation
 
 {$R *.dfm}
 
-uses Vdm.Globals, ListCrudCommands.Types;
+uses Vdm.Globals, ListCrudCommands.Types, VclUITools;
 
 { TfraPersonMemberOf }
 
@@ -162,10 +167,22 @@ begin
   fBusinessIntf := aCommands;
 end;
 
+procedure TfraPersonMemberOf.ClearVersionInfoEntryFromUI(const aVersionInfoEntryIndex: UInt16);
+begin
+  TVclUITools.VersionInfoToLabel(lbMemberOfsVersionInfo, nil);
+end;
+
+procedure TfraPersonMemberOf.SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry;
+  const aVersionInfoEntryIndex: UInt16);
+begin
+  TVclUITools.VersionInfoToLabel(lbMemberOfsVersionInfo, aVersionInfoEntry);
+end;
+
 procedure TfraPersonMemberOf.ListEnumBegin;
 begin
   UpdateEditItemActions(False);
   UpdateListActions(False);
+  lbMemberOfsVersionInfo.Caption := '';
   lvMemberOf.Items.BeginUpdate;
   fMemberOfListviewAttachedData.Clear;
 end;

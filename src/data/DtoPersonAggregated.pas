@@ -2,12 +2,14 @@ unit DtoPersonAggregated;
 
 interface
 
-uses DtoPerson, DtoClubmembership, KeyIndexStrings;
+uses DtoPerson, DtoClubmembership, KeyIndexStrings, Vdm.Versioning.Types;
 
 type
   TDtoPersonAggregated = class
   strict private
     fPerson: TDtoPerson;
+    fVersionInfoBaseData: TVersionInfoEntry;
+    fVersionInfoMenberOfs: TVersionInfoEntry;
     fExistingAddressId: UInt32;
     fAddressId: UInt32;
     fAvailableAddresses: TKeyIndexStrings;
@@ -27,12 +29,16 @@ type
     function GetAddressIndex: Integer;
     procedure SetAddressIndex(const aValue: Integer);
   public
-    constructor Create(const aPerson: TDtoPerson; const aExistingAddressId: UInt32; const aAvailableAddresses: TKeyIndexStrings);
+    constructor Create(const aPerson: TDtoPerson; const aExistingAddressId: UInt32;
+      const aAvailableAddresses: TKeyIndexStrings);
+    destructor Destroy; override;
     function Clone: TDtoPersonAggregated;
     function GetDtoClubmembership: TDtoClubmembership;
     procedure SetDtoClubmembership(const aValue: TDtoClubmembership);
     procedure UpdateExistingAddressId;
     property Person: TDtoPerson read fPerson;
+    property VersionInfoBaseData: TVersionInfoEntry read fVersionInfoBaseData;
+    property VersionInfoMenberOfs: TVersionInfoEntry read fVersionInfoMenberOfs;
     property Id: UInt32 read fPerson.NameId.Id write fPerson.NameId.Id;
     property Firstname: string read fPerson.NameId.Vorname write fPerson.NameId.Vorname;
     property Praeposition: string read fPerson.NameId.Praeposition write fPerson.NameId.Praeposition;
@@ -67,15 +73,26 @@ constructor TDtoPersonAggregated.Create(const aPerson: TDtoPerson; const aExisti
   const aAvailableAddresses: TKeyIndexStrings);
 begin
   inherited Create;
+  fVersionInfoBaseData := TVersionInfoEntry.Create;
+  fVersionInfoMenberOfs := TVersionInfoEntry.Create;
   fPerson := aPerson;
   fExistingAddressId := aExistingAddressId;
   fAvailableAddresses := aAvailableAddresses;
+end;
+
+destructor TDtoPersonAggregated.Destroy;
+begin
+  fVersionInfoMenberOfs.Free;
+  fVersionInfoBaseData.Free;
+  inherited;
 end;
 
 function TDtoPersonAggregated.Clone: TDtoPersonAggregated;
 begin
   Result := TDtoPersonAggregated.Create(fPerson, fExistingAddressId, fAvailableAddresses);
 
+  Result.VersionInfoBaseData.Assign(fVersionInfoBaseData);
+  Result.VersionInfoMenberOfs.Assign(fVersionInfoMenberOfs);
   Result.AddressId := fAddressId;
   Result.CreateNewAddress := fCreateNewAddress;
   Result.NewAddressStreet := fNewAddressStreet;

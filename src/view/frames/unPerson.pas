@@ -8,14 +8,15 @@ uses
   System.Generics.Collections, CrudCommands, DtoPerson, ListviewAttachedData, Vcl.Menus, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.WinXPickers, System.Actions, Vcl.ActnList,
   PersonBusinessIntf, PersonAggregatedUI, DtoPersonAggregated, ComponentValueChangedObserver,
-  unPersonMemberOf, PersonMemberOfUI, DelayedExecute, CheckboxDatetimePickerHandler, Vdm.Types;
+  unPersonMemberOf, PersonMemberOfUI, DelayedExecute, CheckboxDatetimePickerHandler,
+  Vdm.Types, Vdm.Versioning.Types, VersionInfoEntryUI;
 
 type
   TPersonListItemData = record
     PersonActive: Boolean;
   end;
 
-  TfraPerson = class(TFrame, IPersonAggregatedUI)
+  TfraPerson = class(TFrame, IPersonAggregatedUI, IVersionInfoEntryUI)
     pnPersonListview: TPanel;
     Splitter1: TSplitter;
     pnPersonDetails: TPanel;
@@ -64,6 +65,7 @@ type
     btPersonStartNewRecord: TButton;
     tsMemberOf: TTabSheet;
     lbListviewItemCount: TLabel;
+    lbBasedataVersionInfo: TLabel;
     procedure lvPersonListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure lvPersonListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
@@ -93,6 +95,9 @@ type
     procedure ControlValuesUnchanged(Sender: TObject);
     function PersonEntryToListItem(const aPerson: TDtoPerson; const aItem: TListItem): TListItem;
 
+    procedure SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry; const aVersionInfoEntryIndex: UInt16);
+    procedure ClearVersionInfoEntryFromUI(const aVersionInfoEntryIndex: UInt16);
+
     procedure SetCrudCommands(const aCommands: ICrudCommands<UInt32, TVoid>);
     procedure SetPersonBusinessIntf(const aCommands: IPersonBusinessIntf);
     procedure ListEnumBegin;
@@ -112,7 +117,7 @@ implementation
 
 {$R *.dfm}
 
-uses StringTools, MessageDialogs, Vdm.Globals;
+uses StringTools, MessageDialogs, Vdm.Globals, VclUITools;
 
 constructor TfraPerson.Create(AOwner: TComponent);
 begin
@@ -196,6 +201,11 @@ begin
   else if lResponse.Status = TCrudSaveStatus.CancelledWithMessage then
   begin
     TMessageDialogs.Ok(lResponse.MessageText, TMsgDlgType.mtInformation);
+  end
+  else if lResponse.Status = TCrudSaveStatus.CancelledOnConflict then
+  begin
+    TMessageDialogs.Ok('Versionkonflikt: ' +
+      lResponse.ConflictedVersionInfoEntry.ToString, TMsgDlgType.mtWarning);
   end;
 end;
 
@@ -330,6 +340,17 @@ end;
 procedure TfraPerson.SetPersonBusinessIntf(const aCommands: IPersonBusinessIntf);
 begin
   fBusinessIntf := aCommands;
+end;
+
+procedure TfraPerson.SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry;
+  const aVersionInfoEntryIndex: UInt16);
+begin
+  TVclUITools.VersionInfoToLabel(lbBasedataVersionInfo, aVersionInfoEntry);
+end;
+
+procedure TfraPerson.ClearVersionInfoEntryFromUI(const aVersionInfoEntryIndex: UInt16);
+begin
+  TVclUITools.VersionInfoToLabel(lbBasedataVersionInfo, nil);
 end;
 
 procedure TfraPerson.LoadCurrentEntry(const aPersonId: UInt32);

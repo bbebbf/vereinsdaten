@@ -60,20 +60,20 @@ type
 
   ISqlPreparedCommand = interface(ISqlPreparedBase)
     ['{2086F60E-B0CB-475D-9D3F-572BCF390D9B}']
-    function Execute: Integer;
+    function Execute(const aTransaction: ITransaction = nil): Integer;
   end;
 
   ISqlPreparedQuery = interface(ISqlPreparedBase)
     ['{2086F60E-B0CB-475D-9D3F-572BCF390D9B}']
-    function Open: ISqlResult;
+    function Open(const aTransaction: ITransaction = nil): ISqlResult;
   end;
 
   ISqlConnection = interface
     ['{E51D5D5C-F68E-4E14-8A8E-2CB890AF71E8}']
     function GetParameters: TSqlConnectionParametersBase;
     function Connect: Boolean;
-    function CreatePreparedCommand(const aSqlCommand: string; const aTransaction: ITransaction = nil): ISqlPreparedCommand;
-    function CreatePreparedQuery(const aSqlCommand: string; const aTransaction: ITransaction = nil): ISqlPreparedQuery;
+    function CreatePreparedCommand(const aSqlCommand: string): ISqlPreparedCommand;
+    function CreatePreparedQuery(const aSqlCommand: string): ISqlPreparedQuery;
     function GetSelectResult(const aSqlSelect: string;
       const aTransaction: ITransaction = nil): ISqlResult;
     function ExecuteCommand(const aSqlCommand: string;

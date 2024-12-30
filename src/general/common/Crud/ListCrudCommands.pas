@@ -3,7 +3,7 @@ unit ListCrudCommands;
 interface
 
 uses System.SysUtils, System.Generics.Collections, SqlConnection, FilterSelect, SelectListFilter,
-  ListEnumerator, CrudConfig, ListCrudCommands.Types, ValueConverter;
+  ListEnumerator, CrudConfig, ListCrudCommands.Types, ValueConverter, Transaction;
 
 type
   TListEntry<T> = class
@@ -51,7 +51,8 @@ type
       );
     destructor Destroy; override;
     procedure Reload;
-    procedure SaveChanges(const aDeleteEntryCallback: TListCrudCommandsEntryCallback<TD>);
+    procedure SaveChanges(const aDeleteEntryCallback: TListCrudCommandsEntryCallback<TD>;
+      const aTransaction: ITransaction = nil);
     property TargetEnumerator: IListEnumerator<TListEntry<TD>> read fTargetEnumerator write fTargetEnumerator;
     property Items: TList<TListEntry<TD>> read fItems;
   end;
@@ -140,11 +141,18 @@ begin
 end;
 
 procedure TListCrudCommands<TS, TSIdent, TD, FSelect, FLoop>.SaveChanges(
-  const aDeleteEntryCallback: TListCrudCommandsEntryCallback<TD>);
+  const aDeleteEntryCallback: TListCrudCommandsEntryCallback<TD>;
+  const aTransaction: ITransaction);
 begin
   var lRecordActions := TRecordActions<TS, TSIdent>.Create(fConnection, fCrudConfig);
   try
-    var lTansaction := fConnection.StartTransaction;
+    var lTransaction := aTransaction;
+    var lOwnsTransaction := False;
+    if not Assigned(lTransaction) then
+    begin
+      lTransaction := fConnection.StartTransaction;
+      lOwnsTransaction := True;
+    end;
     for var i := fItems.Count - 1 downto 0 do
     begin
       var lEntry := fItems[i];
@@ -157,7 +165,7 @@ begin
         var lTS := default(TS);
         var lTD := lEntry.Data;
         fValueConverter.ConvertBack(lTD, lTS);
-        lRecordActions.SaveRecord(lTS, lTansaction);
+        lRecordActions.SaveRecord(lTS, lTransaction);
         fValueConverter.Convert(lTS, lTD);
         lEntry.Resetted;
       end
@@ -165,12 +173,13 @@ begin
       begin
         var lTS := default(TS);
         fValueConverter.ConvertBack(lEntry.Data, lTS);
-        lRecordActions.DeleteEntry(fCrudConfig.GetRecordIdentity(lTS), lTansaction);
+        lRecordActions.DeleteEntry(fCrudConfig.GetRecordIdentity(lTS), lTransaction);
         aDeleteEntryCallback(lEntry);
         fItems.Delete(i);
       end;
-      lTansaction.Commit;
     end;
+    if lOwnsTransaction then
+      lTransaction.Commit;
   finally
     lRecordActions.Free;
   end;

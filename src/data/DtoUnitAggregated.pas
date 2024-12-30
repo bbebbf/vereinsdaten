@@ -2,7 +2,7 @@ unit DtoUnitAggregated;
 
 interface
 
-uses System.Generics.Collections, Vdm.Versioning.Types, DtoPersonNameId, DtoUnit;
+uses System.Generics.Collections, DtoPersonNameId, DtoUnit, Vdm.Versioning.Types;
 
 type
   TDtoUnitAggregatedPersonMemberOf = record
@@ -16,15 +16,14 @@ type
   TDtoUnitAggregated = class
   strict private
     fUnit: TDtoUnit;
-    fVersionInfo: TEntryVersionInfo;
+    fVersionInfo: TVersionInfoEntry;
     fMemberOfList: TList<TDtoUnitAggregatedPersonMemberOf>;
   public
-    constructor Create(const aUnit: TDtoUnit; const aVersionInfo: TEntryVersionInfo);
+    constructor Create(const aUnit: TDtoUnit);
     destructor Destroy; override;
-    procedure UpdateVersionInfo(const aVersionInfo: TEntryVersionInfo);
     function ToString: string; override;
     procedure UpdateByDtoUnit(const aUnit: TDtoUnit);
-    property VersionInfo: TEntryVersionInfo read fVersionInfo;
+    property VersionInfo: TVersionInfoEntry read fVersionInfo;
     property &Unit: TDtoUnit read fUnit;
     property Id: UInt32 read fUnit.Id write fUnit.Id;
     property Name: string read fUnit.Name write fUnit.Name;
@@ -38,17 +37,18 @@ implementation
 
 { TDtoUnitAggregated }
 
-constructor TDtoUnitAggregated.Create(const aUnit: TDtoUnit; const aVersionInfo: TEntryVersionInfo);
+constructor TDtoUnitAggregated.Create(const aUnit: TDtoUnit);
 begin
   inherited Create;
   fUnit := aUnit;
-  fVersionInfo := aVersionInfo;
+  fVersionInfo := TVersionInfoEntry.Create;
   fMemberOfList := TList<TDtoUnitAggregatedPersonMemberOf>.Create;
 end;
 
 destructor TDtoUnitAggregated.Destroy;
 begin
   fMemberOfList.Free;
+  fVersionInfo.Free;
   inherited;
 end;
 
@@ -60,11 +60,6 @@ end;
 procedure TDtoUnitAggregated.UpdateByDtoUnit(const aUnit: TDtoUnit);
 begin
   fUnit := aUnit;
-end;
-
-procedure TDtoUnitAggregated.UpdateVersionInfo(const aVersionInfo: TEntryVersionInfo);
-begin
-  fVersionInfo := aVersionInfo;
 end;
 
 end.

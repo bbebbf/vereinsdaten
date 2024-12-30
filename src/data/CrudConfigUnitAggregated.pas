@@ -3,7 +3,7 @@ unit CrudConfigUnitAggregated;
 interface
 
 uses InterfacedBase, EntryCrudConfig, DtoUnitAggregated, SqlConnection, CrudConfigUnit, CrudConfig, DtoUnit,
-  RecordActionsVersioning, Vdm.Types, VersionInfoConfig, Vdm.Versioning.Types;
+  RecordActionsVersioning, Vdm.Types, Vdm.Versioning.Types;
 
 type
   TCrudConfigUnitAggregated = class(TInterfacedBase, IEntryCrudConfig<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>)
@@ -62,12 +62,13 @@ end;
 
 function TCrudConfigUnitAggregated.CloneEntry(const aEntry: TDtoUnitAggregated): TDtoUnitAggregated;
 begin
-  Result := TDtoUnitAggregated.Create(aEntry.&Unit, aEntry.VersionInfo);
+  Result := TDtoUnitAggregated.Create(aEntry.&Unit);
+  Result.VersionInfo.Assign(aEntry.VersionInfo);
 end;
 
 function TCrudConfigUnitAggregated.CreateEntry: TDtoUnitAggregated;
 begin
-  Result := TDtoUnitAggregated.Create(default(TDtoUnit), default(TEntryVersionInfo));
+  Result := TDtoUnitAggregated.Create(default(TDtoUnit));
 end;
 
 function TCrudConfigUnitAggregated.DeleteEntry(const aId: UInt32): Boolean;
@@ -118,23 +119,28 @@ function TCrudConfigUnitAggregated.SaveEntry(var aEntry: TDtoUnitAggregated): Bo
 begin
   Result := True;
   var lUnit := aEntry.&Unit;
-  var lEntryVersionInfo := aEntry.VersionInfo;
-  if fUnitRecordActions.SaveRecord(lUnit, lEntryVersionInfo).State = TRecordActionsVersioningResponseState.SaveSucceededCreated then
+  var lResponse := fUnitRecordActions.SaveRecord(lUnit, aEntry.VersionInfo);
+  if lResponse.VersioningState = TRecordActionsVersioningResponseVersioningState.ConflictDetected then
+  begin
+    aEntry.VersionInfo.RegisterVersionConflict(lResponse.ConflictedEntryVersionInfo);
+    Exit(False);
+  end;
+  if lResponse.Kind = TRecordActionsVersioningSaveKind.Created then
   begin
     aEntry.Id := lUnit.Id;
   end;
-  aEntry.UpdateVersionInfo(lEntryVersionInfo);
 end;
 
 function TCrudConfigUnitAggregated.TryLoadEntry(const aId: UInt32; out aEntry: TDtoUnitAggregated): Boolean;
 begin
   var lUnit := default(TDtoUnit);
   var lResponse := fUnitRecordActions.LoadRecord(aId, lUnit);
-  Result := lResponse.State = TRecordActionsVersioningResponseState.LoadSucceeded;
+  Result := lResponse.Succeeded;
   if not Result then
     Exit;
 
-  aEntry := TDtoUnitAggregated.Create(lUnit, lResponse.EntryVersionInfo);
+  aEntry := TDtoUnitAggregated.Create(lUnit);
+  aEntry.VersionInfo.UpdateVersionInfo(lResponse.EntryVersionInfo);
   if not Assigned(fMemberSelectQuery) then
   begin
     fMemberSelectQuery := fConnection.CreatePreparedQuery(

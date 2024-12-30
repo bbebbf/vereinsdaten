@@ -3,9 +3,9 @@
 interface
 
 uses System.Classes, System.Generics.Collections, InterfacedBase, SqlConnection, MemberOfBusinessIntf,
-  PersonMemberOfUI, KeyIndexStrings, CrudConfig,
+  PersonMemberOfUI, KeyIndexStrings, CrudConfig, FilterSelect, Transaction,
   DtoMemberAggregated, DtoMember, DtoUnit, DtoRole, ListCrudCommands, SelectList, SelectListFilter,
-  ValueConverter;
+  ValueConverter, Vdm.Versioning.Types, VersionInfoAccessor;
 
 type
   TMemberOfBusinessRecordFilter = record
@@ -18,16 +18,20 @@ type
     fUI: IPersonMemberOfUI;
     fMemberConfig: ICrudConfig<TDtoMember, UInt32>;
     fListCrudCommands: TObjectListCrudCommands<TDtoMember, UInt32, TDtoMemberAggregated, UInt32, TMemberOfBusinessRecordFilter>;
+    fVersionInfoMemberOfsConfig: IVersionInfoConfig<UInt32, UInt32>;
+    fVersionInfoAccessor: TVersionInfoAccessor<UInt32, UInt32>;
+    fTransactionScopeLoadEntries: IVersionInfoAccessorTransactionScope;
     fUnitMapper: TKeyIndexStrings;
     fUnitListConfig: ISelectList<TDtoUnit>;
     fRoleMapper: TKeyIndexStrings;
     fRoleListConfig: ISelectList<TDtoRole>;
     fCurrentPersonId: UInt32;
+    fCurrentMemberOfsVersionEntry: TVersionInfoEntry;
     fCurrentFilter: TMemberOfBusinessRecordFilter;
     fSelectListFilter: ISelectListFilter<TDtoMember, UInt32>;
     fValueConverter: IValueConverter<TDtoMember, TDtoMemberAggregated>;
     procedure Initialize;
-    procedure LoadPersonsMemberOfs(const aPersonId: UInt32);
+    procedure LoadPersonsMemberOfs(const aPersonId: UInt32; const aMemberOfsVersionInfoEntry: TVersionInfoEntry);
     function GetShowInactiveMemberOfs: Boolean;
     procedure SetShowInactiveMemberOfs(const aValue: Boolean);
     function CreateNewEntry: TListEntry<TDtoMemberAggregated>;
@@ -40,6 +44,10 @@ type
     procedure UpdateFilter;
     procedure OnItemMatchesFilter(Sender: TObject;
       const aItem: TDtoMember; const aFilter: TMemberOfBusinessRecordFilter; var aItemMatches: Boolean);
+    procedure OnFilterSelectTransaction(Sender: TObject; const aState: TFilterSelectTransactionEventState;
+        var aTransaction: ITransaction);
+    procedure SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry);
+    procedure ClearVersionInfoEntryFromUI;
   public
     constructor Create(const aConnection: ISqlConnection; const aUI: IPersonMemberOfUI);
     destructor Destroy; override;
@@ -47,7 +55,8 @@ type
 
 implementation
 
-uses System.SysUtils, CrudMemberConfig, CrudConfigUnit, CrudConfigRole, KeyIndexMapper;
+uses System.SysUtils, CrudMemberConfig, CrudConfigUnit, CrudConfigRole, KeyIndexMapper,
+  VersionInfoEntryUI;
 
 type
   TDtoMemberConverter = class(TInterfacedBase, IValueConverter<TDtoMember, TDtoMemberAggregated>)
@@ -59,6 +68,15 @@ type
   public
     constructor Create(const aUnitMapper, aRoleMapper: TKeyIndexStrings);
   end;
+
+  TPersonMemberOfsVersionInfoConfig = class(TInterfacedBase, IVersionInfoConfig<UInt32, UInt32>)
+  strict private
+    function GetVersioningEntityId: TEntryVersionInfoEntity;
+    function GetRecordIdentity(const aRecord: UInt32): UInt32;
+    function GetVersioningIdentityColumnName: string;
+    procedure SetVersionInfoParameter(const aRecordIdentity: UInt32; const aParameter: ISqlParameter);
+  end;
+
 
 { TMemberOfBusiness }
 
@@ -123,10 +141,15 @@ begin
     fConnection, fSelectListFilter, fMemberConfig, fValueConverter);
   fListCrudCommands.TargetEnumerator := fUI;
   fListCrudCommands.OnItemMatchesFilter := OnItemMatchesFilter;
+  fListCrudCommands.OnTransaction := OnFilterSelectTransaction;
+
+  fVersionInfoMemberOfsConfig := TPersonMemberOfsVersionInfoConfig.Create;
+  fVersionInfoAccessor := TVersionInfoAccessor<UInt32, UInt32>.Create(fConnection, fVersionInfoMemberOfsConfig);
 end;
 
 destructor TMemberOfBusiness.Destroy;
 begin
+  fVersionInfoAccessor.Free;
   fListCrudCommands.Free;
   fValueConverter := nil;
   fRoleMapper.Free;
@@ -181,21 +204,69 @@ begin
   UpdateFilter;
 end;
 
+procedure TMemberOfBusiness.SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry);
+begin
+  var lVersionInfoEntryUI: IVersionInfoEntryUI;
+  if Supports(fUI, IVersionInfoEntryUI, lVersionInfoEntryUI) then
+    lVersionInfoEntryUI.SetVersionInfoEntryToUI(aVersionInfoEntry);
+end;
+
+procedure TMemberOfBusiness.ClearVersionInfoEntryFromUI;
+begin
+  var lVersionInfoEntryUI: IVersionInfoEntryUI;
+  if Supports(fUI, IVersionInfoEntryUI, lVersionInfoEntryUI) then
+    lVersionInfoEntryUI.ClearVersionInfoEntryFromUI;
+end;
+
 procedure TMemberOfBusiness.UpdateFilter;
 begin
   fListCrudCommands.BeginUpdateFilter;
-  fListCrudCommands.FilterSelect := fCurrentPersonId;
+   fListCrudCommands.FilterSelect := fCurrentPersonId;
   fListCrudCommands.FilterLoop := fCurrentFilter;
   fListCrudCommands.EndUpdateFilter;
 end;
 
-procedure TMemberOfBusiness.LoadPersonsMemberOfs(const aPersonId: UInt32);
+procedure TMemberOfBusiness.LoadPersonsMemberOfs(const aPersonId: UInt32; const aMemberOfsVersionInfoEntry: TVersionInfoEntry);
 begin
   if fCurrentPersonId = aPersonId then
     Exit;
 
   fCurrentPersonId := aPersonId;
+  fCurrentMemberOfsVersionEntry := aMemberOfsVersionInfoEntry;
   UpdateFilter;
+end;
+
+procedure TMemberOfBusiness.OnFilterSelectTransaction(Sender: TObject; const aState: TFilterSelectTransactionEventState;
+  var aTransaction: ITransaction);
+begin
+  if not Assigned(fCurrentMemberOfsVersionEntry) or (fCurrentPersonId = 0) then
+  begin
+    fTransactionScopeLoadEntries := nil;
+    aTransaction := nil;
+    ClearVersionInfoEntryFromUI;
+    Exit;
+  end;
+  case aState of
+    TFilterSelectTransactionEventState.StartTransaction:
+    begin
+      fTransactionScopeLoadEntries := fVersionInfoAccessor.StartTransaction;
+      aTransaction := fTransactionScopeLoadEntries.Transaction;
+    end;
+    TFilterSelectTransactionEventState.EndTransactionSuccessful:
+    begin
+      fCurrentMemberOfsVersionEntry.UpdateVersionInfo(
+        fVersionInfoAccessor.QueryVersionInfo(fTransactionScopeLoadEntries, fCurrentPersonId));
+      fTransactionScopeLoadEntries.Transaction.Commit;
+      fTransactionScopeLoadEntries := nil;
+      SetVersionInfoEntryToUI(fCurrentMemberOfsVersionEntry);
+    end;
+    TFilterSelectTransactionEventState.EndTransactionException:
+    begin
+      fTransactionScopeLoadEntries.Transaction.Rollback;
+      fTransactionScopeLoadEntries := nil;
+      SetVersionInfoEntryToUI(fCurrentMemberOfsVersionEntry);
+    end;
+  end;
 end;
 
 procedure TMemberOfBusiness.OnItemMatchesFilter(Sender: TObject; const aItem: TDtoMember;
@@ -207,12 +278,24 @@ end;
 procedure TMemberOfBusiness.SaveEntries(
   const aDeleteEntryCallback: TListCrudCommandsEntryCallback<TDtoMemberAggregated>);
 begin
-  fListCrudCommands.SaveChanges(aDeleteEntryCallback);
+  if Assigned(fCurrentMemberOfsVersionEntry) and (fCurrentPersonId > 0) then
+  begin
+    var lTransactionScopeSaveEntries := fVersionInfoAccessor.StartTransaction;
+    fListCrudCommands.SaveChanges(aDeleteEntryCallback, lTransactionScopeSaveEntries.Transaction);
+    fVersionInfoAccessor.UpdateVersionInfo(lTransactionScopeSaveEntries, fCurrentPersonId, fCurrentMemberOfsVersionEntry);
+    SetVersionInfoEntryToUI(fCurrentMemberOfsVersionEntry);
+  end
+  else
+  begin
+    fListCrudCommands.SaveChanges(aDeleteEntryCallback);
+    ClearVersionInfoEntryFromUI;
+  end;
 end;
 
 procedure TMemberOfBusiness.ReloadEntries;
 begin
-  fListCrudCommands.Reload;
+  fListCrudCommands
+  .Reload;
 end;
 
 { TDtoMemberConverter }
@@ -239,6 +322,29 @@ end;
 procedure TDtoMemberConverter.ConvertBack(const aValue: TDtoMemberAggregated; var aTarget: TDtoMember);
 begin
   aTarget := aValue.Member;
+end;
+
+{ TPersonMemberOfsVersionInfoConfig }
+
+function TPersonMemberOfsVersionInfoConfig.GetRecordIdentity(const aRecord: UInt32): UInt32;
+begin
+  Result := aRecord;
+end;
+
+function TPersonMemberOfsVersionInfoConfig.GetVersioningEntityId: TEntryVersionInfoEntity;
+begin
+  Result := TEntryVersionInfoEntity.PersonMemberOfs;
+end;
+
+function TPersonMemberOfsVersionInfoConfig.GetVersioningIdentityColumnName: string;
+begin
+  Result := 'person_id';
+end;
+
+procedure TPersonMemberOfsVersionInfoConfig.SetVersionInfoParameter(const aRecordIdentity: UInt32;
+  const aParameter: ISqlParameter);
+begin
+  aParameter.Value := aRecordIdentity;
 end;
 
 end.

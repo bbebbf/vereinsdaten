@@ -2,10 +2,14 @@ unit FilterSelect;
 
 interface
 
-uses SqlConnection, SelectListFilter, ListEnumerator, ProgressIndicator;
+uses System.Classes, SqlConnection, SelectListFilter, ListEnumerator, ProgressIndicator, Transaction;
 
 type
   TFilterSelectItemMatchesFilter<T, F> = procedure(Sender: TObject; const aItem: T; const aFilter: F; var aItemMatches: Boolean) of object;
+
+  TFilterSelectTransactionEventState = (StartTransaction, EndTransactionSuccessful, EndTransactionException);
+  TFilterSelectTransactionEvent = procedure(Sender: TObject; const aState: TFilterSelectTransactionEventState;
+    var aTransaction: ITransaction) of object;
 
   TFilterSelect<T; FSelect, FLoop: record> = class
   strict private
@@ -20,6 +24,7 @@ type
     fInFilterUpdate: Integer;
     fOnItemMatchesFilter: TFilterSelectItemMatchesFilter<T, FLoop>;
     fItemCount: Integer;
+    fOnTransaction: TFilterSelectTransactionEvent;
     procedure SetFilterSelect(const aValue: FSelect);
     procedure SetFilterLoop(const aValue: FLoop);
   strict protected
@@ -40,6 +45,7 @@ type
     property ProgressIndicator: IProgressIndicator read fProgressIndicator write fProgressIndicator;
     property ProgressText: string read fProgressText write fProgressText;
     property OnItemMatchesFilter: TFilterSelectItemMatchesFilter<T, FLoop> read fOnItemMatchesFilter write fOnItemMatchesFilter;
+    property OnTransaction: TFilterSelectTransactionEvent read fOnTransaction write fOnTransaction;
   end;
 
 implementation
@@ -71,16 +77,35 @@ begin
   end;
   fConfig.SetSelectListSQLParameter(fFilterSelect, fSqlSelect);
   ListEnumBegin;
+  var lExceptionOccurred := False;
+  var lTransaction: ITransaction := nil;
+  if Assigned(fOnTransaction) then
+    fOnTransaction(Self, TFilterSelectTransactionEventState.StartTransaction, lTransaction);
   try
-    var lSqlResult := fSqlSelect.Open;
-    while lSqlResult.Next do
-    begin
-      var lRecord := default(T);
-      fConfig.GetRecordFromSqlResult(lSqlResult, lRecord);
-      if ItemMatchesFilter(lRecord, fFilterLoop) then
-        ListEnumProcessItem(lRecord);
+    try
+      var lSqlResult := fSqlSelect.Open(lTransaction);
+      while lSqlResult.Next do
+      begin
+        var lRecord := default(T);
+        fConfig.GetRecordFromSqlResult(lSqlResult, lRecord);
+        if ItemMatchesFilter(lRecord, fFilterLoop) then
+          ListEnumProcessItem(lRecord);
+      end;
+    except
+      on Ex: Exception do
+      begin
+        lExceptionOccurred := True;
+        raise;
+      end;
     end;
   finally
+    if Assigned(fOnTransaction) then
+    begin
+      if lExceptionOccurred then
+        fOnTransaction(Self, TFilterSelectTransactionEventState.EndTransactionException, lTransaction)
+      else
+        fOnTransaction(Self, TFilterSelectTransactionEventState.EndTransactionSuccessful, lTransaction);
+    end;
     ListEnumEnd;
   end;
 end;

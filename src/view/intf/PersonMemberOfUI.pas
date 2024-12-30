@@ -2,7 +2,7 @@ unit PersonMemberOfUI;
 
 interface
 
-uses ListEnumerator, ListCrudCommands, DtoMemberAggregated, MemberOfBusinessIntf;
+uses ListEnumerator, ListCrudCommands, DtoMemberAggregated, MemberOfBusinessIntf, Vdm.Versioning.Types;
 
 type
   IPersonMemberOfUI = interface(IListEnumerator<TListEntry<TDtoMemberAggregated>>)

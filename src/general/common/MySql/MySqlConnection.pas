@@ -28,9 +28,14 @@ type
   TMySqlTransaction = class(TInterfacedBase, ITransaction)
   private
     fTransaction: TFDCustomTransaction;
+    fWasCommitted: Boolean;
+    fWasRollbacked: Boolean;
   strict private
-    procedure Commit;
-    procedure Rollback;
+    function GetActive: Boolean;
+    function GetWasCommitted: Boolean;
+    function GetWasRollbacked: Boolean;
+    function Commit: Boolean;
+    function Rollback: Boolean;
   public
     constructor Create(const aTransaction: TFDCustomTransaction);
     destructor Destroy; override;
@@ -56,7 +61,7 @@ type
     function GetParamCount: Integer;
     function ParamByName(const aName: string): ISqlParameter;
     function ParamByIndex(const aIndex: Integer): ISqlParameter;
-    function Execute: Integer;
+    function Execute(const aTransaction: ITransaction): Integer;
   public
     constructor Create(const aCommand: TFDCommand);
     destructor Destroy; override;
@@ -69,7 +74,7 @@ type
     function GetParamCount: Integer;
     function ParamByName(const aName: string): ISqlParameter;
     function ParamByIndex(const aIndex: Integer): ISqlParameter;
-    function Open: ISqlResult;
+    function Open(const aTransaction: ITransaction): ISqlResult;
   public
     constructor Create(const aQuery: TFDCustomQuery);
     destructor Destroy; override;
@@ -86,8 +91,8 @@ type
     fConnection: TFDConnection;
     function GetParameters: TSqlConnectionParametersBase;
     function Connect: Boolean;
-    function CreatePreparedCommand(const aSqlCommand: string; const aTransaction: ITransaction = nil): ISqlPreparedCommand;
-    function CreatePreparedQuery(const aSqlCommand: string; const aTransaction: ITransaction = nil): ISqlPreparedQuery;
+    function CreatePreparedCommand(const aSqlCommand: string): ISqlPreparedCommand;
+    function CreatePreparedQuery(const aSqlCommand: string): ISqlPreparedQuery;
     function GetSelectResult(const aSqlSelect: string;
       const aTransaction: ITransaction = nil): ISqlResult;
     function ExecuteCommand(const aSqlCommand: string;
@@ -96,7 +101,6 @@ type
     function GetLastInsertedIdentityScoped: Int64;
 
     function InternalConnect: TFDConnection;
-    function InternalGetTransaction(const aTransaction: ITransaction): TFDCustomTransaction;
   public
     destructor Destroy; override;
   end;
@@ -104,6 +108,20 @@ type
 implementation
 
 uses System.Classes, System.SysUtils, FireDAC.Stan.Def, FireDAC.DApt, FireDAC.Stan.Async, FireDAC.Phys.MySQL;
+
+function GetFDCustomTransaction(const aTransaction: ITransaction): TFDCustomTransaction;
+begin
+  Result := nil;
+  if not Assigned(aTransaction) then
+    Exit;
+
+  if not (aTransaction is TMySqlTransaction) then
+  begin
+    raise EArgumentException.Create('Parameter aTransaction must be of class TMySqlTransaction.');
+  end;
+
+  Result := (aTransaction as TMySqlTransaction).fTransaction;
+end;
 
 { TMySqlConnection }
 
@@ -119,21 +137,19 @@ begin
   Result := InternalConnect.Connected;
 end;
 
-function TMySqlConnection.CreatePreparedCommand(const aSqlCommand: string; const aTransaction: ITransaction): ISqlPreparedCommand;
+function TMySqlConnection.CreatePreparedCommand(const aSqlCommand: string): ISqlPreparedCommand;
 begin
   var lCommand := TFDCommand.Create(nil);
   lCommand.Connection := InternalConnect;
-  lCommand.Transaction := InternalGetTransaction(aTransaction);
   lCommand.ResourceOptions.ParamCreate := True;
   lCommand.CommandText.Text := aSqlCommand;
   Result := TMySqlPreparedCommand.Create(lCommand);
 end;
 
-function TMySqlConnection.CreatePreparedQuery(const aSqlCommand: string; const aTransaction: ITransaction): ISqlPreparedQuery;
+function TMySqlConnection.CreatePreparedQuery(const aSqlCommand: string): ISqlPreparedQuery;
 begin
   var lQuery := TFDQuery.Create(nil);
   lQuery.Connection := InternalConnect;
-  lQuery.Transaction := InternalGetTransaction(aTransaction);
   lQuery.ResourceOptions.ParamCreate := True;
   lQuery.SQL.Text := aSqlCommand;
   Result := TMySqlPreparedQuery.Create(lQuery);
@@ -144,7 +160,7 @@ begin
   var lCommand := TFDCommand.Create(nil);
   try
     lCommand.Connection := InternalConnect;
-    lCommand.Transaction := InternalGetTransaction(aTransaction);
+    lCommand.Transaction := GetFDCustomTransaction(aTransaction);
     Result := lCommand.Execute(aSqlCommand);
   finally
     lCommand.Free;
@@ -156,7 +172,7 @@ begin
   var lQuery := TFDQuery.Create(nil);
   try
     lQuery.Connection := InternalConnect;
-    lQuery.Transaction := InternalGetTransaction(aTransaction);
+    lQuery.Transaction := GetFDCustomTransaction(aTransaction);
     lQuery.Open(aSqlSelect);
     Result := TMySqlResult.Create(lQuery, True); // TMySqlResult takes ownerrship of lQuery.
   except;
@@ -253,21 +269,6 @@ begin
   Result := fConnection;
 end;
 
-function TMySqlConnection.InternalGetTransaction(
-  const aTransaction: ITransaction): TFDCustomTransaction;
-begin
-  Result := nil;
-  if not Assigned(aTransaction) then
-    Exit;
-
-  if not (aTransaction is TMySqlTransaction) then
-  begin
-    raise EArgumentException.Create('Parameter aTransaction must be of class TMySqlTransaction.');
-  end;
-
-  Result := (aTransaction as TMySqlTransaction).fTransaction;
-end;
-
 { TMySqlTransaction }
 
 constructor TMySqlTransaction.Create(const aTransaction: TFDCustomTransaction);
@@ -278,23 +279,48 @@ end;
 
 destructor TMySqlTransaction.Destroy;
 begin
-  if Assigned(fTransaction) and fTransaction.Active then
+  if GetActive then
     Rollback;
   fTransaction.Free;
   inherited;
 end;
 
-procedure TMySqlTransaction.Commit;
+function TMySqlTransaction.GetActive: Boolean;
 begin
-  if fTransaction.Active then
+  Result := Assigned(fTransaction) and fTransaction.Active;
+end;
+
+function TMySqlTransaction.GetWasCommitted: Boolean;
+begin
+  Result := fWasCommitted;
+end;
+
+function TMySqlTransaction.GetWasRollbacked: Boolean;
+begin
+  Result := fWasRollbacked;
+end;
+
+function TMySqlTransaction.Commit: Boolean;
+begin
+  Result := False;
+  if GetActive then
+  begin
     fTransaction.Commit;
+    fWasCommitted := True;
+    Result := True;
+  end;
   FreeAndNil(fTransaction);
 end;
 
-procedure TMySqlTransaction.Rollback;
+function TMySqlTransaction.Rollback: Boolean;
 begin
-  if fTransaction.Active then
+  Result := False;
+  if GetActive then
+  begin
     fTransaction.Rollback;
+    fWasRollbacked := True;
+    Result := True;
+  end;
   FreeAndNil(fTransaction);
 end;
 
@@ -324,10 +350,11 @@ begin
   inherited;
 end;
 
-function TMySqlPreparedCommand.Execute: Integer;
+function TMySqlPreparedCommand.Execute(const aTransaction: ITransaction): Integer;
 begin
-   fCommand.Execute;
-   Result := fCommand.RowsAffected;
+  fCommand.Transaction := GetFDCustomTransaction(aTransaction);
+  fCommand.Execute;
+  Result := fCommand.RowsAffected;
 end;
 
 function TMySqlPreparedCommand.GetParamCount: Integer;
@@ -369,8 +396,9 @@ begin
   Result := fQuery.ParamCount;
 end;
 
-function TMySqlPreparedQuery.Open: ISqlResult;
+function TMySqlPreparedQuery.Open(const aTransaction: ITransaction): ISqlResult;
 begin
+  fQuery.Transaction := GetFDCustomTransaction(aTransaction);
   fQuery.Open('');
   Result := TMySqlResult.Create(fQuery, False);
 end;

@@ -3,14 +3,15 @@ unit CrudConfigAddressAggregated;
 interface
 
 uses InterfacedBase, EntryCrudConfig, DtoAddressAggregated, SqlConnection, CrudConfigAddress, CrudConfig,
-  RecordActions, DtoAddress, Vdm.Types;
+  RecordActionsVersioning, DtoAddress, Vdm.Types, Vdm.Versioning.Types;
 
 type
   TCrudConfigAddressAggregated = class(TInterfacedBase, IEntryCrudConfig<TDtoAddressAggregated, TDtoAddress, UInt32, TVoid>)
   strict private
     fConnection: ISqlConnection;
     fCrudConfig: ICrudConfig<TDtoAddress, UInt32>;
-    fRecordActions: TRecordActions<TDtoAddress, UInt32>;
+    fVersionInfoConfig: IVersionInfoConfig<TDtoAddress, UInt32>;
+    fRecordActions: TRecordActionsVersioning<TDtoAddress, UInt32>;
     fMemberSelectQuery: ISqlPreparedQuery;
     function GetListSqlResult: ISqlResult;
     function GetListEntryFromSqlResult(const aSqlResult: ISqlResult): TDtoAddress;
@@ -33,6 +34,16 @@ implementation
 
 uses System.SysUtils, SelectList;
 
+type
+  TVersionInfoConfig = class(TInterfacedBase, IVersionInfoConfig<TDtoAddress, UInt32>)
+  strict private
+    function GetVersioningEntityId: TEntryVersionInfoEntity;
+    function GetRecordIdentity(const aRecord: TDtoAddress): UInt32;
+    function GetVersioningIdentityColumnName: string;
+    procedure SetVersionInfoParameter(const aRecordIdentity: UInt32; const aParameter: ISqlParameter);
+  end;
+
+
 { TCrudConfigAddressAggregated }
 
 constructor TCrudConfigAddressAggregated.Create(const aConnection: ISqlConnection);
@@ -40,7 +51,8 @@ begin
   inherited Create;
   fConnection := aConnection;
   fCrudConfig := TCrudConfigAddress.Create;
-  fRecordActions := TRecordActions<TDtoAddress, UInt32>.Create(fConnection, fCrudConfig);
+  fVersionInfoConfig := TVersionInfoConfig.Create;
+  fRecordActions := TRecordActionsVersioning<TDtoAddress, UInt32>.Create(fConnection, fCrudConfig, fVersionInfoConfig);
 end;
 
 destructor TCrudConfigAddressAggregated.Destroy;
@@ -52,6 +64,7 @@ end;
 function TCrudConfigAddressAggregated.CloneEntry(const aEntry: TDtoAddressAggregated): TDtoAddressAggregated;
 begin
   Result := TDtoAddressAggregated.Create(aEntry.Address);
+  Result.VersionInfo.Assign(aEntry.VersionInfo);
 end;
 
 function TCrudConfigAddressAggregated.CreateEntry: TDtoAddressAggregated;
@@ -107,7 +120,12 @@ function TCrudConfigAddressAggregated.SaveEntry(var aEntry: TDtoAddressAggregate
 begin
   Result := True;
   var lRecord := aEntry.Address;
-  if fRecordActions.SaveRecord(lRecord) = TRecordActionsSaveResponse.Created then
+  var lResponse := fRecordActions.SaveRecord(lRecord, aEntry.VersionInfo);
+  if lResponse.VersioningState = TRecordActionsVersioningResponseVersioningState.ConflictDetected then
+  begin
+    Exit(False);
+  end;
+  if lResponse.Kind = TRecordActionsVersioningSaveKind.Created then
   begin
     aEntry.Id := lRecord.Id;
   end;
@@ -116,11 +134,13 @@ end;
 function TCrudConfigAddressAggregated.TryLoadEntry(const aId: UInt32; out aEntry: TDtoAddressAggregated): Boolean;
 begin
   var lRecord := default(TDtoAddress);
-  Result := fRecordActions.LoadRecord(aId, lRecord);
+  var lResponse := fRecordActions.LoadRecord(aId, lRecord);
+  Result := lResponse.Succeeded;
   if not Result then
     Exit;
 
   aEntry := TDtoAddressAggregated.Create(lRecord);
+  aEntry.VersionInfo.UpdateVersionInfo(lResponse.EntryVersionInfo);
 
   if not Assigned(fMemberSelectQuery) then
   begin
@@ -144,6 +164,28 @@ begin
     lMemberRec.PersonActive := lSqlResult.FieldByName('person_active').AsBoolean;
     aEntry.MemberOfList.Add(lMemberRec);
   end;
+end;
+
+{ TVersionInfoConfig }
+
+function TVersionInfoConfig.GetRecordIdentity(const aRecord: TDtoAddress): UInt32;
+begin
+  Result := aRecord.Id;
+end;
+
+function TVersionInfoConfig.GetVersioningEntityId: TEntryVersionInfoEntity;
+begin
+  Result := TEntryVersionInfoEntity.Addresses;
+end;
+
+function TVersionInfoConfig.GetVersioningIdentityColumnName: string;
+begin
+  Result := 'adr_id';
+end;
+
+procedure TVersionInfoConfig.SetVersionInfoParameter(const aRecordIdentity: UInt32; const aParameter: ISqlParameter);
+begin
+  aParameter.Value := aRecordIdentity;
 end;
 
 end.
