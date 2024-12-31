@@ -32,9 +32,8 @@ type
     RLDBText8: TRLDBText;
     RLBand1: TRLBand;
     lbSysDate: TRLSystemInfo;
-    Label11: TLabel;
-    RLSystemInfo1: TRLSystemInfo;
-    RLSystemInfo2: TRLSystemInfo;
+    RLSystemInfo3: TRLSystemInfo;
+    RLSystemInfo4: TRLSystemInfo;
     procedure RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
   private
     fQuery: ISqlPreparedQuery;
