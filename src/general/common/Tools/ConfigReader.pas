@@ -15,7 +15,7 @@ type
     ShapeColor: string;
   end;
 
-  TConfigReader = class(TNoRefCountObject)
+  TConfigReader = class
   strict private
     class var fInstance: TConfigReader;
 
@@ -37,7 +37,7 @@ type
 
 implementation
 
-uses System.SysUtils, System.IniFiles, System.IOUtils, Vcl.Forms;
+uses System.SysUtils, System.IniFiles, System.IOUtils;
 
 { TConfigReader }
 
@@ -70,7 +70,7 @@ begin
   if fFound then
     Exit;
 
-  var lExeName := TPath.GetFileNameWithoutExtension(Application.ExeName);
+  var lExeName := TPath.GetFileNameWithoutExtension(ParamStr(0));
   var lIniDir := TPath.Combine(TPath.GetCachePath, TPath.Combine('BBE', lExeName));
   var lIniPath := TPath.Combine(lIniDir, lExeName + '.ini');
   if TFile.Exists(lIniPath) then

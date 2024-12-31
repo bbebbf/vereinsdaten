@@ -235,7 +235,7 @@ object fmReportClubMembers: TfmReportClubMembers
       Width = 1355
       Height = 35
       BandType = btHeader
-      object Label1: TLabel
+      object lbReportTitle: TLabel
         Left = 0
         Top = 0
         Width = 150

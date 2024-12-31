@@ -91,7 +91,9 @@ uses
   VersionInfoEntryUI in 'general\intf\tools\VersionInfoEntryUI.pas',
   VclUITools in 'view\tools\VclUITools.pas',
   VersionInfoEntryConfig in 'general\intf\tools\VersionInfoEntryConfig.pas',
-  Report.ClubMembers in 'reports\Report.ClubMembers.pas' {fmReportClubMembers};
+  Report.ClubMembers in 'reports\Report.ClubMembers.pas' {fmReportClubMembers},
+  TenantReader in 'general\common\Tools\TenantReader.pas',
+  DtoTenant in 'data\DtoTenant.pas';
 
 {$R *.res}
 
@@ -106,6 +108,8 @@ begin
     if not lConnection.Connect then
       Exit;
     lConnectProgress.ProgressEnd;
+
+    TTenantReader.Connection := lConnection;
 
     fmMain.Connection := lConnection;
     fmMain.ProgressIndicator := lConnectProgress;

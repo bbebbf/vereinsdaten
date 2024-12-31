@@ -49,7 +49,7 @@ implementation
 uses System.UITypes, Vdm.Globals, ConfigReader, unUnit, CrudCommands, CrudBusiness, EntryCrudConfig,
   DtoUnit, DtoUnitAggregated, CrudConfigUnitAggregated, DtoRole, CrudConfigRoleEntry, unRole,
   DtoAddress, DtoAddressAggregated, unAddress, CrudConfigAddressAggregated, Vdm.Types,
-  Report.ClubMembers;
+  Report.ClubMembers, TenantReader;
 
 {$R *.dfm}
 
@@ -118,6 +118,8 @@ procedure TfmMain.FormActivate(Sender: TObject);
 begin
   if fActivated then
     Exit;
+
+  Caption := TVdmGlobals.GetVdmApplicationTitle + ': ' + TTenantReader.Instance.Tenant.Title;
 
   fActivated := True;
   fPersonBusinessIntf := TPersonBusiness.Create(fConnection, ffraPerson, fProgressIndicator);

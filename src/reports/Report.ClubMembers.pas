@@ -17,7 +17,7 @@ type
     RLDBText4: TRLDBText;
     bdColumnHeader: TRLBand;
     bdReportHeder: TRLBand;
-    Label1: TLabel;
+    lbReportTitle: TLabel;
     Label2: TLabel;
     Label3: TLabel;
     Label4: TLabel;
@@ -36,6 +36,7 @@ type
     RLSystemInfo4: TRLSystemInfo;
     procedure RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
   private
+    fConnection: ISqlConnection;
     fQuery: ISqlPreparedQuery;
   public
     { Public-Deklarationen }
@@ -45,6 +46,8 @@ type
 
 implementation
 
+uses TenantReader;
+
 {$R *.dfm}
 
 { TfmReportClubMembers }
@@ -52,7 +55,18 @@ implementation
 constructor TfmReportClubMembers.Create(const aConnection: ISqlConnection);
 begin
   inherited Create(nil);
-  fQuery := aConnection.CreatePreparedQuery(
+  fConnection := aConnection;
+end;
+
+procedure TfmReportClubMembers.Preview;
+begin
+  RLReport.Preview;
+end;
+
+procedure TfmReportClubMembers.RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
+begin
+  lbReportTitle.Caption := TTenantReader.Instance.Tenant.Title +  ': Vereinsmitglieder';
+  fQuery := fConnection.CreatePreparedQuery(
     'SELECT cm.*, pn.person_name, p.person_birthday, sa.address_title' +
     ', IFNULL(DATE_FORMAT(cm.clmb_enddate, ''%d.%m.%Y''), cm.clmb_enddate_str) AS clmb_enddate_calculated' +
     ', IF(cm.clmb_active, null, "X") AS clmb_inactive' +
@@ -64,15 +78,6 @@ begin
     ' ORDER BY cm.clmb_number, pn.person_name'
   );
   fQuery.ConfigureDatasource(dsDataSource);
-end;
-
-procedure TfmReportClubMembers.Preview;
-begin
-  RLReport.Preview;
-end;
-
-procedure TfmReportClubMembers.RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
-begin
   fQuery.Open;
 end;
 
