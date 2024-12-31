@@ -34,6 +34,12 @@ object fmReportClubMembers: TfmReportClubMembers
       Width = 1355
       Height = 28
       GreenBarPrint = True
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clBlack
+      Font.Height = -15
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
       object RLDBText1: TRLDBText
         Left = 55
         Top = 2
@@ -48,7 +54,7 @@ object fmReportClubMembers: TfmReportClubMembers
         Left = 0
         Top = 2
         Width = 50
-        Height = 24
+        Height = 18
         Alignment = taRightJustify
         DataField = 'clmb_number'
         DataSource = dsDataSource
@@ -77,8 +83,8 @@ object fmReportClubMembers: TfmReportClubMembers
       object RLDBText5: TRLDBText
         Left = 620
         Top = 2
-        Width = 85
-        Height = 24
+        Width = 96
+        Height = 18
         DataField = 'clmb_startdate'
         DataSource = dsDataSource
         Text = ''
@@ -107,8 +113,8 @@ object fmReportClubMembers: TfmReportClubMembers
       object RLDBText8: TRLDBText
         Left = 870
         Top = 2
-        Width = 119
-        Height = 24
+        Width = 106
+        Height = 18
         DataField = 'clmb_endreason'
         DataSource = dsDataSource
         Text = ''
@@ -120,6 +126,12 @@ object fmReportClubMembers: TfmReportClubMembers
       Width = 1355
       Height = 30
       BandType = btColumnHeader
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clBlack
+      Font.Height = -15
+      Font.Name = 'Calibri'
+      Font.Style = [fsBold]
+      ParentFont = False
       object Label2: TLabel
         Left = 0
         Top = 3
@@ -128,64 +140,34 @@ object fmReportClubMembers: TfmReportClubMembers
         Alignment = taRightJustify
         AutoSize = False
         Caption = 'Nr.'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -17
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        ParentFont = False
       end
       object Label3: TLabel
         Left = 55
         Top = 3
-        Width = 42
-        Height = 21
+        Width = 37
+        Height = 18
         Caption = 'Name'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -17
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        ParentFont = False
       end
       object Label4: TLabel
         Left = 225
         Top = 3
-        Width = 86
-        Height = 21
+        Width = 75
+        Height = 18
         Caption = 'Geb.-Datum'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -17
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        ParentFont = False
       end
       object Label5: TLabel
         Left = 315
         Top = 3
-        Width = 63
-        Height = 21
+        Width = 56
+        Height = 18
         Caption = 'Anschrift'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -17
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        ParentFont = False
       end
       object Label6: TLabel
         Left = 620
         Top = 3
-        Width = 48
-        Height = 21
+        Width = 43
+        Height = 18
         Caption = 'Eintritt'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -17
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        ParentFont = False
       end
       object Label8: TLabel
         Left = 710
@@ -195,38 +177,20 @@ object fmReportClubMembers: TfmReportClubMembers
         Alignment = taCenter
         AutoSize = False
         Caption = 'Inaktiv'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -17
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        ParentFont = False
       end
       object Label9: TLabel
         Left = 765
         Top = 3
-        Width = 53
-        Height = 21
+        Width = 47
+        Height = 18
         Caption = 'Austritt'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -17
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        ParentFont = False
       end
       object Label7: TLabel
         Left = 870
         Top = 3
-        Width = 101
-        Height = 21
+        Width = 89
+        Height = 18
         Caption = 'Austrittsgrund'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -17
-        Font.Name = 'Calibri'
-        Font.Style = [fsBold]
-        ParentFont = False
       end
     end
     object bdReportHeder: TRLBand
@@ -245,6 +209,20 @@ object fmReportClubMembers: TfmReportClubMembers
         Font.Color = clBlack
         Font.Height = -20
         Font.Name = 'Arial'
+        Font.Style = []
+        ParentFont = False
+      end
+      object lbTenantTitle: TLabel
+        Left = 544
+        Top = 0
+        Width = 533
+        Height = 21
+        Alignment = taRightJustify
+        Caption = 'Vereinstitel'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Height = -17
+        Font.Name = 'Calibri'
         Font.Style = []
         ParentFont = False
       end
@@ -270,7 +248,7 @@ object fmReportClubMembers: TfmReportClubMembers
         Text = ''
       end
       object RLSystemInfo3: TRLSystemInfo
-        Left = 1025
+        Left = 1009
         Top = 6
         Width = 36
         Height = 18
@@ -285,7 +263,7 @@ object fmReportClubMembers: TfmReportClubMembers
         Text = ''
       end
       object RLSystemInfo4: TRLSystemInfo
-        Left = 1059
+        Left = 1043
         Top = 6
         Width = 42
         Height = 18

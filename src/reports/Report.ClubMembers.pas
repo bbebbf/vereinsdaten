@@ -34,6 +34,7 @@ type
     lbSysDate: TRLSystemInfo;
     RLSystemInfo3: TRLSystemInfo;
     RLSystemInfo4: TRLSystemInfo;
+    lbTenantTitle: TLabel;
     procedure RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
   private
     fConnection: ISqlConnection;
@@ -65,7 +66,7 @@ end;
 
 procedure TfmReportClubMembers.RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
 begin
-  lbReportTitle.Caption := TTenantReader.Instance.Tenant.Title +  ': Vereinsmitglieder';
+  lbTenantTitle.Caption := TTenantReader.Instance.Tenant.Title;
   fQuery := fConnection.CreatePreparedQuery(
     'SELECT cm.*, pn.person_name, p.person_birthday, sa.address_title' +
     ', IFNULL(DATE_FORMAT(cm.clmb_enddate, ''%d.%m.%Y''), cm.clmb_enddate_str) AS clmb_enddate_calculated' +
