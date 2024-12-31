@@ -90,7 +90,8 @@ uses
   VersionInfoAccessor in 'general\common\Tools\VersionInfoAccessor.pas',
   VersionInfoEntryUI in 'general\intf\tools\VersionInfoEntryUI.pas',
   VclUITools in 'view\tools\VclUITools.pas',
-  VersionInfoEntryConfig in 'general\intf\tools\VersionInfoEntryConfig.pas';
+  VersionInfoEntryConfig in 'general\intf\tools\VersionInfoEntryConfig.pas',
+  Report.ClubMembers in 'reports\Report.ClubMembers.pas' {fmReportClubMembers};
 
 {$R *.res}
 

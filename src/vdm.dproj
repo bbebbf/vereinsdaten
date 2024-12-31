@@ -279,6 +279,10 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="general\intf\tools\VersionInfoEntryUI.pas"/>
         <DCCReference Include="view\tools\VclUITools.pas"/>
         <DCCReference Include="general\intf\tools\VersionInfoEntryConfig.pas"/>
+        <DCCReference Include="reports\Report.ClubMembers.pas">
+            <Form>fmReportClubMembers</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <None Include="inc\CompilerDirectives.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>

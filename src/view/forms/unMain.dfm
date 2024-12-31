@@ -53,6 +53,12 @@ object fmMain: TfmMain
         Action = acMasterdataRole
       end
     end
+    object Berichte1: TMenuItem
+      Caption = 'Berichte'
+      object miReportClubMembers: TMenuItem
+        Action = acReportClubMembers
+      end
+    end
   end
   object ActionList: TActionList
     Left = 40
@@ -68,6 +74,10 @@ object fmMain: TfmMain
     object acMasterdataRole: TAction
       Caption = 'Rollen bearbeiten'
       OnExecute = acMasterdataRoleExecute
+    end
+    object acReportClubMembers: TAction
+      Caption = 'Vereinsmitglieder'
+      OnExecute = acReportClubMembersExecute
     end
   end
 end

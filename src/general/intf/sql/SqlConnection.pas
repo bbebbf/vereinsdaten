@@ -9,7 +9,6 @@ uses Data.DB, Transaction;
 type
   ISqlResult = interface
     ['{FB4B44B9-6188-4F3A-A542-70453B7A1286}']
-    procedure ConfigureDatasource(const aDataSource: TDataSource);
     function Next: Boolean;
     function GetFieldCount: Integer;
     function FieldByName(const aName: string): TField;
@@ -65,6 +64,7 @@ type
 
   ISqlPreparedQuery = interface(ISqlPreparedBase)
     ['{2086F60E-B0CB-475D-9D3F-572BCF390D9B}']
+    procedure ConfigureDatasource(const aDataSource: TDataSource);
     function Open(const aTransaction: ITransaction = nil): ISqlResult;
   end;
 

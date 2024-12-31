@@ -20,12 +20,16 @@ type
     Einheitenbearbeiten1: TMenuItem;
     Rollenbearbeiten1: TMenuItem;
     shaTestConnectionWarning: TShape;
+    Berichte1: TMenuItem;
+    miReportClubMembers: TMenuItem;
+    acReportClubMembers: TAction;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure acMasterdataUnitExecute(Sender: TObject);
     procedure acMasterdataRoleExecute(Sender: TObject);
     procedure acMasterdataAddressExecute(Sender: TObject);
+    procedure acReportClubMembersExecute(Sender: TObject);
   strict private
     fActivated: Boolean;
     fConnection: ISqlConnection;
@@ -44,7 +48,8 @@ implementation
 
 uses System.UITypes, Vdm.Globals, ConfigReader, unUnit, CrudCommands, CrudBusiness, EntryCrudConfig,
   DtoUnit, DtoUnitAggregated, CrudConfigUnitAggregated, DtoRole, CrudConfigRoleEntry, unRole,
-  DtoAddress, DtoAddressAggregated, unAddress, CrudConfigAddressAggregated, Vdm.Types;
+  DtoAddress, DtoAddressAggregated, unAddress, CrudConfigAddressAggregated, Vdm.Types,
+  Report.ClubMembers;
 
 {$R *.dfm}
 
@@ -96,6 +101,16 @@ begin
     end;
   finally
     lDialog.Free;
+  end;
+end;
+
+procedure TfmMain.acReportClubMembersExecute(Sender: TObject);
+begin
+  var lReport := TfmReportClubMembers.Create(fConnection);
+  try
+    lReport.Preview;
+  finally
+    lReport.Free;
   end;
 end;
 

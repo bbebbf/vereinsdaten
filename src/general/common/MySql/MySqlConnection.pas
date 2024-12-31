@@ -14,7 +14,6 @@ type
     fQuery: TFDCustomQuery;
     fOwnsQuery: Boolean;
     fCursorStarted: Boolean;
-    procedure ConfigureDatasource(const aDataSource: TDataSource);
     function GetFieldCount: Integer;
     function Next: Boolean;
     function FieldByName(const aName: string): TField;
@@ -70,6 +69,7 @@ type
   TMySqlPreparedQuery = class(TInterfacedBase, ISqlPreparedQuery)
   strict private
     fQuery: TFDCustomQuery;
+    procedure ConfigureDatasource(const aDataSource: TDataSource);
     procedure Prepare;
     function GetParamCount: Integer;
     function ParamByName(const aName: string): ISqlParameter;
@@ -225,11 +225,6 @@ begin
   inherited;
 end;
 
-procedure TMySqlResult.ConfigureDatasource(const aDataSource: TDataSource);
-begin
-  aDataSource.DataSet := fQuery;
-end;
-
 function TMySqlResult.FieldByIndex(const aIndex: Integer): TField;
 begin
   Result := fQuery.Fields[aIndex];
@@ -378,6 +373,11 @@ begin
 end;
 
 { TMySqlPreparedQuery }
+
+procedure TMySqlPreparedQuery.ConfigureDatasource(const aDataSource: TDataSource);
+begin
+  aDataSource.DataSet := fQuery;
+end;
 
 constructor TMySqlPreparedQuery.Create(const aQuery: TFDCustomQuery);
 begin
