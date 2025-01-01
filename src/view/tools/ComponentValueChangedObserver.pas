@@ -7,22 +7,20 @@ uses System.Classes, System.Generics.Collections, Vcl.Controls, Vcl.StdCtrls, Vc
 type
   TComponentValueChangedControlEntry = class
   strict private
-    fControl: TControl;
     fValueChanged: Boolean;
-    fOriginalChangedNotifyEvent: TNotifyEvent;
     fNotifyRegisterChanged: TNotifyEvent;
     fNotifyRegisterUnchanged: TNotifyEvent;
   strict protected
-    procedure NotifyValueChanged(const aValueChanged: Boolean);
+    procedure NotifyValueChanged(const aControl: TControl; const aValueChanged: Boolean);
   public
-    constructor Create(const aControl: TControl;
-      const aOriginalChangedNotifyEvent, aNotifyRegisterChanged, aNotifyRegisterUnchanged: TNotifyEvent);
+    constructor Create(const aNotifyRegisterChanged, aNotifyRegisterUnchanged: TNotifyEvent);
     procedure StoreOldValue; virtual;
   end;
 
   TComponentValueChangedEditEntry = class(TComponentValueChangedControlEntry)
   strict private
     fControl: TEdit;
+    fOriginalChangedEvent: TNotifyEvent;
     fOldValue: string;
     procedure OnChanged(Sender: TObject);
   public
@@ -33,6 +31,7 @@ type
   TComponentValueChangedCheckboxEntry = class(TComponentValueChangedControlEntry)
   strict private
     fControl: TCheckbox;
+    fOriginalClickEvent: TNotifyEvent;
     fOldValue: Boolean;
     procedure OnChanged(Sender: TObject);
   public
@@ -43,8 +42,12 @@ type
   TComponentValueChangedComboboxEntry = class(TComponentValueChangedControlEntry)
   strict private
     fControl: TComboBox;
-    fOldValue: Integer;
+    fOriginalChangedEvent: TNotifyEvent;
+    fOriginalSelectEvent: TNotifyEvent;
+    fOldItemIndex: Integer;
+    fOldText: string;
     procedure OnChanged(Sender: TObject);
+    procedure OnSelect(Sender: TObject);
   public
     constructor Create(const aControl: TComboBox; const aNotifyRegisterChanged, aNotifyRegisterUnchanged: TNotifyEvent);
     procedure StoreOldValue; override;
@@ -53,6 +56,7 @@ type
   TComponentValueChangedDateTimePickerEntry = class(TComponentValueChangedControlEntry)
   strict private
     fControl: TDateTimePicker;
+    fOriginalChangedEvent: TNotifyEvent;
     fOldValue: TDateTime;
     procedure OnChanged(Sender: TObject);
   public
@@ -91,6 +95,12 @@ type
   end;
 
 implementation
+
+procedure CallNotifyEvent(const aControl: TControl; const aEvent: TNotifyEvent);
+begin
+  if Assigned(aEvent) then
+    aEvent(aControl);
+end;
 
 { TComponentValueChangedObserver }
 
@@ -171,29 +181,23 @@ end;
 
 { TComponentValueChangedControlEntry }
 
-constructor TComponentValueChangedControlEntry.Create(const aControl: TControl;
-  const aOriginalChangedNotifyEvent, aNotifyRegisterChanged, aNotifyRegisterUnchanged: TNotifyEvent);
+constructor TComponentValueChangedControlEntry.Create(const aNotifyRegisterChanged, aNotifyRegisterUnchanged: TNotifyEvent);
 begin
   inherited Create;
-  fControl := aControl;
-  fOriginalChangedNotifyEvent := aOriginalChangedNotifyEvent;
   fNotifyRegisterChanged := aNotifyRegisterChanged;
   fNotifyRegisterUnchanged := aNotifyRegisterUnchanged;
 end;
 
-procedure TComponentValueChangedControlEntry.NotifyValueChanged(const aValueChanged: Boolean);
+procedure TComponentValueChangedControlEntry.NotifyValueChanged(const aControl: TControl; const aValueChanged: Boolean);
 begin
-  if Assigned(fOriginalChangedNotifyEvent) then
-    fOriginalChangedNotifyEvent(fControl);
-
   if fValueChanged = aValueChanged then
     Exit;
 
   fValueChanged := aValueChanged;
   if fValueChanged then
-    fNotifyRegisterChanged(fControl)
+    fNotifyRegisterChanged(aControl)
   else
-    fNotifyRegisterUnchanged(fControl);
+    fNotifyRegisterUnchanged(aControl);
 end;
 
 procedure TComponentValueChangedControlEntry.StoreOldValue;
@@ -206,14 +210,16 @@ end;
 constructor TComponentValueChangedEditEntry.Create(const aControl: TEdit;
   const aNotifyRegisterChanged, aNotifyRegisterUnchanged: TNotifyEvent);
 begin
-  inherited Create(aControl, aControl.OnChange, aNotifyRegisterChanged, aNotifyRegisterUnchanged);
+  inherited Create(aNotifyRegisterChanged, aNotifyRegisterUnchanged);
   fControl := aControl;
+  fOriginalChangedEvent := aControl.OnChange;
   aControl.OnChange := OnChanged;
 end;
 
 procedure TComponentValueChangedEditEntry.OnChanged(Sender: TObject);
 begin
-  NotifyValueChanged(fOldValue <> fControl.Text);
+  CallNotifyEvent(fControl, fOriginalChangedEvent);
+  NotifyValueChanged(fControl, fOldValue <> fControl.Text);
 end;
 
 procedure TComponentValueChangedEditEntry.StoreOldValue;
@@ -227,20 +233,31 @@ end;
 constructor TComponentValueChangedComboboxEntry.Create(const aControl: TComboBox;
   const aNotifyRegisterChanged, aNotifyRegisterUnchanged: TNotifyEvent);
 begin
-  inherited Create(aControl, aControl.OnChange, aNotifyRegisterChanged, aNotifyRegisterUnchanged);
+  inherited Create(aNotifyRegisterChanged, aNotifyRegisterUnchanged);
   fControl := aControl;
+  fOriginalChangedEvent := aControl.OnChange;
   aControl.OnChange := OnChanged;
+  fOriginalSelectEvent := aControl.OnSelect;
+  aControl.OnSelect := OnSelect;
 end;
 
 procedure TComponentValueChangedComboboxEntry.OnChanged(Sender: TObject);
 begin
-  NotifyValueChanged(fOldValue <> fControl.ItemIndex);
+  CallNotifyEvent(fControl, fOriginalChangedEvent);
+  NotifyValueChanged(fControl, (fOldText <> fControl.Text) or (fOldItemIndex <> fControl.ItemIndex));
+end;
+
+procedure TComponentValueChangedComboboxEntry.OnSelect(Sender: TObject);
+begin
+  CallNotifyEvent(fControl, fOriginalSelectEvent);
+  NotifyValueChanged(fControl, (fOldText <> fControl.Text) or (fOldItemIndex <> fControl.ItemIndex));
 end;
 
 procedure TComponentValueChangedComboboxEntry.StoreOldValue;
 begin
   inherited;
-  fOldValue := fControl.ItemIndex;
+  fOldItemIndex := fControl.ItemIndex;
+  fOldText := fControl.Text;
 end;
 
 { TComponentValueChangedCheckboxEntry }
@@ -248,14 +265,16 @@ end;
 constructor TComponentValueChangedCheckboxEntry.Create(const aControl: TCheckbox;
   const aNotifyRegisterChanged, aNotifyRegisterUnchanged: TNotifyEvent);
 begin
-  inherited Create(aControl, aControl.OnClick, aNotifyRegisterChanged, aNotifyRegisterUnchanged);
+  inherited Create(aNotifyRegisterChanged, aNotifyRegisterUnchanged);
   fControl := aControl;
+  fOriginalClickEvent := aControl.OnClick;
   aControl.OnClick := OnChanged;
 end;
 
 procedure TComponentValueChangedCheckboxEntry.OnChanged(Sender: TObject);
 begin
-  NotifyValueChanged(fOldValue <> fControl.Checked);
+  CallNotifyEvent(fControl, fOriginalClickEvent);
+  NotifyValueChanged(fControl, fOldValue <> fControl.Checked);
 end;
 
 procedure TComponentValueChangedCheckboxEntry.StoreOldValue;
@@ -269,14 +288,16 @@ end;
 constructor TComponentValueChangedDateTimePickerEntry.Create(const aControl: TDateTimePicker;
   const aNotifyRegisterChanged, aNotifyRegisterUnchanged: TNotifyEvent);
 begin
-  inherited Create(aControl, aControl.OnClick, aNotifyRegisterChanged, aNotifyRegisterUnchanged);
+  inherited Create(aNotifyRegisterChanged, aNotifyRegisterUnchanged);
   fControl := aControl;
+  fOriginalChangedEvent := aControl.OnChange;
   aControl.OnChange := OnChanged;
 end;
 
 procedure TComponentValueChangedDateTimePickerEntry.OnChanged(Sender: TObject);
 begin
-  NotifyValueChanged(fOldValue <> fControl.DateTime);
+  CallNotifyEvent(fControl, fOriginalChangedEvent);
+  NotifyValueChanged(fControl, fOldValue <> fControl.DateTime);
 end;
 
 procedure TComponentValueChangedDateTimePickerEntry.StoreOldValue;

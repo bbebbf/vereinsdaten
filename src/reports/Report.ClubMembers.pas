@@ -41,7 +41,7 @@ type
     fQuery: ISqlPreparedQuery;
   public
     { Public-Deklarationen }
-    constructor Create(const aConnection: ISqlConnection);
+    constructor Create(const aConnection: ISqlConnection); reintroduce;
     procedure Preview;
   end;
 
