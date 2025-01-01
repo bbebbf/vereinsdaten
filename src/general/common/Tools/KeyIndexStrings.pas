@@ -5,28 +5,61 @@ interface
 uses System.Classes, LazyLoader, KeyIndexMapper;
 
 type
-  TKeyIndexStringsMapperRecord = record
-    Strings: TStrings;
-    Mapper: TKeyIndexMapper<UInt32>;
+  TKeyIndexStringsData = class
+  strict private
+    fStrings: TStrings;
+    fMapper: TKeyIndexMapper<UInt32>;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    procedure BeginUpdate;
+    procedure EndUpdate;
+    procedure AddString(const aValue: string);
+    procedure AddMappedString(const aStringId: UInt32; const aStringValue: string);
+    property Mapper: TKeyIndexMapper<UInt32> read fMapper;
+    property Strings: TStrings read fStrings;
   end;
 
-  TKeyIndexStrings = class(TLazyLoader<TKeyIndexStringsMapperRecord>)
-  strict private
-  strict protected
-    procedure InvalidateData(var aData: TKeyIndexStringsMapperRecord); override;
-  end;
+  TKeyIndexStrings = class(TLazyObjectLoader<TKeyIndexStringsData>);
 
 implementation
 
 uses System.SysUtils;
 
-{ TKeyIndexStrings }
+{ TKeyIndexStringsData }
 
-procedure TKeyIndexStrings.InvalidateData(var aData: TKeyIndexStringsMapperRecord);
+constructor TKeyIndexStringsData.Create;
 begin
+  inherited Create;
+  fMapper := TKeyIndexMapper<UInt32>.Create(0);
+  fStrings := TStringList.Create;
+end;
+
+destructor TKeyIndexStringsData.Destroy;
+begin
+  fStrings.Free;
+  fMapper.Free;
   inherited;
-  FreeAndNil(aData.Strings);
-  FreeAndNil(aData.Mapper);
+end;
+
+procedure TKeyIndexStringsData.AddString(const aValue: string);
+begin
+  fStrings.Add(aValue);
+end;
+
+procedure TKeyIndexStringsData.AddMappedString(const aStringId: UInt32; const aStringValue: string);
+begin
+  fMapper.Add(aStringId, fStrings.Add(aStringValue));
+end;
+
+procedure TKeyIndexStringsData.BeginUpdate;
+begin
+  fStrings.BeginUpdate;
+end;
+
+procedure TKeyIndexStringsData.EndUpdate;
+begin
+  fStrings.EndUpdate;
 end;
 
 end.

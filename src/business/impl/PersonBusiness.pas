@@ -84,14 +84,13 @@ begin
   fProgressIndicator := aProgressIndicator;
   fUI := aUI;
   fAddressMapper := TKeyIndexStrings.Create(
-      function(var aData: TKeyIndexStringsMapperRecord): Boolean
+      function(var aData: TKeyIndexStringsData): Boolean
       begin
         Result := True;
-        aData.Mapper := TKeyIndexMapper<UInt32>.Create(0);
-        aData.Strings := TStringList.Create;
+        aData := TKeyIndexStringsData.Create;
         try
-          aData.Strings.BeginUpdate;
-          aData.Strings.Add('<Adresse auswählen>');
+          aData.BeginUpdate;
+          aData.AddString('<Adresse auswählen>');
           var lSelectList: ISelectList<TDtoAddress>;
           var lSqlResult: ISqlResult := nil;
           if not Supports(fAddressConfig, ISelectList<TDtoAddress>, lSelectList) then
@@ -101,10 +100,10 @@ begin
           begin
             var lRecord := default(TDtoAddress);
             fAddressConfig.GetRecordFromSqlResult(lSqlResult, lRecord);
-            aData.Mapper.Add(lRecord.Id, aData.Strings.Add(lRecord.ToString));
+            aData.AddMappedString(lRecord.Id, lRecord.ToString);
           end;
         finally
-          aData.Strings.EndUpdate;
+          aData.EndUpdate;
         end;
       end
   );

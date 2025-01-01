@@ -93,44 +93,42 @@ begin
   fUnitListConfig := TCrudConfigUnit.Create;
   fRoleListConfig := TCrudConfigRole.Create;
   fUnitMapper := TKeyIndexStrings.Create(
-      function(var aData: TKeyIndexStringsMapperRecord): Boolean
+      function(var aData: TKeyIndexStringsData): Boolean
       begin
         Result := True;
-        aData.Mapper := TKeyIndexMapper<UInt32>.Create(0);
-        aData.Strings := TStringList.Create;
+        aData := TKeyIndexStringsData.Create;
         try
-          aData.Strings.BeginUpdate;
-          aData.Strings.Add('<Einheit auswählen>');
+          aData.BeginUpdate;
+          aData.AddString('<Einheit auswählen>');
           var lSqlResult := fConnection.GetSelectResult(fUnitListConfig.GetSelectListSQL);
           while lSqlResult.Next do
           begin
             var lRecord := default(TDtoUnit);
             fUnitListConfig.GetRecordFromSqlResult(lSqlResult, lRecord);
-            aData.Mapper.Add(lRecord.Id, aData.Strings.Add(lRecord.ToString));
+            aData.AddMappedString(lRecord.Id, lRecord.ToString);
           end;
         finally
-          aData.Strings.EndUpdate;
+          aData.EndUpdate;
         end;
       end
     );
   fRoleMapper := TKeyIndexStrings.Create(
-      function(var aData: TKeyIndexStringsMapperRecord): Boolean
+      function(var aData: TKeyIndexStringsData): Boolean
       begin
         Result := True;
-        aData.Mapper := TKeyIndexMapper<UInt32>.Create(0);
-        aData.Strings := TStringList.Create;
+        aData := TKeyIndexStringsData.Create;
         try
-          aData.Strings.BeginUpdate;
-          aData.Strings.Add('<Rolle auswählen>');
+          aData.BeginUpdate;
+          aData.AddString('<Rolle auswählen>');
           var lSqlResult := fConnection.GetSelectResult(fRoleListConfig.GetSelectListSQL);
           while lSqlResult.Next do
           begin
             var lRecord := default(TDtoRole);
             fRoleListConfig.GetRecordFromSqlResult(lSqlResult, lRecord);
-            aData.Mapper.Add(lRecord.Id, aData.Strings.Add(lRecord.ToString));
+            aData.AddMappedString(lRecord.Id, lRecord.ToString);
           end;
         finally
-          aData.Strings.EndUpdate;
+          aData.EndUpdate;
         end;
       end
     );
