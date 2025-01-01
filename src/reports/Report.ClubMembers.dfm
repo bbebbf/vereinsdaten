@@ -12,8 +12,8 @@ object fmReportClubMembers: TfmReportClubMembers
   Font.Style = []
   TextHeight = 15
   object RLReport: TRLReport
-    Left = 32
-    Top = -16
+    Left = 0
+    Top = 0
     Width = 1403
     Height = 992
     Margins.LeftMargin = 5.000000000000000000
@@ -294,7 +294,7 @@ object fmReportClubMembers: TfmReportClubMembers
       object lbActiveInactive: TLabel
         Left = 55
         Top = 2
-        Width = 186
+        Width = 133
         Height = 18
         Caption = 'lcActiveInactiveCount'
       end

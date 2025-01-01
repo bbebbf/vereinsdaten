@@ -23,6 +23,10 @@ type
     Berichte1: TMenuItem;
     miReportClubMembers: TMenuItem;
     acReportClubMembers: TAction;
+    acReportUnitMembers: TAction;
+    EinheitenundPersonen1: TMenuItem;
+    acMasterdataTenant: TAction;
+    Vereinsdatenbearbeiten1: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormActivate(Sender: TObject);
@@ -30,6 +34,8 @@ type
     procedure acMasterdataRoleExecute(Sender: TObject);
     procedure acMasterdataAddressExecute(Sender: TObject);
     procedure acReportClubMembersExecute(Sender: TObject);
+    procedure acReportUnitMembersExecute(Sender: TObject);
+    procedure acMasterdataTenantExecute(Sender: TObject);
   strict private
     fActivated: Boolean;
     fConnection: ISqlConnection;
@@ -49,7 +55,7 @@ implementation
 uses System.UITypes, Vdm.Globals, ConfigReader, unUnit, CrudCommands, CrudBusiness, EntryCrudConfig,
   DtoUnit, DtoUnitAggregated, CrudConfigUnitAggregated, DtoRole, CrudConfigRoleEntry, unRole,
   DtoAddress, DtoAddressAggregated, unAddress, CrudConfigAddressAggregated, Vdm.Types,
-  Report.ClubMembers, TenantReader;
+  Report.ClubMembers, Report.UnitMembers, TenantReader, DtoTenant, CrudConfigTenantEntry, unTenant;
 
 {$R *.dfm}
 
@@ -87,6 +93,24 @@ begin
   end;
 end;
 
+procedure TfmMain.acMasterdataTenantExecute(Sender: TObject);
+begin
+  var lDialog := TfmTenant.Create(Self);
+  try
+    var lCrudConfig: IEntryCrudConfig<TDtoTenant, TDtoTenant, UInt8, TVoid> := TCrudConfigTenantEntry.Create(fConnection);
+    var lBusiness: ICrudCommands<UInt8, TVoid> := TCrudBusiness<TDtoTenant, TDtoTenant, UInt8, TVoid>.Create(lDialog, lCrudConfig);
+    lBusiness.Initialize;
+    lDialog.ShowModal;
+    if lBusiness.DataChanged then
+    begin
+      TTenantReader.Instance.Invalidate;
+      Caption := TVdmGlobals.GetVdmApplicationTitle + ': ' + TTenantReader.Instance.Tenant.Title;
+    end;
+  finally
+    lDialog.Free;
+  end;
+end;
+
 procedure TfmMain.acMasterdataUnitExecute(Sender: TObject);
 begin
   var lDialog := TfmUnit.Create(Self);
@@ -107,6 +131,16 @@ end;
 procedure TfmMain.acReportClubMembersExecute(Sender: TObject);
 begin
   var lReport := TfmReportClubMembers.Create(fConnection);
+  try
+    lReport.Preview;
+  finally
+    lReport.Free;
+  end;
+end;
+
+procedure TfmMain.acReportUnitMembersExecute(Sender: TObject);
+begin
+  var lReport := TfmReportUnitMembers.Create(fConnection);
   try
     lReport.Preview;
   finally

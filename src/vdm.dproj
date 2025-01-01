@@ -283,6 +283,18 @@ $(PostBuildEvent)]]></PostBuildEvent>
             <Form>fmReportClubMembers</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="general\common\Tools\TenantReader.pas"/>
+        <DCCReference Include="data\DtoTenant.pas"/>
+        <DCCReference Include="reports\Report.UnitMembers.pas">
+            <Form>fmReportUnitMembers</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="view\forms\unTenant.pas">
+            <Form>fmTenant</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="data\CrudConfigTenant.pas"/>
+        <DCCReference Include="data\CrudConfigTenantEntry.pas"/>
         <None Include="inc\CompilerDirectives.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>

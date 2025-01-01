@@ -52,9 +52,15 @@ object fmMain: TfmMain
       object Rollenbearbeiten1: TMenuItem
         Action = acMasterdataRole
       end
+      object Vereinsdatenbearbeiten1: TMenuItem
+        Action = acMasterdataTenant
+      end
     end
     object Berichte1: TMenuItem
       Caption = 'Berichte'
+      object EinheitenundPersonen1: TMenuItem
+        Action = acReportUnitMembers
+      end
       object miReportClubMembers: TMenuItem
         Action = acReportClubMembers
       end
@@ -78,6 +84,14 @@ object fmMain: TfmMain
     object acReportClubMembers: TAction
       Caption = 'Vereinsmitglieder'
       OnExecute = acReportClubMembersExecute
+    end
+    object acReportUnitMembers: TAction
+      Caption = 'Einheiten und Personen'
+      OnExecute = acReportUnitMembersExecute
+    end
+    object acMasterdataTenant: TAction
+      Caption = 'Vereinsdaten bearbeiten'
+      OnExecute = acMasterdataTenantExecute
     end
   end
 end

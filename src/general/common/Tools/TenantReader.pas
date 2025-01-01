@@ -24,6 +24,7 @@ type
     class property Connection: ISqlConnection read fConnection write fConnection;
     class property Instance: TTenantReader read GetInstance;
 
+    procedure Invalidate;
     property Found: Boolean read GetFound;
     property Tenant: TDtoTenant read GetTenant;
   end;
@@ -44,6 +45,11 @@ function TTenantReader.GetTenant: TDtoTenant;
 begin
   ReadTenant;
   Result := fTenant;
+end;
+
+procedure TTenantReader.Invalidate;
+begin
+  fFound := False;
 end;
 
 function TTenantReader.GetFound: Boolean;

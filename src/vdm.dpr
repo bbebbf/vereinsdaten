@@ -93,7 +93,11 @@ uses
   VersionInfoEntryConfig in 'general\intf\tools\VersionInfoEntryConfig.pas',
   Report.ClubMembers in 'reports\Report.ClubMembers.pas' {fmReportClubMembers},
   TenantReader in 'general\common\Tools\TenantReader.pas',
-  DtoTenant in 'data\DtoTenant.pas';
+  DtoTenant in 'data\DtoTenant.pas',
+  Report.UnitMembers in 'reports\Report.UnitMembers.pas' {fmReportUnitMembers},
+  unTenant in 'view\forms\unTenant.pas' {fmTenant},
+  CrudConfigTenant in 'data\CrudConfigTenant.pas',
+  CrudConfigTenantEntry in 'data\CrudConfigTenantEntry.pas';
 
 {$R *.res}
 
