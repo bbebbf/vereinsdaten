@@ -49,7 +49,6 @@ object fmPersonMemberOfsEditDlg: TfmPersonMemberOfsEditDlg
     Top = 40
     Width = 457
     Height = 23
-    Style = csDropDownList
     TabOrder = 0
   end
   object cbActive: TCheckBox
@@ -85,7 +84,6 @@ object fmPersonMemberOfsEditDlg: TfmPersonMemberOfsEditDlg
     Top = 104
     Width = 457
     Height = 23
-    Style = csDropDownList
     TabOrder = 1
   end
   object cbMembershipBeginKnown: TCheckBox

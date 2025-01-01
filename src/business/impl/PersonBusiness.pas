@@ -90,11 +90,10 @@ begin
         aData := TKeyIndexStringsData.Create;
         try
           aData.BeginUpdate;
-          aData.AddString('<Adresse auswählen>');
           var lSelectList: ISelectList<TDtoAddress>;
           var lSqlResult: ISqlResult := nil;
           if not Supports(fAddressConfig, ISelectList<TDtoAddress>, lSelectList) then
-            raise ENotImplemented.Create('fAddressConfig must implement ISelectList<TDtoPerson>.');
+            raise ENotImplemented.Create('fAddressConfig must implement ISelectList<TDtoAddress>.');
           lSqlResult :=  fConnection.GetSelectResult(lSelectList.GetSelectListSQL);
           while lSqlResult.Next do
           begin

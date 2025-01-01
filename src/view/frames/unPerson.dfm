@@ -267,7 +267,6 @@ object fraPerson: TfraPerson
           Top = 136
           Width = 440
           Height = 23
-          Style = csDropDownList
           TabOrder = 6
         end
         object cbCreateNewAddress: TCheckBox

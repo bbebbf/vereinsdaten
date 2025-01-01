@@ -36,7 +36,7 @@ type
 
 implementation
 
-uses MessageDialogs, Vdm.Globals;
+uses MessageDialogs, VclUITools;
 
 {$R *.dfm}
 
@@ -58,8 +58,8 @@ begin
   Result := False;
   cbUnit.Items.Assign(aMemberRecord.AvailableUnits.Data.Strings);
   cbRole.Items.Assign(aMemberRecord.AvailableRoles.Data.Strings);
-  cbUnit.ItemIndex := TVdmGlobals.MinusOneToZero(aMemberRecord.UnitIndex);
-  cbRole.ItemIndex := TVdmGlobals.MinusOneToZero(aMemberRecord.RoleIndex);
+  TVclUITools.SetComboboxItemIndex(cbUnit, aMemberRecord.UnitIndex);
+  TVclUITools.SetComboboxItemIndex(cbRole, aMemberRecord.RoleIndex);
   cbActive.Checked := aMemberRecord.Member.Active;
   fActiveSinceHandler.Datetime := aMemberRecord.Member.ActiveSince;
   fActiveUntilHandler.Datetime := aMemberRecord.Member.ActiveUntil;

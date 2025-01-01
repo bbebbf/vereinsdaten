@@ -473,7 +473,7 @@ begin
     PersonEntryToListItem(aRecord.Person, lvPersonListview.Selected);
   end;
   cbPersonActive.Checked := aRecord.Active;
-  cbPersonAddress.ItemIndex := TVdmGlobals.MinusOneToZero(aRecord.AddressIndex);
+  TVclUITools.SetComboboxItemIndex(cbPersonAddress, aRecord.AddressIndex);
   cbCreateNewAddress.Checked := False;
   edNewAddressStreet.Text := '';
   edNewAddressPostalcode.Text := '';

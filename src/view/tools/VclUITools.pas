@@ -8,6 +8,7 @@ type
   TVclUITools = class
   public
     class procedure VersionInfoToLabel(const aLabel: TLabel; const aVersionInfoEntry: TVersionInfoEntry);
+    class procedure SetComboboxItemIndex(const aCombobox: TComboBox; const aItemIndex: Integer);
   end;
 
 implementation
@@ -15,6 +16,13 @@ implementation
 uses System.UITypes;
 
 { TVclUITools }
+
+class procedure TVclUITools.SetComboboxItemIndex(const aCombobox: TComboBox; const aItemIndex: Integer);
+begin
+  aCombobox.ItemIndex := aItemIndex;
+  if (aCombobox.Style = TComboBoxStyle.csDropDown) and (aItemIndex = -1) then
+    aCombobox.Text := '';
+end;
 
 class procedure TVclUITools.VersionInfoToLabel(const aLabel: TLabel; const aVersionInfoEntry: TVersionInfoEntry);
 begin

@@ -99,7 +99,6 @@ begin
         aData := TKeyIndexStringsData.Create;
         try
           aData.BeginUpdate;
-          aData.AddString('<Einheit auswählen>');
           var lSqlResult := fConnection.GetSelectResult(fUnitListConfig.GetSelectListSQL);
           while lSqlResult.Next do
           begin
@@ -119,7 +118,6 @@ begin
         aData := TKeyIndexStringsData.Create;
         try
           aData.BeginUpdate;
-          aData.AddString('<Rolle auswählen>');
           var lSqlResult := fConnection.GetSelectResult(fRoleListConfig.GetSelectListSQL);
           while lSqlResult.Next do
           begin
