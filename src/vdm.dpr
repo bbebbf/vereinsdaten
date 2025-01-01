@@ -100,6 +100,7 @@ uses
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
+  Application.Title := TVdmGlobals.GetVdmApplicationTitle;
   Application.CreateForm(TfmMain, fmMain);
   var lConnectProgress := TfmProgressForm.Create(Application);
   try
