@@ -99,7 +99,7 @@ object fmReportClubMembers: TfmReportClubMembers
         DataSource = dsDataSource
         Text = ''
       end
-      object RLDBText7: TRLDBText
+      object rdInactive: TRLDBText
         Left = 710
         Top = 3
         Width = 50
@@ -109,6 +109,7 @@ object fmReportClubMembers: TfmReportClubMembers
         DataField = 'clmb_inactive'
         DataSource = dsDataSource
         Text = ''
+        AfterPrint = rdInactiveAfterPrint
       end
       object RLDBText8: TRLDBText
         Left = 870
@@ -193,7 +194,7 @@ object fmReportClubMembers: TfmReportClubMembers
         Caption = 'Austrittsgrund'
       end
     end
-    object bdReportHeder: TRLBand
+    object bdReportHeader: TRLBand
       Left = 24
       Top = 47
       Width = 1355
@@ -213,9 +214,9 @@ object fmReportClubMembers: TfmReportClubMembers
         ParentFont = False
       end
       object lbTenantTitle: TLabel
-        Left = 544
+        Left = 999
         Top = 0
-        Width = 533
+        Width = 78
         Height = 21
         Alignment = taRightJustify
         Caption = 'Vereinstitel'
@@ -227,11 +228,11 @@ object fmReportClubMembers: TfmReportClubMembers
         ParentFont = False
       end
     end
-    object RLBand1: TRLBand
+    object bdPageFooter: TRLBand
       Left = 24
-      Top = 140
+      Top = 164
       Width = 1355
-      Height = 29
+      Height = 27
       BandType = btFooter
       object lbSysDate: TRLSystemInfo
         Left = 0
@@ -277,9 +278,30 @@ object fmReportClubMembers: TfmReportClubMembers
         Text = '/ '
       end
     end
+    object bdSummary: TRLBand
+      Left = 24
+      Top = 140
+      Width = 1355
+      Height = 24
+      BandType = btSummary
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clBlack
+      Font.Height = -15
+      Font.Name = 'Calibri'
+      Font.Style = []
+      ParentFont = False
+      BeforePrint = bdSummaryBeforePrint
+      object lbActiveInactive: TLabel
+        Left = 55
+        Top = 2
+        Width = 186
+        Height = 18
+        Caption = 'lcActiveInactiveCount'
+      end
+    end
   end
   object dsDataSource: TDataSource
-    Left = 360
-    Top = 216
+    Left = 384
+    Top = 360
   end
 end

@@ -16,7 +16,7 @@ type
     RLDBText3: TRLDBText;
     RLDBText4: TRLDBText;
     bdColumnHeader: TRLBand;
-    bdReportHeder: TRLBand;
+    bdReportHeader: TRLBand;
     lbReportTitle: TLabel;
     Label2: TLabel;
     Label3: TLabel;
@@ -27,18 +27,24 @@ type
     Label8: TLabel;
     Label9: TLabel;
     RLDBText6: TRLDBText;
-    RLDBText7: TRLDBText;
+    rdInactive: TRLDBText;
     Label7: TLabel;
     RLDBText8: TRLDBText;
-    RLBand1: TRLBand;
+    bdPageFooter: TRLBand;
     lbSysDate: TRLSystemInfo;
     RLSystemInfo3: TRLSystemInfo;
     RLSystemInfo4: TRLSystemInfo;
     lbTenantTitle: TLabel;
+    bdSummary: TRLBand;
+    lbActiveInactive: TLabel;
     procedure RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
+    procedure rdInactiveAfterPrint(Sender: TObject);
+    procedure bdSummaryBeforePrint(Sender: TObject; var PrintIt: Boolean);
   private
     fConnection: ISqlConnection;
     fQuery: ISqlPreparedQuery;
+    fActiveCounter: Integer;
+    fInactiveCounter: Integer;
   public
     { Public-Deklarationen }
     constructor Create(const aConnection: ISqlConnection); reintroduce;
@@ -67,6 +73,9 @@ end;
 procedure TfmReportClubMembers.RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
 begin
   lbTenantTitle.Caption := TTenantReader.Instance.Tenant.Title;
+  fActiveCounter := 0;
+  fInactiveCounter := 0;
+
   fQuery := fConnection.CreatePreparedQuery(
     'SELECT cm.*, pn.person_name, p.person_birthday, sa.address_title' +
     ', IFNULL(DATE_FORMAT(cm.clmb_enddate, ''%d.%m.%Y''), cm.clmb_enddate_str) AS clmb_enddate_calculated' +
@@ -80,6 +89,19 @@ begin
   );
   fQuery.ConfigureDatasource(dsDataSource);
   fQuery.Open;
+end;
+
+procedure TfmReportClubMembers.bdSummaryBeforePrint(Sender: TObject; var PrintIt: Boolean);
+begin
+  lbActiveInactive.Caption := 'Aktive: ' + IntToStr(fActiveCounter) + ' / Inaktive: ' + IntToStr(fInactiveCounter);
+end;
+
+procedure TfmReportClubMembers.rdInactiveAfterPrint(Sender: TObject);
+begin
+  if Length(rdInactive.Field.AsString) = 0 then
+    Inc(fActiveCounter)
+  else
+    Inc(fInactiveCounter);
 end;
 
 end.
