@@ -137,7 +137,14 @@ begin
     fInsertVersioninfoCommand.ParamByName('LastupdatedUtc').Value := TTimeZone.Local.ToUniversalTime(lLastUpdated);
     fInsertVersioninfoCommand.ParamByName('EntityId').Value := Ord(fVersionInfoConfig.GetVersioningEntityId);
     fVersionInfoConfig.SetVersionInfoParameter(lRecordIdentity, fInsertVersioninfoCommand.ParamByName('DataId'));
-    if fInsertVersioninfoCommand.Execute(aTransactionInfo.Transaction) > 0 then
+
+    var lInsertSucessful := False;
+    try
+      lInsertSucessful := fInsertVersioninfoCommand.Execute(aTransactionInfo.Transaction) = 1;
+    except
+      lInsertSucessful := False;
+    end;
+    if lInsertSucessful then
     begin
       lUpdatedVersionInfo.Id := fConnection.GetLastInsertedIdentityScoped;
       lUpdatedVersionInfo.VersionNumber := lVersionNumberNew;
