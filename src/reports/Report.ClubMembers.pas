@@ -37,6 +37,7 @@ type
     lbTenantTitle: TLabel;
     bdSummary: TRLBand;
     lbActiveInactive: TLabel;
+    lbAppTitle: TLabel;
     procedure RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure rdInactiveAfterPrint(Sender: TObject);
     procedure bdSummaryBeforePrint(Sender: TObject; var PrintIt: Boolean);
@@ -53,7 +54,7 @@ type
 
 implementation
 
-uses TenantReader;
+uses TenantReader, Vdm.Globals;
 
 {$R *.dfm}
 
@@ -75,6 +76,7 @@ begin
   lbTenantTitle.Caption := TTenantReader.Instance.Tenant.Title;
   fActiveCounter := 0;
   fInactiveCounter := 0;
+  lbAppTitle.Caption := TVdmGlobals.GetVdmApplicationTitle;
 
   fQuery := fConnection.CreatePreparedQuery(
     'SELECT cm.*, pn.person_name, p.person_birthday, sa.address_title' +

@@ -159,6 +159,21 @@ object fmReportUnitMembers: TfmReportUnitMembers
       Width = 718
       Height = 27
       BandType = btFooter
+      object lbAppTitle: TLabel
+        Left = 234
+        Top = 10
+        Width = 250
+        Height = 14
+        Alignment = taCenter
+        AutoSize = False
+        Caption = 'lbAppTitle'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Height = -12
+        Font.Name = 'Calibri'
+        Font.Style = [fsItalic]
+        ParentFont = False
+      end
       object lbSysDate: TRLSystemInfo
         Left = 0
         Top = 6

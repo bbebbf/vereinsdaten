@@ -8,7 +8,7 @@ type
     MinorVersion: Word;
     EditionVersion: Word;
     CompilationVersion: Word;
-    function ToString: string;
+    function ToString(const aFull: Boolean = False): string;
   end;
 
   TFileTools = class
@@ -66,12 +66,13 @@ end;
 
 { TFileVersionRecord }
 
-function TFileVersionRecord.ToString: string;
+function TFileVersionRecord.ToString(const aFull: Boolean): string;
 begin
-  Result := IntToStr(MajorVersion) + '.' +
-    IntToStr(MinorVersion) + '.' +
-    IntToStr(EditionVersion) + '.' +
-    IntToStr(CompilationVersion);
+  Result := IntToStr(MajorVersion) + '.' + IntToStr(MinorVersion);
+  if aFull or (EditionVersion > 0) then
+    Result := Result + '.' + IntToStr(EditionVersion);
+  if aFull or (CompilationVersion > 0) then
+    Result := Result + '.' + IntToStr(CompilationVersion);
 end;
 
 end.

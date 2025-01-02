@@ -27,6 +27,7 @@ type
     lbSysDate: TRLSystemInfo;
     RLSystemInfo3: TRLSystemInfo;
     RLSystemInfo4: TRLSystemInfo;
+    lbAppTitle: TLabel;
     procedure RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure bdDetailAfterPrint(Sender: TObject);
     procedure rdUnitDividerBeforePrint(Sender: TObject; var PrintIt: Boolean);
@@ -44,7 +45,7 @@ type
 
 implementation
 
-uses TenantReader;
+uses TenantReader, Vdm.Globals;
 
 {$R *.dfm}
 
@@ -81,6 +82,7 @@ procedure TfmReportUnitMembers.RLReportBeforePrint(Sender: TObject; var PrintIt:
 begin
   lbTenantTitle.Caption := TTenantReader.Instance.Tenant.Title;
   fPreviousUnitId := 0;
+  lbAppTitle.Caption := TVdmGlobals.GetVdmApplicationTitle;
 
   fQuery := fConnection.CreatePreparedQuery(
     'SELECT u.unit_id, u.unit_name, pn.person_name, r.role_name' +
