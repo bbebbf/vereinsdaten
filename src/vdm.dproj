@@ -295,6 +295,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         </DCCReference>
         <DCCReference Include="data\CrudConfigTenant.pas"/>
         <DCCReference Include="data\CrudConfigTenantEntry.pas"/>
+        <DCCReference Include="view\tools\ExtendedListview.pas"/>
         <None Include="inc\CompilerDirectives.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
