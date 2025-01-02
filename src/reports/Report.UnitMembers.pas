@@ -28,11 +28,15 @@ type
     RLSystemInfo3: TRLSystemInfo;
     RLSystemInfo4: TRLSystemInfo;
     procedure RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
-    procedure bdDetailBeforePrint(Sender: TObject; var PrintIt: Boolean);
+    procedure bdDetailAfterPrint(Sender: TObject);
+    procedure rdUnitDividerBeforePrint(Sender: TObject; var PrintIt: Boolean);
+    procedure rdUnitnameBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
+    procedure RLReportPageStarting(Sender: TObject);
   private
     fConnection: ISqlConnection;
     fQuery: ISqlPreparedQuery;
     fPreviousUnitId: UInt32;
+    fNewPageStarted: Boolean;
   public
     constructor Create(const aConnection: ISqlConnection); reintroduce;
     procedure Preview;
@@ -52,16 +56,25 @@ begin
   fConnection := aConnection;
 end;
 
-procedure TfmReportUnitMembers.bdDetailBeforePrint(Sender: TObject; var PrintIt: Boolean);
+procedure TfmReportUnitMembers.bdDetailAfterPrint(Sender: TObject);
 begin
-  rdUnitDivider.Visible := rdUinitId.Field.AsLargeInt <> fPreviousUnitId;
-  rdUnitname.Visible := rdUnitDivider.Visible;
   fPreviousUnitId := rdUinitId.Field.AsLargeInt;
+  fNewPageStarted := False;
 end;
 
 procedure TfmReportUnitMembers.Preview;
 begin
   RLReport.Preview;
+end;
+
+procedure TfmReportUnitMembers.rdUnitDividerBeforePrint(Sender: TObject; var PrintIt: Boolean);
+begin
+  PrintIt := fNewPageStarted or (rdUinitId.Field.AsLargeInt <> fPreviousUnitId);
+end;
+
+procedure TfmReportUnitMembers.rdUnitnameBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
+begin
+  PrintIt := fNewPageStarted or (rdUinitId.Field.AsLargeInt <> fPreviousUnitId);
 end;
 
 procedure TfmReportUnitMembers.RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
@@ -83,6 +96,11 @@ begin
   );
   fQuery.ConfigureDatasource(dsDataSource);
   fQuery.Open;
+end;
+
+procedure TfmReportUnitMembers.RLReportPageStarting(Sender: TObject);
+begin
+  fNewPageStarted := True;
 end;
 
 end.

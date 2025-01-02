@@ -14,8 +14,8 @@ object fmReportUnitMembers: TfmReportUnitMembers
   object RLReport: TRLReport
     Left = -2
     Top = 0
-    Width = 992
-    Height = 1403
+    Width = 794
+    Height = 1123
     DataSource = dsDataSource
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
@@ -24,10 +24,11 @@ object fmReportUnitMembers: TfmReportUnitMembers
     Font.Style = []
     JobTitle = 'Einheiten und Personen'
     BeforePrint = RLReportBeforePrint
+    OnPageStarting = RLReportPageStarting
     object bdReportHeader: TRLBand
-      Left = 47
-      Top = 47
-      Width = 898
+      Left = 38
+      Top = 38
+      Width = 718
       Height = 35
       BandType = btHeader
       object lbReportTitle: TLabel
@@ -59,9 +60,9 @@ object fmReportUnitMembers: TfmReportUnitMembers
       end
     end
     object bdColumnHeader: TRLBand
-      Left = 47
-      Top = 82
-      Width = 898
+      Left = 38
+      Top = 73
+      Width = 718
       Height = 30
       BandType = btColumnHeader
       Font.Charset = DEFAULT_CHARSET
@@ -93,9 +94,9 @@ object fmReportUnitMembers: TfmReportUnitMembers
       end
     end
     object bdDetail: TRLBand
-      Left = 47
-      Top = 112
-      Width = 898
+      Left = 38
+      Top = 103
+      Width = 718
       Height = 23
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlack
@@ -103,7 +104,7 @@ object fmReportUnitMembers: TfmReportUnitMembers
       Font.Name = 'Calibri'
       Font.Style = []
       ParentFont = False
-      BeforePrint = bdDetailBeforePrint
+      AfterPrint = bdDetailAfterPrint
       object rdUnitname: TRLDBText
         Left = 0
         Top = 2
@@ -112,6 +113,7 @@ object fmReportUnitMembers: TfmReportUnitMembers
         DataField = 'unit_name'
         DataSource = dsDataSource
         Text = ''
+        BeforePrint = rdUnitnameBeforePrint
       end
       object RLDBText2: TRLDBText
         Left = 300
@@ -144,16 +146,17 @@ object fmReportUnitMembers: TfmReportUnitMembers
       object rdUnitDivider: TRLDraw
         Left = 0
         Top = 0
-        Width = 898
+        Width = 718
         Height = 2
         Align = faClientTop
         DrawKind = dkLine
+        BeforePrint = rdUnitDividerBeforePrint
       end
     end
     object bdPageFooter: TRLBand
-      Left = 47
-      Top = 135
-      Width = 898
+      Left = 38
+      Top = 126
+      Width = 718
       Height = 27
       BandType = btFooter
       object lbSysDate: TRLSystemInfo
