@@ -97,7 +97,8 @@ uses
   Report.UnitMembers in 'reports\Report.UnitMembers.pas' {fmReportUnitMembers},
   unTenant in 'view\forms\unTenant.pas' {fmTenant},
   CrudConfigTenant in 'data\CrudConfigTenant.pas',
-  CrudConfigTenantEntry in 'data\CrudConfigTenantEntry.pas';
+  CrudConfigTenantEntry in 'data\CrudConfigTenantEntry.pas',
+  Report.UnitRoles in 'reports\Report.UnitRoles.pas' {fmReportUnitRoles};
 
 {$R *.res}
 

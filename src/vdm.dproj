@@ -295,6 +295,10 @@ $(PostBuildEvent)]]></PostBuildEvent>
         </DCCReference>
         <DCCReference Include="data\CrudConfigTenant.pas"/>
         <DCCReference Include="data\CrudConfigTenantEntry.pas"/>
+        <DCCReference Include="reports\Report.UnitRoles.pas">
+            <Form>fmReportUnitRoles</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <None Include="inc\CompilerDirectives.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
