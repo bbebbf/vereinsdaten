@@ -98,6 +98,7 @@ uses
   unTenant in 'view\forms\unTenant.pas' {fmTenant},
   CrudConfigTenant in 'data\CrudConfigTenant.pas',
   CrudConfigTenantEntry in 'data\CrudConfigTenantEntry.pas',
+  Report.UnitRoles in 'reports\Report.UnitRoles.pas' {fmReportUnitRoles},
   ExtendedListview in 'view\tools\ExtendedListview.pas';
 
 {$R *.res}

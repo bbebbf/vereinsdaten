@@ -35,8 +35,6 @@ object fmMain: TfmMain
     Height = 19
     Panels = <>
     SimplePanel = True
-    ExplicitTop = 414
-    ExplicitWidth = 622
   end
   object MainMenu: TMainMenu
     Left = 40
@@ -60,6 +58,9 @@ object fmMain: TfmMain
       Caption = 'Berichte'
       object EinheitenundPersonen1: TMenuItem
         Action = acReportUnitMembers
+      end
+      object RollenundEinheiten1: TMenuItem
+        Action = acReportUnitRoles
       end
       object miReportClubMembers: TMenuItem
         Action = acReportClubMembers
@@ -92,6 +93,10 @@ object fmMain: TfmMain
     object acMasterdataTenant: TAction
       Caption = 'Vereinsdaten bearbeiten'
       OnExecute = acMasterdataTenantExecute
+    end
+    object acReportUnitRoles: TAction
+      Caption = 'Rollen und Einheiten'
+      OnExecute = acReportUnitRolesExecute
     end
   end
 end

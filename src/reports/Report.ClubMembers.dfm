@@ -14,8 +14,8 @@ object fmReportClubMembers: TfmReportClubMembers
   object RLReport: TRLReport
     Left = 0
     Top = 0
-    Width = 1403
-    Height = 992
+    Width = 1123
+    Height = 794
     Margins.LeftMargin = 5.000000000000000000
     Margins.RightMargin = 5.000000000000000000
     DataSource = dsDataSource
@@ -29,9 +29,9 @@ object fmReportClubMembers: TfmReportClubMembers
     Title = 'Vereinsmitglieder'
     BeforePrint = RLReportBeforePrint
     object bdDetail: TRLBand
-      Left = 24
-      Top = 112
-      Width = 1355
+      Left = 19
+      Top = 103
+      Width = 1085
       Height = 28
       GreenBarPrint = True
       Font.Charset = DEFAULT_CHARSET
@@ -122,9 +122,9 @@ object fmReportClubMembers: TfmReportClubMembers
       end
     end
     object bdColumnHeader: TRLBand
-      Left = 24
-      Top = 82
-      Width = 1355
+      Left = 19
+      Top = 73
+      Width = 1085
       Height = 30
       BandType = btColumnHeader
       Font.Charset = DEFAULT_CHARSET
@@ -195,9 +195,9 @@ object fmReportClubMembers: TfmReportClubMembers
       end
     end
     object bdReportHeader: TRLBand
-      Left = 24
-      Top = 47
-      Width = 1355
+      Left = 19
+      Top = 38
+      Width = 1085
       Height = 35
       BandType = btHeader
       object lbReportTitle: TLabel
@@ -229,11 +229,26 @@ object fmReportClubMembers: TfmReportClubMembers
       end
     end
     object bdPageFooter: TRLBand
-      Left = 24
-      Top = 164
-      Width = 1355
+      Left = 19
+      Top = 155
+      Width = 1085
       Height = 27
       BandType = btFooter
+      object lbAppTitle: TLabel
+        Left = 417
+        Top = 10
+        Width = 250
+        Height = 14
+        Alignment = taCenter
+        AutoSize = False
+        Caption = 'lbAppTitle'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Height = -12
+        Font.Name = 'Calibri'
+        Font.Style = [fsItalic]
+        ParentFont = False
+      end
       object lbSysDate: TRLSystemInfo
         Left = 0
         Top = 6
@@ -279,9 +294,9 @@ object fmReportClubMembers: TfmReportClubMembers
       end
     end
     object bdSummary: TRLBand
-      Left = 24
-      Top = 140
-      Width = 1355
+      Left = 19
+      Top = 131
+      Width = 1085
       Height = 24
       BandType = btSummary
       Font.Charset = DEFAULT_CHARSET

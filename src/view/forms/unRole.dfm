@@ -3,7 +3,7 @@ object fmRole: TfmRole
   Top = 0
   BorderIcons = [biSystemMenu]
   Caption = 'Rollen bearbeiten'
-  ClientHeight = 252
+  ClientHeight = 408
   ClientWidth = 850
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -20,7 +20,7 @@ object fmRole: TfmRole
     Left = 300
     Top = 0
     Width = 7
-    Height = 252
+    Height = 408
     Beveled = True
     ExplicitLeft = 185
     ExplicitHeight = 528
@@ -29,15 +29,14 @@ object fmRole: TfmRole
     Left = 0
     Top = 0
     Width = 300
-    Height = 252
+    Height = 408
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitLeft = 1
-    ExplicitTop = -8
+    ExplicitHeight = 252
     object lbListviewItemCount: TLabel
       Left = 0
-      Top = 202
+      Top = 358
       Width = 300
       Height = 25
       Align = alBottom
@@ -50,7 +49,7 @@ object fmRole: TfmRole
       Left = 0
       Top = 41
       Width = 300
-      Height = 161
+      Height = 317
       Align = alClient
       Columns = <
         item
@@ -62,7 +61,7 @@ object fmRole: TfmRole
       TabOrder = 1
       ViewStyle = vsReport
       OnSelectItem = lvListviewSelectItem
-      ExplicitHeight = 144
+      ExplicitHeight = 161
     end
     object pnFilter: TPanel
       Left = 0
@@ -75,26 +74,24 @@ object fmRole: TfmRole
     end
     object btStartNewRecord: TButton
       Left = 0
-      Top = 227
+      Top = 383
       Width = 300
       Height = 25
       Action = acStartNewEntry
       Align = alBottom
       TabOrder = 2
-      ExplicitLeft = 1
-      ExplicitTop = 210
+      ExplicitTop = 227
     end
   end
   object pnDetails: TPanel
     Left = 307
     Top = 0
     Width = 543
-    Height = 252
+    Height = 408
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
-    ExplicitWidth = 541
-    ExplicitHeight = 244
+    ExplicitHeight = 252
     object lbRoleName: TLabel
       Left = 23
       Top = 19
