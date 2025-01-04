@@ -44,7 +44,7 @@ uses MessageDialogs, VclUITools;
 
 procedure TfmPersonMemberOfsEditDlg.btSaveClick(Sender: TObject);
 begin
-  if cbUnit.ItemIndex < 1 then
+  if cbUnit.ItemIndex < 0 then
   begin
     TMessageDialogs.Ok('Bitte die Einheit auswählen.', TMsgDlgType.mtInformation);
     cbUnit.SetFocus;
