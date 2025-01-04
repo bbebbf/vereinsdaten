@@ -5,20 +5,12 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
-  System.Generics.Collections, CrudCommands, DtoUnit, DtoUnitAggregated, ListviewAttachedData, Vcl.Menus, Vcl.ExtCtrls,
+  System.Generics.Collections, CrudCommands, DtoUnit, DtoUnitAggregated, ExtendedListview, Vcl.Menus, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.WinXPickers, System.Actions, Vcl.ActnList,
   ComponentValueChangedObserver, CrudUI, DelayedExecute, CheckboxDatetimePickerHandler, Vdm.Types,
   Vdm.Versioning.Types, VersionInfoEntryUI;
 
 type
-  TUnitListItemData = record
-    UnitActive: Boolean;
-  end;
-
-  TMemberOfListItemData = record
-    MemberActive: Boolean;
-  end;
-
   TfmUnit = class(TForm, ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>, IVersionInfoEntryUI)
     pnListview: TPanel;
     Splitter1: TSplitter;
@@ -62,8 +54,8 @@ type
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
     fBusinessIntf: ICrudCommands<UInt32, TUnitFilter>;
-    fListviewAttachedData: TListviewAttachedData<UInt32, TUnitListItemData>;
-    fMemberOfListviewAttachedData: TListviewAttachedData<UInt32, TMemberOfListItemData>;
+    fExtendedListview: TExtendedListview<TDtoUnit>;
+    fExtendedListviewMemberOfs: TExtendedListview<TDtoUnitAggregatedPersonMemberOf>;
     fDelayedExecute: TDelayedExecute<TPair<Boolean, UInt32>>;
     fActiveSinceHandler: TCheckboxDatetimePickerHandler;
     fActiveUntilHandler: TCheckboxDatetimePickerHandler;
@@ -71,7 +63,6 @@ type
     procedure SetEditMode(const aEditMode: Boolean);
     procedure ControlValuesChanged(Sender: TObject);
     procedure ControlValuesUnchanged(Sender: TObject);
-    function EntryToListItem(const aEntry: TDtoUnit; const aItem: TListItem): TListItem;
 
     procedure SetCrudCommands(const aCommands: ICrudCommands<UInt32, TUnitFilter>);
     procedure ListEnumBegin;
@@ -187,8 +178,22 @@ begin
   fComponentValueChangedObserver.RegisterCheckbox(cbUnitActiveUntilKnown);
   fComponentValueChangedObserver.RegisterDateTimePicker(dtUnitActiveUntil);
 
-  fListviewAttachedData := TListviewAttachedData<UInt32, TUnitListItemData>.Create(lvListview);
-  fMemberOfListviewAttachedData := TListviewAttachedData<UInt32, TMemberOfListItemData>.Create(lvMemberOf);
+  fExtendedListview := TExtendedListview<TDtoUnit>.Create(lvListview,
+    procedure(const aData: TDtoUnit; const aListItem: TListItem)
+    begin
+      aListItem.Caption := aData.ToString;
+    end
+  );
+  fExtendedListviewMemberOfs := TExtendedListview<TDtoUnitAggregatedPersonMemberOf>.Create(lvMemberOf,
+    procedure(const aData: TDtoUnitAggregatedPersonMemberOf; const aListItem: TListItem)
+    begin
+      aListItem.Caption := aData.PersonNameId.ToString;
+      aListItem.SubItems.Add(aData.RoleName);
+      aListItem.SubItems.Add(TVdmGlobals.GetDateAsString(aData.MemberActiveSince));
+      aListItem.SubItems.Add(TVdmGlobals.GetActiveStateAsString(aData.MemberActive));
+      aListItem.SubItems.Add(TVdmGlobals.GetDateAsString(aData.MemberActiveUntil));
+    end
+  );
 
   fDelayedExecute := TDelayedExecute<TPair<Boolean, UInt32>>.Create(
     procedure(const aData: TPair<Boolean, UInt32>)
@@ -211,8 +216,8 @@ begin
   fActiveSinceHandler.Free;
   fActiveUntilHandler.Free;
   fDelayedExecute.Free;
-  fMemberOfListviewAttachedData.Free;
-  fListviewAttachedData.Free;
+  fExtendedListviewMemberOfs.Free;
+  fExtendedListview.Free;
   fComponentValueChangedObserver.Free;
 end;
 
@@ -245,13 +250,13 @@ end;
 
 procedure TfmUnit.ListEnumBegin;
 begin
-  lvListview.Items.BeginUpdate;
-  fListviewAttachedData.Clear;
+  fExtendedListview.BeginUpdate;
+  fExtendedListview.Clear;
 end;
 
 procedure TfmUnit.ListEnumProcessItem(const aEntry: TDtoUnit);
 begin
-  EntryToListItem(aEntry, nil);
+  fExtendedListview.Add(aEntry);
 end;
 
 procedure TfmUnit.ListEnumEnd;
@@ -260,7 +265,7 @@ begin
   begin
     lvListview.Items[0].Selected := True;
   end;
-  lvListview.Items.EndUpdate;
+  fExtendedListview.EndUpdate;
   lbListviewItemCount.Caption := IntToStr(lvListview.Items.Count) + ' Datensätze';
   lvListview.SetFocus;
 end;
@@ -269,52 +274,36 @@ procedure TfmUnit.lvListviewCustomDrawItem(Sender: TCustomListView; Item: TListI
   var DefaultDraw: Boolean);
 begin
   DefaultDraw := true;
-  var lListItemData: TUnitListItemData;
-  if fListviewAttachedData.TryGetExtraData(Item, lListItemData) then
+  var lUnit: TDtoUnit;
+  if fExtendedListview.TryGetListItemData(Item, lUnit) then
   begin
-    if not lListItemData.UnitActive then
-      Sender.Canvas.Font.Color := clLtGray;
+    if not lUnit.Active then
+      Sender.Canvas.Font.Color := TVdmGlobals.GetInactiveColor;
   end;
 end;
 
 procedure TfmUnit.lvListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
 begin
   var lEntryFound := False;
-  var lEntryId: UInt32 := 0;
+  var lUnit: TDtoUnit;
   if Selected then
   begin
-    lEntryFound := fListviewAttachedData.TryGetKey(Item, lEntryId);
+    lEntryFound := fExtendedListview.TryGetListItemData(Item, lUnit);
   end;
 
-  fDelayedExecute.SetData(TPair<Boolean, UInt32>.Create(lEntryFound, lEntryId));
+  fDelayedExecute.SetData(TPair<Boolean, UInt32>.Create(lEntryFound, lUnit.Id));
 end;
 
 procedure TfmUnit.lvMemberOfCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
   var DefaultDraw: Boolean);
 begin
   DefaultDraw := true;
-  var lListItemData: TMemberOfListItemData;
-  if fMemberOfListviewAttachedData.TryGetExtraData(Item, lListItemData) then
+  var lMemberOf: TDtoUnitAggregatedPersonMemberOf;
+  if fExtendedListviewMemberOfs.TryGetListItemData(Item, lMemberOf) then
   begin
-    if not lListItemData.MemberActive then
-      Sender.Canvas.Font.Color := clLtGray;
+    if not lMemberOf.MemberActive then
+      Sender.Canvas.Font.Color := TVdmGlobals.GetInactiveColor;
   end;
-end;
-
-function TfmUnit.EntryToListItem(const aEntry: TDtoUnit; const aItem: TListItem): TListItem;
-begin
-  var lItemData := default(TUnitListItemData);
-  lItemData.UnitActive := aEntry.Active;
-  Result := aItem;
-  if Assigned(Result) then
-  begin
-    fListviewAttachedData.UpdateItem(aItem, aEntry.Id, lItemData);
-  end
-  else
-  begin
-    Result := fListviewAttachedData.AddItem(aEntry.Id, lItemData);
-  end;
-  Result.Caption := aEntry.ToString;
 end;
 
 procedure TfmUnit.SetEditMode(const aEditMode: Boolean);
@@ -335,33 +324,26 @@ begin
 
   if aAsNewEntry then
   begin
-    var lNewItem := EntryToListItem(aEntry.&Unit, nil);
+    var lNewItem := fExtendedListview.Add(aEntry.&Unit);
     lNewItem.Selected := True;
     lNewItem.MakeVisible(False);
   end
   else
   begin
-    EntryToListItem(aEntry.&Unit, lvListview.Selected);
+    fExtendedListview.UpdateListItemData(lvListview.Selected, aEntry.&Unit);
   end;
 
   fComponentValueChangedObserver.EndUpdate;
 
-  lvMemberOf.Items.BeginUpdate;
+  fExtendedListviewMemberOfs.BeginUpdate;
   try
-    fMemberOfListviewAttachedData.Clear;
+    fExtendedListviewMemberOfs.Clear;
     for var lMemberOfEntry in aEntry.MemberOfList do
     begin
-      var lMemberOfListItemData := default(TMemberOfListItemData);
-      lMemberOfListItemData.MemberActive := lMemberOfEntry.MemberActive;
-      var lItem := fMemberOfListviewAttachedData.AddItem(lMemberOfEntry.PersonNameId.Id, lMemberOfListItemData);
-      lItem.Caption := lMemberOfEntry.PersonNameId.ToString;
-      lItem.SubItems.Add(lMemberOfEntry.RoleName);
-      lItem.SubItems.Add(TVdmGlobals.GetDateAsString(lMemberOfEntry.MemberActiveSince));
-      lItem.SubItems.Add(TVdmGlobals.GetActiveStateAsString(lMemberOfEntry.MemberActive));
-      lItem.SubItems.Add(TVdmGlobals.GetDateAsString(lMemberOfEntry.MemberActiveUntil));
+      fExtendedListviewMemberOfs.Add(lMemberOfEntry);
     end;
   finally
-    lvMemberOf.Items.EndUpdate;
+    fExtendedListviewMemberOfs.EndUpdate;
   end;
 end;
 

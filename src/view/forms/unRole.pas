@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
-  System.Generics.Collections, CrudCommands, DtoRole, ListviewAttachedData, Vcl.Menus, Vcl.ExtCtrls,
+  System.Generics.Collections, CrudCommands, DtoRole, ExtendedListview, Vcl.Menus, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.WinXPickers, System.Actions, Vcl.ActnList,
   ComponentValueChangedObserver, CrudUI, DelayedExecute, Vdm.Types;
 
@@ -40,13 +40,12 @@ type
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
     fBusinessIntf: ICrudCommands<UInt32, TVoid>;
-    fListviewAttachedData: TListviewAttachedData<UInt32, TVoid>;
+    fExtendedListview: TExtendedListview<TDtoRole>;
     fDelayedExecute: TDelayedExecute<TPair<Boolean, UInt32>>;
 
     procedure SetEditMode(const aEditMode: Boolean);
     procedure ControlValuesChanged(Sender: TObject);
     procedure ControlValuesUnchanged(Sender: TObject);
-    function EntryToListItem(const aEntry: TDtoRole; const aItem: TListItem): TListItem;
 
     procedure SetCrudCommands(const aCommands: ICrudCommands<UInt32, TVoid>);
     procedure ListEnumBegin;
@@ -57,8 +56,6 @@ type
     procedure SetEntryToUI(const aEntry: TDtoRole; const aAsNewEntry: Boolean);
     function GetEntryFromUI(var aEntry: TDtoRole): Boolean;
     procedure LoadCurrentEntry(const aEntryId: UInt32);
-  public
-    { Public-Deklarationen }
   end;
 
 implementation
@@ -137,7 +134,12 @@ begin
   fComponentValueChangedObserver.RegisterEdit(edRoleName);
   fComponentValueChangedObserver.RegisterEdit(edRoleSorting);
 
-  fListviewAttachedData := TListviewAttachedData<UInt32, TVoid>.Create(lvListview);
+  fExtendedListview := TExtendedListview<TDtoRole>.Create(lvListview,
+    procedure(const aData: TDtoRole; const aListItem: TListItem)
+    begin
+      aListItem.Caption := aData.ToString;
+    end
+  );
   fDelayedExecute := TDelayedExecute<TPair<Boolean, UInt32>>.Create(
     procedure(const aData: TPair<Boolean, UInt32>)
     begin
@@ -157,7 +159,7 @@ end;
 procedure TfmRole.FormDestroy(Sender: TObject);
 begin
   fDelayedExecute.Free;
-  fListviewAttachedData.Free;
+  fExtendedListview.Free;
   fComponentValueChangedObserver.Free;
 end;
 
@@ -200,13 +202,13 @@ end;
 
 procedure TfmRole.ListEnumBegin;
 begin
-  lvListview.Items.BeginUpdate;
-  fListviewAttachedData.Clear;
+  fExtendedListview.BeginUpdate;
+  fExtendedListview.Clear;
 end;
 
 procedure TfmRole.ListEnumProcessItem(const aEntry: TDtoRole);
 begin
-  EntryToListItem(aEntry, nil);
+  fExtendedListview.Add(aEntry);
 end;
 
 procedure TfmRole.ListEnumEnd;
@@ -215,7 +217,7 @@ begin
   begin
     lvListview.Items[0].Selected := True;
   end;
-  lvListview.Items.EndUpdate;
+  fExtendedListview.EndUpdate;
   lbListviewItemCount.Caption := IntToStr(lvListview.Items.Count) + ' Datensätze';
   lvListview.SetFocus;
 end;
@@ -223,27 +225,13 @@ end;
 procedure TfmRole.lvListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
 begin
   var lEntryFound := False;
-  var lEntryId: UInt32 := 0;
+  var lEntry := default(TDtoRole);
   if Selected then
   begin
-    lEntryFound := fListviewAttachedData.TryGetKey(Item, lEntryId);
+    lEntryFound := fExtendedListview.TryGetListItemData(Item, lEntry);
   end;
 
-  fDelayedExecute.SetData(TPair<Boolean, UInt32>.Create(lEntryFound, lEntryId));
-end;
-
-function TfmRole.EntryToListItem(const aEntry: TDtoRole; const aItem: TListItem): TListItem;
-begin
-  Result := aItem;
-  if Assigned(Result) then
-  begin
-    fListviewAttachedData.UpdateItem(aItem, aEntry.Id, default(TVoid));
-  end
-  else
-  begin
-    Result := fListviewAttachedData.AddItem(aEntry.Id, default(TVoid));
-  end;
-  Result.Caption := aEntry.ToString;
+  fDelayedExecute.SetData(TPair<Boolean, UInt32>.Create(lEntryFound, lEntry.Id));
 end;
 
 procedure TfmRole.SetEditMode(const aEditMode: Boolean);
@@ -262,13 +250,13 @@ begin
 
   if aAsNewEntry then
   begin
-    var lNewItem := EntryToListItem(aEntry, nil);
+    var lNewItem := fExtendedListview.Add(aEntry);
     lNewItem.Selected := True;
     lNewItem.MakeVisible(False);
   end
   else
   begin
-    EntryToListItem(aEntry, lvListview.Selected);
+    fExtendedListview.UpdateListItemData(lvListview.Selected, aEntry);
   end;
 
   fComponentValueChangedObserver.EndUpdate;

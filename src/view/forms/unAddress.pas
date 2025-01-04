@@ -5,18 +5,11 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
-  System.Generics.Collections, CrudCommands, DtoAddress, DtoAddressAggregated, ListviewAttachedData, Vcl.Menus, Vcl.ExtCtrls,
+  System.Generics.Collections, CrudCommands, DtoAddress, DtoAddressAggregated, ExtendedListview, Vcl.Menus, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.WinXPickers, System.Actions, Vcl.ActnList,
   ComponentValueChangedObserver, CrudUI, DelayedExecute, Vdm.Types, Vdm.Versioning.Types, VersionInfoEntryUI;
 
 type
-  TAddressListItemData = record
-  end;
-
-  TMemberOfListItemData = record
-    MemberActive: Boolean;
-  end;
-
   TfmAddress = class(TForm, ICrudUI<TDtoAddressAggregated, TDtoAddress, UInt32, TVoid>, IVersionInfoEntryUI)
     pnListview: TPanel;
     Splitter1: TSplitter;
@@ -41,27 +34,22 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormActivate(Sender: TObject);
-    procedure lvListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
-      var DefaultDraw: Boolean);
     procedure lvListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
     procedure acSaveCurrentEntryExecute(Sender: TObject);
     procedure acReloadCurrentEntryExecute(Sender: TObject);
     procedure acStartNewEntryExecute(Sender: TObject);
-    procedure lvMemberOfCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
-      var DefaultDraw: Boolean);
   strict private
     fActivated: Boolean;
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
     fBusinessIntf: ICrudCommands<UInt32, TVoid>;
-    fListviewAttachedData: TListviewAttachedData<UInt32, TAddressListItemData>;
-    fMemberOfListviewAttachedData: TListviewAttachedData<UInt32, TMemberOfListItemData>;
+    fExtendedListview: TExtendedListview<TDtoAddress>;
+    fExtendedListviewMemberOfs: TExtendedListview<TDtoAddressAggregatedPersonMemberOf>;
     fDelayedExecute: TDelayedExecute<TPair<Boolean, UInt32>>;
 
     procedure SetEditMode(const aEditMode: Boolean);
     procedure ControlValuesChanged(Sender: TObject);
     procedure ControlValuesUnchanged(Sender: TObject);
-    function EntryToListItem(const aEntry: TDtoAddress; const aItem: TListItem): TListItem;
 
     procedure SetCrudCommands(const aCommands: ICrudCommands<UInt32, TVoid>);
     procedure ListEnumBegin;
@@ -163,8 +151,25 @@ begin
   fComponentValueChangedObserver.RegisterEdit(edAddressPostalcode);
   fComponentValueChangedObserver.RegisterEdit(edAddressCity);
 
-  fListviewAttachedData := TListviewAttachedData<UInt32, TAddressListItemData>.Create(lvListview);
-  fMemberOfListviewAttachedData := TListviewAttachedData<UInt32, TMemberOfListItemData>.Create(lvMemberOf);
+  fExtendedListview := TExtendedListview<TDtoAddress>.Create(lvListview,
+    procedure(const aData: TDtoAddress; const aListItem: TListItem)
+    begin
+      {$ifdef INTERNAL_DB_ID_VISIBLE}
+        aListItem.Caption := aData.City + ' (' + IntToStr(aData.Id) + ')';
+      {$else}
+        aListItem.Caption := aData.City;
+      {$endif}
+      aListItem.SubItems.Clear;
+      aListItem.SubItems.Add(aData.Street);
+      aListItem.SubItems.Add(aData.Postalcode);
+    end
+  );
+  fExtendedListviewMemberOfs := TExtendedListview<TDtoAddressAggregatedPersonMemberOf>.Create(lvMemberOf,
+    procedure(const aData: TDtoAddressAggregatedPersonMemberOf; const aListItem: TListItem)
+    begin
+      aListItem.Caption := aData.PersonNameId.ToString;
+    end
+  );
 
   fDelayedExecute := TDelayedExecute<TPair<Boolean, UInt32>>.Create(
     procedure(const aData: TPair<Boolean, UInt32>)
@@ -185,8 +190,8 @@ end;
 procedure TfmAddress.FormDestroy(Sender: TObject);
 begin
   fDelayedExecute.Free;
-  fMemberOfListviewAttachedData.Free;
-  fListviewAttachedData.Free;
+  fExtendedListviewMemberOfs.Free;
+  fExtendedListview.Free;
   fComponentValueChangedObserver.Free;
 end;
 
@@ -218,78 +223,36 @@ end;
 
 procedure TfmAddress.ListEnumBegin;
 begin
-  lvListview.Items.BeginUpdate;
-  fListviewAttachedData.Clear;
+  fExtendedListview.BeginUpdate;
+  fExtendedListview.Clear;
 end;
 
 procedure TfmAddress.ListEnumProcessItem(const aEntry: TDtoAddress);
 begin
-  EntryToListItem(aEntry, nil);
+  fExtendedListview.Add(aEntry);
 end;
 
 procedure TfmAddress.ListEnumEnd;
 begin
-  lvListview.Items.EndUpdate;
   if lvListview.Items.Count > 0 then
   begin
     lvListview.Items[0].Selected := True;
   end;
-  lvListview.Items.EndUpdate;
+  fExtendedListview.EndUpdate;
   lbListviewItemCount.Caption := IntToStr(lvListview.Items.Count) + ' Datensätze';
   lvListview.SetFocus;
-end;
-
-procedure TfmAddress.lvListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
-  var DefaultDraw: Boolean);
-begin
-  DefaultDraw := true;
-  var lListItemData: TAddressListItemData;
-  if fListviewAttachedData.TryGetExtraData(Item, lListItemData) then
-  begin
-  end;
 end;
 
 procedure TfmAddress.lvListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
 begin
   var lEntryFound := False;
-  var lEntryId: UInt32 := 0;
+  var lEntry: TDtoAddress;
   if Selected then
   begin
-    lEntryFound := fListviewAttachedData.TryGetKey(Item, lEntryId);
+    lEntryFound := fExtendedListview.TryGetListItemData(Item, lEntry);
   end;
 
-  fDelayedExecute.SetData(TPair<Boolean, UInt32>.Create(lEntryFound, lEntryId));
-end;
-
-procedure TfmAddress.lvMemberOfCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
-  var DefaultDraw: Boolean);
-begin
-  DefaultDraw := true;
-  var lListItemData: TMemberOfListItemData;
-  if fMemberOfListviewAttachedData.TryGetExtraData(Item, lListItemData) then
-  begin
-    if not lListItemData.MemberActive then
-      Sender.Canvas.Font.Color := clLtGray;
-  end;
-end;
-
-function TfmAddress.EntryToListItem(const aEntry: TDtoAddress; const aItem: TListItem): TListItem;
-begin
-  var lItemData := default(TAddressListItemData);
-  Result := aItem;
-  if Assigned(Result) then
-  begin
-    fListviewAttachedData.UpdateItem(aItem, aEntry.Id, lItemData);
-  end
-  else
-  begin
-    Result := fListviewAttachedData.AddItem(aEntry.Id, lItemData);
-    Result.SubItems.Add('');
-    Result.SubItems.Add('');
-  end;
-  Result.Caption := aEntry.City;
-  Result.SubItems[0] := aEntry.Street;
-  Result.SubItems[1] := aEntry.Postalcode;
+  fDelayedExecute.SetData(TPair<Boolean, UInt32>.Create(lEntryFound, lEntry.Id));
 end;
 
 procedure TfmAddress.SetEditMode(const aEditMode: Boolean);
@@ -310,29 +273,26 @@ begin
 
   if aAsNewEntry then
   begin
-    var lNewItem := EntryToListItem(aEntry.Address, nil);
+    var lNewItem := fExtendedListview.Add(aEntry.Address);
     lNewItem.Selected := True;
     lNewItem.MakeVisible(False);
   end
   else
   begin
-    EntryToListItem(aEntry.Address, lvListview.Selected);
+    fExtendedListview.UpdateListItemData(lvListview.Selected, aEntry.Address);
   end;
 
   fComponentValueChangedObserver.EndUpdate;
 
-  lvMemberOf.Items.BeginUpdate;
+  fExtendedListviewMemberOfs.BeginUpdate;
   try
-    fMemberOfListviewAttachedData.Clear;
+    fExtendedListviewMemberOfs.Clear;
     for var lMemberOfEntry in aEntry.MemberOfList do
     begin
-      var lMemberOfListItemData := default(TMemberOfListItemData);
-      lMemberOfListItemData.MemberActive := lMemberOfEntry.PersonActive;
-      var lItem := fMemberOfListviewAttachedData.AddItem(lMemberOfEntry.PersonNameId.Id, lMemberOfListItemData);
-      lItem.Caption := lMemberOfEntry.PersonNameId.ToString;
+      fExtendedListviewMemberOfs.Add(lMemberOfEntry);
     end;
   finally
-    lvMemberOf.Items.EndUpdate;
+    fExtendedListviewMemberOfs.EndUpdate;
   end;
 end;
 

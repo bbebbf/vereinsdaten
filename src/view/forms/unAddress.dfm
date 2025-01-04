@@ -69,7 +69,6 @@ object fmAddress: TfmAddress
       RowSelect = True
       TabOrder = 1
       ViewStyle = vsReport
-      OnCustomDrawItem = lvListviewCustomDrawItem
       OnSelectItem = lvListviewSelectItem
     end
     object pnFilter: TPanel
@@ -156,7 +155,6 @@ object fmAddress: TfmAddress
       ShowColumnHeaders = False
       TabOrder = 5
       ViewStyle = vsReport
-      OnCustomDrawItem = lvMemberOfCustomDrawItem
     end
     object edAddressStreet: TEdit
       Left = 23

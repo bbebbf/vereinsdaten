@@ -7,7 +7,6 @@ uses System.Generics.Collections, DtoPersonNameId, DtoAddress, Vdm.Versioning.Ty
 type
   TDtoAddressAggregatedPersonMemberOf = record
     PersonNameId: TDtoPersonNameId;
-    PersonActive: Boolean;
   end;
 
   TDtoAddressAggregated = class

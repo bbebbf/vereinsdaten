@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.ExtCtrls, Vcl.StdCtrls,
-  ListviewAttachedData, DtoMember, DtoMemberAggregated, PersonMemberOfUI, MemberOfBusinessIntf,
+  ExtendedListview, DtoMember, DtoMemberAggregated, PersonMemberOfUI, MemberOfBusinessIntf,
   unPersonMemberOfsEditDlg, System.Actions, Vcl.ActnList, ListCrudCommands, Vcl.Menus,
   Vdm.Versioning.Types, VersionInfoEntryUI;
 
@@ -44,7 +44,7 @@ type
     procedure acSaveMemberOfsExecute(Sender: TObject);
   private
     fBusinessIntf: IMemberOfBusinessIntf;
-    fMemberOfListviewAttachedData: TListviewAttachedData<UInt32, TListEntry<TDtoMemberAggregated>>;
+    fExtentedListviewMemberOfs: TExtendedListviewUniqueData<TListEntry<TDtoMemberAggregated>>;
     fDialog: TfmPersonMemberOfsEditDlg;
     procedure SetCommands(const aCommands: IMemberOfBusinessIntf);
     procedure ListEnumBegin;
@@ -54,7 +54,6 @@ type
     procedure SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry; const aVersionInfoEntryIndex: UInt16);
     procedure ClearVersionInfoEntryFromUI(const aVersionInfoEntryIndex: UInt16);
 
-    procedure MemberEntryToListItem(const aEntry: TListEntry<TDtoMemberAggregated>; const aListItem: TListItem);
     function GetStringByIndex(const aStrings: TStrings; const aIndex: Integer): string;
     procedure UpdateEditItemActions(const aEnabled: Boolean);
     procedure UpdateListActions(const aEnabled: Boolean);
@@ -67,7 +66,7 @@ implementation
 
 {$R *.dfm}
 
-uses Vdm.Globals, ListCrudCommands.Types, VclUITools;
+uses System.Generics.Defaults, Vdm.Globals, ListCrudCommands.Types, VclUITools;
 
 { TfraPersonMemberOf }
 
@@ -77,11 +76,11 @@ begin
   if not Assigned(lSelectedItem) then
     Exit;
   var lEntry: TListEntry<TDtoMemberAggregated>;
-  if not fMemberOfListviewAttachedData.TryGetExtraData(lSelectedItem, lEntry) then
+  if not fExtentedListviewMemberOfs.TryGetListItemData(lSelectedItem, lEntry) then
     Exit;
 
   lEntry.ToggleToBeDeleted;
-  MemberEntryToListItem(lEntry, lSelectedItem);
+  fExtentedListviewMemberOfs.UpdateListItemData(lSelectedItem, lEntry);
   UpdateListActions(True);
 end;
 
@@ -91,8 +90,9 @@ begin
   if not Assigned(lSelectedItem) then
     Exit;
   var lEntry: TListEntry<TDtoMemberAggregated>;
-  if not fMemberOfListviewAttachedData.TryGetExtraData(lSelectedItem, lEntry) then
+  if not fExtentedListviewMemberOfs.TryGetListItemData(lSelectedItem, lEntry) then
     Exit;
+
   if fDialog.Execute(lEntry.Data, False) then
   begin
     if lEntry.State in [TListEntryCrudState.New, TListEntryCrudState.ToBeDeleted] then
@@ -100,7 +100,7 @@ begin
       lEntry.ToggleToBeDeleted;
     end;
     lEntry.Updated;
-    MemberEntryToListItem(lEntry, lSelectedItem);
+    fExtentedListviewMemberOfs.UpdateListItemData(lSelectedItem, lEntry);
     UpdateListActions(True);
   end;
 end;
@@ -114,7 +114,7 @@ begin
     begin
       lNewEntry.Updated;
       lNewEntryCanceled := False;
-      MemberEntryToListItem(lNewEntry, nil);
+      fExtentedListviewMemberOfs.Add(lNewEntry);
       fBusinessIntf.AddNewEntry(lNewEntry);
       UpdateListActions(True);
   end;
@@ -136,7 +136,7 @@ begin
       procedure(const aEntry: TListEntry<TDtoMemberAggregated>)
       begin
         var lItem: TListItem;
-        if fMemberOfListviewAttachedData.TryGetItem(aEntry.Data.Id, lItem) then
+        if fExtentedListviewMemberOfs.TryGetListItem(aEntry, lItem) then
           lvMemberOf.Items.Delete(lItem.Index);
       end
     );
@@ -151,14 +151,34 @@ end;
 constructor TfraPersonMemberOf.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  fMemberOfListviewAttachedData := TListviewAttachedData<UInt32, TListEntry<TDtoMemberAggregated>>.Create(lvMemberOf);
+  fExtentedListviewMemberOfs := TExtendedListviewUniqueData<TListEntry<TDtoMemberAggregated>>.Create(lvMemberOf,
+    procedure(const aData: TListEntry<TDtoMemberAggregated>; const aListItem: TListItem)
+    begin
+      aListItem.Caption := GetStringByIndex(aData.Data.AvailableUnits.Data.Strings, aData.Data.UnitIndex);
+      aListItem.SubItems.Clear;
+      aListItem.SubItems.Add(GetStringByIndex(aData.Data.AvailableRoles.Data.Strings, aData.Data.RoleIndex));
+      aListItem.SubItems.Add(TVdmGlobals.GetDateAsString(aData.Data.Member.ActiveSince));
+      aListItem.SubItems.Add(TVdmGlobals.GetActiveStateAsString(aData.Data.Member.Active));
+      aListItem.SubItems.Add(TVdmGlobals.GetDateAsString(aData.Data.Member.ActiveUntil));
+    end,
+    TEqualityComparer<TListEntry<TDtoMemberAggregated>>.Construct(
+      function(const Left, Right: TListEntry<TDtoMemberAggregated>): Boolean
+      begin
+        Result := Left.Data.Id = Right.Data.Id;
+      end,
+      function(const Item: TListEntry<TDtoMemberAggregated>): Integer
+      begin
+        Result := Item.Data.Id;
+      end
+    )
+  );
   fDialog := TfmPersonMemberOfsEditDlg.Create(Self);
 end;
 
 destructor TfraPersonMemberOf.Destroy;
 begin
   fDialog.Free;
-  fMemberOfListviewAttachedData.Free;
+  fExtentedListviewMemberOfs.Free;
   inherited;
 end;
 
@@ -183,18 +203,18 @@ begin
   UpdateEditItemActions(False);
   UpdateListActions(False);
   lbMemberOfsVersionInfo.Caption := '';
-  lvMemberOf.Items.BeginUpdate;
-  fMemberOfListviewAttachedData.Clear;
+  fExtentedListviewMemberOfs.BeginUpdate;
+  fExtentedListviewMemberOfs.Clear;
 end;
 
 procedure TfraPersonMemberOf.ListEnumEnd;
 begin
-  lvMemberOf.Items.EndUpdate;
+  fExtentedListviewMemberOfs.EndUpdate;
 end;
 
 procedure TfraPersonMemberOf.ListEnumProcessItem(const aItem: TListEntry<TDtoMemberAggregated>);
 begin
-  MemberEntryToListItem(aItem, nil);
+  fExtentedListviewMemberOfs.Add(aItem);
 end;
 
 procedure TfraPersonMemberOf.lvMemberOfCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
@@ -202,7 +222,7 @@ procedure TfraPersonMemberOf.lvMemberOfCustomDrawItem(Sender: TCustomListView; I
 begin
   DefaultDraw := True;
   var lMemberOfListItemData: TListEntry<TDtoMemberAggregated> := nil;
-  if not fMemberOfListviewAttachedData.TryGetExtraData(Item, lMemberOfListItemData) then
+  if not fExtentedListviewMemberOfs.TryGetListItemData(Item, lMemberOfListItemData) then
     Exit;
 
   var lColor: TColor;
@@ -225,28 +245,6 @@ end;
 procedure TfraPersonMemberOf.lvMemberOfSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
 begin
   UpdateEditItemActions(Assigned(Item) and Selected);
-end;
-
-procedure TfraPersonMemberOf.MemberEntryToListItem(const aEntry: TListEntry<TDtoMemberAggregated>; const aListItem: TListItem);
-begin
-  var lListItem := aListItem;
-  if Assigned(lListItem) then
-  begin
-    fMemberOfListviewAttachedData.UpdateItem(lListItem, aEntry.Data.Id, aEntry);
-  end
-  else
-  begin
-    lListItem := fMemberOfListviewAttachedData.AddItem(aEntry.Data.Id, aEntry);
-    lListItem.SubItems.Add('');
-    lListItem.SubItems.Add('');
-    lListItem.SubItems.Add('');
-    lListItem.SubItems.Add('');
-  end;
-  lListItem.Caption := GetStringByIndex(aEntry.Data.AvailableUnits.Data.Strings, aEntry.Data.UnitIndex);
-  lListItem.SubItems[0] := GetStringByIndex(aEntry.Data.AvailableRoles.Data.Strings, aEntry.Data.RoleIndex);
-  lListItem.SubItems[1] := TVdmGlobals.GetDateAsString(aEntry.Data.Member.ActiveSince);
-  lListItem.SubItems[2] := TVdmGlobals.GetActiveStateAsString(aEntry.Data.Member.Active);
-  lListItem.SubItems[3] := TVdmGlobals.GetDateAsString(aEntry.Data.Member.ActiveUntil);
 end;
 
 procedure TfraPersonMemberOf.UpdateEditItemActions(const aEnabled: Boolean);

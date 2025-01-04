@@ -5,17 +5,13 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
-  System.Generics.Collections, CrudCommands, DtoPerson, ListviewAttachedData, Vcl.Menus, Vcl.ExtCtrls,
+  System.Generics.Collections, CrudCommands, DtoPerson, ExtendedListview, Vcl.Menus, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.WinXPickers, System.Actions, Vcl.ActnList,
   PersonBusinessIntf, PersonAggregatedUI, DtoPersonAggregated, ComponentValueChangedObserver,
   unPersonMemberOf, PersonMemberOfUI, DelayedExecute, CheckboxDatetimePickerHandler,
   Vdm.Types, Vdm.Versioning.Types, VersionInfoEntryUI;
 
 type
-  TPersonListItemData = record
-    PersonActive: Boolean;
-  end;
-
   TfraPerson = class(TFrame, IPersonAggregatedUI, IVersionInfoEntryUI)
     pnPersonListview: TPanel;
     Splitter1: TSplitter;
@@ -81,7 +77,7 @@ type
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
     fBusinessIntf: IPersonBusinessIntf;
-    fPersonListviewAttachedData: TListviewAttachedData<UInt32, TPersonListItemData>;
+    fExtendedListview: TExtendedListview<TDtoPerson>;
     fPersonMemberOf: TfraPersonMemberOf;
     fDelayedExecute: TDelayedExecute<TPair<Boolean, UInt32>>;
     fPersonBirthdayHandler: TCheckboxDatetimePickerHandler;
@@ -93,7 +89,6 @@ type
     procedure SetEditMode(const aEditMode: Boolean);
     procedure ControlValuesChanged(Sender: TObject);
     procedure ControlValuesUnchanged(Sender: TObject);
-    function PersonEntryToListItem(const aPerson: TDtoPerson; const aItem: TListItem): TListItem;
 
     procedure SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry; const aVersionInfoEntryIndex: UInt16);
     procedure ClearVersionInfoEntryFromUI(const aVersionInfoEntryIndex: UInt16);
@@ -154,7 +149,12 @@ begin
   fComponentValueChangedObserver.RegisterEdit(edMembershipEndText);
   fComponentValueChangedObserver.RegisterEdit(edMembershipEndReason);
 
-  fPersonListviewAttachedData := TListviewAttachedData<UInt32, TPersonListItemData>.Create(lvPersonListview);
+  fExtendedListview := TExtendedListview<TDtoPerson>.Create(lvPersonListview,
+    procedure(const aData: TDtoPerson; const aListItem: TListItem)
+    begin
+      aListItem.Caption := aData.ToString;
+    end
+  );
 
   fDelayedExecute := TDelayedExecute<TPair<Boolean, UInt32>>.Create(
     procedure(const aData: TPair<Boolean, UInt32>)
@@ -175,7 +175,7 @@ end;
 destructor TfraPerson.Destroy;
 begin
   fDelayedExecute.Free;
-  fPersonListviewAttachedData.Free;
+  fExtendedListview.Free;
   fComponentValueChangedObserver.Free;
   fActiveUntilHandler.Free;
   fActiveSinceHandler.Free;
@@ -365,13 +365,13 @@ end;
 
 procedure TfraPerson.ListEnumBegin;
 begin
-  lvPersonListview.Items.BeginUpdate;
-  fPersonListviewAttachedData.Clear;
+  fExtendedListview.BeginUpdate;
+  fExtendedListview.Clear;
 end;
 
 procedure TfraPerson.ListEnumProcessItem(const aRecord: TDtoPerson);
 begin
-  PersonEntryToListItem(aRecord, nil);
+  fExtendedListview.Add(aRecord);
 end;
 
 procedure TfraPerson.ListEnumEnd;
@@ -380,7 +380,7 @@ begin
   begin
     lvPersonListview.Items[0].Selected := True;
   end;
-  lvPersonListview.Items.EndUpdate;
+  fExtendedListview.EndUpdate;
   lbListviewItemCount.Caption := IntToStr(lvPersonListview.Items.Count) + ' Datensätze';
   lvPersonListview.SetFocus;
 end;
@@ -389,10 +389,10 @@ procedure TfraPerson.lvPersonListviewCustomDrawItem(Sender: TCustomListView; Ite
   var DefaultDraw: Boolean);
 begin
   DefaultDraw := true;
-  var lPersonListItemData: TPersonListItemData;
-  if fPersonListviewAttachedData.TryGetExtraData(Item, lPersonListItemData) then
+  var lPerson: TDtoPerson;
+  if fExtendedListview.TryGetListItemData(Item, lPerson) then
   begin
-    if not lPersonListItemData.PersonActive then
+    if not lPerson.Aktiv then
       Sender.Canvas.Font.Color := TVdmGlobals.GetInactiveColor;
   end;
 end;
@@ -400,13 +400,13 @@ end;
 procedure TfraPerson.lvPersonListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
 begin
   var lPersonFound := False;
-  var lPersonId: UInt32 := 0;
+  var lPerson: TDtoPerson;
   if Selected then
   begin
-    lPersonFound := fPersonListviewAttachedData.TryGetKey(Item, lPersonId);
+    lPersonFound := fExtendedListview.TryGetListItemData(Item, lPerson);
   end;
 
-  fDelayedExecute.SetData(TPair<Boolean, UInt32>.Create(lPersonFound, lPersonId));
+  fDelayedExecute.SetData(TPair<Boolean, UInt32>.Create(lPersonFound, lPerson.NameId.Id));
 end;
 
 procedure TfraPerson.pcPersonDetailsChange(Sender: TObject);
@@ -429,22 +429,6 @@ begin
   end;
 end;
 
-function TfraPerson.PersonEntryToListItem(const aPerson: TDtoPerson; const aItem: TListItem): TListItem;
-begin
-  var lPersonItemData := default(TPersonListItemData);
-  lPersonItemData.PersonActive := aPerson.Aktiv;
-  Result := aItem;
-  if Assigned(Result) then
-  begin
-    fPersonListviewAttachedData.UpdateItem(aItem, aPerson.NameId.Id, lPersonItemData);
-  end
-  else
-  begin
-    Result := fPersonListviewAttachedData.AddItem(aPerson.NameId.Id, lPersonItemData);
-  end;
-  Result.Caption := aPerson.ToString;
-end;
-
 procedure TfraPerson.SetEditMode(const aEditMode: Boolean);
 begin
   fInEditMode := aEditMode;
@@ -464,13 +448,13 @@ begin
 
   if aAsNewEntry then
   begin
-    var lNewItem := PersonEntryToListItem(aRecord.Person, nil);
+    var lNewItem := fExtendedListview.Add(aRecord.Person);
     lNewItem.Selected := True;
     lNewItem.MakeVisible(False);
   end
   else
   begin
-    PersonEntryToListItem(aRecord.Person, lvPersonListview.Selected);
+    fExtendedListview.UpdateListItemData(lvPersonListview.Selected, aRecord.Person);
   end;
   cbPersonActive.Checked := aRecord.Active;
   TVclUITools.SetComboboxItemIndex(cbPersonAddress, aRecord.AddressIndex);

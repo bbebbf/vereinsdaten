@@ -24,7 +24,6 @@ uses
   CrudConfigPersonAddress in 'data\CrudConfigPersonAddress.pas',
   DtoPersonAddress in 'data\DtoPersonAddress.pas',
   DtoPersonAggregated in 'data\DtoPersonAggregated.pas',
-  ListviewAttachedData in 'view\tools\ListviewAttachedData.pas',
   PersonAggregatedUI in 'view\intf\PersonAggregatedUI.pas',
   PersonBusinessIntf in 'business\intf\PersonBusinessIntf.pas',
   PersonBusiness in 'business\impl\PersonBusiness.pas',
