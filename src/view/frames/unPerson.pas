@@ -9,7 +9,7 @@ uses
   Vcl.ComCtrls, Vcl.WinXPickers, System.Actions, Vcl.ActnList,
   PersonBusinessIntf, PersonAggregatedUI, DtoPersonAggregated, ComponentValueChangedObserver,
   unPersonMemberOf, PersonMemberOfUI, DelayedExecute, CheckboxDatetimePickerHandler,
-  Vdm.Types, Vdm.Versioning.Types, VersionInfoEntryUI;
+  Vdm.Types, Vdm.Versioning.Types, CrudUI, VersionInfoEntryUI;
 
 type
   TfraPerson = class(TFrame, IPersonAggregatedUI, IVersionInfoEntryUI)
@@ -62,6 +62,8 @@ type
     tsMemberOf: TTabSheet;
     lbListviewItemCount: TLabel;
     lbBasedataVersionInfo: TLabel;
+    edFilter: TEdit;
+    lbFilter: TLabel;
     procedure lvPersonListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure lvPersonListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
@@ -73,6 +75,7 @@ type
     procedure acPersonStartNewRecordExecute(Sender: TObject);
     procedure pcPersonDetailsChanging(Sender: TObject; var AllowChange: Boolean);
     procedure pcPersonDetailsChange(Sender: TObject);
+    procedure edFilterChange(Sender: TObject);
   strict private
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
@@ -100,9 +103,11 @@ type
     procedure ListEnumEnd;
     procedure DeleteEntryFromUI(const aPersonId: UInt32);
     procedure ClearEntryFromUI;
-    procedure SetEntryToUI(const aRecord: TDtoPersonAggregated; const aAsNewEntry: Boolean);
+    procedure SetEntryToUI(const aRecord: TDtoPersonAggregated; const aMode: TEntryToUIMode);
     function GetEntryFromUI(var aRecord: TDtoPersonAggregated): Boolean;
     procedure LoadCurrentEntry(const aPersonId: UInt32);
+
+    procedure ExtentedListviewEndUpdate(Sender: TObject; const aTotalItemCount, aVisibleItemCount: Integer);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -112,7 +117,9 @@ implementation
 
 {$R *.dfm}
 
-uses StringTools, MessageDialogs, Vdm.Globals, VclUITools;
+uses System.Generics.Defaults, StringTools, MessageDialogs, Vdm.Globals, VclUITools;
+
+{ TfraPerson }
 
 constructor TfraPerson.Create(AOwner: TComponent);
 begin
@@ -153,8 +160,15 @@ begin
     procedure(const aData: TDtoPerson; const aListItem: TListItem)
     begin
       aListItem.Caption := aData.ToString;
-    end
+    end,
+    TComparer<TDtoPerson>.Construct(
+      function(const aLeft, aRight: TDtoPerson): Integer
+      begin
+        Result := TVdmGlobals.CompareId(aLeft.NameId.Id, aRight.NameId.Id);
+      end
+    )
   );
+  fExtendedListview.OnEndUpdate := ExtentedListviewEndUpdate;
 
   fDelayedExecute := TDelayedExecute<TPair<Boolean, UInt32>>.Create(
     procedure(const aData: TPair<Boolean, UInt32>)
@@ -183,7 +197,24 @@ begin
   inherited;
 end;
 
-{ TfraPerson }
+procedure TfraPerson.edFilterChange(Sender: TObject);
+begin
+  const lEmptyFilter = Length(edFilter.Text) = 0;
+  fExtendedListview.Filter<string>(LowerCase(edFilter.Text),
+    function(const aFilterExpression: string; const aData: TDtoPerson): Boolean
+    begin
+      Result := lEmptyFilter or (Pos(aFilterExpression, LowerCase(aData.ToString)) > 0);
+    end
+  );
+end;
+
+procedure TfraPerson.ExtentedListviewEndUpdate(Sender: TObject; const aTotalItemCount, aVisibleItemCount: Integer);
+begin
+  if aTotalItemCount > aVisibleItemCount then
+    lbListviewItemCount.Caption := IntToStr(aVisibleItemCount) + ' gefiltert aus ' + IntToStr(aTotalItemCount) + ' Datensätzen'
+  else
+    lbListviewItemCount.Caption := IntToStr(aVisibleItemCount) + ' Datensätze';
+end;
 
 procedure TfraPerson.acPersonReloadCurrentRecordExecute(Sender: TObject);
 begin
@@ -234,6 +265,7 @@ end;
 
 procedure TfraPerson.cbShowInactivePersonsClick(Sender: TObject);
 begin
+  edFilter.Text := '';
   fBusinessIntf.ShowInactivePersons := cbShowInactivePersons.Checked;
 end;
 
@@ -381,7 +413,6 @@ begin
     lvPersonListview.Items[0].Selected := True;
   end;
   fExtendedListview.EndUpdate;
-  lbListviewItemCount.Caption := IntToStr(lvPersonListview.Items.Count) + ' Datensätze';
   lvPersonListview.SetFocus;
 end;
 
@@ -399,6 +430,9 @@ end;
 
 procedure TfraPerson.lvPersonListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
 begin
+  if fComponentValueChangedObserver.InUpdated then
+    Exit;
+
   var lPersonFound := False;
   var lPerson: TDtoPerson;
   if Selected then
@@ -436,7 +470,7 @@ begin
   acPersonReloadCurrentRecord.Enabled := fInEditMode;
 end;
 
-procedure TfraPerson.SetEntryToUI(const aRecord: TDtoPersonAggregated; const aAsNewEntry: Boolean);
+procedure TfraPerson.SetEntryToUI(const aRecord: TDtoPersonAggregated; const aMode: TEntryToUIMode);
 begin
   fComponentValueChangedObserver.BeginUpdate;
   cbPersonAddress.Items.Assign(fBusinessIntf.AvailableAddresses.Data.Strings);
@@ -446,16 +480,8 @@ begin
   edPersonLastname.Text := aRecord.Lastname;
   fPersonBirthdayHandler.Datetime := aRecord.Birthday;
 
-  if aAsNewEntry then
-  begin
-    var lNewItem := fExtendedListview.Add(aRecord.Person);
-    lNewItem.Selected := True;
-    lNewItem.MakeVisible(False);
-  end
-  else
-  begin
-    fExtendedListview.UpdateListItemData(lvPersonListview.Selected, aRecord.Person);
-  end;
+  fExtendedListview.UpdateData(aRecord.Person);
+
   cbPersonActive.Checked := aRecord.Active;
   TVclUITools.SetComboboxItemIndex(cbPersonAddress, aRecord.AddressIndex);
   cbCreateNewAddress.Checked := False;

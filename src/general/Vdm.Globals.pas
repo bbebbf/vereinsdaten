@@ -16,6 +16,7 @@ type
     class function GetInactiveColor: TColor;
     class function GetActiveStateAsString(const aState: Boolean): string;
     class function MinusOneToZero(const aIndex: Integer): Integer;
+    class function CompareId(const aLeft, aRight: UInt32): Integer;
   end;
 
 implementation
@@ -26,6 +27,16 @@ const
   VdmApplicationTitle: string = 'Vereinsdaten-Manager';
 
 { TVdmGlobals }
+
+class function TVdmGlobals.CompareId(const aLeft, aRight: UInt32): Integer;
+begin
+  if aLeft < aRight then
+    Result := -1
+  else if aLeft > aRight then
+    Result := 1
+  else
+    Result := 0;
+end;
 
 class function TVdmGlobals.GetActiveStateAsString(const aState: Boolean): string;
 begin

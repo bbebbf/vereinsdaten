@@ -40,9 +40,9 @@ object fraPerson: TfraPerson
     end
     object lvPersonListview: TListView
       Left = 0
-      Top = 41
+      Top = 73
       Width = 285
-      Height = 535
+      Height = 503
       Align = alClient
       Columns = <
         item
@@ -55,15 +55,29 @@ object fraPerson: TfraPerson
       ViewStyle = vsReport
       OnCustomDrawItem = lvPersonListviewCustomDrawItem
       OnSelectItem = lvPersonListviewSelectItem
+      ExplicitTop = 89
+      ExplicitHeight = 487
     end
     object pnFilter: TPanel
       Left = 0
       Top = 0
       Width = 285
-      Height = 41
+      Height = 73
       Align = alTop
       BevelOuter = bvNone
       TabOrder = 0
+      DesignSize = (
+        285
+        73)
+      object lbFilter: TLabel
+        Left = 16
+        Top = 47
+        Width = 29
+        Height = 15
+        Anchors = [akLeft, akBottom]
+        Caption = 'Filter:'
+        ExplicitTop = 63
+      end
       object cbShowInactivePersons: TCheckBox
         Left = 16
         Top = 13
@@ -72,6 +86,16 @@ object fraPerson: TfraPerson
         Caption = 'Inaktive Personen anzeigen'
         TabOrder = 0
         OnClick = cbShowInactivePersonsClick
+      end
+      object edFilter: TEdit
+        Left = 53
+        Top = 44
+        Width = 226
+        Height = 23
+        Anchors = [akRight, akBottom]
+        TabOrder = 1
+        OnChange = edFilterChange
+        ExplicitTop = 60
       end
     end
     object btPersonStartNewRecord: TButton

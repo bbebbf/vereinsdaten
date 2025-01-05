@@ -70,7 +70,7 @@ type
     procedure ListEnumEnd;
     procedure DeleteEntryFromUI(const aUnitId: UInt32);
     procedure ClearEntryFromUI;
-    procedure SetEntryToUI(const aEntry: TDtoUnitAggregated; const aAsNewEntry: Boolean);
+    procedure SetEntryToUI(const aEntry: TDtoUnitAggregated; const aMode: TEntryToUIMode);
     function GetEntryFromUI(var aEntry: TDtoUnitAggregated): Boolean;
     procedure LoadCurrentEntry(const aEntryId: UInt32);
 
@@ -84,7 +84,7 @@ implementation
 
 {$R *.dfm}
 
-uses StringTools, MessageDialogs, Vdm.Globals, VclUITools;
+uses System.Generics.Defaults, StringTools, MessageDialogs, Vdm.Globals, VclUITools;
 
 { TfmUnit }
 
@@ -182,7 +182,13 @@ begin
     procedure(const aData: TDtoUnit; const aListItem: TListItem)
     begin
       aListItem.Caption := aData.ToString;
-    end
+    end,
+    TComparer<TDtoUnit>.Construct(
+      function(const aLeft, aRight: TDtoUnit): Integer
+      begin
+        Result := TVdmGlobals.CompareId(aLeft.Id, aRight.Id);
+      end
+    )
   );
   fExtendedListviewMemberOfs := TExtendedListview<TDtoUnitAggregatedPersonMemberOf>.Create(lvMemberOf,
     procedure(const aData: TDtoUnitAggregatedPersonMemberOf; const aListItem: TListItem)
@@ -192,7 +198,13 @@ begin
       aListItem.SubItems.Add(TVdmGlobals.GetDateAsString(aData.MemberActiveSince));
       aListItem.SubItems.Add(TVdmGlobals.GetActiveStateAsString(aData.MemberActive));
       aListItem.SubItems.Add(TVdmGlobals.GetDateAsString(aData.MemberActiveUntil));
-    end
+    end,
+    TComparer<TDtoUnitAggregatedPersonMemberOf>.Construct(
+      function(const aLeft, aRight: TDtoUnitAggregatedPersonMemberOf): Integer
+      begin
+        Result := TVdmGlobals.CompareId(aLeft.MemberRecordId, aRight.MemberRecordId);
+      end
+    )
   );
 
   fDelayedExecute := TDelayedExecute<TPair<Boolean, UInt32>>.Create(
@@ -284,6 +296,9 @@ end;
 
 procedure TfmUnit.lvListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
 begin
+  if fComponentValueChangedObserver.InUpdated then
+    Exit;
+
   var lEntryFound := False;
   var lUnit: TDtoUnit;
   if Selected then
@@ -313,7 +328,7 @@ begin
   acReloadCurrentEntry.Enabled := fInEditMode;
 end;
 
-procedure TfmUnit.SetEntryToUI(const aEntry: TDtoUnitAggregated; const aAsNewEntry: Boolean);
+procedure TfmUnit.SetEntryToUI(const aEntry: TDtoUnitAggregated; const aMode: TEntryToUIMode);
 begin
   fComponentValueChangedObserver.BeginUpdate;
 
@@ -322,16 +337,7 @@ begin
   fActiveSinceHandler.Datetime := aEntry.ActiveSince;
   fActiveUntilHandler.Datetime := aEntry.ActiveUntil;
 
-  if aAsNewEntry then
-  begin
-    var lNewItem := fExtendedListview.Add(aEntry.&Unit);
-    lNewItem.Selected := True;
-    lNewItem.MakeVisible(False);
-  end
-  else
-  begin
-    fExtendedListview.UpdateListItemData(lvListview.Selected, aEntry.&Unit);
-  end;
+  fExtendedListview.UpdateData(aEntry.&Unit);
 
   fComponentValueChangedObserver.EndUpdate;
 

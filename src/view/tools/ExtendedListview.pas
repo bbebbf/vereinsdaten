@@ -6,59 +6,51 @@ uses System.Generics.Collections, System.Generics.Defaults, Vcl.ComCtrls, Interf
 
 type
   TExtendedListviewDataToListItem<T> = reference to procedure(const aData: T; const aListItem: TListItem);
-  TExtendedListviewDataPredicate<T> = reference to function(const aData: T): Boolean;
+  TExtendedListviewDataPredicate<F, T> = reference to function(const aFilterExpression: F; const aData: T): Boolean;
+
+  TExtendedListviewOnEndUpdateEvent = procedure(Sender: TObject; const aTotalItemCount, aVisibleItemCount: Integer) of object;
 
   TExtendedListviewEntry<T> = class
   strict private
     fData: T;
+    fListItem: TListItem;
   strict protected
     procedure SetData(const aValue: T); virtual;
   public
     property Data: T read fData write SetData;
+    property ListItem: TListItem read fListItem write fListItem;
   end;
 
   TExtendedListview<T> = class
   strict private
     fListview: TListView;
-    fDataItems: TObjectList<TExtendedListviewEntry<T>>;
+    fDataItemsOwner: TObjectList<TExtendedListviewEntry<T>>;
+    fDataItemsSortedList: TList<TExtendedListviewEntry<T>>;
+    fDataItemsAreSorted: Boolean;
     fDataToListItemProc: TExtendedListviewDataToListItem<T>;
+    fDataIdComparer: IComparer<T>;
     fListItemToEntryDict: TDictionary<TListItem, TExtendedListviewEntry<T>>;
+    fOnEndUpdate: TExtendedListviewOnEndUpdateEvent;
+    procedure ClearListItems;
+    function AddListItem(const aEntry: TExtendedListviewEntry<T>): TListItem;
+    procedure SortDataItems;
+    procedure UpdateListItem(const aEntry: TExtendedListviewEntry<T>);
   strict protected
     function CreateEntry: TExtendedListviewEntry<T>; virtual;
-    procedure AddInternal(const aListItem: TListItem; const aEntry: TExtendedListviewEntry<T>); virtual;
-    procedure ClearInternal; virtual;
   public
     constructor Create(const aListview: TListView;
-      const aDataToListItemProc: TExtendedListviewDataToListItem<T>);
+      const aDataToListItemProc: TExtendedListviewDataToListItem<T>;
+      const aDataIdComparer: IComparer<T>);
     destructor Destroy; override;
     procedure BeginUpdate;
     procedure EndUpdate;
     procedure Clear;
     function Add(const aData: T): TListItem;
+    function UpdateData(const aData: T; const aCreateEntryIfNotExists: Boolean = True): Boolean;
     function TryGetListItemData(const aListItem: TListItem; out aData: T): Boolean;
-    function UpdateListItemData(const aListItem: TListItem; const aData: T): Boolean;
-  end;
-
-  TMyEqualityComparer<T> = class(TInterfacedBase, IEqualityComparer<TExtendedListviewEntry<T>>)
-  strict private
-    fEqualityComparer: IEqualityComparer<T>;
-    function Equals(const Left, Right: TExtendedListviewEntry<T>): Boolean; reintroduce;
-    function GetHashCode(const Value: TExtendedListviewEntry<T>): Integer; reintroduce;
-  public
-    constructor Create(const aEqualityComparer: IEqualityComparer<T>);
-  end;
-
-  TExtendedListviewUniqueData<T> = class(TExtendedListview<T>)
-  strict private
-    fEntryToListItemDict: TDictionary<TExtendedListviewEntry<T>, TListItem>;
-  strict protected
-    procedure AddInternal(const aListItem: TListItem; const aEntry: TExtendedListviewEntry<T>); override;
-    procedure ClearInternal; override;
-  public
-    constructor Create(const aListview: TListView; const aDataToListItemProc: TExtendedListviewDataToListItem<T>;
-      const aEqualityComparer: IEqualityComparer<T>);
-    destructor Destroy; override;
     function TryGetListItem(const aData: T; out aListItem: TListItem): Boolean;
+    procedure Filter<F>(const aFilterExpression: F; const aPredicate: TExtendedListviewDataPredicate<F, T>);
+    property OnEndUpdate: TExtendedListviewOnEndUpdateEvent read fOnEndUpdate write fOnEndUpdate;
   end;
 
   TExtendedListviewObjectEntry<T: class> = class(TExtendedListviewEntry<T>)
@@ -73,29 +65,39 @@ type
     function CreateEntry: TExtendedListviewEntry<T>; override;
   end;
 
-  TObjectExtendedListviewUniqueData<T: class> = class(TExtendedListviewUniqueData<T>)
-  strict protected
-    function CreateEntry: TExtendedListviewEntry<T>; override;
-  end;
-
 implementation
 
 { TExtendedListview<T> }
 
 constructor TExtendedListview<T>.Create(const aListview: TListView;
-  const aDataToListItemProc: TExtendedListviewDataToListItem<T>);
+  const aDataToListItemProc: TExtendedListviewDataToListItem<T>; const aDataIdComparer: IComparer<T>);
 begin
   inherited Create;
   fListview := aListview;
   fDataToListItemProc := aDataToListItemProc;
-  fDataItems := TObjectList<TExtendedListviewEntry<T>>.Create;
+  fDataItemsOwner := TObjectList<TExtendedListviewEntry<T>>.Create;
+
+  fDataIdComparer := aDataIdComparer;
+  if not Assigned(fDataIdComparer) then
+    fDataIdComparer := TComparer<T>.Default;
+
+  var lEntryComparer: IComparer<TExtendedListviewEntry<T>> := TComparer<TExtendedListviewEntry<T>>.Construct(
+      function(const aLeft, aRight: TExtendedListviewEntry<T>): Integer
+      begin
+        Result := fDataIdComparer.Compare(aLeft.Data, aRight.Data);
+      end
+    );
+  fDataItemsSortedList := TList<TExtendedListviewEntry<T>>.Create(lEntryComparer);
+
   fListItemToEntryDict := TDictionary<TListItem, TExtendedListviewEntry<T>>.Create;
+  fDataItemsAreSorted := True;
 end;
 
 destructor TExtendedListview<T>.Destroy;
 begin
   fListItemToEntryDict.Free;
-  fDataItems.Free;
+  fDataItemsSortedList.Free;
+  fDataItemsOwner.Free;
   inherited;
 end;
 
@@ -103,27 +105,34 @@ function TExtendedListview<T>.Add(const aData: T): TListItem;
 begin
   var lEntry := CreateEntry;
   lEntry.Data := aData;
-  fDataItems.Add(lEntry);
-  Result := fListview.Items.Add;
-  AddInternal(Result, lEntry);
-  fDataToListItemProc(aData, Result);
-end;
-
-procedure TExtendedListview<T>.AddInternal(const aListItem: TListItem; const aEntry: TExtendedListviewEntry<T>);
-begin
-  fListItemToEntryDict.Add(aListItem, aEntry);
+  fDataItemsOwner.Add(lEntry);
+  fDataItemsSortedList.Add(lEntry);
+  Result := AddListItem(lEntry);
+  fDataItemsAreSorted := False;
 end;
 
 procedure TExtendedListview<T>.Clear;
 begin
-  ClearInternal;
-  fListview.Items.Clear;
-  fDataItems.Clear;
+  ClearListItems;
+  fDataItemsSortedList.Clear;
+  fDataItemsOwner.Clear;
+  fDataItemsAreSorted := True;
 end;
 
-procedure TExtendedListview<T>.ClearInternal;
+function TExtendedListview<T>.AddListItem(const aEntry: TExtendedListviewEntry<T>): TListItem;
+begin
+  Result := fListview.Items.Add;
+  aEntry.ListItem := Result;
+  fListItemToEntryDict.Add(Result, aEntry);
+  UpdateListItem(aEntry);
+end;
+
+procedure TExtendedListview<T>.ClearListItems;
 begin
   fListItemToEntryDict.Clear;
+  for var lEntry in fDataItemsOwner do
+    lEntry.ListItem := nil;
+  fListview.Items.Clear;
 end;
 
 procedure TExtendedListview<T>.BeginUpdate;
@@ -133,7 +142,33 @@ end;
 
 procedure TExtendedListview<T>.EndUpdate;
 begin
+  if Assigned(fOnEndUpdate) then
+    fOnEndUpdate(Self, fDataItemsOwner.Count, fListview.Items.Count);
   fListview.Items.EndUpdate;
+end;
+
+procedure TExtendedListview<T>.Filter<F>(const aFilterExpression: F;
+  const aPredicate: TExtendedListviewDataPredicate<F, T>);
+begin
+  BeginUpdate;
+  try
+    ClearListItems;
+    for var lEntry in fDataItemsOwner do
+    begin
+      if aPredicate(aFilterExpression, lEntry.Data) then
+        AddListItem(lEntry);
+    end;
+  finally
+    EndUpdate;
+  end;
+end;
+
+procedure TExtendedListview<T>.SortDataItems;
+begin
+  if fDataItemsAreSorted then
+    Exit;
+  fDataItemsSortedList.Sort;
+  fDataItemsAreSorted := True;
 end;
 
 function TExtendedListview<T>.TryGetListItemData(const aListItem: TListItem; out aData: T): Boolean;
@@ -147,15 +182,64 @@ begin
   Result := True;
 end;
 
-function TExtendedListview<T>.UpdateListItemData(const aListItem: TListItem; const aData: T): Boolean;
+function TExtendedListview<T>.TryGetListItem(const aData: T; out aListItem: TListItem): Boolean;
 begin
-  var lEntry: TExtendedListviewEntry<T>;
-  if not fListItemToEntryDict.TryGetValue(aListItem, lEntry) then
-    Exit(False);
+  SortDataItems;
+  var lSearchEntry := CreateEntry;
+  try
+    lSearchEntry.Data := aData;
+    var lFoundIndex: Integer;
+    if not fDataItemsSortedList.BinarySearch(lSearchEntry, lFoundIndex) then
+      Exit(False);
 
-  lEntry.Data := aData;
-  fDataToListItemProc(aData, aListItem);
-  Result := True;
+    var lFoundEntry := fDataItemsSortedList[lFoundIndex];
+    if not Assigned(lFoundEntry.ListItem) then
+      Exit(False);
+
+    aListItem := lFoundEntry.ListItem;
+    Result := True;
+  finally
+    lSearchEntry.Free;
+  end;
+end;
+
+function TExtendedListview<T>.UpdateData(const aData: T; const aCreateEntryIfNotExists: Boolean): Boolean;
+begin
+  SortDataItems;
+  var lSearchEntry := CreateEntry;
+  try
+    lSearchEntry.Data := aData;
+    var lFoundIndex: Integer;
+    if not fDataItemsSortedList.BinarySearch(lSearchEntry, lFoundIndex) then
+    begin
+      if aCreateEntryIfNotExists then
+      begin
+        var lNewItem := Add(aData);
+        lNewItem.Selected := True;
+        lNewItem.MakeVisible(False);
+        Exit(True);
+      end
+      else
+      begin
+        Exit(False);
+      end;
+    end;
+
+    var lFoundEntry := fDataItemsSortedList[lFoundIndex];
+    fDataItemsAreSorted := fDataIdComparer.Compare(lFoundEntry.Data, aData) = 0;
+    lFoundEntry.Data := aData;
+
+    UpdateListItem(lFoundEntry);
+    Result := True;
+  finally
+    lSearchEntry.Free;
+  end;
+end;
+
+procedure TExtendedListview<T>.UpdateListItem(const aEntry: TExtendedListviewEntry<T>);
+begin
+  if Assigned(aEntry.ListItem) then
+    fDataToListItemProc(aEntry.Data, aEntry.ListItem);
 end;
 
 function TExtendedListview<T>.CreateEntry: TExtendedListviewEntry<T>;
@@ -188,78 +272,9 @@ begin
   inherited SetData(aValue);
 end;
 
-{ TExtendedListviewUniqueData<T> }
-
-constructor TExtendedListviewUniqueData<T>.Create(const aListview: TListView;
-  const aDataToListItemProc: TExtendedListviewDataToListItem<T>; const aEqualityComparer: IEqualityComparer<T>);
-begin
-  inherited Create(aListview, aDataToListItemProc);
-  var lEqualityComparer: IEqualityComparer<TExtendedListviewEntry<T>> :=
-    TMyEqualityComparer<T>.Create(aEqualityComparer);
-  if Assigned(aEqualityComparer) then
-    fEntryToListItemDict := TDictionary<TExtendedListviewEntry<T>, TListItem>.Create(lEqualityComparer)
-  else
-    fEntryToListItemDict := TDictionary<TExtendedListviewEntry<T>, TListItem>.Create;
-end;
-
-destructor TExtendedListviewUniqueData<T>.Destroy;
-begin
-  fEntryToListItemDict.Free;
-  inherited;
-end;
-
-function TExtendedListviewUniqueData<T>.TryGetListItem(const aData: T; out aListItem: TListItem): Boolean;
-begin
-  var lEntry := CreateEntry;
-  try
-    lEntry.Data := aData;
-    Result := fEntryToListItemDict.TryGetValue(lEntry, aListItem);
-  finally
-    lEntry.Free;
-  end;
-end;
-
-procedure TExtendedListviewUniqueData<T>.AddInternal(const aListItem: TListItem;
-  const aEntry: TExtendedListviewEntry<T>);
-begin
-  inherited;
-  fEntryToListItemDict.AddOrSetValue(aEntry, aListItem);
-end;
-
-procedure TExtendedListviewUniqueData<T>.ClearInternal;
-begin
-  inherited;
-  fEntryToListItemDict.Clear;
-end;
-
-{ TMyEqualityComparer<T> }
-
-constructor TMyEqualityComparer<T>.Create(const aEqualityComparer: IEqualityComparer<T>);
-begin
-  inherited Create;
-  fEqualityComparer := aEqualityComparer;
-end;
-
-function TMyEqualityComparer<T>.Equals(const Left, Right: TExtendedListviewEntry<T>): Boolean;
-begin
-  Result := fEqualityComparer.Equals(Left.Data, Right.Data);
-end;
-
-function TMyEqualityComparer<T>.GetHashCode(const Value: TExtendedListviewEntry<T>): Integer;
-begin
-  Result := fEqualityComparer.GetHashCode(Value.Data);
-end;
-
 { TObjectExtendedListview<T> }
 
 function TObjectExtendedListview<T>.CreateEntry: TExtendedListviewEntry<T>;
-begin
-  Result := TExtendedListviewObjectEntry<T>.Create;
-end;
-
-{ TObjectExtendedListviewUniqueData<T> }
-
-function TObjectExtendedListviewUniqueData<T>.CreateEntry: TExtendedListviewEntry<T>;
 begin
   Result := TExtendedListviewObjectEntry<T>.Create;
 end;

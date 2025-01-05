@@ -77,6 +77,7 @@ type
     fOnComponentValueUnchangedEvent: TComponentValueChangedEvent;
     procedure ControlChanged(Sender: TObject);
     procedure ControlUnChanged(Sender: TObject);
+    function GetInUpdated: Boolean;
   public
     constructor Create;
     destructor Destroy; override;
@@ -86,6 +87,7 @@ type
     procedure RegisterDateTimePicker(const aDateTimePicker: TDateTimePicker);
     procedure BeginUpdate;
     procedure EndUpdate;
+    property InUpdated: Boolean read GetInUpdated;
     property OnValuesChanged: TNotifyEvent read fOnValuesChanged write fOnValuesChanged;
     property OnValuesUnchanged: TNotifyEvent read fOnValuesUnchanged write fOnValuesUnchanged;
     property OnComponentValueChangedEvent: TComponentValueChangedEvent read fOnComponentValueChangedEvent
@@ -131,6 +133,11 @@ begin
   begin
     lEntry.StoreOldValue;
   end;
+end;
+
+function TComponentValueChangedObserver.GetInUpdated: Boolean;
+begin
+  Result := fInUpdate > 0;
 end;
 
 procedure TComponentValueChangedObserver.RegisterCheckbox(const aCheckbox: TCheckBox);

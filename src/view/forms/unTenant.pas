@@ -40,7 +40,7 @@ type
     procedure ListEnumEnd;
     procedure DeleteEntryFromUI(const aUnitId: UInt8);
     procedure ClearEntryFromUI;
-    procedure SetEntryToUI(const aEntry: TDtoTenant; const aAsNewEntry: Boolean);
+    procedure SetEntryToUI(const aEntry: TDtoTenant; const aMode: TEntryToUIMode);
     function GetEntryFromUI(var aEntry: TDtoTenant): Boolean;
     procedure LoadCurrentEntry(const aEntryId: UInt8);
   public
@@ -176,7 +176,7 @@ begin
   acReloadCurrentEntry.Enabled := fInEditMode;
 end;
 
-procedure TfmTenant.SetEntryToUI(const aEntry: TDtoTenant; const aAsNewEntry: Boolean);
+procedure TfmTenant.SetEntryToUI(const aEntry: TDtoTenant; const aMode: TEntryToUIMode);
 begin
   fComponentValueChangedObserver.BeginUpdate;
   edTenantTitle.Text := aEntry.Title;

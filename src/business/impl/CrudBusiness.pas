@@ -102,7 +102,7 @@ begin
   fNewEntryStarted := False;
   if fConfig.TryLoadEntry(aId, fCurrentEntry) then
   begin
-    fUI.SetEntryToUI(fCurrentEntry, False);
+    fUI.SetEntryToUI(fCurrentEntry, TEntryToUIMode.OnLoadCurrentEntry);
     SetVersionInfoEntryToUI(fCurrentEntry);
   end
   else
@@ -146,19 +146,22 @@ begin
     begin
       AssignVersionInfoEntry(lTempSavingEntry, fCurrentEntry);
     end;
+    var lEntryToUI := TEntryToUIMode.OnUpdatedExistingEntry;
+    if fNewEntryStarted then
+      lEntryToUI := TEntryToUIMode.OnCreatedNewEntry;
     if lResponse.Status = TCrudSaveStatus.Successful then
     begin
       fConfig.DestroyEntry(fCurrentEntry);
       fCurrentEntry := lTempSavingEntry;
       lDestroyTempSavingEntry := False;
-      fUI.SetEntryToUI(fCurrentEntry, fNewEntryStarted);
+      fUI.SetEntryToUI(fCurrentEntry, lEntryToUI);
       SetVersionInfoEntryToUI(fCurrentEntry);
       fNewEntryStarted := False;
       fDataChanged := True;
     end
     else if lResponse.Status = TCrudSaveStatus.CancelledOnConflict then
     begin
-      fUI.SetEntryToUI(fCurrentEntry, fNewEntryStarted);
+      fUI.SetEntryToUI(fCurrentEntry, lEntryToUI);
       SetVersionInfoEntryToUI(fCurrentEntry);
       Exit(lResponse);
     end;
@@ -184,7 +187,7 @@ end;
 
 function TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.ReloadCurrentEntry: TCrudCommandResult;
 begin
-  fUI.SetEntryToUI(fCurrentEntry, False);
+  fUI.SetEntryToUI(fCurrentEntry, TEntryToUIMode.OnLoadCurrentEntry);
 end;
 
 function TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.DeleteEntry(const aId: TId): TCrudCommandResult;

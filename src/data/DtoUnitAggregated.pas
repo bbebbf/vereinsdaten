@@ -6,6 +6,7 @@ uses System.Generics.Collections, DtoPersonNameId, DtoUnit, Vdm.Versioning.Types
 
 type
   TDtoUnitAggregatedPersonMemberOf = record
+    MemberRecordId: UInt32;
     MemberActive: Boolean;
     MemberActiveSince: TDate;
     MemberActiveUntil: TDate;

@@ -53,7 +53,7 @@ type
     procedure ListEnumEnd;
     procedure DeleteEntryFromUI(const aUnitId: UInt32);
     procedure ClearEntryFromUI;
-    procedure SetEntryToUI(const aEntry: TDtoRole; const aAsNewEntry: Boolean);
+    procedure SetEntryToUI(const aEntry: TDtoRole; const aMode: TEntryToUIMode);
     function GetEntryFromUI(var aEntry: TDtoRole): Boolean;
     procedure LoadCurrentEntry(const aEntryId: UInt32);
   end;
@@ -62,7 +62,7 @@ implementation
 
 {$R *.dfm}
 
-uses StringTools, MessageDialogs;
+uses System.Generics.Defaults, StringTools, MessageDialogs, Vdm.Globals;
 
 { TfmRole }
 
@@ -138,7 +138,13 @@ begin
     procedure(const aData: TDtoRole; const aListItem: TListItem)
     begin
       aListItem.Caption := aData.ToString;
-    end
+    end,
+    TComparer<TDtoRole>.Construct(
+      function(const aLeft, aRight: TDtoRole): Integer
+      begin
+        Result := TVdmGlobals.CompareId(aLeft.Id, aRight.Id);
+      end
+    )
   );
   fDelayedExecute := TDelayedExecute<TPair<Boolean, UInt32>>.Create(
     procedure(const aData: TPair<Boolean, UInt32>)
@@ -224,6 +230,9 @@ end;
 
 procedure TfmRole.lvListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
 begin
+  if fComponentValueChangedObserver.InUpdated then
+    Exit;
+
   var lEntryFound := False;
   var lEntry := default(TDtoRole);
   if Selected then
@@ -241,24 +250,14 @@ begin
   acReloadCurrentEntry.Enabled := fInEditMode;
 end;
 
-procedure TfmRole.SetEntryToUI(const aEntry: TDtoRole; const aAsNewEntry: Boolean);
+procedure TfmRole.SetEntryToUI(const aEntry: TDtoRole; const aMode: TEntryToUIMode);
 begin
   fComponentValueChangedObserver.BeginUpdate;
 
   edRoleName.Text := aEntry.Name;
   edRoleSorting.Text := IntToStr(aEntry.Sorting);
 
-  if aAsNewEntry then
-  begin
-    var lNewItem := fExtendedListview.Add(aEntry);
-    lNewItem.Selected := True;
-    lNewItem.MakeVisible(False);
-  end
-  else
-  begin
-    fExtendedListview.UpdateListItemData(lvListview.Selected, aEntry);
-  end;
-
+  fExtendedListview.UpdateData(aEntry);
   fComponentValueChangedObserver.EndUpdate;
 end;
 

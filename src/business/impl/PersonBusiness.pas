@@ -5,7 +5,7 @@ interface
 uses System.Classes, InterfacedBase, CrudCommands, CrudConfig, Transaction, PersonBusinessIntf,
   DtoPersonAggregated, SqlConnection, PersonAggregatedUI, DtoPerson, RecordActions, RecordActionsVersioning,
   KeyIndexStrings, DtoPersonAddress, DtoAddress, DtoClubmembership, ClubmembershipTools,
-  MemberOfBusinessIntf, ProgressIndicator, Vdm.Types, Vdm.Versioning.Types;
+  MemberOfBusinessIntf, ProgressIndicator, Vdm.Types, Vdm.Versioning.Types, CrudUI;
 
 type
   TPersonBusiness = class(TInterfacedBase, IPersonBusinessIntf)
@@ -48,7 +48,7 @@ type
     function GetListFilter: TVoid;
     procedure SetListFilter(const aValue: TVoid);
 
-    procedure SetCurrentEntryToUI(const aNewPersonCreated: Boolean);
+    procedure SetCurrentEntryToUI(const aMode: TEntryToUIMode);
     procedure ClearEntryFromUI;
     procedure SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry);
     procedure ClearVersionInfoEntryFromUI;
@@ -190,7 +190,7 @@ begin
     begin
       fCurrentEntry.SetDtoClubmembership(lMembershipRecord);
     end;
-    SetCurrentEntryToUI(False);
+    SetCurrentEntryToUI(TEntryToUIMode.OnLoadCurrentEntry);
   end
   else
   begin
@@ -234,7 +234,7 @@ end;
 
 function TPersonBusiness.ReloadCurrentEntry: TCrudCommandResult;
 begin
-  SetCurrentEntryToUI(False);
+  SetCurrentEntryToUI(TEntryToUIMode.OnLoadCurrentEntry);
 end;
 
 function TPersonBusiness.SaveCurrentEntry: TCrudSaveResult;
@@ -360,7 +360,10 @@ begin
       end
       else
       begin
-        SetCurrentEntryToUI(lNewPersonCreated);
+        var lEntryToUI := TEntryToUIMode.OnUpdatedExistingEntry;
+        if lNewPersonCreated then
+          lEntryToUI := TEntryToUIMode.OnCreatedNewEntry;
+        SetCurrentEntryToUI(lEntryToUI);
       end;
     end;
   finally
@@ -370,9 +373,9 @@ begin
   end;
 end;
 
-procedure TPersonBusiness.SetCurrentEntryToUI(const aNewPersonCreated: Boolean);
+procedure TPersonBusiness.SetCurrentEntryToUI(const aMode: TEntryToUIMode);
 begin
-  fUI.SetEntryToUI(fCurrentEntry, aNewPersonCreated);
+  fUI.SetEntryToUI(fCurrentEntry, aMode);
   SetVersionInfoEntryToUI(fCurrentEntry.VersionInfoBaseData);
 end;
 

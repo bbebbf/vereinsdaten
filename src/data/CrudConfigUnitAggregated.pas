@@ -162,7 +162,7 @@ begin
   if not Assigned(fMemberSelectQuery) then
   begin
     fMemberSelectQuery := fConnection.CreatePreparedQuery(
-        'SELECT m.mb_active, m.mb_active_since, m.mb_active_until' +
+        'SELECT m.mb_id, m.mb_active, m.mb_active_since, m.mb_active_until' +
         ',p.person_id, p.person_vorname, p.person_praeposition, p.person_nachname, p.person_active, r.role_name' +
         ' FROM `member` AS m' +
         ' INNER JOIN `person` AS p ON p.person_id = m.person_id' +
@@ -177,6 +177,7 @@ begin
   while lSqlResult.Next do
   begin
     var lMemberRec := default(TDtoUnitAggregatedPersonMemberOf);
+    lMemberRec.MemberRecordId := lSqlResult.FieldByName('mb_id').AsLargeInt;
     lMemberRec.MemberActive := lSqlResult.FieldByName('mb_active').AsBoolean;
     lMemberRec.MemberActiveSince := lSqlResult.FieldByName('mb_active_since').AsDateTime;
     lMemberRec.MemberActiveUntil := lSqlResult.FieldByName('mb_active_until').AsDateTime;

@@ -44,7 +44,7 @@ type
     procedure acSaveMemberOfsExecute(Sender: TObject);
   private
     fBusinessIntf: IMemberOfBusinessIntf;
-    fExtentedListviewMemberOfs: TExtendedListviewUniqueData<TListEntry<TDtoMemberAggregated>>;
+    fExtentedListviewMemberOfs: TExtendedListview<TListEntry<TDtoMemberAggregated>>;
     fDialog: TfmPersonMemberOfsEditDlg;
     procedure SetCommands(const aCommands: IMemberOfBusinessIntf);
     procedure ListEnumBegin;
@@ -80,7 +80,7 @@ begin
     Exit;
 
   lEntry.ToggleToBeDeleted;
-  fExtentedListviewMemberOfs.UpdateListItemData(lSelectedItem, lEntry);
+  fExtentedListviewMemberOfs.UpdateData(lEntry);
   UpdateListActions(True);
 end;
 
@@ -100,7 +100,7 @@ begin
       lEntry.ToggleToBeDeleted;
     end;
     lEntry.Updated;
-    fExtentedListviewMemberOfs.UpdateListItemData(lSelectedItem, lEntry);
+    fExtentedListviewMemberOfs.UpdateData(lEntry);
     UpdateListActions(True);
   end;
 end;
@@ -137,7 +137,7 @@ begin
       begin
         var lItem: TListItem;
         if fExtentedListviewMemberOfs.TryGetListItem(aEntry, lItem) then
-          lvMemberOf.Items.Delete(lItem.Index);
+          lItem.Delete;
       end
     );
   UpdateListActions(False);
@@ -151,7 +151,7 @@ end;
 constructor TfraPersonMemberOf.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  fExtentedListviewMemberOfs := TExtendedListviewUniqueData<TListEntry<TDtoMemberAggregated>>.Create(lvMemberOf,
+  fExtentedListviewMemberOfs := TExtendedListview<TListEntry<TDtoMemberAggregated>>.Create(lvMemberOf,
     procedure(const aData: TListEntry<TDtoMemberAggregated>; const aListItem: TListItem)
     begin
       aListItem.Caption := GetStringByIndex(aData.Data.AvailableUnits.Data.Strings, aData.Data.UnitIndex);
@@ -161,14 +161,10 @@ begin
       aListItem.SubItems.Add(TVdmGlobals.GetActiveStateAsString(aData.Data.Member.Active));
       aListItem.SubItems.Add(TVdmGlobals.GetDateAsString(aData.Data.Member.ActiveUntil));
     end,
-    TEqualityComparer<TListEntry<TDtoMemberAggregated>>.Construct(
-      function(const Left, Right: TListEntry<TDtoMemberAggregated>): Boolean
+    TComparer<TListEntry<TDtoMemberAggregated>>.Construct(
+      function(const aLeft, aRight: TListEntry<TDtoMemberAggregated>): Integer
       begin
-        Result := Left.Data.Id = Right.Data.Id;
-      end,
-      function(const Item: TListEntry<TDtoMemberAggregated>): Integer
-      begin
-        Result := Item.Data.Id;
+        Result := TVdmGlobals.CompareId(aLeft.Data.Id, aRight.Data.Id);
       end
     )
   );

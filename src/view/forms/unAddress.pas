@@ -57,7 +57,7 @@ type
     procedure ListEnumEnd;
     procedure DeleteEntryFromUI(const aUnitId: UInt32);
     procedure ClearEntryFromUI;
-    procedure SetEntryToUI(const aEntry: TDtoAddressAggregated; const aAsNewEntry: Boolean);
+    procedure SetEntryToUI(const aEntry: TDtoAddressAggregated; const aMode: TEntryToUIMode);
     function GetEntryFromUI(var aEntry: TDtoAddressAggregated): Boolean;
     procedure LoadCurrentEntry(const aEntryId: UInt32);
 
@@ -71,7 +71,7 @@ implementation
 
 {$R *.dfm}
 
-uses StringTools, MessageDialogs, Vdm.Globals, VclUITools;
+uses System.Generics.Defaults, StringTools, MessageDialogs, Vdm.Globals, VclUITools;
 
 { TfmAddress }
 
@@ -162,13 +162,25 @@ begin
       aListItem.SubItems.Clear;
       aListItem.SubItems.Add(aData.Street);
       aListItem.SubItems.Add(aData.Postalcode);
-    end
+    end,
+    TComparer<TDtoAddress>.Construct(
+      function(const aLeft, aRight: TDtoAddress): Integer
+      begin
+        Result := TVdmGlobals.CompareId(aLeft.Id, aRight.Id);
+      end
+    )
   );
   fExtendedListviewMemberOfs := TExtendedListview<TDtoAddressAggregatedPersonMemberOf>.Create(lvMemberOf,
     procedure(const aData: TDtoAddressAggregatedPersonMemberOf; const aListItem: TListItem)
     begin
       aListItem.Caption := aData.PersonNameId.ToString;
-    end
+    end,
+    TComparer<TDtoAddressAggregatedPersonMemberOf>.Construct(
+      function(const aLeft, aRight: TDtoAddressAggregatedPersonMemberOf): Integer
+      begin
+        Result := TVdmGlobals.CompareId(aLeft.PersonNameId.Id, aRight.PersonNameId.Id);
+      end
+    )
   );
 
   fDelayedExecute := TDelayedExecute<TPair<Boolean, UInt32>>.Create(
@@ -245,6 +257,9 @@ end;
 
 procedure TfmAddress.lvListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
 begin
+  if fComponentValueChangedObserver.InUpdated then
+    Exit;
+
   var lEntryFound := False;
   var lEntry: TDtoAddress;
   if Selected then
@@ -263,24 +278,14 @@ begin
   acDeleteCurrentEntry.Enabled := not fInEditMode;
 end;
 
-procedure TfmAddress.SetEntryToUI(const aEntry: TDtoAddressAggregated; const aAsNewEntry: Boolean);
+procedure TfmAddress.SetEntryToUI(const aEntry: TDtoAddressAggregated; const aMode: TEntryToUIMode);
 begin
   fComponentValueChangedObserver.BeginUpdate;
 
   edAddressStreet.Text := aEntry.Street;
   edAddressPostalcode.Text := aEntry.Postalcode;
   edAddressCity.Text := aEntry.City;
-
-  if aAsNewEntry then
-  begin
-    var lNewItem := fExtendedListview.Add(aEntry.Address);
-    lNewItem.Selected := True;
-    lNewItem.MakeVisible(False);
-  end
-  else
-  begin
-    fExtendedListview.UpdateListItemData(lvListview.Selected, aEntry.Address);
-  end;
+  fExtendedListview.UpdateData(aEntry.Address);
 
   fComponentValueChangedObserver.EndUpdate;
 
