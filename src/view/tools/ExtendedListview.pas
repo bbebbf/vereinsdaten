@@ -130,8 +130,6 @@ end;
 procedure TExtendedListview<T>.ClearListItems;
 begin
   fListItemToEntryDict.Clear;
-  for var lEntry in fDataItemsOwner do
-    lEntry.ListItem := nil;
   fListview.Items.Clear;
 end;
 
@@ -156,7 +154,9 @@ begin
     for var lEntry in fDataItemsOwner do
     begin
       if aPredicate(aFilterExpression, lEntry.Data) then
-        AddListItem(lEntry);
+        AddListItem(lEntry)
+      else
+        lEntry.ListItem := nil;
     end;
   finally
     EndUpdate;
