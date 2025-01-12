@@ -37,6 +37,7 @@ begin
   aData.Active := aSqlResult.FieldByName('unit_active').AsBoolean;
   aData.ActiveSince := aSqlResult.FieldByName('unit_active_since').AsDateTime;
   aData.ActiveUntil := aSqlResult.FieldByName('unit_active_until').AsDateTime;
+  aData.DataConfirmedOn := aSqlResult.FieldByName('unit_data_confirmed_on').AsDateTime;
 end;
 
 function TCrudConfigUnit.GetRecordIdentity(const aRecord: TDtoUnit): UInt32;
@@ -81,6 +82,7 @@ begin
   aAccessor.SetValue('unit_active', aRecord.Active);
   aAccessor.SetValueZeroAsNull('unit_active_since', aRecord.ActiveSince);
   aAccessor.SetValueZeroAsNull('unit_active_until', aRecord.ActiveUntil);
+  aAccessor.SetValueZeroAsNull('unit_data_confirmed_on', aRecord.DataConfirmedOn);
 end;
 
 procedure TCrudConfigUnit.SetValuesForDelete(const aRecordIdentity: UInt32; const aAccessor: TCrudAccessorDelete);

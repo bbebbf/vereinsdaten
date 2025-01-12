@@ -126,10 +126,17 @@ object fmUnit: TfmUnit
     end
     object lbVersionInfo: TLabel
       Left = 23
-      Top = 235
+      Top = 299
       Width = 69
       Height = 15
       Caption = 'lbVersionInfo'
+    end
+    object lbDataConfirmedOn: TLabel
+      Left = 23
+      Top = 182
+      Width = 103
+      Height = 15
+      Caption = 'Daten best'#228'tigt am:'
     end
     object edUnitName: TEdit
       Left = 23
@@ -183,7 +190,7 @@ object fmUnit: TfmUnit
     end
     object btSave: TButton
       Left = 23
-      Top = 188
+      Top = 252
       Width = 154
       Height = 25
       Action = acSaveCurrentEntry
@@ -192,7 +199,7 @@ object fmUnit: TfmUnit
     end
     object btReload: TButton
       Left = 190
-      Top = 188
+      Top = 252
       Width = 154
       Height = 25
       Action = acReloadCurrentEntry
@@ -201,9 +208,9 @@ object fmUnit: TfmUnit
     end
     object lvMemberOf: TListView
       Left = 0
-      Top = 272
+      Top = 344
       Width = 741
-      Height = 423
+      Height = 351
       Align = alBottom
       Columns = <
         item
@@ -231,6 +238,23 @@ object fmUnit: TfmUnit
       TabOrder = 8
       ViewStyle = vsReport
       OnCustomDrawItem = lvMemberOfCustomDrawItem
+    end
+    object cbDataConfirmedOnKnown: TCheckBox
+      Left = 23
+      Top = 205
+      Width = 26
+      Height = 16
+      TabOrder = 9
+    end
+    object dtDataConfirmedOn: TDateTimePicker
+      Left = 49
+      Top = 203
+      Width = 176
+      Height = 23
+      Date = 2.000000000000000000
+      Time = 2.000000000000000000
+      MaxDate = 69763.999988425930000000
+      TabOrder = 10
     end
   end
   object alActionList: TActionList

@@ -37,6 +37,9 @@ type
     cbShowInactiveUnits: TCheckBox;
     lbListviewItemCount: TLabel;
     lbVersionInfo: TLabel;
+    lbDataConfirmedOn: TLabel;
+    cbDataConfirmedOnKnown: TCheckBox;
+    dtDataConfirmedOn: TDateTimePicker;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormActivate(Sender: TObject);
@@ -59,6 +62,7 @@ type
     fDelayedExecute: TDelayedExecute<TPair<Boolean, UInt32>>;
     fActiveSinceHandler: TCheckboxDatetimePickerHandler;
     fActiveUntilHandler: TCheckboxDatetimePickerHandler;
+    fDataConfirmedOnHandler: TCheckboxDatetimePickerHandler;
 
     procedure SetEditMode(const aEditMode: Boolean);
     procedure ControlValuesChanged(Sender: TObject);
@@ -133,6 +137,7 @@ begin
   cbUnitActive.Checked := True;
   fActiveSinceHandler.Clear;
   fActiveUntilHandler.Clear;
+  fDataConfirmedOnHandler.Clear;
   fComponentValueChangedObserver.EndUpdate;
   lvMemberOf.Items.Clear;
 end;
@@ -166,6 +171,7 @@ procedure TfmUnit.FormCreate(Sender: TObject);
 begin
   fActiveSinceHandler := TCheckboxDatetimePickerHandler.Create(cbUnitActiveSinceKnown, dtUnitActiveSince);
   fActiveUntilHandler := TCheckboxDatetimePickerHandler.Create(cbUnitActiveUntilKnown, dtUnitActiveUntil);
+  fDataConfirmedOnHandler := TCheckboxDatetimePickerHandler.Create(cbDataConfirmedOnKnown, dtDataConfirmedOn);
 
   fComponentValueChangedObserver := TComponentValueChangedObserver.Create;
   fComponentValueChangedObserver.OnValuesChanged := ControlValuesChanged;
@@ -177,6 +183,8 @@ begin
   fComponentValueChangedObserver.RegisterDateTimePicker(dtUnitActiveSince);
   fComponentValueChangedObserver.RegisterCheckbox(cbUnitActiveUntilKnown);
   fComponentValueChangedObserver.RegisterDateTimePicker(dtUnitActiveUntil);
+  fComponentValueChangedObserver.RegisterCheckbox(cbDataConfirmedOnKnown);
+  fComponentValueChangedObserver.RegisterDateTimePicker(dtDataConfirmedOn);
 
   fExtendedListview := TExtendedListview<TDtoUnit>.Create(lvListview,
     procedure(const aData: TDtoUnit; const aListItem: TListItem)
@@ -225,12 +233,13 @@ end;
 
 procedure TfmUnit.FormDestroy(Sender: TObject);
 begin
-  fActiveSinceHandler.Free;
-  fActiveUntilHandler.Free;
   fDelayedExecute.Free;
   fExtendedListviewMemberOfs.Free;
   fExtendedListview.Free;
   fComponentValueChangedObserver.Free;
+  fDataConfirmedOnHandler.Free;
+  fActiveSinceHandler.Free;
+  fActiveUntilHandler.Free;
 end;
 
 function TfmUnit.GetEntryFromUI(var aEntry: TDtoUnitAggregated): Boolean;
@@ -247,6 +256,7 @@ begin
   aEntry.Active := cbUnitActive.Checked;
   aEntry.ActiveSince := fActiveSinceHandler.Datetime;
   aEntry.ActiveUntil := fActiveUntilHandler.Datetime;
+  aEntry.DataConfirmedOn := fDataConfirmedOnHandler.Datetime;
 end;
 
 procedure TfmUnit.SetCrudCommands(const aCommands: ICrudCommands<UInt32, TUnitFilter>);
@@ -336,6 +346,7 @@ begin
   cbUnitActive.Checked := aEntry.Active;
   fActiveSinceHandler.Datetime := aEntry.ActiveSince;
   fActiveUntilHandler.Datetime := aEntry.ActiveUntil;
+  fDataConfirmedOnHandler.Datetime := aEntry.DataConfirmedOn;
 
   fExtendedListview.UpdateData(aEntry.&Unit);
 

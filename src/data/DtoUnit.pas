@@ -9,6 +9,7 @@ type
     Active: Boolean;
     ActiveSince: TDate;
     ActiveUntil: TDate;
+    DataConfirmedOn: TDate;
     function ToString: string;
   end;
 
