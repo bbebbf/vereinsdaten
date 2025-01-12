@@ -28,16 +28,20 @@ type
     RLSystemInfo3: TRLSystemInfo;
     RLSystemInfo4: TRLSystemInfo;
     lbAppTitle: TLabel;
+    Label1: TLabel;
+    rdUnitDataConfirmed: TRLDBText;
     procedure RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure bdDetailAfterPrint(Sender: TObject);
     procedure rdUnitDividerBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure rdUnitnameBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
     procedure RLReportPageStarting(Sender: TObject);
+    procedure bdDetailBeforePrint(Sender: TObject; var PrintIt: Boolean);
   private
     fConnection: ISqlConnection;
     fQuery: ISqlPreparedQuery;
     fPreviousUnitId: UInt32;
     fNewPageStarted: Boolean;
+    fOneUnitPerPage: Boolean;
   public
     constructor Create(const aConnection: ISqlConnection); reintroduce;
     procedure Preview;
@@ -55,6 +59,22 @@ constructor TfmReportUnitMembers.Create(const aConnection: ISqlConnection);
 begin
   inherited Create(nil);
   fConnection := aConnection;
+end;
+
+procedure TfmReportUnitMembers.bdDetailBeforePrint(Sender: TObject; var PrintIt: Boolean);
+begin
+  if fOneUnitPerPage then
+  begin
+    if not fNewPageStarted and (rdUinitId.Field.AsLargeInt <> fPreviousUnitId) then
+    begin
+      bdDetail.FGreenBarFlag := False;
+      bdDetail.PageBreaking := pbBeforePrint
+    end
+    else
+    begin
+      bdDetail.PageBreaking := pbNone;
+    end;
+  end;
 end;
 
 procedure TfmReportUnitMembers.bdDetailAfterPrint(Sender: TObject);
@@ -85,7 +105,7 @@ begin
   lbAppTitle.Caption := TVdmGlobals.GetVdmApplicationTitle;
 
   fQuery := fConnection.CreatePreparedQuery(
-    'SELECT u.unit_id, u.unit_name, pn.person_name, r.role_name' +
+    'SELECT u.unit_id, u.unit_name, u.unit_data_confirmed_on, pn.person_name, r.role_name' +
     ' FROM unit AS u' +
     ' LEFT JOIN `member` AS m ON m.unit_id = u.unit_id' +
     ' LEFT JOIN `person` AS p ON p.person_id = m.person_id' +
