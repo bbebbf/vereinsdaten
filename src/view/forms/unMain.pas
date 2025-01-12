@@ -188,7 +188,8 @@ begin
   end;
 
   var lConnectionInfo := 'Server: ' + TConfigReader.Instance.Connection.Host +
-    ':' + IntToStr(TConfigReader.Instance.Connection.Port);
+    ':' + IntToStr(TConfigReader.Instance.Connection.Port) +
+    ' / Database: ' + TConfigReader.Instance.Connection.Databasename;
   if Length(TConfigReader.Instance.Connection.SshRemoteHost) > 0 then
     lConnectionInfo := 'Remote Host: ' + TConfigReader.Instance.Connection.SshRemoteHost + ' / ' + lConnectionInfo;
   StatusBar.SimpleText := lConnectionInfo;
