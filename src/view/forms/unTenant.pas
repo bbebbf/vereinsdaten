@@ -42,7 +42,6 @@ type
     procedure ClearEntryFromUI;
     procedure SetEntryToUI(const aEntry: TDtoTenant; const aMode: TEntryToUIMode);
     function GetEntryFromUI(var aEntry: TDtoTenant): Boolean;
-    procedure LoadCurrentEntry(const aEntryId: UInt8);
   public
     { Public-Deklarationen }
   end;
@@ -137,18 +136,13 @@ begin
   end;
 
   Result := True;
+  aEntry.Id := fTentantId;
   aEntry.Title := edTenantTitle.Text;
 end;
 
 procedure TfmTenant.SetCrudCommands(const aCommands: ICrudCommands<UInt8, TVoid>);
 begin
   fBusinessIntf := aCommands;
-end;
-
-procedure TfmTenant.LoadCurrentEntry(const aEntryId: UInt8);
-begin
-  fBusinessIntf.LoadCurrentEntry(aEntryId);
-  SetEditMode(False);
 end;
 
 procedure TfmTenant.ListEnumBegin;
@@ -166,6 +160,11 @@ begin
   if fTentantId > 0 then
   begin
     fBusinessIntf.LoadCurrentEntry(fTentantId);
+  end
+  else
+  begin
+    fTentantId := 1;
+    fBusinessIntf.StartNewEntry;
   end;
 end;
 

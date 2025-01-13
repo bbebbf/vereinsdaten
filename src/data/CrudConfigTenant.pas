@@ -58,10 +58,7 @@ end;
 
 function TCrudConfigTenant.IsNewRecord(const aRecordIdentity: UInt8): TCrudConfigNewRecordResponse;
 begin
-  if aRecordIdentity = 0 then
-    Result := TCrudConfigNewRecordResponse.NewRecord
-  else
-    Result := TCrudConfigNewRecordResponse.ExistingRecord;
+  Result := TCrudConfigNewRecordResponse.Unknown;
 end;
 
 procedure TCrudConfigTenant.SetSelectRecordSQLParameter(const aRecordIdentity: UInt8; const aQuery: ISqlPreparedQuery);
@@ -72,8 +69,7 @@ end;
 procedure TCrudConfigTenant.SetValues(const aRecord: TDtoTenant; const aAccessor: TCrudAccessorBase;
   const aForUpdate: Boolean);
 begin
-  if aForUpdate then
-    aAccessor.SetValue('ten_id', aRecord.Id);
+  aAccessor.SetValue('ten_id', aRecord.Id);
   aAccessor.SetValue('ten_title', aRecord.Title);
 end;
 
