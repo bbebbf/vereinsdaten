@@ -14,8 +14,8 @@ object fmReportUnitRoles: TfmReportUnitRoles
   object RLReport: TRLReport
     Left = 0
     Top = 0
-    Width = 794
-    Height = 1123
+    Width = 992
+    Height = 1403
     DataSource = dsDataSource
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
@@ -26,9 +26,9 @@ object fmReportUnitRoles: TfmReportUnitRoles
     BeforePrint = RLReportBeforePrint
     OnPageStarting = RLReportPageStarting
     object bdReportHeader: TRLBand
-      Left = 38
-      Top = 38
-      Width = 718
+      Left = 47
+      Top = 47
+      Width = 898
       Height = 35
       BandType = btHeader
       object lbReportTitle: TLabel
@@ -60,9 +60,9 @@ object fmReportUnitRoles: TfmReportUnitRoles
       end
     end
     object bdColumnHeader: TRLBand
-      Left = 38
-      Top = 73
-      Width = 718
+      Left = 47
+      Top = 82
+      Width = 898
       Height = 30
       BandType = btColumnHeader
       Font.Charset = DEFAULT_CHARSET
@@ -79,24 +79,31 @@ object fmReportUnitRoles: TfmReportUnitRoles
         Caption = 'Rolle'
       end
       object Label4: TLabel
-        Left = 450
+        Left = 510
         Top = 3
         Width = 43
         Height = 18
         Caption = 'Person'
       end
       object Label5: TLabel
-        Left = 230
+        Left = 210
         Top = 3
         Width = 44
         Height = 18
         Caption = 'Einheit'
       end
+      object Label1: TLabel
+        Left = 420
+        Top = 3
+        Width = 71
+        Height = 18
+        Caption = 'Datenstand'
+      end
     end
     object bdDetail: TRLBand
-      Left = 38
-      Top = 103
-      Width = 718
+      Left = 47
+      Top = 112
+      Width = 898
       Height = 23
       GreenBarPrint = True
       Font.Charset = DEFAULT_CHARSET
@@ -106,6 +113,15 @@ object fmReportUnitRoles: TfmReportUnitRoles
       Font.Style = []
       ParentFont = False
       AfterPrint = bdDetailAfterPrint
+      object RLDBText1: TRLDBText
+        Left = 420
+        Top = 2
+        Width = 156
+        Height = 18
+        DataField = 'unit_data_confirmed_on'
+        DataSource = dsDataSource
+        Text = ''
+      end
       object rdRoleName: TRLDBText
         Left = 0
         Top = 2
@@ -117,7 +133,7 @@ object fmReportUnitRoles: TfmReportUnitRoles
         BeforePrint = rdRoleNameBeforePrint
       end
       object RLDBText2: TRLDBText
-        Left = 450
+        Left = 510
         Top = 2
         Width = 88
         Height = 18
@@ -126,7 +142,7 @@ object fmReportUnitRoles: TfmReportUnitRoles
         Text = ''
       end
       object RLDBText3: TRLDBText
-        Left = 230
+        Left = 210
         Top = 2
         Width = 70
         Height = 18
@@ -147,7 +163,7 @@ object fmReportUnitRoles: TfmReportUnitRoles
       object rdDivider: TRLDraw
         Left = 0
         Top = 0
-        Width = 718
+        Width = 898
         Height = 2
         Align = faClientTop
         DrawKind = dkLine
@@ -155,9 +171,9 @@ object fmReportUnitRoles: TfmReportUnitRoles
       end
     end
     object bdPageFooter: TRLBand
-      Left = 38
-      Top = 126
-      Width = 718
+      Left = 47
+      Top = 135
+      Width = 898
       Height = 27
       BandType = btFooter
       object lbAppTitle: TLabel

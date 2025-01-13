@@ -28,6 +28,8 @@ type
     RLSystemInfo3: TRLSystemInfo;
     RLSystemInfo4: TRLSystemInfo;
     lbAppTitle: TLabel;
+    Label1: TLabel;
+    RLDBText1: TRLDBText;
     procedure RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure bdDetailAfterPrint(Sender: TObject);
     procedure rdDividerBeforePrint(Sender: TObject; var PrintIt: Boolean);
@@ -85,7 +87,7 @@ begin
   lbAppTitle.Caption := TVdmGlobals.GetVdmApplicationTitle;
 
   fQuery := fConnection.CreatePreparedQuery(
-    'SELECT r.role_id, r.role_name, u.unit_name, pn.person_name' +
+    'SELECT r.role_id, r.role_name, u.unit_name, u.unit_data_confirmed_on, pn.person_name' +
     ' FROM role AS r' +
     ' INNER JOIN `member` AS m ON m.role_id = r.role_id' +
     ' INNER JOIN `person` AS p ON p.person_id = m.person_id' +

@@ -138,7 +138,7 @@ begin
     fInsertVersioninfoCommand.ParamByName('EntityId').Value := Ord(fVersionInfoConfig.GetVersioningEntityId);
     fVersionInfoConfig.SetVersionInfoParameter(lRecordIdentity, fInsertVersioninfoCommand.ParamByName('DataId'));
 
-    var lInsertSucessful := False;
+    var lInsertSucessful: Boolean;
     try
       lInsertSucessful := fInsertVersioninfoCommand.Execute(aTransactionInfo.Transaction) = 1;
     except
