@@ -508,6 +508,7 @@ end;
 
 class destructor TWindowsProcessRepository.ClassDestroy;
 begin
+  fInstance.Free;
   fCriticalSection.Free;
 end;
 

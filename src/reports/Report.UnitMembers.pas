@@ -114,7 +114,7 @@ begin
     ' WHERE u.unit_active = 1' +
     ' AND m.mb_active = 1' +
     ' AND p.person_active = 1' +
-    ' ORDER BY u.unit_name, IFNULL(r.role_sorting, 100000), pn.person_name'
+    ' ORDER BY u.unit_name, ' + TVdmGlobals.GetRoleSortingSqlOrderBy('r') + ', pn.person_name'
   );
   fQuery.ConfigureDatasource(dsDataSource);
   fQuery.Open;

@@ -17,6 +17,8 @@ type
     class function GetActiveStateAsString(const aState: Boolean): string;
     class function MinusOneToZero(const aIndex: Integer): Integer;
     class function CompareId(const aLeft, aRight: UInt32): Integer;
+    class function GetRoleSortingSqlOrderBy(const aRoleTableAlias: string = ''): string;
+    class function GetRoleSortingNullWeight: UInt8;
   end;
 
 implementation
@@ -25,6 +27,7 @@ uses System.SysUtils, FileTools;
 
 const
   VdmApplicationTitle: string = 'Vereinsdaten-Manager';
+  RoleSortingNoValueWeight: UInt8 = 100;
 
 { TVdmGlobals }
 
@@ -78,6 +81,19 @@ end;
 class function TVdmGlobals.GetInactiveColor: TColor;
 begin
   Result := TColorRec.Silver;
+end;
+
+class function TVdmGlobals.GetRoleSortingNullWeight: UInt8;
+begin
+  Result := RoleSortingNoValueWeight;
+end;
+
+class function TVdmGlobals.GetRoleSortingSqlOrderBy(const aRoleTableAlias: string): string;
+begin
+  var lTableAlias := '';
+  if Length(aRoleTableAlias) > 0 then
+    lTableAlias := aRoleTableAlias + '.';
+  Result := 'IFNULL(' + lTableAlias + 'role_sorting, ' + IntToStr(RoleSortingNoValueWeight) + ')';
 end;
 
 class function TVdmGlobals.GetVdmApplicationTitle: string;

@@ -25,6 +25,8 @@ type
 
 implementation
 
+uses Vdm.Globals;
+
 { TCrudMemberConfig }
 
 function TCrudMemberConfig.GetIdentityColumns: TArray<string>;
@@ -55,7 +57,7 @@ begin
     + ' INNER JOIN `unit` AS u ON u.unit_id = m.unit_id'
     + ' LEFT JOIN `role` AS r ON r.role_id = m.role_id'
     + ' WHERE m.person_id = :PId'
-    + ' ORDER BY IFNULL(r.role_sorting, 10000), u.unit_name, m.mb_active_since DESC';
+    + ' ORDER BY ' + TVdmGlobals.GetRoleSortingSqlOrderBy('r') + ', u.unit_name, m.mb_active_since DESC';
 end;
 
 function TCrudMemberConfig.GetSelectRecordSQL: string;

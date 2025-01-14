@@ -37,7 +37,7 @@ type
 
 implementation
 
-uses System.SysUtils, SelectList;
+uses System.SysUtils, SelectList, Vdm.Globals;
 
 type
   TVersionInfoConfig = class(TInterfacedBase, IVersionInfoConfig<TDtoUnit, UInt32>)
@@ -168,7 +168,7 @@ begin
         ' INNER JOIN `person` AS p ON p.person_id = m.person_id' +
         ' LEFT JOIN `role` AS r ON r.role_id = m.role_id' +
         ' WHERE m.unit_id = :UnitId' +
-        ' ORDER BY m.mb_active DESC, IFNULL(r.role_sorting, 10000), m.mb_active_since DESC' +
+        ' ORDER BY m.mb_active DESC, ' + TVdmGlobals.GetRoleSortingSqlOrderBy('r') + ', m.mb_active_since DESC' +
         ' ,p.person_active DESC, p.person_nachname, p.person_vorname'
       );
   end;
