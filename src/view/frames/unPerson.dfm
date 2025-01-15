@@ -12,24 +12,27 @@ object fraPerson: TfraPerson
   TabOrder = 0
   object Splitter1: TSplitter
     Left = 285
-    Top = 0
+    Top = 40
     Width = 7
-    Height = 626
+    Height = 586
     Beveled = True
     ExplicitLeft = 185
+    ExplicitTop = 0
     ExplicitHeight = 528
   end
   object pnPersonListview: TPanel
     Left = 0
-    Top = 0
+    Top = 40
     Width = 285
-    Height = 626
+    Height = 586
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 0
+    ExplicitTop = 0
+    ExplicitHeight = 626
     object lbListviewItemCount: TLabel
       Left = 0
-      Top = 576
+      Top = 536
       Width = 285
       Height = 25
       Align = alBottom
@@ -42,7 +45,7 @@ object fraPerson: TfraPerson
       Left = 0
       Top = 73
       Width = 285
-      Height = 503
+      Height = 463
       Align = alClient
       Columns = <
         item
@@ -55,8 +58,7 @@ object fraPerson: TfraPerson
       ViewStyle = vsReport
       OnCustomDrawItem = lvPersonListviewCustomDrawItem
       OnSelectItem = lvPersonListviewSelectItem
-      ExplicitTop = 89
-      ExplicitHeight = 487
+      ExplicitHeight = 503
     end
     object pnFilter: TPanel
       Left = 0
@@ -95,37 +97,40 @@ object fraPerson: TfraPerson
         Anchors = [akRight, akBottom]
         TabOrder = 1
         OnChange = edFilterChange
-        ExplicitTop = 60
       end
     end
     object btPersonStartNewRecord: TButton
       Left = 0
-      Top = 601
+      Top = 561
       Width = 285
       Height = 25
       Action = acPersonStartNewRecord
       Align = alBottom
       TabOrder = 2
+      ExplicitTop = 601
     end
   end
   object pnPersonDetails: TPanel
     Left = 292
-    Top = 0
+    Top = 40
     Width = 597
-    Height = 626
+    Height = 586
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
+    ExplicitTop = 0
+    ExplicitHeight = 626
     object pcPersonDetails: TPageControl
       Left = 0
       Top = 0
       Width = 597
-      Height = 626
+      Height = 586
       ActivePage = tsPersonaldata
       Align = alClient
       TabOrder = 0
       OnChange = pcPersonDetailsChange
       OnChanging = pcPersonDetailsChanging
+      ExplicitHeight = 626
       object tsPersonaldata: TTabSheet
         Caption = 'Personendaten'
         object lbPersonFirstname: TLabel
@@ -403,6 +408,27 @@ object fraPerson: TfraPerson
         Caption = 'Mitglied von ...'
         ImageIndex = 1
       end
+    end
+  end
+  object pnTop: TPanel
+    Left = 0
+    Top = 0
+    Width = 889
+    Height = 40
+    Align = alTop
+    TabOrder = 2
+    object lbTitle: TLabel
+      Left = 16
+      Top = 7
+      Width = 135
+      Height = 20
+      Caption = 'Personen bearbeiten'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -15
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
     end
   end
   object alActionList: TActionList

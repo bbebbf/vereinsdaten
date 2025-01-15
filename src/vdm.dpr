@@ -75,7 +75,6 @@ uses
   DelegatedConverter in 'general\common\Tools\DelegatedConverter.pas',
   CrudBusiness in 'business\impl\CrudBusiness.pas',
   EntryCrudConfig in 'general\intf\crud\EntryCrudConfig.pas',
-  unUnit in 'view\forms\unUnit.pas' {fmUnit},
   CrudConfigUnitAggregated in 'data\CrudConfigUnitAggregated.pas',
   InterfacedBase in 'general\common\Tools\InterfacedBase.pas',
   unMain in 'view\forms\unMain.pas' {fmMain},
@@ -99,7 +98,8 @@ uses
   CrudConfigTenant in 'data\CrudConfigTenant.pas',
   CrudConfigTenantEntry in 'data\CrudConfigTenantEntry.pas',
   Report.UnitRoles in 'reports\Report.UnitRoles.pas' {fmReportUnitRoles},
-  ExtendedListview in 'view\tools\ExtendedListview.pas';
+  ExtendedListview in 'view\tools\ExtendedListview.pas',
+  unUnit in 'view\frames\unUnit.pas' {fraUnit: TFrame};
 
 {$R *.res}
 
@@ -108,7 +108,6 @@ begin
   Application.MainFormOnTaskbar := True;
   Application.Title := TVdmGlobals.GetVdmApplicationTitle;
   Application.CreateForm(TfmMain, fmMain);
-
   var lJobObjectHandle := CreateJobObject(nil, nil);
   try
     var lJobLimitInfo := default(JOBOBJECT_EXTENDED_LIMIT_INFORMATION);

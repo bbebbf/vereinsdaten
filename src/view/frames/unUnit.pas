@@ -11,7 +11,7 @@ uses
   Vdm.Versioning.Types, VersionInfoEntryUI;
 
 type
-  TfmUnit = class(TForm, ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>, IVersionInfoEntryUI)
+  TfraUnit = class(TFrame, ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>, IVersionInfoEntryUI)
     pnListview: TPanel;
     Splitter1: TSplitter;
     pnDetails: TPanel;
@@ -22,27 +22,28 @@ type
     pnFilter: TPanel;
     acStartNewEntry: TAction;
     btStartNewRecord: TButton;
+    lvMemberOf: TListView;
+    cbShowInactiveUnits: TCheckBox;
+    lbListviewItemCount: TLabel;
+    pnTop: TPanel;
+    lbTitle: TLabel;
+    btReturn: TButton;
+    pnTopRight: TPanel;
     lbUnitName: TLabel;
+    lbUnitActiveSince: TLabel;
+    lbUnitActiveUntil: TLabel;
+    lbVersionInfo: TLabel;
+    lbDataConfirmedOn: TLabel;
     edUnitName: TEdit;
     cbUnitActiveSinceKnown: TCheckBox;
     dtUnitActiveSince: TDateTimePicker;
-    lbUnitActiveSince: TLabel;
     cbUnitActive: TCheckBox;
-    lbUnitActiveUntil: TLabel;
     dtUnitActiveUntil: TDateTimePicker;
     cbUnitActiveUntilKnown: TCheckBox;
     btSave: TButton;
     btReload: TButton;
-    lvMemberOf: TListView;
-    cbShowInactiveUnits: TCheckBox;
-    lbListviewItemCount: TLabel;
-    lbVersionInfo: TLabel;
-    lbDataConfirmedOn: TLabel;
     cbDataConfirmedOnKnown: TCheckBox;
     dtDataConfirmedOn: TDateTimePicker;
-    procedure FormCreate(Sender: TObject);
-    procedure FormDestroy(Sender: TObject);
-    procedure FormActivate(Sender: TObject);
     procedure lvListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure lvListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
@@ -52,8 +53,9 @@ type
     procedure lvMemberOfCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure cbShowInactiveUnitsClick(Sender: TObject);
+    procedure btReturnClick(Sender: TObject);
   strict private
-    fActivated: Boolean;
+    fReturnAction: TAction;
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
     fBusinessIntf: ICrudCommands<UInt32, TUnitFilter>;
@@ -81,7 +83,8 @@ type
     procedure SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry; const aVersionInfoEntryIndex: UInt16);
     procedure ClearVersionInfoEntryFromUI(const aVersionInfoEntryIndex: UInt16);
   public
-    { Public-Deklarationen }
+    constructor Create(AOwner: TComponent; const aReturnAction: TAction);
+    destructor Destroy; override;
   end;
 
 implementation
@@ -90,85 +93,12 @@ implementation
 
 uses System.Generics.Defaults, StringTools, MessageDialogs, Vdm.Globals, VclUITools;
 
-{ TfmUnit }
+{ TfraUnit }
 
-procedure TfmUnit.acReloadCurrentEntryExecute(Sender: TObject);
+constructor TfraUnit.Create(AOwner: TComponent; const aReturnAction: TAction);
 begin
-  fBusinessIntf.ReloadCurrentEntry;
-  SetEditMode(False);
-end;
-
-procedure TfmUnit.acSaveCurrentEntryExecute(Sender: TObject);
-begin
-  var lResponse := fBusinessIntf.SaveCurrentEntry;
-  if lResponse.Status = TCrudSaveStatus.Successful then
-  begin
-    SetEditMode(False);
-  end
-  else if lResponse.Status = TCrudSaveStatus.CancelledWithMessage then
-  begin
-    TMessageDialogs.Ok(lResponse.MessageText, TMsgDlgType.mtInformation);
-  end
-  else if lResponse.Status = TCrudSaveStatus.CancelledOnConflict then
-  begin
-    TMessageDialogs.Ok('Versionkonflikt: ' +
-      lResponse.ConflictedVersionInfoEntry.ToString, TMsgDlgType.mtWarning);
-  end;
-end;
-
-procedure TfmUnit.acStartNewEntryExecute(Sender: TObject);
-begin
-  fBusinessIntf.StartNewEntry;
-  SetEditMode(False);
-end;
-
-procedure TfmUnit.cbShowInactiveUnitsClick(Sender: TObject);
-begin
-  var lListFilter := fBusinessIntf.ListFilter;
-  lListFilter.ShowInactiveUnits := cbShowInactiveUnits.Checked;
-  fBusinessIntf.ListFilter := lListFilter;
-end;
-
-procedure TfmUnit.ClearEntryFromUI;
-begin
-  fComponentValueChangedObserver.BeginUpdate;
-
-  edUnitName.Text := '';
-  cbUnitActive.Checked := True;
-  fActiveSinceHandler.Clear;
-  fActiveUntilHandler.Clear;
-  fDataConfirmedOnHandler.Clear;
-  fComponentValueChangedObserver.EndUpdate;
-  lvMemberOf.Items.Clear;
-end;
-
-procedure TfmUnit.ControlValuesChanged(Sender: TObject);
-begin
-  SetEditMode(True);
-end;
-
-procedure TfmUnit.ControlValuesUnchanged(Sender: TObject);
-begin
-  SetEditMode(False);
-end;
-
-procedure TfmUnit.DeleteEntryFromUI(const aUnitId: UInt32);
-begin
-
-end;
-
-procedure TfmUnit.FormActivate(Sender: TObject);
-begin
-  if fActivated then
-    Exit;
-  fActivated := True;
-
-  SetEditMode(False);
-  fBusinessIntf.LoadList;
-end;
-
-procedure TfmUnit.FormCreate(Sender: TObject);
-begin
+  inherited Create(AOwner);
+  fReturnAction := aReturnAction;
   fActiveSinceHandler := TCheckboxDatetimePickerHandler.Create(cbUnitActiveSinceKnown, dtUnitActiveSince);
   fActiveUntilHandler := TCheckboxDatetimePickerHandler.Create(cbUnitActiveUntilKnown, dtUnitActiveUntil);
   fDataConfirmedOnHandler := TCheckboxDatetimePickerHandler.Create(cbDataConfirmedOnKnown, dtDataConfirmedOn);
@@ -231,7 +161,7 @@ begin
   );
 end;
 
-procedure TfmUnit.FormDestroy(Sender: TObject);
+destructor TfraUnit.Destroy;
 begin
   fDelayedExecute.Free;
   fExtendedListviewMemberOfs.Free;
@@ -240,9 +170,80 @@ begin
   fDataConfirmedOnHandler.Free;
   fActiveSinceHandler.Free;
   fActiveUntilHandler.Free;
+  inherited;
 end;
 
-function TfmUnit.GetEntryFromUI(var aEntry: TDtoUnitAggregated): Boolean;
+procedure TfraUnit.acReloadCurrentEntryExecute(Sender: TObject);
+begin
+  fBusinessIntf.ReloadCurrentEntry;
+  SetEditMode(False);
+end;
+
+procedure TfraUnit.acSaveCurrentEntryExecute(Sender: TObject);
+begin
+  var lResponse := fBusinessIntf.SaveCurrentEntry;
+  if lResponse.Status = TCrudSaveStatus.Successful then
+  begin
+    SetEditMode(False);
+  end
+  else if lResponse.Status = TCrudSaveStatus.CancelledWithMessage then
+  begin
+    TMessageDialogs.Ok(lResponse.MessageText, TMsgDlgType.mtInformation);
+  end
+  else if lResponse.Status = TCrudSaveStatus.CancelledOnConflict then
+  begin
+    TMessageDialogs.Ok('Versionkonflikt: ' +
+      lResponse.ConflictedVersionInfoEntry.ToString, TMsgDlgType.mtWarning);
+  end;
+end;
+
+procedure TfraUnit.acStartNewEntryExecute(Sender: TObject);
+begin
+  fBusinessIntf.StartNewEntry;
+  SetEditMode(False);
+end;
+
+procedure TfraUnit.btReturnClick(Sender: TObject);
+begin
+  fReturnAction.Execute;
+end;
+
+procedure TfraUnit.cbShowInactiveUnitsClick(Sender: TObject);
+begin
+  var lListFilter := fBusinessIntf.ListFilter;
+  lListFilter.ShowInactiveUnits := cbShowInactiveUnits.Checked;
+  fBusinessIntf.ListFilter := lListFilter;
+end;
+
+procedure TfraUnit.ClearEntryFromUI;
+begin
+  fComponentValueChangedObserver.BeginUpdate;
+
+  edUnitName.Text := '';
+  cbUnitActive.Checked := True;
+  fActiveSinceHandler.Clear;
+  fActiveUntilHandler.Clear;
+  fDataConfirmedOnHandler.Clear;
+  fComponentValueChangedObserver.EndUpdate;
+  lvMemberOf.Items.Clear;
+end;
+
+procedure TfraUnit.ControlValuesChanged(Sender: TObject);
+begin
+  SetEditMode(True);
+end;
+
+procedure TfraUnit.ControlValuesUnchanged(Sender: TObject);
+begin
+  SetEditMode(False);
+end;
+
+procedure TfraUnit.DeleteEntryFromUI(const aUnitId: UInt32);
+begin
+
+end;
+
+function TfraUnit.GetEntryFromUI(var aEntry: TDtoUnitAggregated): Boolean;
 begin
   if TStringTools.IsEmpty(edUnitName.Text) then
   begin
@@ -259,29 +260,29 @@ begin
   aEntry.DataConfirmedOn := fDataConfirmedOnHandler.Datetime;
 end;
 
-procedure TfmUnit.SetCrudCommands(const aCommands: ICrudCommands<UInt32, TUnitFilter>);
+procedure TfraUnit.SetCrudCommands(const aCommands: ICrudCommands<UInt32, TUnitFilter>);
 begin
   fBusinessIntf := aCommands;
 end;
 
-procedure TfmUnit.LoadCurrentEntry(const aEntryId: UInt32);
+procedure TfraUnit.LoadCurrentEntry(const aEntryId: UInt32);
 begin
   fBusinessIntf.LoadCurrentEntry(aEntryId);
   SetEditMode(False);
 end;
 
-procedure TfmUnit.ListEnumBegin;
+procedure TfraUnit.ListEnumBegin;
 begin
   fExtendedListview.BeginUpdate;
   fExtendedListview.Clear;
 end;
 
-procedure TfmUnit.ListEnumProcessItem(const aEntry: TDtoUnit);
+procedure TfraUnit.ListEnumProcessItem(const aEntry: TDtoUnit);
 begin
   fExtendedListview.Add(aEntry);
 end;
 
-procedure TfmUnit.ListEnumEnd;
+procedure TfraUnit.ListEnumEnd;
 begin
   if lvListview.Items.Count > 0 then
   begin
@@ -292,7 +293,7 @@ begin
   lvListview.SetFocus;
 end;
 
-procedure TfmUnit.lvListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
+procedure TfraUnit.lvListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
   var DefaultDraw: Boolean);
 begin
   DefaultDraw := true;
@@ -304,7 +305,7 @@ begin
   end;
 end;
 
-procedure TfmUnit.lvListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
+procedure TfraUnit.lvListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
 begin
   if fComponentValueChangedObserver.InUpdated then
     Exit;
@@ -319,7 +320,7 @@ begin
   fDelayedExecute.SetData(TPair<Boolean, UInt32>.Create(lEntryFound, lUnit.Id));
 end;
 
-procedure TfmUnit.lvMemberOfCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
+procedure TfraUnit.lvMemberOfCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
   var DefaultDraw: Boolean);
 begin
   DefaultDraw := true;
@@ -331,14 +332,14 @@ begin
   end;
 end;
 
-procedure TfmUnit.SetEditMode(const aEditMode: Boolean);
+procedure TfraUnit.SetEditMode(const aEditMode: Boolean);
 begin
   fInEditMode := aEditMode;
   acSaveCurrentEntry.Enabled := fInEditMode;
   acReloadCurrentEntry.Enabled := fInEditMode;
 end;
 
-procedure TfmUnit.SetEntryToUI(const aEntry: TDtoUnitAggregated; const aMode: TEntryToUIMode);
+procedure TfraUnit.SetEntryToUI(const aEntry: TDtoUnitAggregated; const aMode: TEntryToUIMode);
 begin
   fComponentValueChangedObserver.BeginUpdate;
 
@@ -364,13 +365,13 @@ begin
   end;
 end;
 
-procedure TfmUnit.SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry;
+procedure TfraUnit.SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry;
   const aVersionInfoEntryIndex: UInt16);
 begin
   TVclUITools.VersionInfoToLabel(lbVersionInfo, aVersionInfoEntry);
 end;
 
-procedure TfmUnit.ClearVersionInfoEntryFromUI(const aVersionInfoEntryIndex: UInt16);
+procedure TfraUnit.ClearVersionInfoEntryFromUI(const aVersionInfoEntryIndex: UInt16);
 begin
   TVclUITools.VersionInfoToLabel(lbVersionInfo, nil);
 end;

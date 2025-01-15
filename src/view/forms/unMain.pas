@@ -5,7 +5,8 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.Menus, System.Actions, Vcl.ActnList,
-  unPerson, SqlConnection, ProgressIndicator, PersonBusinessIntf, PersonBusiness, Vcl.ExtCtrls;
+  unPerson, unUnit, SqlConnection, ProgressIndicator, PersonBusinessIntf, PersonBusiness,
+  DtoUnit, DtoUnitAggregated, CrudConfigUnitAggregated, Vdm.Types, EntryCrudConfig, CrudCommands, Vcl.ExtCtrls;
 
 type
   TfmMain = class(TForm)
@@ -45,6 +46,10 @@ type
     fProgressIndicator: IProgressIndicator;
     fPersonBusinessIntf: IPersonBusinessIntf;
     ffraPerson: TfraPerson;
+
+    fCrudConfigUnit: IEntryCrudConfig<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>;
+    fBusinessUnit: ICrudCommands<UInt32, TUnitFilter>;
+    ffraUnit: TfraUnit;
   public
     property Connection: ISqlConnection read fConnection write fConnection;
     property ProgressIndicator: IProgressIndicator read fProgressIndicator write fProgressIndicator;
@@ -55,9 +60,8 @@ var
 
 implementation
 
-uses System.UITypes, Vdm.Globals, ConfigReader, unUnit, CrudCommands, CrudBusiness, EntryCrudConfig,
-  DtoUnit, DtoUnitAggregated, CrudConfigUnitAggregated, DtoRole, CrudConfigRoleEntry, unRole,
-  DtoAddress, DtoAddressAggregated, unAddress, CrudConfigAddressAggregated, Vdm.Types,
+uses System.UITypes, Vdm.Globals, ConfigReader, CrudBusiness, DtoRole, CrudConfigRoleEntry, unRole,
+  DtoAddress, DtoAddressAggregated, unAddress, CrudConfigAddressAggregated,
   Report.ClubMembers, Report.UnitMembers, TenantReader, DtoTenant, CrudConfigTenantEntry, unTenant, Report.UnitRoles;
 
 {$R *.dfm}
@@ -116,18 +120,19 @@ end;
 
 procedure TfmMain.acMasterdataUnitExecute(Sender: TObject);
 begin
-  var lDialog := TfmUnit.Create(Self);
-  try
-    var lCrudConfig: IEntryCrudConfig<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter> := TCrudConfigUnitAggregated.Create(fConnection);
-    var lBusiness: ICrudCommands<UInt32, TUnitFilter> := TCrudBusiness<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>.Create(lDialog, lCrudConfig);
-    lBusiness.Initialize;
-    lDialog.ShowModal;
-    if lBusiness.DataChanged then
-    begin
+  acMasterdataUnit.Checked := not acMasterdataUnit.Checked;
+  if acMasterdataUnit.Checked then
+  begin
+    ffraUnit.Show;
+    ffraPerson.Hide;
+    fBusinessUnit.LoadList;
+  end
+  else
+  begin
+    if fBusinessUnit.DataChanged then
       fPersonBusinessIntf.ClearUnitCache;
-    end;
-  finally
-    lDialog.Free;
+    ffraPerson.Show;
+    ffraUnit.Hide;
   end;
 end;
 
@@ -172,6 +177,10 @@ begin
   fPersonBusinessIntf := TPersonBusiness.Create(fConnection, ffraPerson, fProgressIndicator);
   fPersonBusinessIntf.Initialize;
   fPersonBusinessIntf.LoadList;
+
+  fCrudConfigUnit := TCrudConfigUnitAggregated.Create(fConnection);
+  fBusinessUnit := TCrudBusiness<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>.Create(ffraUnit, fCrudConfigUnit);
+  fBusinessUnit.Initialize;
 end;
 
 procedure TfmMain.FormCreate(Sender: TObject);
@@ -198,6 +207,11 @@ begin
   ffraPerson.Parent := Self;
   ffraPerson.Align := TAlign.alClient;
   ffraPerson.Show;
+
+  ffraUnit := TfraUnit.Create(Self, acMasterdataUnit);
+  ffraUnit.Parent := Self;
+  ffraUnit.Align := TAlign.alClient;
+  ffraUnit.Hide;
 end;
 
 procedure TfmMain.FormDestroy(Sender: TObject);

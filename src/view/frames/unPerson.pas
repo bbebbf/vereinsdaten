@@ -64,6 +64,8 @@ type
     lbBasedataVersionInfo: TLabel;
     edFilter: TEdit;
     lbFilter: TLabel;
+    pnTop: TPanel;
+    lbTitle: TLabel;
     procedure lvPersonListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure lvPersonListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
