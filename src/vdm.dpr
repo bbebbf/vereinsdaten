@@ -6,6 +6,7 @@ uses
   {$endif FASTMM}
   Vcl.Forms,
   FireDAC.VCLUI.Wait,
+  Winapi.Windows,
   SqlConnection in 'general\intf\sql\SqlConnection.pas',
   Transaction in 'general\intf\transcation\Transaction.pas',
   MySqlConnection in 'general\common\MySql\MySqlConnection.pas',
@@ -107,20 +108,33 @@ begin
   Application.MainFormOnTaskbar := True;
   Application.Title := TVdmGlobals.GetVdmApplicationTitle;
   Application.CreateForm(TfmMain, fmMain);
-  var lConnectProgress := TfmProgressForm.Create(Application);
+
+  var lJobObjectHandle := CreateJobObject(nil, nil);
   try
-    lConnectProgress.ProgressBegin(0, False, 'Datenbankverbindung wird hergestellt ...');
-    var lConnection := TConnectionFactory.CreateConnection;
-    if not lConnection.Connect then
-      Exit;
-    lConnectProgress.ProgressEnd;
+    var lJobLimitInfo := default(JOBOBJECT_EXTENDED_LIMIT_INFORMATION);
+    lJobLimitInfo.BasicLimitInformation.LimitFlags := JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+    SetInformationJobObject(lJobObjectHandle, JobObjectExtendedLimitInformation, @lJobLimitInfo, SizeOf(lJobLimitInfo));
 
-    TTenantReader.Connection := lConnection;
+    AssignProcessToJobObject(lJobObjectHandle, GetCurrentProcess);
 
-    fmMain.Connection := lConnection;
-    fmMain.ProgressIndicator := lConnectProgress;
-    Application.Run;
+    var lConnectProgress := TfmProgressForm.Create(Application);
+    try
+      lConnectProgress.ProgressBegin(0, False, 'Datenbankverbindung wird hergestellt ...');
+      var lConnection := TConnectionFactory.CreateConnection;
+      if not lConnection.Connect then
+        Exit;
+      lConnectProgress.ProgressEnd;
+
+      TTenantReader.Connection := lConnection;
+
+      fmMain.Connection := lConnection;
+      fmMain.ProgressIndicator := lConnectProgress;
+      Application.Run;
+    finally
+      lConnectProgress.Free;
+    end;
   finally
-    lConnectProgress.Free;
+    if lJobObjectHandle > 0 then
+      CloseHandle(lJobObjectHandle);
   end;
 end.
