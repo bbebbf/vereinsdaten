@@ -275,6 +275,7 @@ procedure TfraPerson.ClearEntryFromUI;
 begin
   fComponentValueChangedObserver.BeginUpdate;
   cbPersonAddress.Items.Assign(fBusinessIntf.AvailableAddresses.Data.Strings);
+  TVclUITools.SetComboboxItemIndex(cbPersonAddress, -1);
 
   edPersonFirstname.Text := '';
   edPersonPraeposition.Text := '';
@@ -282,7 +283,6 @@ begin
   fPersonBirthdayHandler.Clear;
 
   cbPersonActive.Checked := True;
-  cbPersonAddress.ItemIndex := -1;
   cbCreateNewAddress.Checked := False;
   edNewAddressStreet.Text := '';
   edNewAddressPostalcode.Text := '';

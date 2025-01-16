@@ -251,9 +251,6 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="general\common\Tools\DelegatedConverter.pas"/>
         <DCCReference Include="business\impl\CrudBusiness.pas"/>
         <DCCReference Include="general\intf\crud\EntryCrudConfig.pas"/>
-        <DCCReference Include="view\forms\unUnit.pas">
-            <Form>fmUnit</Form>
-        </DCCReference>
         <DCCReference Include="data\CrudConfigUnitAggregated.pas"/>
         <DCCReference Include="general\common\Tools\InterfacedBase.pas"/>
         <DCCReference Include="view\forms\unMain.pas">
@@ -299,6 +296,11 @@ $(PostBuildEvent)]]></PostBuildEvent>
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="view\tools\ExtendedListview.pas"/>
+        <DCCReference Include="view\frames\unUnit.pas">
+            <Form>fraUnit</Form>
+            <FormType>dfm</FormType>
+            <DesignClass>TFrame</DesignClass>
+        </DCCReference>
         <None Include="inc\CompilerDirectives.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
