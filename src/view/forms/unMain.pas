@@ -30,6 +30,8 @@ type
     Vereinsdatenbearbeiten1: TMenuItem;
     acReportUnitRoles: TAction;
     RollenundEinheiten1: TMenuItem;
+    acReportMemberUnits: TAction;
+    acReportMemberUnits1: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormActivate(Sender: TObject);
@@ -40,6 +42,7 @@ type
     procedure acReportUnitMembersExecute(Sender: TObject);
     procedure acMasterdataTenantExecute(Sender: TObject);
     procedure acReportUnitRolesExecute(Sender: TObject);
+    procedure acReportMemberUnitsExecute(Sender: TObject);
   strict private
     fActivated: Boolean;
     fConnection: ISqlConnection;
@@ -62,7 +65,8 @@ implementation
 
 uses System.UITypes, Vdm.Globals, ConfigReader, CrudBusiness, DtoRole, CrudConfigRoleEntry, unRole,
   DtoAddress, DtoAddressAggregated, unAddress, CrudConfigAddressAggregated,
-  Report.ClubMembers, Report.UnitMembers, TenantReader, DtoTenant, CrudConfigTenantEntry, unTenant, Report.UnitRoles;
+  Report.ClubMembers, Report.UnitMembers, TenantReader, DtoTenant, CrudConfigTenantEntry, unTenant,
+  Report.UnitRoles, Report.MemberUnits;
 
 {$R *.dfm}
 
@@ -139,6 +143,16 @@ end;
 procedure TfmMain.acReportClubMembersExecute(Sender: TObject);
 begin
   var lReport := TfmReportClubMembers.Create(fConnection);
+  try
+    lReport.Preview;
+  finally
+    lReport.Free;
+  end;
+end;
+
+procedure TfmMain.acReportMemberUnitsExecute(Sender: TObject);
+begin
+  var lReport := TfmReportMemberUnits.Create(fConnection);
   try
     lReport.Preview;
   finally

@@ -99,7 +99,8 @@ uses
   CrudConfigTenantEntry in 'data\CrudConfigTenantEntry.pas',
   Report.UnitRoles in 'reports\Report.UnitRoles.pas' {fmReportUnitRoles},
   ExtendedListview in 'view\tools\ExtendedListview.pas',
-  unUnit in 'view\frames\unUnit.pas' {fraUnit: TFrame};
+  unUnit in 'view\frames\unUnit.pas' {fraUnit: TFrame},
+  Report.MemberUnits in 'reports\Report.MemberUnits.pas' {fmReportMemberUnits};
 
 {$R *.res}
 

@@ -301,6 +301,10 @@ $(PostBuildEvent)]]></PostBuildEvent>
             <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
+        <DCCReference Include="reports\Report.MemberUnits.pas">
+            <Form>fmReportMemberUnits</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <None Include="inc\CompilerDirectives.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
