@@ -147,6 +147,7 @@ object fmRole: TfmRole
     Top = 154
     object acSaveCurrentEntry: TAction
       Caption = #196'nderungen speichern'
+      ShortCut = 16467
       OnExecute = acSaveCurrentEntryExecute
     end
     object acReloadCurrentEntry: TAction

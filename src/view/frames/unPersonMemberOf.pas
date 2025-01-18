@@ -60,6 +60,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    procedure SetActionsEnabled(const aEnabled: Boolean);
   end;
 
 implementation
@@ -176,6 +177,18 @@ begin
   fDialog.Free;
   fExtentedListviewMemberOfs.Free;
   inherited;
+end;
+
+procedure TfraPersonMemberOf.SetActionsEnabled(const aEnabled: Boolean);
+begin
+  if aEnabled then
+  begin
+    alMemberOfsActionList.State := TActionListState.asNormal;
+  end
+  else
+  begin
+    alMemberOfsActionList.State := TActionListState.asSuspended;
+  end;
 end;
 
 procedure TfraPersonMemberOf.SetCommands(const aCommands: IMemberOfBusinessIntf);

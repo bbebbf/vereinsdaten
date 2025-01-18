@@ -67,6 +67,8 @@ type
     fActiveUntilHandler: TCheckboxDatetimePickerHandler;
     fDataConfirmedOnHandler: TCheckboxDatetimePickerHandler;
 
+    procedure CMVisiblechanged(var Message: TMessage); message CM_VISIBLECHANGED;
+
     procedure SetEditMode(const aEditMode: Boolean);
     procedure StartEdit;
     procedure ControlValuesChanged(Sender: TObject);
@@ -401,6 +403,20 @@ end;
 procedure TfraUnit.ClearVersionInfoEntryFromUI(const aVersionInfoEntryIndex: UInt16);
 begin
   TVclUITools.VersionInfoToLabel(lbVersionInfo, nil);
+end;
+
+procedure TfraUnit.CMVisiblechanged(var Message: TMessage);
+begin
+  inherited;
+  if Message.WParam = Ord(True) then
+  begin
+    alActionList.State := TActionListState.asNormal;
+    SetEditMode(False);
+  end
+  else
+  begin
+    alActionList.State := TActionListState.asSuspended;
+  end;
 end;
 
 end.

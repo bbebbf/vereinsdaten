@@ -430,6 +430,7 @@ object fraPerson: TfraPerson
     Top = 154
     object acPersonSaveCurrentRecord: TAction
       Caption = #196'nderungen speichern'
+      ShortCut = 16467
       OnExecute = acPersonSaveCurrentRecordExecute
     end
     object acPersonReloadCurrentRecord: TAction

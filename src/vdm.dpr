@@ -5,6 +5,7 @@ uses
   FastMM4,
   {$endif FASTMM}
   Vcl.Forms,
+  Vcl.Dialogs,
   FireDAC.VCLUI.Wait,
   Winapi.Windows,
   SqlConnection in 'general\intf\sql\SqlConnection.pas',
@@ -121,8 +122,13 @@ begin
     try
       lConnectProgress.ProgressBegin(0, False, 'Datenbankverbindung wird hergestellt ...');
       var lConnection := TConnectionFactory.CreateConnection;
-      if not lConnection.Connect then
+      try
+        lConnection.Connect;
+      except
+        lConnectProgress.Hide;
+        TMessageDialogs.Ok('Verbindung zur Datenbank ist fehlgeschlagen.', TMsgDlgType.mtError);
         Exit;
+      end;
       lConnectProgress.ProgressEnd;
 
       TTenantReader.Connection := lConnection;

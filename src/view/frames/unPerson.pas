@@ -90,6 +90,8 @@ type
     fActiveSinceHandler: TCheckboxDatetimePickerHandler;
     fActiveUntilHandler: TCheckboxDatetimePickerHandler;
 
+    procedure CMVisiblechanged(var Message: TMessage); message CM_VISIBLECHANGED;
+
     function GetMemberOfUI: IPersonMemberOfUI;
 
     procedure SetEditMode(const aEditMode: Boolean);
@@ -377,6 +379,8 @@ end;
 
 procedure TfraPerson.SetPersonBusinessIntf(const aCommands: IPersonBusinessIntf);
 begin
+  pcPersonDetails.ActivePage := tsPersonaldata;
+  fPersonMemberOf.SetActionsEnabled(False);
   fBusinessIntf := aCommands;
 end;
 
@@ -396,6 +400,20 @@ end;
 procedure TfraPerson.ClearVersionInfoEntryFromUI(const aVersionInfoEntryIndex: UInt16);
 begin
   TVclUITools.VersionInfoToLabel(lbBasedataVersionInfo, nil);
+end;
+
+procedure TfraPerson.CMVisiblechanged(var Message: TMessage);
+begin
+  inherited;
+  if Message.WParam = Ord(True) then
+  begin
+    alActionList.State := TActionListState.asNormal;
+    SetEditMode(False);
+  end
+  else
+  begin
+    alActionList.State := TActionListState.asSuspended;
+  end;
 end;
 
 procedure TfraPerson.LoadCurrentEntry(const aPersonId: UInt32);
@@ -474,6 +492,7 @@ end;
 
 procedure TfraPerson.pcPersonDetailsChange(Sender: TObject);
 begin
+  fPersonMemberOf.SetActionsEnabled(pcPersonDetails.ActivePage = tsMemberOf);
   if pcPersonDetails.ActivePage = tsMemberOf then
   begin
     fBusinessIntf.LoadPersonsMemberOfs;

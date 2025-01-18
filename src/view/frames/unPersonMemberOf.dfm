@@ -125,6 +125,7 @@ object fraPersonMemberOf: TfraPersonMemberOf
     end
     object acSaveMemberOfs: TAction
       Caption = #196'nderungen speichern'
+      ShortCut = 16467
       OnExecute = acSaveMemberOfsExecute
     end
     object acReloadMemberOfs: TAction
