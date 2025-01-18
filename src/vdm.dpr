@@ -101,7 +101,8 @@ uses
   Report.UnitRoles in 'reports\Report.UnitRoles.pas' {fmReportUnitRoles},
   ExtendedListview in 'view\tools\ExtendedListview.pas',
   unUnit in 'view\frames\unUnit.pas' {fraUnit: TFrame},
-  Report.MemberUnits in 'reports\Report.MemberUnits.pas' {fmReportMemberUnits};
+  Report.MemberUnits in 'reports\Report.MemberUnits.pas' {fmReportMemberUnits},
+  unSelectConnection in 'view\forms\unSelectConnection.pas' {fmSelectConnection};
 
 {$R *.res}
 
@@ -109,14 +110,31 @@ begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
   Application.Title := TVdmGlobals.GetVdmApplicationTitle;
-  Application.CreateForm(TfmMain, fmMain);
   var lJobObjectHandle := CreateJobObject(nil, nil);
   try
     var lJobLimitInfo := default(JOBOBJECT_EXTENDED_LIMIT_INFORMATION);
     lJobLimitInfo.BasicLimitInformation.LimitFlags := JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
     SetInformationJobObject(lJobObjectHandle, JobObjectExtendedLimitInformation, @lJobLimitInfo, SizeOf(lJobLimitInfo));
-
     AssignProcessToJobObject(lJobObjectHandle, GetCurrentProcess);
+
+    var lConnectionCount := TConfigReader.Instance.ConnectionNames.Count;
+    if lConnectionCount = 0 then
+    begin
+      TMessageDialogs.Ok('Keine Verbindungsdefinitionen gefunden. Programm wird beendet.', TMsgDlgType.mtError);
+      Exit;
+    end
+    else if lConnectionCount > 1 then
+    begin
+      var lDialog := TfmSelectConnection.Create(Application);
+      try
+        if not lDialog.Execute then
+          Exit;
+      finally
+        lDialog.Free;
+      end;
+    end;
+
+    Application.CreateForm(TfmMain, fmMain);
 
     var lConnectProgress := TfmProgressForm.Create(Application);
     try
@@ -126,7 +144,7 @@ begin
         lConnection.Connect;
       except
         lConnectProgress.Hide;
-        TMessageDialogs.Ok('Verbindung zur Datenbank ist fehlgeschlagen.', TMsgDlgType.mtError);
+        TMessageDialogs.Ok('Verbindung zur Datenbank ist fehlgeschlagen. Programm wird beendet.', TMsgDlgType.mtError);
         Exit;
       end;
       lConnectProgress.ProgressEnd;
