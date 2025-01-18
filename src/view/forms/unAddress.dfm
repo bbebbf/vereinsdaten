@@ -69,6 +69,7 @@ object fmAddress: TfmAddress
       RowSelect = True
       TabOrder = 1
       ViewStyle = vsReport
+      OnDblClick = lvListviewDblClick
       OnSelectItem = lvListviewSelectItem
     end
     object pnFilter: TPanel

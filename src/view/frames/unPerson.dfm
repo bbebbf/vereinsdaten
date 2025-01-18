@@ -28,8 +28,6 @@ object fraPerson: TfraPerson
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitTop = 0
-    ExplicitHeight = 626
     object lbListviewItemCount: TLabel
       Left = 0
       Top = 536
@@ -57,8 +55,8 @@ object fraPerson: TfraPerson
       TabOrder = 1
       ViewStyle = vsReport
       OnCustomDrawItem = lvPersonListviewCustomDrawItem
+      OnDblClick = lvPersonListviewDblClick
       OnSelectItem = lvPersonListviewSelectItem
-      ExplicitHeight = 503
     end
     object pnFilter: TPanel
       Left = 0
@@ -107,7 +105,6 @@ object fraPerson: TfraPerson
       Action = acPersonStartNewRecord
       Align = alBottom
       TabOrder = 2
-      ExplicitTop = 601
     end
   end
   object pnPersonDetails: TPanel
@@ -118,8 +115,6 @@ object fraPerson: TfraPerson
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
-    ExplicitTop = 0
-    ExplicitHeight = 626
     object pcPersonDetails: TPageControl
       Left = 0
       Top = 0
@@ -130,7 +125,6 @@ object fraPerson: TfraPerson
       TabOrder = 0
       OnChange = pcPersonDetailsChange
       OnChanging = pcPersonDetailsChanging
-      ExplicitHeight = 626
       object tsPersonaldata: TTabSheet
         Caption = 'Personendaten'
         object lbPersonFirstname: TLabel

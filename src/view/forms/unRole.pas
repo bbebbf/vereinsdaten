@@ -7,7 +7,7 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
   System.Generics.Collections, CrudCommands, DtoRole, ExtendedListview, Vcl.Menus, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.WinXPickers, System.Actions, Vcl.ActnList,
-  ComponentValueChangedObserver, CrudUI, DelayedExecute, Vdm.Types;
+  ComponentValueChangedObserver, CrudUI, Vdm.Types;
 
 type
   TfmRole = class(TForm, ICrudUI<TDtoRole, TDtoRole, UInt32, TVoid>)
@@ -35,17 +35,20 @@ type
     procedure acSaveCurrentEntryExecute(Sender: TObject);
     procedure acReloadCurrentEntryExecute(Sender: TObject);
     procedure acStartNewEntryExecute(Sender: TObject);
+    procedure lvListviewDblClick(Sender: TObject);
   strict private
     fActivated: Boolean;
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
     fBusinessIntf: ICrudCommands<UInt32, TVoid>;
     fExtendedListview: TExtendedListview<TDtoRole>;
-    fDelayedExecute: TDelayedExecute<TPair<Boolean, UInt32>>;
+    fDelayedLoadEntry: TDelayedLoadEntry;
 
     procedure SetEditMode(const aEditMode: Boolean);
+    procedure StartEdit;
     procedure ControlValuesChanged(Sender: TObject);
     procedure ControlValuesUnchanged(Sender: TObject);
+    procedure EnqueueLoadEntry(const aListItem: TListItem; const aDoStartEdit: Boolean);
 
     procedure SetCrudCommands(const aCommands: ICrudCommands<UInt32, TVoid>);
     procedure ListEnumBegin;
@@ -88,7 +91,7 @@ end;
 procedure TfmRole.acStartNewEntryExecute(Sender: TObject);
 begin
   fBusinessIntf.StartNewEntry;
-  SetEditMode(False);
+  StartEdit;
 end;
 
 procedure TfmRole.ClearEntryFromUI;
@@ -146,12 +149,14 @@ begin
       end
     )
   );
-  fDelayedExecute := TDelayedExecute<TPair<Boolean, UInt32>>.Create(
-    procedure(const aData: TPair<Boolean, UInt32>)
+  fDelayedLoadEntry := TDelayedLoadEntry.Create(
+    procedure(const aData: TDelayedLoadEntryData)
     begin
-      if aData.Key then
+      if aData.RecordFound then
       begin
-        LoadCurrentEntry(aData.Value);
+        LoadCurrentEntry(aData.RecordId);
+        if aData.StartEdit then
+          StartEdit;
       end
       else
       begin
@@ -164,7 +169,7 @@ end;
 
 procedure TfmRole.FormDestroy(Sender: TObject);
 begin
-  fDelayedExecute.Free;
+  fDelayedLoadEntry.Free;
   fExtendedListview.Free;
   fComponentValueChangedObserver.Free;
 end;
@@ -228,26 +233,42 @@ begin
   lvListview.SetFocus;
 end;
 
+procedure TfmRole.lvListviewDblClick(Sender: TObject);
+begin
+  if Assigned(lvListview.Selected) then
+    EnqueueLoadEntry(lvListview.Selected, True);
+end;
+
 procedure TfmRole.lvListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
+begin
+  if Selected then
+    EnqueueLoadEntry(Item, False)
+  else
+    EnqueueLoadEntry(nil, False)
+end;
+
+procedure TfmRole.EnqueueLoadEntry(const aListItem: TListItem; const aDoStartEdit: Boolean);
 begin
   if fComponentValueChangedObserver.InUpdated then
     Exit;
 
-  var lEntryFound := False;
-  var lEntry := default(TDtoRole);
-  if Selected then
+  var lRecordFound := False;
+  var lRecord: TDtoRole;
+  if Assigned(aListItem) then
   begin
-    lEntryFound := fExtendedListview.TryGetListItemData(Item, lEntry);
+    lRecordFound := fExtendedListview.TryGetListItemData(aListItem, lRecord);
   end;
-
-  fDelayedExecute.SetData(TPair<Boolean, UInt32>.Create(lEntryFound, lEntry.Id));
+  fDelayedLoadEntry.SetData(TDelayedLoadEntryData.Create(lRecord.Id, lRecordFound, aDoStartEdit));
 end;
 
 procedure TfmRole.SetEditMode(const aEditMode: Boolean);
 begin
+  var lInEditModeBefore := fInEditMode;
   fInEditMode := aEditMode;
   acSaveCurrentEntry.Enabled := fInEditMode;
   acReloadCurrentEntry.Enabled := fInEditMode;
+  if lInEditModeBefore and not fInEditMode then
+    lvListview.SetFocus;
 end;
 
 procedure TfmRole.SetEntryToUI(const aEntry: TDtoRole; const aMode: TEntryToUIMode);
@@ -259,6 +280,12 @@ begin
 
   fExtendedListview.UpdateData(aEntry);
   fComponentValueChangedObserver.EndUpdate;
+end;
+
+procedure TfmRole.StartEdit;
+begin
+  edRoleName.SetFocus;
+  SetEditMode(True);
 end;
 
 end.

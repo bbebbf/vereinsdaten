@@ -33,7 +33,7 @@ object fmRole: TfmRole
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitHeight = 252
+    ExplicitHeight = 400
     object lbListviewItemCount: TLabel
       Left = 0
       Top = 358
@@ -60,8 +60,8 @@ object fmRole: TfmRole
       ShowColumnHeaders = False
       TabOrder = 1
       ViewStyle = vsReport
+      OnDblClick = lvListviewDblClick
       OnSelectItem = lvListviewSelectItem
-      ExplicitHeight = 161
     end
     object pnFilter: TPanel
       Left = 0
@@ -80,7 +80,7 @@ object fmRole: TfmRole
       Action = acStartNewEntry
       Align = alBottom
       TabOrder = 2
-      ExplicitTop = 227
+      ExplicitTop = 375
     end
   end
   object pnDetails: TPanel
@@ -91,7 +91,8 @@ object fmRole: TfmRole
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
-    ExplicitHeight = 252
+    ExplicitWidth = 541
+    ExplicitHeight = 400
     object lbRoleName: TLabel
       Left = 23
       Top = 19

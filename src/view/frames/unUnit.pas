@@ -7,7 +7,7 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
   System.Generics.Collections, CrudCommands, DtoUnit, DtoUnitAggregated, ExtendedListview, Vcl.Menus, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.WinXPickers, System.Actions, Vcl.ActnList,
-  ComponentValueChangedObserver, CrudUI, DelayedExecute, CheckboxDatetimePickerHandler, Vdm.Types,
+  ComponentValueChangedObserver, CrudUI, CheckboxDatetimePickerHandler, Vdm.Types,
   Vdm.Versioning.Types, VersionInfoEntryUI;
 
 type
@@ -54,6 +54,7 @@ type
       var DefaultDraw: Boolean);
     procedure cbShowInactiveUnitsClick(Sender: TObject);
     procedure btReturnClick(Sender: TObject);
+    procedure lvListviewDblClick(Sender: TObject);
   strict private
     fReturnAction: TAction;
     fComponentValueChangedObserver: TComponentValueChangedObserver;
@@ -61,14 +62,16 @@ type
     fBusinessIntf: ICrudCommands<UInt32, TUnitFilter>;
     fExtendedListview: TExtendedListview<TDtoUnit>;
     fExtendedListviewMemberOfs: TExtendedListview<TDtoUnitAggregatedPersonMemberOf>;
-    fDelayedExecute: TDelayedExecute<TPair<Boolean, UInt32>>;
+    fDelayedLoadEntry: TDelayedLoadEntry;
     fActiveSinceHandler: TCheckboxDatetimePickerHandler;
     fActiveUntilHandler: TCheckboxDatetimePickerHandler;
     fDataConfirmedOnHandler: TCheckboxDatetimePickerHandler;
 
     procedure SetEditMode(const aEditMode: Boolean);
+    procedure StartEdit;
     procedure ControlValuesChanged(Sender: TObject);
     procedure ControlValuesUnchanged(Sender: TObject);
+    procedure EnqueueLoadEntry(const aListItem: TListItem; const aDoStartEdit: Boolean);
 
     procedure SetCrudCommands(const aCommands: ICrudCommands<UInt32, TUnitFilter>);
     procedure ListEnumBegin;
@@ -83,7 +86,7 @@ type
     procedure SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry; const aVersionInfoEntryIndex: UInt16);
     procedure ClearVersionInfoEntryFromUI(const aVersionInfoEntryIndex: UInt16);
   public
-    constructor Create(AOwner: TComponent; const aReturnAction: TAction);
+    constructor Create(AOwner: TComponent; const aReturnAction: TAction); reintroduce;
     destructor Destroy; override;
   end;
 
@@ -145,12 +148,14 @@ begin
     )
   );
 
-  fDelayedExecute := TDelayedExecute<TPair<Boolean, UInt32>>.Create(
-    procedure(const aData: TPair<Boolean, UInt32>)
+  fDelayedLoadEntry := TDelayedLoadEntry.Create(
+    procedure(const aData: TDelayedLoadEntryData)
     begin
-      if aData.Key then
+      if aData.RecordFound then
       begin
-        LoadCurrentEntry(aData.Value);
+        LoadCurrentEntry(aData.RecordId);
+        if aData.StartEdit then
+          StartEdit;
       end
       else
       begin
@@ -163,7 +168,7 @@ end;
 
 destructor TfraUnit.Destroy;
 begin
-  fDelayedExecute.Free;
+  fDelayedLoadEntry.Free;
   fExtendedListviewMemberOfs.Free;
   fExtendedListview.Free;
   fComponentValueChangedObserver.Free;
@@ -200,7 +205,7 @@ end;
 procedure TfraUnit.acStartNewEntryExecute(Sender: TObject);
 begin
   fBusinessIntf.StartNewEntry;
-  SetEditMode(False);
+  StartEdit;
 end;
 
 procedure TfraUnit.btReturnClick(Sender: TObject);
@@ -305,19 +310,32 @@ begin
   end;
 end;
 
+procedure TfraUnit.lvListviewDblClick(Sender: TObject);
+begin
+  if Assigned(lvListview.Selected) then
+    EnqueueLoadEntry(lvListview.Selected, True);
+end;
+
 procedure TfraUnit.lvListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
+begin
+  if Selected then
+    EnqueueLoadEntry(Item, False)
+  else
+    EnqueueLoadEntry(nil, False);
+end;
+
+procedure TfraUnit.EnqueueLoadEntry(const aListItem: TListItem; const aDoStartEdit: Boolean);
 begin
   if fComponentValueChangedObserver.InUpdated then
     Exit;
 
-  var lEntryFound := False;
-  var lUnit: TDtoUnit;
-  if Selected then
+  var lRecordFound := False;
+  var lRecord: TDtoUnit;
+  if Assigned(aListItem) then
   begin
-    lEntryFound := fExtendedListview.TryGetListItemData(Item, lUnit);
+    lRecordFound := fExtendedListview.TryGetListItemData(aListItem, lRecord);
   end;
-
-  fDelayedExecute.SetData(TPair<Boolean, UInt32>.Create(lEntryFound, lUnit.Id));
+  fDelayedLoadEntry.SetData(TDelayedLoadEntryData.Create(lRecord.Id, lRecordFound, aDoStartEdit));
 end;
 
 procedure TfraUnit.lvMemberOfCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
@@ -334,9 +352,12 @@ end;
 
 procedure TfraUnit.SetEditMode(const aEditMode: Boolean);
 begin
+  var lInEditModeBefore := fInEditMode;
   fInEditMode := aEditMode;
   acSaveCurrentEntry.Enabled := fInEditMode;
   acReloadCurrentEntry.Enabled := fInEditMode;
+  if lInEditModeBefore and not fInEditMode then
+    lvListview.SetFocus;
 end;
 
 procedure TfraUnit.SetEntryToUI(const aEntry: TDtoUnitAggregated; const aMode: TEntryToUIMode);
@@ -369,6 +390,12 @@ procedure TfraUnit.SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfo
   const aVersionInfoEntryIndex: UInt16);
 begin
   TVclUITools.VersionInfoToLabel(lbVersionInfo, aVersionInfoEntry);
+end;
+
+procedure TfraUnit.StartEdit;
+begin
+  edUnitName.SetFocus;
+  SetEditMode(True);
 end;
 
 procedure TfraUnit.ClearVersionInfoEntryFromUI(const aVersionInfoEntryIndex: UInt16);

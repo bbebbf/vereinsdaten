@@ -7,7 +7,7 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
   System.Generics.Collections, CrudCommands, DtoAddress, DtoAddressAggregated, ExtendedListview, Vcl.Menus, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.WinXPickers, System.Actions, Vcl.ActnList,
-  ComponentValueChangedObserver, CrudUI, DelayedExecute, Vdm.Types, Vdm.Versioning.Types, VersionInfoEntryUI;
+  ComponentValueChangedObserver, CrudUI, Vdm.Types, Vdm.Versioning.Types, VersionInfoEntryUI;
 
 type
   TfmAddress = class(TForm, ICrudUI<TDtoAddressAggregated, TDtoAddress, UInt32, TVoid>, IVersionInfoEntryUI)
@@ -38,6 +38,7 @@ type
     procedure acSaveCurrentEntryExecute(Sender: TObject);
     procedure acReloadCurrentEntryExecute(Sender: TObject);
     procedure acStartNewEntryExecute(Sender: TObject);
+    procedure lvListviewDblClick(Sender: TObject);
   strict private
     fActivated: Boolean;
     fComponentValueChangedObserver: TComponentValueChangedObserver;
@@ -45,11 +46,13 @@ type
     fBusinessIntf: ICrudCommands<UInt32, TVoid>;
     fExtendedListview: TExtendedListview<TDtoAddress>;
     fExtendedListviewMemberOfs: TExtendedListview<TDtoAddressAggregatedPersonMemberOf>;
-    fDelayedExecute: TDelayedExecute<TPair<Boolean, UInt32>>;
+    fDelayedLoadEntry: TDelayedLoadEntry;
 
     procedure SetEditMode(const aEditMode: Boolean);
+    procedure StartEdit;
     procedure ControlValuesChanged(Sender: TObject);
     procedure ControlValuesUnchanged(Sender: TObject);
+    procedure EnqueueLoadEntry(const aListItem: TListItem; const aDoStartEdit: Boolean);
 
     procedure SetCrudCommands(const aCommands: ICrudCommands<UInt32, TVoid>);
     procedure ListEnumBegin;
@@ -183,12 +186,14 @@ begin
     )
   );
 
-  fDelayedExecute := TDelayedExecute<TPair<Boolean, UInt32>>.Create(
-    procedure(const aData: TPair<Boolean, UInt32>)
+  fDelayedLoadEntry := TDelayedLoadEntry.Create(
+    procedure(const aData: TDelayedLoadEntryData)
     begin
-      if aData.Key then
+      if aData.RecordFound then
       begin
-        LoadCurrentEntry(aData.Value);
+        LoadCurrentEntry(aData.RecordId);
+        if aData.StartEdit then
+          StartEdit;
       end
       else
       begin
@@ -201,7 +206,7 @@ end;
 
 procedure TfmAddress.FormDestroy(Sender: TObject);
 begin
-  fDelayedExecute.Free;
+  fDelayedLoadEntry.Free;
   fExtendedListviewMemberOfs.Free;
   fExtendedListview.Free;
   fComponentValueChangedObserver.Free;
@@ -255,27 +260,43 @@ begin
   lvListview.SetFocus;
 end;
 
+procedure TfmAddress.lvListviewDblClick(Sender: TObject);
+begin
+  if Assigned(lvListview.Selected) then
+    EnqueueLoadEntry(lvListview.Selected, True);
+end;
+
 procedure TfmAddress.lvListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
+begin
+  if Selected then
+    EnqueueLoadEntry(Item, False)
+  else
+    EnqueueLoadEntry(nil, False);
+end;
+
+procedure TfmAddress.EnqueueLoadEntry(const aListItem: TListItem; const aDoStartEdit: Boolean);
 begin
   if fComponentValueChangedObserver.InUpdated then
     Exit;
 
-  var lEntryFound := False;
-  var lEntry: TDtoAddress;
-  if Selected then
+  var lRecordFound := False;
+  var lRecord: TDtoAddress;
+  if Assigned(aListItem) then
   begin
-    lEntryFound := fExtendedListview.TryGetListItemData(Item, lEntry);
+    lRecordFound := fExtendedListview.TryGetListItemData(aListItem, lRecord);
   end;
-
-  fDelayedExecute.SetData(TPair<Boolean, UInt32>.Create(lEntryFound, lEntry.Id));
+  fDelayedLoadEntry.SetData(TDelayedLoadEntryData.Create(lRecord.Id, lRecordFound, aDoStartEdit));
 end;
 
 procedure TfmAddress.SetEditMode(const aEditMode: Boolean);
 begin
+  var lInEditModeBefore := fInEditMode;
   fInEditMode := aEditMode;
   acSaveCurrentEntry.Enabled := fInEditMode;
   acReloadCurrentEntry.Enabled := fInEditMode;
   acDeleteCurrentEntry.Enabled := not fInEditMode;
+  if lInEditModeBefore and not fInEditMode then
+    lvListview.SetFocus;
 end;
 
 procedure TfmAddress.SetEntryToUI(const aEntry: TDtoAddressAggregated; const aMode: TEntryToUIMode);
@@ -305,6 +326,12 @@ procedure TfmAddress.SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionIn
   const aVersionInfoEntryIndex: UInt16);
 begin
   TVclUITools.VersionInfoToLabel(lbVersionInfo, aVersionInfoEntry);
+end;
+
+procedure TfmAddress.StartEdit;
+begin
+  edAddressStreet.SetFocus;
+  SetEditMode(True);
 end;
 
 procedure TfmAddress.ClearVersionInfoEntryFromUI(const aVersionInfoEntryIndex: UInt16);

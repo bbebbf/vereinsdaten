@@ -28,8 +28,6 @@ object fraUnit: TfraUnit
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 1
-    ExplicitTop = 0
-    ExplicitHeight = 480
     object lbListviewItemCount: TLabel
       Left = 0
       Top = 604
@@ -58,8 +56,8 @@ object fraUnit: TfraUnit
       TabOrder = 1
       ViewStyle = vsReport
       OnCustomDrawItem = lvListviewCustomDrawItem
+      OnDblClick = lvListviewDblClick
       OnSelectItem = lvListviewSelectItem
-      ExplicitHeight = 389
     end
     object pnFilter: TPanel
       Left = 0
@@ -87,7 +85,6 @@ object fraUnit: TfraUnit
       Action = acStartNewEntry
       Align = alBottom
       TabOrder = 2
-      ExplicitTop = 455
     end
   end
   object pnDetails: TPanel
@@ -98,9 +95,6 @@ object fraUnit: TfraUnit
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 2
-    ExplicitTop = 0
-    ExplicitWidth = 283
-    ExplicitHeight = 480
     object lvMemberOf: TListView
       Left = 0
       Top = 337
@@ -133,8 +127,6 @@ object fraUnit: TfraUnit
       TabOrder = 1
       ViewStyle = vsReport
       OnCustomDrawItem = lvMemberOfCustomDrawItem
-      ExplicitTop = 604
-      ExplicitHeight = 50
     end
     object pnTopRight: TPanel
       Left = 0
