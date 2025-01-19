@@ -303,8 +303,7 @@ begin
   edMembershipEndText.Text := '';
 
   fComponentValueChangedObserver.EndUpdate;
-  tsPersonaldata.Caption := '...';
-  tsMemberOf.Caption := 'ist Mitglied von ...';
+  tsMemberOf.Caption := '??? ist Teil von ...';
 end;
 
 procedure TfraPerson.ControlValuesChanged(Sender: TObject);
@@ -569,8 +568,10 @@ begin
   end;
 
   fComponentValueChangedObserver.EndUpdate;
-  tsPersonaldata.Caption := aRecord.Person.ToString;
-  tsMemberOf.Caption := 'ist Mitglied von ...';
+  var lPersonName := aRecord.Person.NameId.Vorname;
+  if Length(lPersonName) = 0 then
+    lPersonName := aRecord.Person.NameId.Nachname;
+  tsMemberOf.Caption := lPersonName + ' ist &Teil von ...';
 end;
 
 end.

@@ -126,7 +126,7 @@ object fraPerson: TfraPerson
       OnChange = pcPersonDetailsChange
       OnChanging = pcPersonDetailsChanging
       object tsPersonaldata: TTabSheet
-        Caption = 'Personendaten'
+        Caption = '&Personendaten'
         object lbPersonFirstname: TLabel
           Left = 23
           Top = 19
@@ -399,7 +399,7 @@ object fraPerson: TfraPerson
         end
       end
       object tsMemberOf: TTabSheet
-        Caption = 'Mitglied von ...'
+        Caption = '&Teil von ...'
         ImageIndex = 1
       end
     end
