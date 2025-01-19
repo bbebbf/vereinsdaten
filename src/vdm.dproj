@@ -309,6 +309,10 @@ $(PostBuildEvent)]]></PostBuildEvent>
             <Form>fmSelectConnection</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="reports\Report.Persons.pas">
+            <Form>fmReportPersons</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <None Include="inc\CompilerDirectives.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>

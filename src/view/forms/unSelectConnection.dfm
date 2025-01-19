@@ -1,6 +1,7 @@
 object fmSelectConnection: TfmSelectConnection
   Left = 0
   Top = 0
+  ActiveControl = cbConnections
   BorderStyle = bsDialog
   Caption = 'Datenbankverbing ausw'#228'hlen'
   ClientHeight = 145

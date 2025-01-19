@@ -102,7 +102,8 @@ uses
   ExtendedListview in 'view\tools\ExtendedListview.pas',
   unUnit in 'view\frames\unUnit.pas' {fraUnit: TFrame},
   Report.MemberUnits in 'reports\Report.MemberUnits.pas' {fmReportMemberUnits},
-  unSelectConnection in 'view\forms\unSelectConnection.pas' {fmSelectConnection};
+  unSelectConnection in 'view\forms\unSelectConnection.pas' {fmSelectConnection},
+  Report.Persons in 'reports\Report.Persons.pas' {fmReportPersons};
 
 {$R *.res}
 
