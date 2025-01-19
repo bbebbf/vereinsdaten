@@ -77,7 +77,7 @@ object fmReportPersons: TfmReportPersons
         Height = 18
         Caption = 'Name'
       end
-      object Label4: TLabel
+      object lbInactive: TLabel
         Left = 260
         Top = 3
         Width = 50
@@ -85,14 +85,14 @@ object fmReportPersons: TfmReportPersons
         Alignment = taCenter
         Caption = 'Inaktiv'
       end
-      object Label5: TLabel
+      object lbAddress: TLabel
         Left = 410
         Top = 3
         Width = 50
         Height = 18
         Caption = 'Adresse'
       end
-      object Label1: TLabel
+      object lbBirthday: TLabel
         Left = 320
         Top = 3
         Width = 75
@@ -100,9 +100,9 @@ object fmReportPersons: TfmReportPersons
         Caption = 'Geb.-Datum'
       end
       object Label2: TLabel
-        Left = 190
+        Left = 238
         Top = 3
-        Width = 60
+        Width = 12
         Height = 18
         Alignment = taRightJustify
         Caption = 'Id'
@@ -137,17 +137,17 @@ object fmReportPersons: TfmReportPersons
         DataSource = dsDataSource
         Text = ''
       end
-      object RLDBText2: TRLDBText
-        Left = 260
+      object rtInactive: TRLDBText
+        Left = 234
         Top = 2
-        Width = 50
+        Width = 102
         Height = 18
         Alignment = taCenter
         DataField = 'person_inactive'
         DataSource = dsDataSource
         Text = ''
       end
-      object RLDBText3: TRLDBText
+      object rtAddress: TRLDBText
         Left = 410
         Top = 2
         Width = 84
@@ -156,10 +156,10 @@ object fmReportPersons: TfmReportPersons
         DataSource = dsDataSource
         Text = ''
       end
-      object RLDBText1: TRLDBText
+      object rtBirthday: TRLDBText
         Left = 320
         Top = 2
-        Width = 80
+        Width = 105
         Height = 18
         DataField = 'person_birthday'
         DataSource = dsDataSource

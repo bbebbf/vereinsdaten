@@ -2,13 +2,14 @@ unit VclUITools;
 
 interface
 
-uses Vcl.StdCtrls, Vdm.Versioning.Types;
+uses Vcl.Controls, Vcl.StdCtrls, Vdm.Versioning.Types;
 
 type
   TVclUITools = class
   public
     class procedure VersionInfoToLabel(const aLabel: TLabel; const aVersionInfoEntry: TVersionInfoEntry);
     class procedure SetComboboxItemIndex(const aCombobox: TComboBox; const aItemIndex: Integer);
+    class procedure HideAndMoveHorizontal(const aControlToHide: TControl; const aControlsToMove: TArray<TControl>);
   end;
 
 implementation
@@ -16,6 +17,18 @@ implementation
 uses System.UITypes;
 
 { TVclUITools }
+
+class procedure TVclUITools.HideAndMoveHorizontal(const aControlToHide: TControl;
+  const aControlsToMove: TArray<TControl>);
+begin
+  aControlToHide.Visible := False;
+  if Length(aControlsToMove) = 0 then
+    Exit;
+
+  var lDelta := aControlsToMove[0].Left - aControlToHide.Left;
+  for var lControl in aControlsToMove do
+    lControl.Left := lControl.Left - lDelta;
+end;
 
 class procedure TVclUITools.SetComboboxItemIndex(const aCombobox: TComboBox; const aItemIndex: Integer);
 begin
