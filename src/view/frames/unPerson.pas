@@ -9,7 +9,7 @@ uses
   Vcl.ComCtrls, Vcl.WinXPickers, System.Actions, Vcl.ActnList,
   PersonBusinessIntf, PersonAggregatedUI, DtoPersonAggregated, ComponentValueChangedObserver,
   unPersonMemberOf, PersonMemberOfUI, CheckboxDatetimePickerHandler,
-  Vdm.Types, Vdm.Versioning.Types, CrudUI, VersionInfoEntryUI;
+  Vdm.Types, Vdm.Versioning.Types, CrudUI, VersionInfoEntryUI, DtoPersonNameId;
 
 type
   TfraPerson = class(TFrame, IPersonAggregatedUI, IVersionInfoEntryUI)
@@ -35,11 +35,8 @@ type
     cbPersonActive: TCheckBox;
     cbPersonAddress: TComboBox;
     lbPersonAdress: TLabel;
-    cbCreateNewAddress: TCheckBox;
-    edNewAddressStreet: TEdit;
-    lbNewAddressPostalcode: TLabel;
+    lbNewAddressPostalcodeCity: TLabel;
     edNewAddressPostalcode: TEdit;
-    lbNewAddressCity: TLabel;
     edNewAddressCity: TEdit;
     pnFilter: TPanel;
     cbShowInactivePersons: TCheckBox;
@@ -71,7 +68,6 @@ type
     procedure lvPersonListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
     procedure acPersonSaveCurrentRecordExecute(Sender: TObject);
     procedure acPersonReloadCurrentRecordExecute(Sender: TObject);
-    procedure cbCreateNewAddressClick(Sender: TObject);
     procedure cbShowInactivePersonsClick(Sender: TObject);
     procedure cbMembershipEndKnownClick(Sender: TObject);
     procedure acPersonStartNewRecordExecute(Sender: TObject);
@@ -79,6 +75,8 @@ type
     procedure pcPersonDetailsChange(Sender: TObject);
     procedure edFilterChange(Sender: TObject);
     procedure lvPersonListviewDblClick(Sender: TObject);
+    procedure cbPersonAddressChange(Sender: TObject);
+    procedure cbPersonAddressSelect(Sender: TObject);
   strict private
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
@@ -91,6 +89,9 @@ type
     fActiveUntilHandler: TCheckboxDatetimePickerHandler;
 
     procedure CMVisiblechanged(var Message: TMessage); message CM_VISIBLECHANGED;
+    function NewAddressRequested: Boolean;
+    procedure ConfigControlsForNewAddress;
+    function GetPersonFirstname(const aPersonName: TDtoPersonNameId): string;
 
     function GetMemberOfUI: IPersonMemberOfUI;
 
@@ -150,8 +151,6 @@ begin
   fComponentValueChangedObserver.RegisterDateTimePicker(dtPersonBirthday);
   fComponentValueChangedObserver.RegisterCheckbox(cbPersonActive);
   fComponentValueChangedObserver.RegisterCombobox(cbPersonAddress);
-  fComponentValueChangedObserver.RegisterCheckbox(cbCreateNewAddress);
-  fComponentValueChangedObserver.RegisterEdit(edNewAddressStreet);
   fComponentValueChangedObserver.RegisterEdit(edNewAddressPostalcode);
   fComponentValueChangedObserver.RegisterEdit(edNewAddressCity);
   fComponentValueChangedObserver.RegisterCombobox(cbMembership);
@@ -255,20 +254,20 @@ begin
   StartEdit;
 end;
 
-procedure TfraPerson.cbCreateNewAddressClick(Sender: TObject);
-begin
-  cbPersonAddress.Enabled := not cbCreateNewAddress.Checked;
-  edNewAddressStreet.Enabled := cbCreateNewAddress.Checked;
-  edNewAddressPostalcode.Enabled := cbCreateNewAddress.Checked;
-  edNewAddressCity.Enabled := cbCreateNewAddress.Checked;
-  lbNewAddressPostalcode.Enabled := cbCreateNewAddress.Checked;
-  lbNewAddressCity.Enabled := cbCreateNewAddress.Checked;
-end;
-
 procedure TfraPerson.cbMembershipEndKnownClick(Sender: TObject);
 begin
   lbMembershipEndText.Enabled := not dtMembershipEnd.Enabled;
   edMembershipEndText.Enabled := not dtMembershipEnd.Enabled;
+end;
+
+procedure TfraPerson.cbPersonAddressChange(Sender: TObject);
+begin
+  ConfigControlsForNewAddress;
+end;
+
+procedure TfraPerson.cbPersonAddressSelect(Sender: TObject);
+begin
+  ConfigControlsForNewAddress;
 end;
 
 procedure TfraPerson.cbShowInactivePersonsClick(Sender: TObject);
@@ -289,11 +288,9 @@ begin
   fPersonBirthdayHandler.Clear;
 
   cbPersonActive.Checked := True;
-  cbCreateNewAddress.Checked := False;
-  edNewAddressStreet.Text := '';
   edNewAddressPostalcode.Text := '';
   edNewAddressCity.Text := '';
-  cbCreateNewAddressClick(cbCreateNewAddress);
+  ConfigControlsForNewAddress;
 
   cbMembership.ItemIndex := 0;
   edMembershipNumber.Text := '';
@@ -326,6 +323,13 @@ begin
   Result := fPersonMemberOf;
 end;
 
+function TfraPerson.GetPersonFirstname(const aPersonName: TDtoPersonNameId): string;
+begin
+  Result := aPersonName.Vorname;
+  if Length(Result) = 0 then
+    Result := aPersonName.Nachname;
+end;
+
 function TfraPerson.GetEntryFromUI(var aRecord: TDtoPersonAggregated): Boolean;
 begin
   if TStringTools.IsEmpty(edPersonFirstname.Text) and TStringTools.IsEmpty(edPersonLastname.Text) then
@@ -350,10 +354,20 @@ begin
   aRecord.Active := cbPersonActive.Checked;
   aRecord.AddressIndex := cbPersonAddress.ItemIndex;
 
-  aRecord.CreateNewAddress := cbCreateNewAddress.Checked;
-  aRecord.NewAddressStreet := edNewAddressStreet.Text;
-  aRecord.NewAddressPostalcode := edNewAddressPostalcode.Text;
-  aRecord.NewAddressCity := edNewAddressCity.Text;
+  aRecord.CreateNewAddress := False;
+  if NewAddressRequested then
+  begin
+    aRecord.CreateNewAddress := True;
+    aRecord.NewAddressStreet := cbPersonAddress.Text;
+    aRecord.NewAddressPostalcode := edNewAddressPostalcode.Text;
+    aRecord.NewAddressCity := edNewAddressCity.Text;
+    var lNewAddessTitle := aRecord.NewAddressStreet +
+      ', ' + aRecord.NewAddressPostalcode +
+      ' ' + aRecord.NewAddressCity;
+    if TMessageDialogs.YesNo('Neue Adresse "' + lNewAddessTitle + '" anlegen und ' + GetPersonFirstname(aRecord.Person.NameId) +
+      ' zuordnen?', TMsgDlgType.mtConfirmation) <> mrYes then
+      Exit(False);
+  end;
 
   aRecord.MembershipNoMembership := cbMembership.ItemIndex <= 0;
   aRecord.MembershipActive := cbMembership.ItemIndex = 1;
@@ -474,6 +488,24 @@ begin
     EnqueueLoadEntry(nil, False);
 end;
 
+function TfraPerson.NewAddressRequested: Boolean;
+begin
+  Result := (Length(cbPersonAddress.Text) > 0) and (cbPersonAddress.ItemIndex < 0);
+end;
+
+procedure TfraPerson.ConfigControlsForNewAddress;
+begin
+  var lNewEnabled := NewAddressRequested;
+  if edNewAddressPostalcode.Enabled and not lNewEnabled then
+  begin
+    edNewAddressPostalcode.Text := '';
+    edNewAddressCity.Text := '';
+  end;
+  edNewAddressPostalcode.Enabled := lNewEnabled;
+  lbNewAddressPostalcodeCity.Enabled := lNewEnabled;
+  edNewAddressCity.Enabled := lNewEnabled;
+end;
+
 procedure TfraPerson.EnqueueLoadEntry(const aListItem: TListItem; const aDoStartEdit: Boolean);
 begin
   if fComponentValueChangedObserver.InUpdated then
@@ -534,11 +566,9 @@ begin
 
   cbPersonActive.Checked := aRecord.Active;
   TVclUITools.SetComboboxItemIndex(cbPersonAddress, aRecord.AddressIndex);
-  cbCreateNewAddress.Checked := False;
-  edNewAddressStreet.Text := '';
   edNewAddressPostalcode.Text := '';
   edNewAddressCity.Text := '';
-  cbCreateNewAddressClick(cbCreateNewAddress);
+  ConfigControlsForNewAddress;
 
   if aRecord.MembershipId > 0 then
   begin
@@ -568,10 +598,8 @@ begin
   end;
 
   fComponentValueChangedObserver.EndUpdate;
-  var lPersonName := aRecord.Person.NameId.Vorname;
-  if Length(lPersonName) = 0 then
-    lPersonName := aRecord.Person.NameId.Nachname;
-  tsMemberOf.Caption := lPersonName + ' ist &Teil von ...';
+
+  tsMemberOf.Caption := GetPersonFirstname(aRecord.Person.NameId) + ' ist &Teil von ...';
 end;
 
 end.
