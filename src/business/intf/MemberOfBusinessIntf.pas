@@ -2,13 +2,14 @@ unit MemberOfBusinessIntf;
 
 interface
 
-uses ListCrudCommands, DtoMemberAggregated, Vdm.Versioning.Types;
+uses ListCrudCommands, DtoMemberAggregated, Vdm.Types, Vdm.Versioning.Types;
 
 type
   IMemberOfBusinessIntf = interface
     ['{6BF5D206-C946-4FDC-802C-70FD1B652F04}']
     procedure Initialize;
-    procedure LoadPersonsMemberOfs(const aPersonId: UInt32; const aMemberOfsVersionInfoEntry: TVersionInfoEntry);
+    function GetMemberOfMaster: TMemberOfMaster;
+    procedure LoadMemberOfs(const aMasterId: UInt32; const aMemberOfsVersionInfoEntry: TVersionInfoEntry);
     function GetShowInactiveMemberOfs: Boolean;
     procedure SetShowInactiveMemberOfs(const aValue: Boolean);
     function CreateNewEntry: TListEntry<TDtoMemberAggregated>;

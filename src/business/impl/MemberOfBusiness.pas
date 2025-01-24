@@ -5,7 +5,7 @@ interface
 uses System.Classes, System.Generics.Collections, InterfacedBase, SqlConnection, MemberOfBusinessIntf,
   MemberOfUI, KeyIndexStrings, CrudConfig, FilterSelect, Transaction,
   DtoMemberAggregated, DtoMember, DtoUnit, DtoRole, ListCrudCommands, SelectList, SelectListFilter,
-  ValueConverter, Vdm.Versioning.Types, VersionInfoAccessor;
+  ValueConverter, Vdm.Types, Vdm.Versioning.Types, VersionInfoAccessor;
 
 type
   TMemberOfBusinessRecordFilter = record
@@ -15,6 +15,7 @@ type
   TMemberOfBusiness = class(TInterfacedBase, IMemberOfBusinessIntf)
   strict private
     fConnection: ISqlConnection;
+    fMemberOfMaster: TMemberOfMaster;
     fUI: IMemberOfUI;
     fMemberConfig: ICrudConfig<TDtoMember, UInt32>;
     fListCrudCommands: TObjectListCrudCommands<TDtoMember, UInt32, TDtoMemberAggregated, UInt32, TMemberOfBusinessRecordFilter>;
@@ -25,13 +26,14 @@ type
     fUnitListConfig: ISelectList<TDtoUnit>;
     fRoleMapper: TKeyIndexStrings;
     fRoleListConfig: ISelectList<TDtoRole>;
-    fCurrentPersonId: UInt32;
+    fCurrentMasterId: UInt32;
     fCurrentMemberOfsVersionEntry: TVersionInfoEntry;
     fCurrentFilter: TMemberOfBusinessRecordFilter;
     fSelectListFilter: ISelectListFilter<TDtoMember, UInt32>;
     fValueConverter: IValueConverter<TDtoMember, TDtoMemberAggregated>;
     procedure Initialize;
-    procedure LoadPersonsMemberOfs(const aPersonId: UInt32; const aMemberOfsVersionInfoEntry: TVersionInfoEntry);
+    function GetMemberOfMaster: TMemberOfMaster;
+    procedure LoadMemberOfs(const aMasterId: UInt32; const aMemberOfsVersionInfoEntry: TVersionInfoEntry);
     function GetShowInactiveMemberOfs: Boolean;
     procedure SetShowInactiveMemberOfs(const aValue: Boolean);
     function CreateNewEntry: TListEntry<TDtoMemberAggregated>;
@@ -49,7 +51,7 @@ type
     procedure SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry);
     procedure ClearVersionInfoEntryFromUI;
   public
-    constructor Create(const aConnection: ISqlConnection; const aUI: IMemberOfUI);
+    constructor Create(const aConnection: ISqlConnection; const aMemberOfMaster: TMemberOfMaster; const aUI: IMemberOfUI);
     destructor Destroy; override;
   end;
 
@@ -80,10 +82,11 @@ type
 
 { TMemberOfBusiness }
 
-constructor TMemberOfBusiness.Create(const aConnection: ISqlConnection; const aUI: IMemberOfUI);
+constructor TMemberOfBusiness.Create(const aConnection: ISqlConnection; const aMemberOfMaster: TMemberOfMaster; const aUI: IMemberOfUI);
 begin
   inherited Create;
   fConnection := aConnection;
+  fMemberOfMaster := aMemberOfMaster;
   fUI := aUI;
   fMemberConfig := TCrudMemberConfig.Create;
 
@@ -169,6 +172,11 @@ begin
   fUnitMapper.Invalidate;
 end;
 
+function TMemberOfBusiness.GetMemberOfMaster: TMemberOfMaster;
+begin
+  Result := fMemberOfMaster;
+end;
+
 function TMemberOfBusiness.GetShowInactiveMemberOfs: Boolean;
 begin
   Result := fCurrentFilter.ShowInactiveMemberOfs;
@@ -182,7 +190,7 @@ end;
 
 procedure TMemberOfBusiness.AddNewEntry(const aEntry: TListEntry<TDtoMemberAggregated>);
 begin
-  aEntry.Data.PersonId := fCurrentPersonId;
+  aEntry.Data.PersonId := fCurrentMasterId;
   fListCrudCommands.Items.Add(aEntry);
 end;
 
@@ -217,17 +225,17 @@ end;
 procedure TMemberOfBusiness.UpdateFilter;
 begin
   fListCrudCommands.BeginUpdateFilter;
-   fListCrudCommands.FilterSelect := fCurrentPersonId;
+   fListCrudCommands.FilterSelect := fCurrentMasterId;
   fListCrudCommands.FilterLoop := fCurrentFilter;
   fListCrudCommands.EndUpdateFilter;
 end;
 
-procedure TMemberOfBusiness.LoadPersonsMemberOfs(const aPersonId: UInt32; const aMemberOfsVersionInfoEntry: TVersionInfoEntry);
+procedure TMemberOfBusiness.LoadMemberOfs(const aMasterId: UInt32; const aMemberOfsVersionInfoEntry: TVersionInfoEntry);
 begin
-  if fCurrentPersonId = aPersonId then
+  if fCurrentMasterId = aMasterId then
     Exit;
 
-  fCurrentPersonId := aPersonId;
+  fCurrentMasterId := aMasterId;
   fCurrentMemberOfsVersionEntry := aMemberOfsVersionInfoEntry;
   UpdateFilter;
 end;
@@ -235,7 +243,7 @@ end;
 procedure TMemberOfBusiness.OnFilterSelectTransaction(Sender: TObject; const aState: TFilterSelectTransactionEventState;
   var aTransaction: ITransaction);
 begin
-  if not Assigned(fCurrentMemberOfsVersionEntry) or (fCurrentPersonId = 0) then
+  if not Assigned(fCurrentMemberOfsVersionEntry) or (fCurrentMasterId = 0) then
   begin
     fTransactionScopeLoadEntries := nil;
     aTransaction := nil;
@@ -251,7 +259,7 @@ begin
     TFilterSelectTransactionEventState.EndTransactionSuccessful:
     begin
       fCurrentMemberOfsVersionEntry.UpdateVersionInfo(
-        fVersionInfoAccessor.QueryVersionInfo(fTransactionScopeLoadEntries, fCurrentPersonId));
+        fVersionInfoAccessor.QueryVersionInfo(fTransactionScopeLoadEntries, fCurrentMasterId));
       fTransactionScopeLoadEntries.Transaction.Commit;
       fTransactionScopeLoadEntries := nil;
       SetVersionInfoEntryToUI(fCurrentMemberOfsVersionEntry);
@@ -274,11 +282,11 @@ end;
 procedure TMemberOfBusiness.SaveEntries(
   const aDeleteEntryCallback: TListCrudCommandsEntryCallback<TDtoMemberAggregated>);
 begin
-  if Assigned(fCurrentMemberOfsVersionEntry) and (fCurrentPersonId > 0) then
+  if Assigned(fCurrentMemberOfsVersionEntry) and (fCurrentMasterId > 0) then
   begin
     var lTransactionScopeSaveEntries := fVersionInfoAccessor.StartTransaction;
     fListCrudCommands.SaveChanges(aDeleteEntryCallback, lTransactionScopeSaveEntries.Transaction);
-    fVersionInfoAccessor.UpdateVersionInfo(lTransactionScopeSaveEntries, fCurrentPersonId, fCurrentMemberOfsVersionEntry);
+    fVersionInfoAccessor.UpdateVersionInfo(lTransactionScopeSaveEntries, fCurrentMasterId, fCurrentMemberOfsVersionEntry);
     SetVersionInfoEntryToUI(fCurrentMemberOfsVersionEntry);
   end
   else

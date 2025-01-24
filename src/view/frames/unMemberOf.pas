@@ -67,7 +67,7 @@ implementation
 
 {$R *.dfm}
 
-uses System.Generics.Defaults, Vdm.Globals, ListCrudCommands.Types, VclUITools;
+uses System.Generics.Defaults, Vdm.Globals, ListCrudCommands.Types, VclUITools, Vdm.Types;
 
 { TfraPersonMemberOf }
 
@@ -94,7 +94,7 @@ begin
   if not fExtentedListviewMemberOfs.TryGetListItemData(lSelectedItem, lEntry) then
     Exit;
 
-  if fDialog.Execute(lEntry.Data, False) then
+  if fDialog.Execute(fBusinessIntf.GetMemberOfMaster, lEntry.Data, False) then
   begin
     if lEntry.State in [TListEntryCrudState.New, TListEntryCrudState.ToBeDeleted] then
     begin
@@ -111,7 +111,7 @@ begin
   var lNewEntryCanceled := True;
   var lNewEntry := fBusinessIntf.CreateNewEntry;
   try
-    if fDialog.Execute(lNewEntry.Data, True) then
+    if fDialog.Execute(fBusinessIntf.GetMemberOfMaster, lNewEntry.Data, True) then
     begin
       lNewEntry.Updated;
       lNewEntryCanceled := False;
@@ -155,7 +155,14 @@ begin
   fExtentedListviewMemberOfs := TExtendedListview<TListEntry<TDtoMemberAggregated>>.Create(lvMemberOf,
     procedure(const aData: TListEntry<TDtoMemberAggregated>; const aListItem: TListItem)
     begin
-      aListItem.Caption := GetStringByIndex(aData.Data.AvailableUnits.Data.Strings, aData.Data.UnitIndex);
+      if fBusinessIntf.GetMemberOfMaster = TMemberOfMaster.MasterPerson then
+      begin
+        aListItem.Caption := GetStringByIndex(aData.Data.AvailableUnits.Data.Strings, aData.Data.UnitIndex);
+      end
+      else
+      begin
+        aListItem.Caption := 'Person template';
+      end;
       aListItem.SubItems.Clear;
       aListItem.SubItems.Add(GetStringByIndex(aData.Data.AvailableRoles.Data.Strings, aData.Data.RoleIndex));
       aListItem.SubItems.Add(TVdmGlobals.GetDateAsString(aData.Data.Member.ActiveSince));
@@ -194,6 +201,14 @@ end;
 procedure TfraMemberOf.SetCommands(const aCommands: IMemberOfBusinessIntf);
 begin
   fBusinessIntf := aCommands;
+  if fBusinessIntf.GetMemberOfMaster = TMemberOfMaster.MasterPerson then
+  begin
+    lvMemberOf.Columns[0].Caption := 'Einheit';
+  end
+  else
+  begin
+    lvMemberOf.Columns[0].Caption := 'Person';
+  end;
 end;
 
 procedure TfraMemberOf.ClearVersionInfoEntryFromUI(const aVersionInfoEntryIndex: UInt16);

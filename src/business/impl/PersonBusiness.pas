@@ -115,7 +115,7 @@ begin
   fClubmembershipConfig := TCrudConfigClubmembership.Create;
   fClubmembershipRecordActions := TRecordActions<TDtoClubmembership, UInt32>.Create(fConnection, fClubmembershipConfig);
   fClubMembershipNumberChecker := TClubMembershipNumberChecker.Create(fConnection);
-  fMemberOfBusiness := TMemberOfBusiness.Create(fConnection, fUI.GetMemberOfUI);
+  fMemberOfBusiness := TMemberOfBusiness.Create(fConnection, TMemberOfMaster.MasterPerson, fUI.GetMemberOfUI);
 end;
 
 destructor TPersonBusiness.Destroy;
@@ -227,9 +227,9 @@ end;
 procedure TPersonBusiness.LoadPersonsMemberOfs;
 begin
   if fNewEntryStarted then
-    fMemberOfBusiness.LoadPersonsMemberOfs(0, nil)
+    fMemberOfBusiness.LoadMemberOfs(0, nil)
   else
-    fMemberOfBusiness.LoadPersonsMemberOfs(fCurrentEntry.Id, fCurrentEntry.VersionInfoMenberOfs);
+    fMemberOfBusiness.LoadMemberOfs(fCurrentEntry.Id, fCurrentEntry.VersionInfoMenberOfs);
 end;
 
 function TPersonBusiness.ReloadCurrentEntry: TCrudCommandResult;

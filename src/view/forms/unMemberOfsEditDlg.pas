@@ -5,15 +5,15 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls, DtoMemberAggregated,
-  CheckboxDatetimePickerHandler;
+  CheckboxDatetimePickerHandler, Vdm.Types;
 
 type
   TfmMemberOfsEditDlg = class(TForm)
-    cbUnit: TComboBox;
+    cbDetailRec: TComboBox;
     cbActive: TCheckBox;
     btSave: TButton;
     btReload: TButton;
-    lbUnit: TLabel;
+    lbDetailRec: TLabel;
     cbRole: TComboBox;
     lbRole: TLabel;
     lbMembershipBegin: TLabel;
@@ -25,13 +25,12 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure btSaveClick(Sender: TObject);
-  private
+  strict private
     fActiveSinceHandler: TCheckboxDatetimePickerHandler;
     fActiveUntilHandler: TCheckboxDatetimePickerHandler;
   public
-    procedure FillAvailableUnits(const aUnits: TStrings);
-    procedure FillAvailableRoles(const aRoles: TStrings);
-    function Execute(const aMemberRecord: TDtoMemberAggregated; const aNewRecord: Boolean): Boolean;
+    function Execute(const aMemberOfMaster: TMemberOfMaster; const aMemberRecord: TDtoMemberAggregated;
+      const aNewRecord: Boolean): Boolean;
   end;
 
 implementation
@@ -44,21 +43,22 @@ uses MessageDialogs, VclUITools;
 
 procedure TfmMemberOfsEditDlg.btSaveClick(Sender: TObject);
 begin
-  if cbUnit.ItemIndex < 0 then
+  if cbDetailRec.ItemIndex < 0 then
   begin
     TMessageDialogs.Ok('Bitte die Einheit auswählen.', TMsgDlgType.mtInformation);
-    cbUnit.SetFocus;
+    cbDetailRec.SetFocus;
     Exit;
   end;
   ModalResult := mrOk;
 end;
 
-function TfmMemberOfsEditDlg.Execute(const aMemberRecord: TDtoMemberAggregated; const aNewRecord: Boolean): Boolean;
+function TfmMemberOfsEditDlg.Execute(const aMemberOfMaster: TMemberOfMaster;
+  const aMemberRecord: TDtoMemberAggregated; const aNewRecord: Boolean): Boolean;
 begin
   Result := False;
-  cbUnit.Items.Assign(aMemberRecord.AvailableUnits.Data.Strings);
+  cbDetailRec.Items.Assign(aMemberRecord.AvailableUnits.Data.Strings);
   cbRole.Items.Assign(aMemberRecord.AvailableRoles.Data.Strings);
-  TVclUITools.SetComboboxItemIndex(cbUnit, aMemberRecord.UnitIndex);
+  TVclUITools.SetComboboxItemIndex(cbDetailRec, aMemberRecord.UnitIndex);
   TVclUITools.SetComboboxItemIndex(cbRole, aMemberRecord.RoleIndex);
   cbActive.Checked := aMemberRecord.Member.Active;
   fActiveSinceHandler.Datetime := aMemberRecord.Member.ActiveSince;
@@ -74,22 +74,12 @@ begin
   if ShowModal = mrOk then
   begin
     Result := True;
-    aMemberRecord.UnitIndex := cbUnit.ItemIndex;
+    aMemberRecord.UnitIndex := cbDetailRec.ItemIndex;
     aMemberRecord.RoleIndex := cbRole.ItemIndex;
     aMemberRecord.Active := cbActive.Checked;
     aMemberRecord.ActiveSince := fActiveSinceHandler.Datetime;
     aMemberRecord.ActiveUntil := fActiveUntilHandler.Datetime;
   end;
-end;
-
-procedure TfmMemberOfsEditDlg.FillAvailableRoles(const aRoles: TStrings);
-begin
-  cbRole.Items.Assign(aRoles);
-end;
-
-procedure TfmMemberOfsEditDlg.FillAvailableUnits(const aUnits: TStrings);
-begin
-  cbUnit.Items.Assign(aUnits);
 end;
 
 procedure TfmMemberOfsEditDlg.FormCreate(Sender: TObject);
