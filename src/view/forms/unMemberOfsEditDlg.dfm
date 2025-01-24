@@ -1,4 +1,4 @@
-object fmPersonMemberOfsEditDlg: TfmPersonMemberOfsEditDlg
+object fmMemberOfsEditDlg: TfmMemberOfsEditDlg
   Left = 0
   Top = 0
   ActiveControl = cbUnit

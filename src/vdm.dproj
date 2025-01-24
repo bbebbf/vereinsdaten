@@ -220,14 +220,14 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="data\DtoRole.pas"/>
         <DCCReference Include="data\DtoUnit.pas"/>
         <DCCReference Include="general\common\Db\ListSelector.pas"/>
-        <DCCReference Include="view\frames\unPersonMemberOf.pas">
-            <Form>fraPersonMemberOf</Form>
+        <DCCReference Include="view\frames\unMemberOf.pas">
+            <Form>fraMemberOf</Form>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="general\common\Crud\ListCrudCommands.pas"/>
         <DCCReference Include="general\common\Db\FilterSelect.pas"/>
         <DCCReference Include="general\intf\tools\ListEnumerator.pas"/>
-        <DCCReference Include="view\intf\PersonMemberOfUI.pas"/>
+        <DCCReference Include="view\intf\MemberOfUI.pas"/>
         <DCCReference Include="data\DtoMemberAggregated.pas"/>
         <DCCReference Include="business\intf\MemberOfBusinessIntf.pas"/>
         <DCCReference Include="business\impl\MemberOfBusiness.pas"/>
@@ -238,8 +238,8 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="general\intf\sql\SelectListFilter.pas"/>
         <DCCReference Include="data\CrudConfigUnit.pas"/>
         <DCCReference Include="data\CrudConfigRole.pas"/>
-        <DCCReference Include="view\forms\unPersonMemberOfsEditDlg.pas">
-            <Form>fmPersonMemberOfsEditDlg</Form>
+        <DCCReference Include="view\forms\unMemberOfsEditDlg.pas">
+            <Form>fmMemberOfsEditDlg</Form>
         </DCCReference>
         <DCCReference Include="general\common\Tools\DelayedExecute.pas"/>
         <DCCReference Include="view\tools\CheckboxDatetimePickerHandler.pas"/>

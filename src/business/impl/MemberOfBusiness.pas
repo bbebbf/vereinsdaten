@@ -3,7 +3,7 @@
 interface
 
 uses System.Classes, System.Generics.Collections, InterfacedBase, SqlConnection, MemberOfBusinessIntf,
-  PersonMemberOfUI, KeyIndexStrings, CrudConfig, FilterSelect, Transaction,
+  MemberOfUI, KeyIndexStrings, CrudConfig, FilterSelect, Transaction,
   DtoMemberAggregated, DtoMember, DtoUnit, DtoRole, ListCrudCommands, SelectList, SelectListFilter,
   ValueConverter, Vdm.Versioning.Types, VersionInfoAccessor;
 
@@ -15,7 +15,7 @@ type
   TMemberOfBusiness = class(TInterfacedBase, IMemberOfBusinessIntf)
   strict private
     fConnection: ISqlConnection;
-    fUI: IPersonMemberOfUI;
+    fUI: IMemberOfUI;
     fMemberConfig: ICrudConfig<TDtoMember, UInt32>;
     fListCrudCommands: TObjectListCrudCommands<TDtoMember, UInt32, TDtoMemberAggregated, UInt32, TMemberOfBusinessRecordFilter>;
     fVersionInfoMemberOfsConfig: IVersionInfoConfig<UInt32, UInt32>;
@@ -49,7 +49,7 @@ type
     procedure SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry);
     procedure ClearVersionInfoEntryFromUI;
   public
-    constructor Create(const aConnection: ISqlConnection; const aUI: IPersonMemberOfUI);
+    constructor Create(const aConnection: ISqlConnection; const aUI: IMemberOfUI);
     destructor Destroy; override;
   end;
 
@@ -80,7 +80,7 @@ type
 
 { TMemberOfBusiness }
 
-constructor TMemberOfBusiness.Create(const aConnection: ISqlConnection; const aUI: IPersonMemberOfUI);
+constructor TMemberOfBusiness.Create(const aConnection: ISqlConnection; const aUI: IMemberOfUI);
 begin
   inherited Create;
   fConnection := aConnection;

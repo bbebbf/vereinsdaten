@@ -1,4 +1,4 @@
-object fraPersonMemberOf: TfraPersonMemberOf
+object fraMemberOf: TfraMemberOf
   Left = 0
   Top = 0
   Width = 941
@@ -39,7 +39,6 @@ object fraPersonMemberOf: TfraPersonMemberOf
     OnCustomDrawItem = lvMemberOfCustomDrawItem
     OnDblClick = lvMemberOfDblClick
     OnSelectItem = lvMemberOfSelectItem
-    ExplicitTop = -6
   end
   object pnCommands: TPanel
     Left = 0

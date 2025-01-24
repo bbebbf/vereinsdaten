@@ -1,4 +1,4 @@
-﻿unit unPersonMemberOfsEditDlg;
+﻿unit unMemberOfsEditDlg;
 
 interface
 
@@ -8,7 +8,7 @@ uses
   CheckboxDatetimePickerHandler;
 
 type
-  TfmPersonMemberOfsEditDlg = class(TForm)
+  TfmMemberOfsEditDlg = class(TForm)
     cbUnit: TComboBox;
     cbActive: TCheckBox;
     btSave: TButton;
@@ -42,7 +42,7 @@ uses MessageDialogs, VclUITools;
 
 { TfmPersonMemberOfsEditDlg }
 
-procedure TfmPersonMemberOfsEditDlg.btSaveClick(Sender: TObject);
+procedure TfmMemberOfsEditDlg.btSaveClick(Sender: TObject);
 begin
   if cbUnit.ItemIndex < 0 then
   begin
@@ -53,7 +53,7 @@ begin
   ModalResult := mrOk;
 end;
 
-function TfmPersonMemberOfsEditDlg.Execute(const aMemberRecord: TDtoMemberAggregated; const aNewRecord: Boolean): Boolean;
+function TfmMemberOfsEditDlg.Execute(const aMemberRecord: TDtoMemberAggregated; const aNewRecord: Boolean): Boolean;
 begin
   Result := False;
   cbUnit.Items.Assign(aMemberRecord.AvailableUnits.Data.Strings);
@@ -82,23 +82,23 @@ begin
   end;
 end;
 
-procedure TfmPersonMemberOfsEditDlg.FillAvailableRoles(const aRoles: TStrings);
+procedure TfmMemberOfsEditDlg.FillAvailableRoles(const aRoles: TStrings);
 begin
   cbRole.Items.Assign(aRoles);
 end;
 
-procedure TfmPersonMemberOfsEditDlg.FillAvailableUnits(const aUnits: TStrings);
+procedure TfmMemberOfsEditDlg.FillAvailableUnits(const aUnits: TStrings);
 begin
   cbUnit.Items.Assign(aUnits);
 end;
 
-procedure TfmPersonMemberOfsEditDlg.FormCreate(Sender: TObject);
+procedure TfmMemberOfsEditDlg.FormCreate(Sender: TObject);
 begin
   fActiveSinceHandler := TCheckboxDatetimePickerHandler.Create(cbMembershipBeginKnown, dtMembershipBegin);
   fActiveUntilHandler := TCheckboxDatetimePickerHandler.Create(cbMembershipEndKnown, dtMembershipEnd);
 end;
 
-procedure TfmPersonMemberOfsEditDlg.FormDestroy(Sender: TObject);
+procedure TfmMemberOfsEditDlg.FormDestroy(Sender: TObject);
 begin
   fActiveSinceHandler.Free;
   fActiveUntilHandler.Free;

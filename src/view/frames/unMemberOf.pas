@@ -1,16 +1,16 @@
-unit unPersonMemberOf;
+unit unMemberOf;
 
 interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.ExtCtrls, Vcl.StdCtrls,
-  ExtendedListview, DtoMember, DtoMemberAggregated, PersonMemberOfUI, MemberOfBusinessIntf,
-  unPersonMemberOfsEditDlg, System.Actions, Vcl.ActnList, ListCrudCommands, Vcl.Menus,
+  ExtendedListview, DtoMember, DtoMemberAggregated, MemberOfUI, MemberOfBusinessIntf,
+  unMemberOfsEditDlg, System.Actions, Vcl.ActnList, ListCrudCommands, Vcl.Menus,
   Vdm.Versioning.Types, VersionInfoEntryUI;
 
 type
-  TfraPersonMemberOf = class(TFrame, IPersonMemberOfUI, IVersionInfoEntryUI)
+  TfraMemberOf = class(TFrame, IMemberOfUI, IVersionInfoEntryUI)
     lvMemberOf: TListView;
     pnCommands: TPanel;
     cbShowInactiveMemberOfs: TCheckBox;
@@ -45,7 +45,7 @@ type
   private
     fBusinessIntf: IMemberOfBusinessIntf;
     fExtentedListviewMemberOfs: TExtendedListview<TListEntry<TDtoMemberAggregated>>;
-    fDialog: TfmPersonMemberOfsEditDlg;
+    fDialog: TfmMemberOfsEditDlg;
     procedure SetCommands(const aCommands: IMemberOfBusinessIntf);
     procedure ListEnumBegin;
     procedure ListEnumProcessItem(const aItem: TListEntry<TDtoMemberAggregated>);
@@ -71,7 +71,7 @@ uses System.Generics.Defaults, Vdm.Globals, ListCrudCommands.Types, VclUITools;
 
 { TfraPersonMemberOf }
 
-procedure TfraPersonMemberOf.acDeleteMemberOfExecute(Sender: TObject);
+procedure TfraMemberOf.acDeleteMemberOfExecute(Sender: TObject);
 begin
   var lSelectedItem := lvMemberOf.Selected;
   if not Assigned(lSelectedItem) then
@@ -85,7 +85,7 @@ begin
   UpdateListActions(True);
 end;
 
-procedure TfraPersonMemberOf.acEditMemberOfExecute(Sender: TObject);
+procedure TfraMemberOf.acEditMemberOfExecute(Sender: TObject);
 begin
   var lSelectedItem := lvMemberOf.Selected;
   if not Assigned(lSelectedItem) then
@@ -106,7 +106,7 @@ begin
   end;
 end;
 
-procedure TfraPersonMemberOf.acNewMemberOfExecute(Sender: TObject);
+procedure TfraMemberOf.acNewMemberOfExecute(Sender: TObject);
 begin
   var lNewEntryCanceled := True;
   var lNewEntry := fBusinessIntf.CreateNewEntry;
@@ -125,13 +125,13 @@ begin
   end;
 end;
 
-procedure TfraPersonMemberOf.acReloadMemberOfsExecute(Sender: TObject);
+procedure TfraMemberOf.acReloadMemberOfsExecute(Sender: TObject);
 begin
   fBusinessIntf.ReloadEntries;
   UpdateListActions(False);
 end;
 
-procedure TfraPersonMemberOf.acSaveMemberOfsExecute(Sender: TObject);
+procedure TfraMemberOf.acSaveMemberOfsExecute(Sender: TObject);
 begin
   fBusinessIntf.SaveEntries(
       procedure(const aEntry: TListEntry<TDtoMemberAggregated>)
@@ -144,12 +144,12 @@ begin
   UpdateListActions(False);
 end;
 
-procedure TfraPersonMemberOf.acShowInactiveMemberOfsExecute(Sender: TObject);
+procedure TfraMemberOf.acShowInactiveMemberOfsExecute(Sender: TObject);
 begin
   fBusinessIntf.ShowInactiveMemberOfs := acShowInactiveMemberOfs.Checked;
 end;
 
-constructor TfraPersonMemberOf.Create(AOwner: TComponent);
+constructor TfraMemberOf.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   fExtentedListviewMemberOfs := TExtendedListview<TListEntry<TDtoMemberAggregated>>.Create(lvMemberOf,
@@ -169,17 +169,17 @@ begin
       end
     )
   );
-  fDialog := TfmPersonMemberOfsEditDlg.Create(Self);
+  fDialog := TfmMemberOfsEditDlg.Create(Self);
 end;
 
-destructor TfraPersonMemberOf.Destroy;
+destructor TfraMemberOf.Destroy;
 begin
   fDialog.Free;
   fExtentedListviewMemberOfs.Free;
   inherited;
 end;
 
-procedure TfraPersonMemberOf.SetActionsEnabled(const aEnabled: Boolean);
+procedure TfraMemberOf.SetActionsEnabled(const aEnabled: Boolean);
 begin
   if aEnabled then
   begin
@@ -191,23 +191,23 @@ begin
   end;
 end;
 
-procedure TfraPersonMemberOf.SetCommands(const aCommands: IMemberOfBusinessIntf);
+procedure TfraMemberOf.SetCommands(const aCommands: IMemberOfBusinessIntf);
 begin
   fBusinessIntf := aCommands;
 end;
 
-procedure TfraPersonMemberOf.ClearVersionInfoEntryFromUI(const aVersionInfoEntryIndex: UInt16);
+procedure TfraMemberOf.ClearVersionInfoEntryFromUI(const aVersionInfoEntryIndex: UInt16);
 begin
   TVclUITools.VersionInfoToLabel(lbMemberOfsVersionInfo, nil);
 end;
 
-procedure TfraPersonMemberOf.SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry;
+procedure TfraMemberOf.SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry;
   const aVersionInfoEntryIndex: UInt16);
 begin
   TVclUITools.VersionInfoToLabel(lbMemberOfsVersionInfo, aVersionInfoEntry);
 end;
 
-procedure TfraPersonMemberOf.ListEnumBegin;
+procedure TfraMemberOf.ListEnumBegin;
 begin
   UpdateEditItemActions(False);
   UpdateListActions(False);
@@ -216,17 +216,17 @@ begin
   fExtentedListviewMemberOfs.Clear;
 end;
 
-procedure TfraPersonMemberOf.ListEnumEnd;
+procedure TfraMemberOf.ListEnumEnd;
 begin
   fExtentedListviewMemberOfs.EndUpdate;
 end;
 
-procedure TfraPersonMemberOf.ListEnumProcessItem(const aItem: TListEntry<TDtoMemberAggregated>);
+procedure TfraMemberOf.ListEnumProcessItem(const aItem: TListEntry<TDtoMemberAggregated>);
 begin
   fExtentedListviewMemberOfs.Add(aItem);
 end;
 
-procedure TfraPersonMemberOf.lvMemberOfCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
+procedure TfraMemberOf.lvMemberOfCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
   var DefaultDraw: Boolean);
 begin
   DefaultDraw := True;
@@ -245,30 +245,30 @@ begin
     Sender.Canvas.Font.Color := TVdmGlobals.GetInactiveColor;
 end;
 
-procedure TfraPersonMemberOf.lvMemberOfDblClick(Sender: TObject);
+procedure TfraMemberOf.lvMemberOfDblClick(Sender: TObject);
 begin
   if Assigned(lvMemberOf.Selected) then
     acEditMemberOf.Execute;
 end;
 
-procedure TfraPersonMemberOf.lvMemberOfSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
+procedure TfraMemberOf.lvMemberOfSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
 begin
   UpdateEditItemActions(Assigned(Item) and Selected);
 end;
 
-procedure TfraPersonMemberOf.UpdateEditItemActions(const aEnabled: Boolean);
+procedure TfraMemberOf.UpdateEditItemActions(const aEnabled: Boolean);
 begin
   acEditMemberOf.Enabled := aEnabled;
   acDeleteMemberOf.Enabled := aEnabled;
 end;
 
-procedure TfraPersonMemberOf.UpdateListActions(const aEnabled: Boolean);
+procedure TfraMemberOf.UpdateListActions(const aEnabled: Boolean);
 begin
   acSaveMemberOfs.Enabled := aEnabled;
   acReloadMemberOfs.Enabled := aEnabled;
 end;
 
-function TfraPersonMemberOf.GetStringByIndex(const aStrings: TStrings; const aIndex: Integer): string;
+function TfraMemberOf.GetStringByIndex(const aStrings: TStrings; const aIndex: Integer): string;
 begin
   if (0 <= aIndex) and (aIndex < aStrings.Count) then
     Result := aStrings[aIndex]
