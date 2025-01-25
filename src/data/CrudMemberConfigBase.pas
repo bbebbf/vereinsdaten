@@ -2,7 +2,8 @@ unit CrudMemberConfigBase;
 
 interface
 
-uses InterfacedBase, SqlConnection, CrudAccessor, CrudConfig, SelectListFilter, DtoMember, MemberOfConfigIntf;
+uses InterfacedBase, SqlConnection, CrudAccessor, CrudConfig, SelectListFilter, DtoMember, KeyIndexStrings,
+  MemberOfConfigIntf;
 
 type
   TCrudMemberConfigBase = class abstract(TInterfacedBase,
@@ -23,6 +24,7 @@ type
     function GetSelectListSQL: string; virtual; abstract;
     procedure SetSelectListSQLParameter(const aFilter: UInt32; const aQuery: ISqlPreparedQuery); virtual; abstract;
     function GetDetailItemTitle: string; virtual; abstract;
+    function GetDetailItemMapper: TKeyIndexStrings; virtual; abstract;
     procedure SetMasterItemIdToMember(const aMasterItemId: UInt32; var aMember: TDtoMember); virtual; abstract;
     function GetDetailItemIdFromMember(const aMember: TDtoMember): UInt32; virtual; abstract;
     procedure SetDetailItemIdToMember(const aDetailItemId: UInt32; var aMember: TDtoMember); virtual; abstract;

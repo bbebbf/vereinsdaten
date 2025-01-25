@@ -116,7 +116,7 @@ begin
   fClubmembershipConfig := TCrudConfigClubmembership.Create;
   fClubmembershipRecordActions := TRecordActions<TDtoClubmembership, UInt32>.Create(fConnection, fClubmembershipConfig);
   fClubMembershipNumberChecker := TClubMembershipNumberChecker.Create(fConnection);
-  fMemberOfConfig := TCrudMemberConfigMasterPerson.Create;
+  fMemberOfConfig := TCrudMemberConfigMasterPerson.Create(fConnection);
   fMemberOfBusiness := TMemberOfBusiness.Create(fConnection, fMemberOfConfig, fUI.GetMemberOfUI);
 end;
 
@@ -431,7 +431,7 @@ end;
 
 procedure TPersonBusiness.ClearUnitCache;
 begin
-  fMemberOfBusiness.ClearUnitCache;
+  fMemberOfBusiness.ClearDetailItemCache;
 end;
 
 { TPersonBasedataVersionInfoConfig }
