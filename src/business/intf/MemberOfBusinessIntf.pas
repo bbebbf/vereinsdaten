@@ -8,7 +8,6 @@ type
   IMemberOfBusinessIntf = interface
     ['{6BF5D206-C946-4FDC-802C-70FD1B652F04}']
     procedure Initialize;
-    function GetMemberOfMaster: TMemberOfMaster;
     procedure LoadMemberOfs(const aMasterId: UInt32; const aMemberOfsVersionInfoEntry: TVersionInfoEntry);
     function GetShowInactiveMemberOfs: Boolean;
     procedure SetShowInactiveMemberOfs(const aValue: Boolean);
@@ -18,6 +17,7 @@ type
     procedure SaveEntries(const aDeleteEntryCallback: TListCrudCommandsEntryCallback<TDtoMemberAggregated>);
     procedure ClearUnitCache;
     procedure ClearRoleCache;
+    function GetDetailItemTitle: string;
     property ShowInactiveMemberOfs: Boolean read GetShowInactiveMemberOfs write SetShowInactiveMemberOfs;
   end;
 

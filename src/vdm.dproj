@@ -231,7 +231,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="data\DtoMemberAggregated.pas"/>
         <DCCReference Include="business\intf\MemberOfBusinessIntf.pas"/>
         <DCCReference Include="business\impl\MemberOfBusiness.pas"/>
-        <DCCReference Include="data\CrudMemberConfig.pas"/>
+        <DCCReference Include="data\CrudMemberConfigBase.pas"/>
         <DCCReference Include="general\intf\sql\SelectRecord.pas"/>
         <DCCReference Include="general\Vdm.Types.pas"/>
         <DCCReference Include="general\intf\sql\SelectList.pas"/>
@@ -313,6 +313,8 @@ $(PostBuildEvent)]]></PostBuildEvent>
             <Form>fmReportPersons</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="data\CrudMemberConfigMasterPerson.pas"/>
+        <DCCReference Include="business\intf\MemberOfConfigIntf.pas"/>
         <None Include="inc\CompilerDirectives.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>

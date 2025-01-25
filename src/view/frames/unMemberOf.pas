@@ -94,7 +94,7 @@ begin
   if not fExtentedListviewMemberOfs.TryGetListItemData(lSelectedItem, lEntry) then
     Exit;
 
-  if fDialog.Execute(fBusinessIntf.GetMemberOfMaster, lEntry.Data, False) then
+  if fDialog.Execute(fBusinessIntf.GetDetailItemTitle, lEntry.Data, False) then
   begin
     if lEntry.State in [TListEntryCrudState.New, TListEntryCrudState.ToBeDeleted] then
     begin
@@ -111,7 +111,7 @@ begin
   var lNewEntryCanceled := True;
   var lNewEntry := fBusinessIntf.CreateNewEntry;
   try
-    if fDialog.Execute(fBusinessIntf.GetMemberOfMaster, lNewEntry.Data, True) then
+    if fDialog.Execute(fBusinessIntf.GetDetailItemTitle, lNewEntry.Data, True) then
     begin
       lNewEntry.Updated;
       lNewEntryCanceled := False;
@@ -155,14 +155,7 @@ begin
   fExtentedListviewMemberOfs := TExtendedListview<TListEntry<TDtoMemberAggregated>>.Create(lvMemberOf,
     procedure(const aData: TListEntry<TDtoMemberAggregated>; const aListItem: TListItem)
     begin
-      if fBusinessIntf.GetMemberOfMaster = TMemberOfMaster.MasterPerson then
-      begin
-        aListItem.Caption := GetStringByIndex(aData.Data.AvailableUnits.Data.Strings, aData.Data.UnitIndex);
-      end
-      else
-      begin
-        aListItem.Caption := 'Person template';
-      end;
+      aListItem.Caption := GetStringByIndex(aData.Data.AvailableDetailItems.Data.Strings, aData.Data.DetailItemIndex);
       aListItem.SubItems.Clear;
       aListItem.SubItems.Add(GetStringByIndex(aData.Data.AvailableRoles.Data.Strings, aData.Data.RoleIndex));
       aListItem.SubItems.Add(TVdmGlobals.GetDateAsString(aData.Data.Member.ActiveSince));
@@ -201,14 +194,7 @@ end;
 procedure TfraMemberOf.SetCommands(const aCommands: IMemberOfBusinessIntf);
 begin
   fBusinessIntf := aCommands;
-  if fBusinessIntf.GetMemberOfMaster = TMemberOfMaster.MasterPerson then
-  begin
-    lvMemberOf.Columns[0].Caption := 'Einheit';
-  end
-  else
-  begin
-    lvMemberOf.Columns[0].Caption := 'Person';
-  end;
+  lvMemberOf.Columns[0].Caption := fBusinessIntf.GetDetailItemTitle;
 end;
 
 procedure TfraMemberOf.ClearVersionInfoEntryFromUI(const aVersionInfoEntryIndex: UInt16);

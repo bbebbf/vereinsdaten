@@ -4,8 +4,8 @@ interface
 
 uses System.Classes, InterfacedBase, CrudCommands, CrudConfig, Transaction, PersonBusinessIntf,
   DtoPersonAggregated, SqlConnection, PersonAggregatedUI, DtoPerson, RecordActions, RecordActionsVersioning,
-  KeyIndexStrings, DtoPersonAddress, DtoAddress, DtoClubmembership, ClubmembershipTools,
-  MemberOfBusinessIntf, ProgressIndicator, Vdm.Types, Vdm.Versioning.Types, CrudUI;
+  KeyIndexStrings, DtoPersonAddress, DtoAddress, DtoClubmembership, DtoMember, ClubmembershipTools,
+  MemberOfBusinessIntf, MemberOfConfigIntf, ProgressIndicator, Vdm.Types, Vdm.Versioning.Types, CrudUI;
 
 type
   TPersonBusiness = class(TInterfacedBase, IPersonBusinessIntf)
@@ -27,6 +27,7 @@ type
     fAddressMapper: TKeyIndexStrings;
     fShowInactivePersons: Boolean;
     fClubMembershipNumberChecker: TClubMembershipNumberChecker;
+    fMemberOfConfig: IMemberOfConfigIntf;
     fMemberOfBusiness: IMemberOfBusinessIntf;
     fDataChanged: Boolean;
 
@@ -62,7 +63,7 @@ implementation
 
 uses System.SysUtils, System.Generics.Collections, SelectList, KeyIndexMapper,
   CrudConfigPerson, CrudConfigAddress, CrudConfigPersonAddress, CrudConfigClubmembership,
-  MemberOfBusiness, EntryCrudConfig, CrudConfigUnitAggregated, CrudBusiness,
+  MemberOfBusiness, EntryCrudConfig, CrudConfigUnitAggregated, CrudBusiness, CrudMemberConfigMasterPerson,
   VersionInfoEntryUI;
 
 type
@@ -115,13 +116,15 @@ begin
   fClubmembershipConfig := TCrudConfigClubmembership.Create;
   fClubmembershipRecordActions := TRecordActions<TDtoClubmembership, UInt32>.Create(fConnection, fClubmembershipConfig);
   fClubMembershipNumberChecker := TClubMembershipNumberChecker.Create(fConnection);
-  fMemberOfBusiness := TMemberOfBusiness.Create(fConnection, TMemberOfMaster.MasterPerson, fUI.GetMemberOfUI);
+  fMemberOfConfig := TCrudMemberConfigMasterPerson.Create;
+  fMemberOfBusiness := TMemberOfBusiness.Create(fConnection, fMemberOfConfig, fUI.GetMemberOfUI);
 end;
 
 destructor TPersonBusiness.Destroy;
 begin
   fCurrentEntry.Free;
   fMemberOfBusiness := nil;
+  fMemberOfConfig := nil;
   fClubMembershipNumberChecker.Free;
   fClubmembershipRecordActions.Free;
   fClubmembershipConfig := nil;

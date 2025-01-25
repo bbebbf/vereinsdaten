@@ -3,7 +3,7 @@
 interface
 
 uses System.Classes, System.Generics.Collections, InterfacedBase, SqlConnection, MemberOfBusinessIntf,
-  MemberOfUI, KeyIndexStrings, CrudConfig, FilterSelect, Transaction,
+  MemberOfConfigIntf, MemberOfUI, KeyIndexStrings, CrudConfig, FilterSelect, Transaction,
   DtoMemberAggregated, DtoMember, DtoUnit, DtoRole, ListCrudCommands, SelectList, SelectListFilter,
   ValueConverter, Vdm.Types, Vdm.Versioning.Types, VersionInfoAccessor;
 
@@ -15,9 +15,8 @@ type
   TMemberOfBusiness = class(TInterfacedBase, IMemberOfBusinessIntf)
   strict private
     fConnection: ISqlConnection;
-    fMemberOfMaster: TMemberOfMaster;
     fUI: IMemberOfUI;
-    fMemberConfig: ICrudConfig<TDtoMember, UInt32>;
+    fMemberOfConfig: IMemberOfConfigIntf;
     fListCrudCommands: TObjectListCrudCommands<TDtoMember, UInt32, TDtoMemberAggregated, UInt32, TMemberOfBusinessRecordFilter>;
     fVersionInfoMemberOfsConfig: IVersionInfoConfig<UInt32, UInt32>;
     fVersionInfoAccessor: TVersionInfoAccessor<UInt32, UInt32>;
@@ -32,7 +31,6 @@ type
     fSelectListFilter: ISelectListFilter<TDtoMember, UInt32>;
     fValueConverter: IValueConverter<TDtoMember, TDtoMemberAggregated>;
     procedure Initialize;
-    function GetMemberOfMaster: TMemberOfMaster;
     procedure LoadMemberOfs(const aMasterId: UInt32; const aMemberOfsVersionInfoEntry: TVersionInfoEntry);
     function GetShowInactiveMemberOfs: Boolean;
     procedure SetShowInactiveMemberOfs(const aValue: Boolean);
@@ -50,25 +48,29 @@ type
         var aTransaction: ITransaction);
     procedure SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry);
     procedure ClearVersionInfoEntryFromUI;
+    function GetDetailItemTitle: string;
   public
-    constructor Create(const aConnection: ISqlConnection; const aMemberOfMaster: TMemberOfMaster; const aUI: IMemberOfUI);
+    constructor Create(const aConnection: ISqlConnection; const aMemberOfConfig: IMemberOfConfigIntf;
+      const aUI: IMemberOfUI);
     destructor Destroy; override;
   end;
 
 implementation
 
-uses System.SysUtils, CrudMemberConfig, CrudConfigUnit, CrudConfigRole, KeyIndexMapper,
+uses System.SysUtils, CrudConfigUnit, CrudConfigRole, KeyIndexMapper,
   VersionInfoEntryUI;
 
 type
   TDtoMemberConverter = class(TInterfacedBase, IValueConverter<TDtoMember, TDtoMemberAggregated>)
   strict private
+    fMemberOfConfig: IMemberOfConfigIntf;
     fUnitMapper: TKeyIndexStrings;
     fRoleMapper: TKeyIndexStrings;
     procedure Convert(const aValue: TDtoMember; var aTarget: TDtoMemberAggregated);
     procedure ConvertBack(const aValue: TDtoMemberAggregated; var aTarget: TDtoMember);
   public
-    constructor Create(const aUnitMapper, aRoleMapper: TKeyIndexStrings);
+    constructor Create(const aMemberOfConfig: IMemberOfConfigIntf;
+      const aUnitMapper, aRoleMapper: TKeyIndexStrings);
   end;
 
   TPersonMemberOfsVersionInfoConfig = class(TInterfacedBase, IVersionInfoConfig<UInt32, UInt32>)
@@ -82,15 +84,15 @@ type
 
 { TMemberOfBusiness }
 
-constructor TMemberOfBusiness.Create(const aConnection: ISqlConnection; const aMemberOfMaster: TMemberOfMaster; const aUI: IMemberOfUI);
+constructor TMemberOfBusiness.Create(const aConnection: ISqlConnection; const aMemberOfConfig: IMemberOfConfigIntf;
+  const aUI: IMemberOfUI);
 begin
   inherited Create;
   fConnection := aConnection;
-  fMemberOfMaster := aMemberOfMaster;
   fUI := aUI;
-  fMemberConfig := TCrudMemberConfig.Create;
+  fMemberOfConfig := aMemberOfConfig;
 
-  if not Supports(fMemberConfig, ISelectListFilter<TDtoMember, UInt32>, fSelectListFilter) then
+  if not Supports(fMemberOfConfig, ISelectListFilter<TDtoMember, UInt32>, fSelectListFilter) then
     raise ENotSupportedException.Create('aCrudConfig doesn''t support ISelectListFilter.');
 
   fUnitListConfig := TCrudConfigUnit.Create;
@@ -134,10 +136,10 @@ begin
       end
     );
 
-  fValueConverter := TDtoMemberConverter.Create(fUnitMapper, fRoleMapper);
+  fValueConverter := TDtoMemberConverter.Create(fMemberOfConfig, fUnitMapper, fRoleMapper);
   fListCrudCommands := TObjectListCrudCommands<TDtoMember, UInt32, TDtoMemberAggregated,
     UInt32, TMemberOfBusinessRecordFilter>.Create(
-    fConnection, fSelectListFilter, fMemberConfig, fValueConverter);
+    fConnection, fSelectListFilter, fMemberOfConfig, fValueConverter);
   fListCrudCommands.TargetEnumerator := fUI;
   fListCrudCommands.OnItemMatchesFilter := OnItemMatchesFilter;
   fListCrudCommands.OnTransaction := OnFilterSelectTransaction;
@@ -156,7 +158,7 @@ begin
   fRoleListConfig := nil;
   fUnitListConfig := nil;
   fSelectListFilter := nil;
-  fMemberConfig := nil;
+  fMemberOfConfig := nil;
   fUI := nil;
   fConnection := nil;
   inherited;
@@ -172,9 +174,9 @@ begin
   fUnitMapper.Invalidate;
 end;
 
-function TMemberOfBusiness.GetMemberOfMaster: TMemberOfMaster;
+function TMemberOfBusiness.GetDetailItemTitle: string;
 begin
-  Result := fMemberOfMaster;
+  Result := fMemberOfConfig.GetDetailItemTitle;
 end;
 
 function TMemberOfBusiness.GetShowInactiveMemberOfs: Boolean;
@@ -184,13 +186,17 @@ end;
 
 function TMemberOfBusiness.CreateNewEntry: TListEntry<TDtoMemberAggregated>;
 begin
-  Result := TObjectListEntry<TDtoMemberAggregated>.CreateNew(TDtoMemberAggregated.Create(fUnitMapper, fRoleMapper));
+  Result := TObjectListEntry<TDtoMemberAggregated>.CreateNew(
+    TDtoMemberAggregated.Create(fMemberOfConfig, fUnitMapper, fRoleMapper)
+    );
   Result.Data.Active := True;
 end;
 
 procedure TMemberOfBusiness.AddNewEntry(const aEntry: TListEntry<TDtoMemberAggregated>);
 begin
-  aEntry.Data.PersonId := fCurrentMasterId;
+  var lMember := aEntry.Data.Member;
+  fMemberOfConfig.SetMasterItemIdToMember(fCurrentMasterId, lMember);
+  aEntry.Data.UpdateByDtoMember(lMember);
   fListCrudCommands.Items.Add(aEntry);
 end;
 
@@ -304,9 +310,11 @@ end;
 
 { TDtoMemberConverter }
 
-constructor TDtoMemberConverter.Create(const aUnitMapper, aRoleMapper: TKeyIndexStrings);
+constructor TDtoMemberConverter.Create(const aMemberOfConfig: IMemberOfConfigIntf;
+  const aUnitMapper, aRoleMapper: TKeyIndexStrings);
 begin
   inherited Create;
+  fMemberOfConfig := aMemberOfConfig;
   fUnitMapper := aUnitMapper;
   fRoleMapper := aRoleMapper;
 end;
@@ -319,7 +327,7 @@ begin
   end
   else
   begin
-    aTarget := TDtoMemberAggregated.Create(fUnitMapper, fRoleMapper, aValue);
+    aTarget := TDtoMemberAggregated.Create(fMemberOfConfig, fUnitMapper, fRoleMapper, aValue);
   end;
 end;
 

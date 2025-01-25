@@ -1,12 +1,12 @@
-unit CrudMemberConfig;
+unit CrudMemberConfigBase;
 
 interface
 
-uses InterfacedBase, SqlConnection, CrudAccessor, CrudConfig, SelectListFilter, DtoMember;
+uses InterfacedBase, SqlConnection, CrudAccessor, CrudConfig, SelectListFilter, DtoMember, MemberOfConfigIntf;
 
 type
-  TCrudMemberConfig = class(TInterfacedBase,
-    ICrudConfig<TDtoMember, UInt32>,
+  TCrudMemberConfigBase = class abstract(TInterfacedBase,
+    IMemberOfConfigIntf,
     ISelectListFilter<TDtoMember, UInt32>)
   strict private
     function GetTablename: string;
@@ -18,23 +18,28 @@ type
     procedure SetValuesForDelete(const aRecordIdentity: UInt32; const aAccessor: TCrudAccessorDelete);
     procedure UpdateRecordIdentity(const aAccessor: TCrudAccessorInsert; var aRecord: TDtoMember);
     procedure GetRecordFromSqlResult(const aSqlResult: ISqlResult; var aData: TDtoMember);
-    function GetSelectListSQL: string;
-    procedure SetSelectListSQLParameter(const aFilter: UInt32; const aQuery: ISqlPreparedQuery);
     function GetRecordIdentity(const aRecord: TDtoMember): UInt32;
+  strict protected
+    function GetSelectListSQL: string; virtual; abstract;
+    procedure SetSelectListSQLParameter(const aFilter: UInt32; const aQuery: ISqlPreparedQuery); virtual; abstract;
+    function GetDetailItemTitle: string; virtual; abstract;
+    procedure SetMasterItemIdToMember(const aMasterItemId: UInt32; var aMember: TDtoMember); virtual; abstract;
+    function GetDetailItemIdFromMember(const aMember: TDtoMember): UInt32; virtual; abstract;
+    procedure SetDetailItemIdToMember(const aDetailItemId: UInt32; var aMember: TDtoMember); virtual; abstract;
   end;
 
 implementation
 
 uses Vdm.Globals;
 
-{ TCrudMemberConfig }
+{ TCrudMemberConfigBase }
 
-function TCrudMemberConfig.GetIdentityColumns: TArray<string>;
+function TCrudMemberConfigBase.GetIdentityColumns: TArray<string>;
 begin
 
 end;
 
-procedure TCrudMemberConfig.GetRecordFromSqlResult(const aSqlResult: ISqlResult; var aData: TDtoMember);
+procedure TCrudMemberConfigBase.GetRecordFromSqlResult(const aSqlResult: ISqlResult; var aData: TDtoMember);
 begin
   aData.Id := aSqlResult.FieldByName('mb_id').AsLargeInt;
   aData.PersonId := aSqlResult.FieldByName('person_id').AsLargeInt;
@@ -45,32 +50,22 @@ begin
   aData.ActiveUntil := aSqlResult.FieldByName('mb_active_until').AsDateTime;
 end;
 
-function TCrudMemberConfig.GetRecordIdentity(const aRecord: TDtoMember): UInt32;
+function TCrudMemberConfigBase.GetRecordIdentity(const aRecord: TDtoMember): UInt32;
 begin
   Result := aRecord.Id;
 end;
 
-function TCrudMemberConfig.GetSelectListSQL: string;
-begin
-  Result := 'SELECT m.*'
-    + ' FROM `member`AS m'
-    + ' INNER JOIN `unit` AS u ON u.unit_id = m.unit_id'
-    + ' LEFT JOIN `role` AS r ON r.role_id = m.role_id'
-    + ' WHERE m.person_id = :PId'
-    + ' ORDER BY ' + TVdmGlobals.GetRoleSortingSqlOrderBy('r') + ', u.unit_name, m.mb_active_since DESC';
-end;
-
-function TCrudMemberConfig.GetSelectRecordSQL: string;
+function TCrudMemberConfigBase.GetSelectRecordSQL: string;
 begin
   Result := 'select * from member where mb_id = :MId';
 end;
 
-function TCrudMemberConfig.GetTablename: string;
+function TCrudMemberConfigBase.GetTablename: string;
 begin
   Result := 'member';
 end;
 
-function TCrudMemberConfig.IsNewRecord(const aRecordIdentity: UInt32): TCrudConfigNewRecordResponse;
+function TCrudMemberConfigBase.IsNewRecord(const aRecordIdentity: UInt32): TCrudConfigNewRecordResponse;
 begin
   if aRecordIdentity = 0 then
     Result := TCrudConfigNewRecordResponse.NewRecord
@@ -78,17 +73,12 @@ begin
     Result := TCrudConfigNewRecordResponse.ExistingRecord;
 end;
 
-procedure TCrudMemberConfig.SetSelectListSQLParameter(const aFilter: UInt32; const aQuery: ISqlPreparedQuery);
-begin
-  aQuery.ParamByName('PId').Value := aFilter;
-end;
-
-procedure TCrudMemberConfig.SetSelectRecordSQLParameter(const aRecordIdentity: UInt32; const aQuery: ISqlPreparedQuery);
+procedure TCrudMemberConfigBase.SetSelectRecordSQLParameter(const aRecordIdentity: UInt32; const aQuery: ISqlPreparedQuery);
 begin
   aQuery.ParamByName('MId').Value := aRecordIdentity;
 end;
 
-procedure TCrudMemberConfig.SetValues(const aRecord: TDtoMember; const aAccessor: TCrudAccessorBase;
+procedure TCrudMemberConfigBase.SetValues(const aRecord: TDtoMember; const aAccessor: TCrudAccessorBase;
   const aForUpdate: Boolean);
 begin
   if aForUpdate then
@@ -101,13 +91,13 @@ begin
   aAccessor.SetValueZeroAsNull('mb_active_until', aRecord.ActiveUntil);
 end;
 
-procedure TCrudMemberConfig.SetValuesForDelete(const aRecordIdentity: UInt32;
+procedure TCrudMemberConfigBase.SetValuesForDelete(const aRecordIdentity: UInt32;
   const aAccessor: TCrudAccessorDelete);
 begin
   aAccessor.SetValue('mb_id', aRecordIdentity);
 end;
 
-procedure TCrudMemberConfig.UpdateRecordIdentity(const aAccessor: TCrudAccessorInsert; var aRecord: TDtoMember);
+procedure TCrudMemberConfigBase.UpdateRecordIdentity(const aAccessor: TCrudAccessorInsert; var aRecord: TDtoMember);
 begin
   aRecord.Id := aAccessor.LastInsertedId;
 end;

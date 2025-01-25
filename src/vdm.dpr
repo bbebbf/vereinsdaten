@@ -58,7 +58,7 @@ uses
   DtoMemberAggregated in 'data\DtoMemberAggregated.pas',
   MemberOfBusinessIntf in 'business\intf\MemberOfBusinessIntf.pas',
   MemberOfBusiness in 'business\impl\MemberOfBusiness.pas',
-  CrudMemberConfig in 'data\CrudMemberConfig.pas',
+  CrudMemberConfigBase in 'data\CrudMemberConfigBase.pas',
   SelectRecord in 'general\intf\sql\SelectRecord.pas',
   Vdm.Types in 'general\Vdm.Types.pas',
   SelectList in 'general\intf\sql\SelectList.pas',
@@ -103,7 +103,9 @@ uses
   unUnit in 'view\frames\unUnit.pas' {fraUnit: TFrame},
   Report.MemberUnits in 'reports\Report.MemberUnits.pas' {fmReportMemberUnits},
   unSelectConnection in 'view\forms\unSelectConnection.pas' {fmSelectConnection},
-  Report.Persons in 'reports\Report.Persons.pas' {fmReportPersons};
+  Report.Persons in 'reports\Report.Persons.pas' {fmReportPersons},
+  CrudMemberConfigMasterPerson in 'data\CrudMemberConfigMasterPerson.pas',
+  MemberOfConfigIntf in 'business\intf\MemberOfConfigIntf.pas';
 
 {$R *.res}
 

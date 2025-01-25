@@ -9,11 +9,11 @@ uses
 
 type
   TfmMemberOfsEditDlg = class(TForm)
-    cbDetailRec: TComboBox;
+    cbDetailItem: TComboBox;
     cbActive: TCheckBox;
     btSave: TButton;
     btReload: TButton;
-    lbDetailRec: TLabel;
+    lbDetailItem: TLabel;
     cbRole: TComboBox;
     lbRole: TLabel;
     lbMembershipBegin: TLabel;
@@ -28,8 +28,9 @@ type
   strict private
     fActiveSinceHandler: TCheckboxDatetimePickerHandler;
     fActiveUntilHandler: TCheckboxDatetimePickerHandler;
+    fDetailItemTitle: string;
   public
-    function Execute(const aMemberOfMaster: TMemberOfMaster; const aMemberRecord: TDtoMemberAggregated;
+    function Execute(const aDetailItemTitle: string; const aMemberRecord: TDtoMemberAggregated;
       const aNewRecord: Boolean): Boolean;
   end;
 
@@ -43,22 +44,24 @@ uses MessageDialogs, VclUITools;
 
 procedure TfmMemberOfsEditDlg.btSaveClick(Sender: TObject);
 begin
-  if cbDetailRec.ItemIndex < 0 then
+  if cbDetailItem.ItemIndex < 0 then
   begin
-    TMessageDialogs.Ok('Bitte die Einheit auswählen.', TMsgDlgType.mtInformation);
-    cbDetailRec.SetFocus;
+    TMessageDialogs.Ok('Bitte die ' + fDetailItemTitle + ' auswählen.', TMsgDlgType.mtInformation);
+    cbDetailItem.SetFocus;
     Exit;
   end;
   ModalResult := mrOk;
 end;
 
-function TfmMemberOfsEditDlg.Execute(const aMemberOfMaster: TMemberOfMaster;
+function TfmMemberOfsEditDlg.Execute(const aDetailItemTitle: string;
   const aMemberRecord: TDtoMemberAggregated; const aNewRecord: Boolean): Boolean;
 begin
   Result := False;
-  cbDetailRec.Items.Assign(aMemberRecord.AvailableUnits.Data.Strings);
+  fDetailItemTitle := aDetailItemTitle;
+  lbDetailItem.Caption := fDetailItemTitle;
+  cbDetailItem.Items.Assign(aMemberRecord.AvailableDetailItems.Data.Strings);
   cbRole.Items.Assign(aMemberRecord.AvailableRoles.Data.Strings);
-  TVclUITools.SetComboboxItemIndex(cbDetailRec, aMemberRecord.UnitIndex);
+  TVclUITools.SetComboboxItemIndex(cbDetailItem, aMemberRecord.DetailItemIndex);
   TVclUITools.SetComboboxItemIndex(cbRole, aMemberRecord.RoleIndex);
   cbActive.Checked := aMemberRecord.Member.Active;
   fActiveSinceHandler.Datetime := aMemberRecord.Member.ActiveSince;
@@ -74,7 +77,7 @@ begin
   if ShowModal = mrOk then
   begin
     Result := True;
-    aMemberRecord.UnitIndex := cbDetailRec.ItemIndex;
+    aMemberRecord.DetailItemIndex := cbDetailItem.ItemIndex;
     aMemberRecord.RoleIndex := cbRole.ItemIndex;
     aMemberRecord.Active := cbActive.Checked;
     aMemberRecord.ActiveSince := fActiveSinceHandler.Datetime;

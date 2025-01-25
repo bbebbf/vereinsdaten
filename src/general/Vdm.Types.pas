@@ -20,8 +20,6 @@ type
 
   TDelayedLoadEntry = TDelayedExecute<TDelayedLoadEntryData>;
 
-  TMemberOfMaster = (MasterPerson, MasterUnit);
-
 implementation
 
 { TDelayedLoadEntryData }
