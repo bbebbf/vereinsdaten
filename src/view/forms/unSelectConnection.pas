@@ -19,13 +19,14 @@ implementation
 
 {$R *.dfm}
 
-uses ConfigReader;
+uses Vdm.Globals, ConfigReader;
 
 { TfmSelectConnection }
 
 function TfmSelectConnection.Execute: Boolean;
 begin
   Result := False;
+  Caption := TVdmGlobals.GetVdmApplicationTitle + ': Datenbankverbing auswählen';
   cbConnections.Items.Assign(TConfigReader.Instance.ConnectionNames);
   if cbConnections.Items.Count = 0 then
     Exit;
