@@ -194,6 +194,7 @@ end;
 procedure TfraMemberOf.SetCommands(const aCommands: IMemberOfBusinessIntf);
 begin
   fBusinessIntf := aCommands;
+  lbMemberOfsVersionInfo.Caption := '';
   lvMemberOf.Columns[0].Caption := fBusinessIntf.GetDetailItemTitle;
 end;
 

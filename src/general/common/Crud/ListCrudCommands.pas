@@ -3,7 +3,7 @@ unit ListCrudCommands;
 interface
 
 uses System.SysUtils, System.Generics.Collections, SqlConnection, FilterSelect, SelectListFilter,
-  ListEnumerator, CrudConfig, ListCrudCommands.Types, ValueConverter, Transaction;
+  ListEnumerator, CrudConfig, ListCrudCommands.Types, ValueConverter, Transaction, EntryCrudFunctions;
 
 type
   TListEntry<T> = class
@@ -37,6 +37,7 @@ type
     fItems: TList<TListEntry<TD>>;
     fValueConverter: IValueConverter<TS, TD>;
     fTargetEnumerator: IListEnumerator<TListEntry<TD>>;
+    fAdditionalCrud: IEntryCrudFunctions<TD>;
   strict protected
     function CreateListEntry(const aItem: TD): TListEntry<TD>; virtual;
     procedure FilterChanged; override;
@@ -51,9 +52,10 @@ type
       );
     destructor Destroy; override;
     procedure Reload;
-    procedure SaveChanges(const aDeleteEntryCallback: TListCrudCommandsEntryCallback<TD>;
+    procedure SaveChanges(const aDeleteEntryFromUICallback: TListCrudCommandsEntryCallback<TD>;
       const aTransaction: ITransaction = nil);
     property TargetEnumerator: IListEnumerator<TListEntry<TD>> read fTargetEnumerator write fTargetEnumerator;
+    property AdditionalCrud: IEntryCrudFunctions<TD> read fAdditionalCrud write fAdditionalCrud;
     property Items: TList<TListEntry<TD>> read fItems;
   end;
 
@@ -123,6 +125,8 @@ begin
   inherited;
   var lTargetItem := default(TD);
   fValueConverter.Convert(aItem, lTargetItem);
+  if Assigned(fAdditionalCrud) then
+    fAdditionalCrud.LoadEntry(lTargetItem);
   var lEntry := CreateListEntry(lTargetItem);
   fItems.Add(lEntry);
   if Assigned(fTargetEnumerator) then
@@ -141,7 +145,7 @@ begin
 end;
 
 procedure TListCrudCommands<TS, TSIdent, TD, FSelect, FLoop>.SaveChanges(
-  const aDeleteEntryCallback: TListCrudCommandsEntryCallback<TD>;
+  const aDeleteEntryFromUICallback: TListCrudCommandsEntryCallback<TD>;
   const aTransaction: ITransaction);
 begin
   var lRecordActions := TRecordActions<TS, TSIdent>.Create(fConnection, fCrudConfig);
@@ -158,7 +162,7 @@ begin
       var lEntry := fItems[i];
       if lEntry.State = TListEntryCrudState.NewDeleted then
       begin
-        aDeleteEntryCallback(lEntry);
+        aDeleteEntryFromUICallback(lEntry);
       end
       else if lEntry.State in [TListEntryCrudState.Updated, TListEntryCrudState.New] then
       begin
@@ -167,18 +171,24 @@ begin
         fValueConverter.ConvertBack(lTD, lTS);
         lRecordActions.SaveRecord(lTS, lTransaction);
         fValueConverter.Convert(lTS, lTD);
+        if Assigned(fAdditionalCrud) then
+          fAdditionalCrud.SaveEntry(lEntry.Data, lTransaction);
         lEntry.Resetted;
       end
       else if lEntry.State = TListEntryCrudState.ToBeDeleted then
       begin
+        if Assigned(fAdditionalCrud) then
+          fAdditionalCrud.DeleteEntry(lEntry.Data, lTransaction);
         var lTS := default(TS);
         fValueConverter.ConvertBack(lEntry.Data, lTS);
         lRecordActions.DeleteEntry(fCrudConfig.GetRecordIdentity(lTS), lTransaction);
-        aDeleteEntryCallback(lEntry);
+        aDeleteEntryFromUICallback(lEntry);
         fItems.Delete(i);
       end;
+      if not lTransaction.Active then
+        Break;
     end;
-    if lOwnsTransaction then
+    if lOwnsTransaction and lTransaction.Active then
       lTransaction.Commit;
   finally
     lRecordActions.Free;

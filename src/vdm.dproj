@@ -315,6 +315,8 @@ $(PostBuildEvent)]]></PostBuildEvent>
         </DCCReference>
         <DCCReference Include="data\CrudMemberConfigMasterPerson.pas"/>
         <DCCReference Include="business\intf\MemberOfConfigIntf.pas"/>
+        <DCCReference Include="data\CrudMemberConfigMasterUnit.pas"/>
+        <DCCReference Include="general\intf\crud\EntryCrudFunctions.pas"/>
         <None Include="inc\CompilerDirectives.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>

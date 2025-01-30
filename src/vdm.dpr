@@ -105,7 +105,9 @@ uses
   unSelectConnection in 'view\forms\unSelectConnection.pas' {fmSelectConnection},
   Report.Persons in 'reports\Report.Persons.pas' {fmReportPersons},
   CrudMemberConfigMasterPerson in 'data\CrudMemberConfigMasterPerson.pas',
-  MemberOfConfigIntf in 'business\intf\MemberOfConfigIntf.pas';
+  MemberOfConfigIntf in 'business\intf\MemberOfConfigIntf.pas',
+  CrudMemberConfigMasterUnit in 'data\CrudMemberConfigMasterUnit.pas',
+  EntryCrudFunctions in 'general\intf\crud\EntryCrudFunctions.pas';
 
 {$R *.res}
 

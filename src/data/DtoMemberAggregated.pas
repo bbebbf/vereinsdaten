@@ -2,7 +2,7 @@ unit DtoMemberAggregated;
 
 interface
 
-uses System.Classes, DtoMember, MemberOfConfigIntf, KeyIndexStrings;
+uses System.Classes, DtoMember, MemberOfConfigIntf, KeyIndexStrings, Vdm.Versioning.Types;
 
 type
   TDtoMemberAggregated = class
@@ -10,15 +10,18 @@ type
     fMember: TDtoMember;
     fMemberOfConfigIntf: IMemberOfConfigIntf;
     fAvailableRoles: TKeyIndexStrings;
+    fVersionInfoPersonMenberOf: TVersionInfoEntry;
     function GetAvailableDetailItems: TKeyIndexStrings;
     function GetRoleIndex: Integer;
     function GetDetailItemIndex: Integer;
     procedure SetRoleIndex(const aValue: Integer);
     procedure SetDetailItemIndex(const aValue: Integer);
+    function GetVersionInfoPersonMenberOf: TVersionInfoEntry;
   public
     constructor Create(const aMemberOfConfigIntf: IMemberOfConfigIntf; const aAvailableRoles: TKeyIndexStrings); overload;
     constructor Create(const aMemberOfConfigIntf: IMemberOfConfigIntf;
       const aAvailableRoles: TKeyIndexStrings; const aMember: TDtoMember); overload;
+    destructor Destroy; override;
     procedure UpdateByDtoMember(const aMember: TDtoMember);
     property Member: TDtoMember read fMember;
     property Id: UInt32 read fMember.Id write fMember.Id;
@@ -32,6 +35,7 @@ type
     property RoleIndex: Integer read GetRoleIndex write SetRoleIndex;
     property AvailableDetailItems: TKeyIndexStrings read GetAvailableDetailItems;
     property AvailableRoles: TKeyIndexStrings read fAvailableRoles;
+    property VersionInfoPersonMenberOf: TVersionInfoEntry read GetVersionInfoPersonMenberOf;
   end;
 
 implementation
@@ -56,9 +60,22 @@ begin
   fMember := aMember;
 end;
 
+destructor TDtoMemberAggregated.Destroy;
+begin
+  fVersionInfoPersonMenberOf.Free;
+  inherited;
+end;
+
 function TDtoMemberAggregated.GetRoleIndex: Integer;
 begin
   Result := fAvailableRoles.Data.Mapper.GetIndex(fMember.RoleId);
+end;
+
+function TDtoMemberAggregated.GetVersionInfoPersonMenberOf: TVersionInfoEntry;
+begin
+  if not Assigned(fVersionInfoPersonMenberOf) then
+    fVersionInfoPersonMenberOf := TVersionInfoEntry.Create;
+  Result := fVersionInfoPersonMenberOf;
 end;
 
 function TDtoMemberAggregated.GetAvailableDetailItems: TKeyIndexStrings;

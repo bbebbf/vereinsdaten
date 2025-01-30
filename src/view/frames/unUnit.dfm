@@ -99,8 +99,8 @@ object fraUnit: TfraUnit
       Left = 0
       Top = 337
       Width = 720
-      Height = 317
-      Align = alClient
+      Height = 152
+      Align = alTop
       Columns = <
         item
           Caption = 'Person'
@@ -256,6 +256,19 @@ object fraUnit: TfraUnit
         MaxDate = 69763.999988425930000000
         TabOrder = 9
       end
+    end
+    object pnMemberOf: TPanel
+      Left = 0
+      Top = 489
+      Width = 720
+      Height = 165
+      Align = alClient
+      BevelOuter = bvNone
+      TabOrder = 2
+      ExplicitLeft = 208
+      ExplicitTop = 520
+      ExplicitWidth = 289
+      ExplicitHeight = 121
     end
   end
   object pnTop: TPanel

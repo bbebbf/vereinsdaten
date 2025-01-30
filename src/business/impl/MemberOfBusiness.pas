@@ -35,7 +35,7 @@ type
     function CreateNewEntry: TListEntry<TDtoMemberAggregated>;
     procedure AddNewEntry(const aEntry: TListEntry<TDtoMemberAggregated>);
     procedure ReloadEntries;
-    procedure SaveEntries(const aDeleteEntryCallback: TListCrudCommandsEntryCallback<TDtoMemberAggregated>);
+    procedure SaveEntries(const aDeleteEntryFromUICallback: TListCrudCommandsEntryCallback<TDtoMemberAggregated>);
     procedure ClearDetailItemCache;
     procedure ClearRoleCache;
 
@@ -116,6 +116,7 @@ begin
     UInt32, TMemberOfBusinessRecordFilter>.Create(
     fConnection, fSelectListFilter, fMemberOfConfig, fValueConverter);
   fListCrudCommands.TargetEnumerator := fUI;
+  fListCrudCommands.AdditionalCrud := nil;
   fListCrudCommands.OnItemMatchesFilter := OnItemMatchesFilter;
   fListCrudCommands.OnTransaction := OnFilterSelectTransaction;
 
@@ -259,19 +260,31 @@ begin
 end;
 
 procedure TMemberOfBusiness.SaveEntries(
-  const aDeleteEntryCallback: TListCrudCommandsEntryCallback<TDtoMemberAggregated>);
+  const aDeleteEntryFromUICallback: TListCrudCommandsEntryCallback<TDtoMemberAggregated>);
 begin
-  if Assigned(fCurrentMemberOfsVersionEntry) and (fCurrentMasterId > 0) then
+  if fCurrentMasterId = 0 then
   begin
-    var lTransactionScopeSaveEntries := fVersionInfoAccessor.StartTransaction;
-    fListCrudCommands.SaveChanges(aDeleteEntryCallback, lTransactionScopeSaveEntries.Transaction);
+    raise EArgumentException.Create('TMemberOfBusiness.SaveEntries: fCurrentMasterId = 0');
+  end;
+
+  var lTransaction: ITransaction := fConnection.StartTransaction;
+
+  if Assigned(fCurrentMemberOfsVersionEntry) then
+  begin
+    var lTransactionScopeSaveEntries := fVersionInfoAccessor.StartTransaction(lTransaction);
+    fListCrudCommands.SaveChanges(aDeleteEntryFromUICallback, lTransactionScopeSaveEntries.Transaction);
     fVersionInfoAccessor.UpdateVersionInfo(lTransactionScopeSaveEntries, fCurrentMasterId, fCurrentMemberOfsVersionEntry);
     SetVersionInfoEntryToUI(fCurrentMemberOfsVersionEntry);
   end
   else
   begin
-    fListCrudCommands.SaveChanges(aDeleteEntryCallback);
+    fListCrudCommands.SaveChanges(aDeleteEntryFromUICallback, lTransaction);
     ClearVersionInfoEntryFromUI;
+  end;
+  if Assigned(lTransaction) then
+  begin
+    if lTransaction.Active then
+      lTransaction.Commit;
   end;
 end;
 

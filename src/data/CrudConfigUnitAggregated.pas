@@ -3,7 +3,8 @@ unit CrudConfigUnitAggregated;
 interface
 
 uses InterfacedBase, EntryCrudConfig, DtoUnitAggregated, SqlConnection, CrudConfigUnit, CrudConfig, DtoUnit,
-  RecordActionsVersioning, Vdm.Types, Vdm.Versioning.Types, VersionInfoEntryConfig, CrudCommands;
+  RecordActionsVersioning, Vdm.Types, Vdm.Versioning.Types, VersionInfoEntryConfig, CrudCommands,
+  MemberOfConfigIntf, MemberOfBusinessIntf, MemberOfUI;
 
 type
   TCrudConfigUnitAggregated = class(TInterfacedBase,
@@ -15,6 +16,8 @@ type
     fVersionInfoConfig: IVersionInfoConfig<TDtoUnit, UInt32>;
     fUnitRecordActions: TRecordActionsVersioning<TDtoUnit, UInt32>;
     fMemberSelectQuery: ISqlPreparedQuery;
+    fMemberOfConfig: IMemberOfConfigIntf;
+    fMemberOfBusiness: IMemberOfBusinessIntf;
     function GetListSqlResult: ISqlResult;
     function GetListEntryFromSqlResult(const aSqlResult: ISqlResult): TDtoUnit;
     function IsEntryValidForList(const aEntry: TDtoUnit; const aListFilter: TUnitFilter): Boolean;
@@ -31,13 +34,13 @@ type
     function GetVersionInfoEntry(const aEntry: TDtoUnitAggregated; out aVersionInfoEntry: TVersionInfoEntry): Boolean;
     procedure AssignVersionInfoEntry(const aSourceEntry, aTargetEntry: TDtoUnitAggregated);
   public
-    constructor Create(const aConnection: ISqlConnection);
+    constructor Create(const aConnection: ISqlConnection; const aMemberOfUI: IMemberOfUI);
     destructor Destroy; override;
   end;
 
 implementation
 
-uses System.SysUtils, SelectList, Vdm.Globals;
+uses System.SysUtils, SelectList, Vdm.Globals, MemberOfBusiness, CrudMemberConfigMasterUnit;
 
 type
   TVersionInfoConfig = class(TInterfacedBase, IVersionInfoConfig<TDtoUnit, UInt32>)
@@ -50,17 +53,22 @@ type
 
 { TCrudConfigUnitAggregated }
 
-constructor TCrudConfigUnitAggregated.Create(const aConnection: ISqlConnection);
+constructor TCrudConfigUnitAggregated.Create(const aConnection: ISqlConnection; const aMemberOfUI: IMemberOfUI);
 begin
   inherited Create;
   fConnection := aConnection;
   fCrudConfigUnit := TCrudConfigUnit.Create;
   fVersionInfoConfig := TVersionInfoConfig.Create;
   fUnitRecordActions := TRecordActionsVersioning<TDtoUnit, UInt32>.Create(fConnection, fCrudConfigUnit, fVersionInfoConfig);
+  fMemberOfConfig := TCrudMemberConfigMasterUnit.Create(fConnection);
+  fMemberOfBusiness := TMemberOfBusiness.Create(fConnection, fMemberOfConfig, aMemberOfUI);
+  fMemberOfBusiness.Initialize;
 end;
 
 destructor TCrudConfigUnitAggregated.Destroy;
 begin
+  fMemberOfBusiness := nil;
+  fMemberOfConfig := nil;
   fUnitRecordActions.Free;
   inherited;
 end;
@@ -188,6 +196,8 @@ begin
     lMemberRec.RoleName := lSqlResult.FieldByName('role_name').AsString;
     aEntry.MemberOfList.Add(lMemberRec);
   end;
+
+  fMemberOfBusiness.LoadMemberOfs(aId, nil);
 end;
 
 { TVersionInfoConfig }

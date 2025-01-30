@@ -8,7 +8,7 @@ uses
   System.Generics.Collections, CrudCommands, DtoUnit, DtoUnitAggregated, ExtendedListview, Vcl.Menus, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.WinXPickers, System.Actions, Vcl.ActnList,
   ComponentValueChangedObserver, CrudUI, CheckboxDatetimePickerHandler, Vdm.Types,
-  Vdm.Versioning.Types, VersionInfoEntryUI;
+  Vdm.Versioning.Types, VersionInfoEntryUI, MemberOfUI, unMemberOf;
 
 type
   TfraUnit = class(TFrame, ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>, IVersionInfoEntryUI)
@@ -44,6 +44,7 @@ type
     btReload: TButton;
     cbDataConfirmedOnKnown: TCheckBox;
     dtDataConfirmedOn: TDateTimePicker;
+    pnMemberOf: TPanel;
     procedure lvListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure lvListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
@@ -56,6 +57,7 @@ type
     procedure btReturnClick(Sender: TObject);
     procedure lvListviewDblClick(Sender: TObject);
   strict private
+    fUnitMemberOf: TfraMemberOf;
     fReturnAction: TAction;
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
@@ -87,9 +89,12 @@ type
 
     procedure SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry; const aVersionInfoEntryIndex: UInt16);
     procedure ClearVersionInfoEntryFromUI(const aVersionInfoEntryIndex: UInt16);
+
+    function GetMemberOfUI: IMemberOfUI;
   public
     constructor Create(AOwner: TComponent; const aReturnAction: TAction); reintroduce;
     destructor Destroy; override;
+    property MemberOfUI: IMemberOfUI read GetMemberOfUI;
   end;
 
 implementation
@@ -103,6 +108,10 @@ uses System.Generics.Defaults, StringTools, MessageDialogs, Vdm.Globals, VclUITo
 constructor TfraUnit.Create(AOwner: TComponent; const aReturnAction: TAction);
 begin
   inherited Create(AOwner);
+  fUnitMemberOf := TfraMemberOf.Create(Self);
+  fUnitMemberOf.Parent := pnMemberOf;
+  fUnitMemberOf.Align := TAlign.alClient;
+
   fReturnAction := aReturnAction;
   fActiveSinceHandler := TCheckboxDatetimePickerHandler.Create(cbUnitActiveSinceKnown, dtUnitActiveSince);
   fActiveUntilHandler := TCheckboxDatetimePickerHandler.Create(cbUnitActiveUntilKnown, dtUnitActiveUntil);
@@ -265,6 +274,11 @@ begin
   aEntry.ActiveSince := fActiveSinceHandler.Datetime;
   aEntry.ActiveUntil := fActiveUntilHandler.Datetime;
   aEntry.DataConfirmedOn := fDataConfirmedOnHandler.Datetime;
+end;
+
+function TfraUnit.GetMemberOfUI: IMemberOfUI;
+begin
+  Result := fUnitMemberOf;
 end;
 
 procedure TfraUnit.SetCrudCommands(const aCommands: ICrudCommands<UInt32, TUnitFilter>);
