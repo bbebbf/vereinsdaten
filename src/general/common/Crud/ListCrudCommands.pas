@@ -37,7 +37,7 @@ type
     fItems: TList<TListEntry<TD>>;
     fValueConverter: IValueConverter<TS, TD>;
     fTargetEnumerator: IListEnumerator<TListEntry<TD>>;
-    fAdditionalCrud: IEntryCrudFunctions<TD>;
+    fAdditionalCrud: IEntriesCrudFunctions<TD>;
   strict protected
     function CreateListEntry(const aItem: TD): TListEntry<TD>; virtual;
     procedure FilterChanged; override;
@@ -55,7 +55,7 @@ type
     procedure SaveChanges(const aDeleteEntryFromUICallback: TListCrudCommandsEntryCallback<TD>;
       const aTransaction: ITransaction = nil);
     property TargetEnumerator: IListEnumerator<TListEntry<TD>> read fTargetEnumerator write fTargetEnumerator;
-    property AdditionalCrud: IEntryCrudFunctions<TD> read fAdditionalCrud write fAdditionalCrud;
+    property AdditionalCrud: IEntriesCrudFunctions<TD> read fAdditionalCrud write fAdditionalCrud;
     property Items: TList<TListEntry<TD>> read fItems;
   end;
 
@@ -111,11 +111,15 @@ begin
   end;
   if Assigned(fTargetEnumerator) then
     fTargetEnumerator.ListEnumBegin;
+  if Assigned(fAdditionalCrud) then
+    fAdditionalCrud.BeginLoadEntries(CurrentListEnumTransaction);
 end;
 
 procedure TListCrudCommands<TS, TSIdent, TD, FSelect, FLoop>.ListEnumEnd;
 begin
   inherited;
+  if Assigned(fAdditionalCrud) then
+    fAdditionalCrud.EndLoadEntries(CurrentListEnumTransaction);
   if Assigned(fTargetEnumerator) then
     fTargetEnumerator.ListEnumEnd;
 end;
@@ -126,7 +130,7 @@ begin
   var lTargetItem := default(TD);
   fValueConverter.Convert(aItem, lTargetItem);
   if Assigned(fAdditionalCrud) then
-    fAdditionalCrud.LoadEntry(lTargetItem);
+    fAdditionalCrud.LoadEntry(lTargetItem, CurrentListEnumTransaction);
   var lEntry := CreateListEntry(lTargetItem);
   fItems.Add(lEntry);
   if Assigned(fTargetEnumerator) then
@@ -157,6 +161,8 @@ begin
       lTransaction := fConnection.StartTransaction;
       lOwnsTransaction := True;
     end;
+    if Assigned(fAdditionalCrud) then
+      fAdditionalCrud.BeginSaveEntries(lTransaction);
     for var i := fItems.Count - 1 downto 0 do
     begin
       var lEntry := fItems[i];
@@ -188,6 +194,8 @@ begin
       if not lTransaction.Active then
         Break;
     end;
+    if Assigned(fAdditionalCrud) then
+      fAdditionalCrud.EndSaveEntries(lTransaction);
     if lOwnsTransaction and lTransaction.Active then
       lTransaction.Commit;
   finally

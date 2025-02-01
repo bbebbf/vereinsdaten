@@ -61,7 +61,7 @@ begin
   fVersionInfoConfig := TVersionInfoConfig.Create;
   fUnitRecordActions := TRecordActionsVersioning<TDtoUnit, UInt32>.Create(fConnection, fCrudConfigUnit, fVersionInfoConfig);
   fMemberOfConfig := TCrudMemberConfigMasterUnit.Create(fConnection);
-  fMemberOfBusiness := TMemberOfBusiness.Create(fConnection, fMemberOfConfig, aMemberOfUI);
+  fMemberOfBusiness := TMemberOfBusiness.Create(fConnection, fMemberOfConfig, nil, aMemberOfUI);
   fMemberOfBusiness.Initialize;
 end;
 
@@ -197,7 +197,7 @@ begin
     aEntry.MemberOfList.Add(lMemberRec);
   end;
 
-  fMemberOfBusiness.LoadMemberOfs(aId, nil);
+  fMemberOfBusiness.LoadMemberOfs(aId);
 end;
 
 { TVersionInfoConfig }

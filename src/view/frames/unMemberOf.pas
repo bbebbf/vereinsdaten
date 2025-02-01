@@ -142,6 +142,21 @@ begin
       end
     );
   UpdateListActions(False);
+     {
+  var lResponse := fBusinessIntf.SaveCurrentEntry;
+  if lResponse.Status = TCrudSaveStatus.Successful then
+  begin
+    SetEditMode(False);
+  end
+  else if lResponse.Status = TCrudSaveStatus.CancelledWithMessage then
+  begin
+    TMessageDialogs.Ok(lResponse.MessageText, TMsgDlgType.mtInformation);
+  end
+  else if lResponse.Status = TCrudSaveStatus.CancelledOnConflict then
+  begin
+    TMessageDialogs.Ok('Versionkonflikt: ' +
+      lResponse.ConflictedVersionInfoEntry.ToString, TMsgDlgType.mtWarning);
+  end;               }
 end;
 
 procedure TfraMemberOf.acShowInactiveMemberOfsExecute(Sender: TObject);

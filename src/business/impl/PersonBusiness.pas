@@ -5,9 +5,15 @@ interface
 uses System.Classes, InterfacedBase, CrudCommands, CrudConfig, Transaction, PersonBusinessIntf,
   DtoPersonAggregated, SqlConnection, PersonAggregatedUI, DtoPerson, RecordActions, RecordActionsVersioning,
   KeyIndexStrings, DtoPersonAddress, DtoAddress, DtoClubmembership, DtoMember, ClubmembershipTools,
-  MemberOfBusinessIntf, MemberOfConfigIntf, ProgressIndicator, Vdm.Types, Vdm.Versioning.Types, CrudUI;
+  MemberOfBusinessIntf, MemberOfConfigIntf, ProgressIndicator, Vdm.Types, Vdm.Versioning.Types, CrudUI,
+  EntryCrudFunctions, DtoMemberAggregated;
 
 type
+  IPersonMemberOfsCrudFunction = interface(IEntriesCrudFunctions<TDtoMemberAggregated>)
+    ['{B30D3E07-E3AD-41AC-B270-10D9542D90A5}']
+    procedure SetCurrentPersonEntry(const aPersonEntry: TDtoPersonAggregated);
+  end;
+
   TPersonBusiness = class(TInterfacedBase, IPersonBusinessIntf)
   strict private
     fConnection: ISqlConnection;
@@ -30,6 +36,7 @@ type
     fMemberOfConfig: IMemberOfConfigIntf;
     fMemberOfBusiness: IMemberOfBusinessIntf;
     fDataChanged: Boolean;
+    fPersonMemberOfsVersionInfoAccessor: IPersonMemberOfsCrudFunction;
 
     procedure Initialize;
     function LoadList: TCrudCommandResult;
@@ -64,7 +71,7 @@ implementation
 uses System.SysUtils, System.Generics.Collections, SelectList, KeyIndexMapper,
   CrudConfigPerson, CrudConfigAddress, CrudConfigPersonAddress, CrudConfigClubmembership,
   MemberOfBusiness, EntryCrudConfig, CrudConfigUnitAggregated, CrudBusiness, CrudMemberConfigMasterPerson,
-  VersionInfoEntryUI;
+  VersionInfoEntryUI, VersionInfoAccessor, MemberOfVersionInfoConfig;
 
 type
   TPersonBasedataVersionInfoConfig = class(TInterfacedBase, IVersionInfoConfig<TDtoPerson, UInt32>)
@@ -73,6 +80,27 @@ type
     function GetRecordIdentity(const aRecord: TDtoPerson): UInt32;
     function GetVersioningIdentityColumnName: string;
     procedure SetVersionInfoParameter(const aRecordIdentity: UInt32; const aParameter: ISqlParameter);
+  end;
+
+  TIPersonMemberOfsVersionInfoAccessor = class(TInterfacedBase, IPersonMemberOfsCrudFunction)
+  strict private
+    fCurrentPersonEntry: TDtoPersonAggregated;
+    fUI: IVersionInfoEntryUI;
+    fVersionInfoConfig: IVersionInfoConfig<UInt32, UInt32>;
+    fVersionInfoAccessor: TVersionInfoAccessor<UInt32, UInt32>;
+    procedure BeginLoadEntries(const aTransaction: ITransaction);
+    procedure LoadEntry(const aEntry: TDtoMemberAggregated; const aTransaction: ITransaction);
+    procedure EndLoadEntries(const aTransaction: ITransaction);
+
+    procedure BeginSaveEntries(const aTransaction: ITransaction);
+    procedure SaveEntry(const aEntry: TDtoMemberAggregated; const aTransaction: ITransaction);
+    procedure DeleteEntry(const aEntry: TDtoMemberAggregated; const aTransaction: ITransaction);
+    procedure EndSaveEntries(const aTransaction: ITransaction);
+
+    procedure SetCurrentPersonEntry(const aPersonEntry: TDtoPersonAggregated);
+  public
+    constructor Create(const aConnection: ISqlConnection; const aUI: IVersionInfoEntryUI);
+    destructor Destroy; override;
   end;
 
 { TPersonBusiness }
@@ -117,7 +145,13 @@ begin
   fClubmembershipRecordActions := TRecordActions<TDtoClubmembership, UInt32>.Create(fConnection, fClubmembershipConfig);
   fClubMembershipNumberChecker := TClubMembershipNumberChecker.Create(fConnection);
   fMemberOfConfig := TCrudMemberConfigMasterPerson.Create(fConnection);
-  fMemberOfBusiness := TMemberOfBusiness.Create(fConnection, fMemberOfConfig, fUI.GetMemberOfUI);
+
+  var lVersionInfoEntryUI: IVersionInfoEntryUI;
+  Supports(fUI.GetMemberOfUI, IVersionInfoEntryUI, lVersionInfoEntryUI);
+  fPersonMemberOfsVersionInfoAccessor := TIPersonMemberOfsVersionInfoAccessor.Create(aConnection, lVersionInfoEntryUI);
+
+  fMemberOfBusiness := TMemberOfBusiness.Create(fConnection, fMemberOfConfig,
+    fPersonMemberOfsVersionInfoAccessor, fUI.GetMemberOfUI);
 end;
 
 destructor TPersonBusiness.Destroy;
@@ -230,9 +264,15 @@ end;
 procedure TPersonBusiness.LoadPersonsMemberOfs;
 begin
   if fNewEntryStarted then
-    fMemberOfBusiness.LoadMemberOfs(0, nil)
+  begin
+    fPersonMemberOfsVersionInfoAccessor.SetCurrentPersonEntry(nil);
+    fMemberOfBusiness.LoadMemberOfs(0);
+  end
   else
-    fMemberOfBusiness.LoadMemberOfs(fCurrentEntry.Id, fCurrentEntry.VersionInfoMenberOfs);
+  begin
+    fPersonMemberOfsVersionInfoAccessor.SetCurrentPersonEntry(fCurrentEntry);
+    fMemberOfBusiness.LoadMemberOfs(fCurrentEntry.Id);
+  end;
 end;
 
 function TPersonBusiness.ReloadCurrentEntry: TCrudCommandResult;
@@ -455,6 +495,70 @@ procedure TPersonBasedataVersionInfoConfig.SetVersionInfoParameter(const aRecord
   const aParameter: ISqlParameter);
 begin
   aParameter.Value := aRecordIdentity;
+end;
+
+{ TIPersonMemberOfsVersionInfoAccessor }
+
+constructor TIPersonMemberOfsVersionInfoAccessor.Create(const aConnection: ISqlConnection; const aUI: IVersionInfoEntryUI);
+begin
+  inherited Create;
+  fUI := aUI;
+  fVersionInfoConfig := TMemberOfVersionInfoConfig.Create;
+  fVersionInfoAccessor := TVersionInfoAccessor<UInt32, UInt32>.Create(aConnection, fVersionInfoConfig);
+end;
+
+destructor TIPersonMemberOfsVersionInfoAccessor.Destroy;
+begin
+  fVersionInfoAccessor.Free;
+  inherited;
+end;
+
+procedure TIPersonMemberOfsVersionInfoAccessor.SetCurrentPersonEntry(const aPersonEntry: TDtoPersonAggregated);
+begin
+  fCurrentPersonEntry := aPersonEntry;
+end;
+
+procedure TIPersonMemberOfsVersionInfoAccessor.BeginLoadEntries(const aTransaction: ITransaction);
+begin
+  var lTransactionScopeLoadEntries := fVersionInfoAccessor.StartTransaction(aTransaction);
+  fCurrentPersonEntry.VersionInfoMenberOfs.UpdateVersionInfo(
+    fVersionInfoAccessor.QueryVersionInfo(lTransactionScopeLoadEntries, fCurrentPersonEntry.Id));
+  fUI.SetVersionInfoEntryToUI(fCurrentPersonEntry.VersionInfoMenberOfs);
+end;
+
+procedure TIPersonMemberOfsVersionInfoAccessor.LoadEntry(const aEntry: TDtoMemberAggregated;
+  const aTransaction: ITransaction);
+begin
+end;
+
+procedure TIPersonMemberOfsVersionInfoAccessor.EndLoadEntries(const aTransaction: ITransaction);
+begin
+end;
+
+procedure TIPersonMemberOfsVersionInfoAccessor.BeginSaveEntries(const aTransaction: ITransaction);
+begin
+  var lTransactionScopeSaveEntries := fVersionInfoAccessor.StartTransaction(aTransaction);
+  if not fVersionInfoAccessor.UpdateVersionInfo(lTransactionScopeSaveEntries, fCurrentPersonEntry.Id,
+    fCurrentPersonEntry.VersionInfoMenberOfs) then
+  begin
+    lTransactionScopeSaveEntries.RollbackOnVersionConflict;
+  end;
+  fUI.SetVersionInfoEntryToUI(fCurrentPersonEntry.VersionInfoMenberOfs);
+end;
+
+procedure TIPersonMemberOfsVersionInfoAccessor.SaveEntry(const aEntry: TDtoMemberAggregated;
+  const aTransaction: ITransaction);
+begin
+end;
+
+procedure TIPersonMemberOfsVersionInfoAccessor.DeleteEntry(const aEntry: TDtoMemberAggregated;
+  const aTransaction: ITransaction);
+begin
+end;
+
+procedure TIPersonMemberOfsVersionInfoAccessor.EndSaveEntries(const aTransaction: ITransaction);
+begin
+
 end;
 
 end.

@@ -9,7 +9,7 @@ type
 
   TFilterSelectTransactionEventState = (StartTransaction, EndTransactionSuccessful, EndTransactionException);
   TFilterSelectTransactionEvent = procedure(Sender: TObject; const aState: TFilterSelectTransactionEventState;
-    var aTransaction: ITransaction) of object;
+    const aTransaction: ITransaction) of object;
 
   TFilterSelect<T; FSelect, FLoop: record> = class
   strict private
@@ -24,7 +24,9 @@ type
     fInFilterUpdate: Integer;
     fOnItemMatchesFilter: TFilterSelectItemMatchesFilter<T, FLoop>;
     fItemCount: Integer;
+    fUseTransaction: Boolean;
     fOnTransaction: TFilterSelectTransactionEvent;
+    fCurrentListEnumTransaction: ITransaction;
     procedure SetFilterSelect(const aValue: FSelect);
     procedure SetFilterLoop(const aValue: FLoop);
   strict protected
@@ -34,6 +36,7 @@ type
     procedure ListEnumProcessItem(const aItem: T); virtual;
     procedure ListEnumEnd; virtual;
     function ItemMatchesFilter(const aItem: T; const aFilter: FLoop): Boolean;
+    property CurrentListEnumTransaction: ITransaction read fCurrentListEnumTransaction;
   public
     constructor Create(const aConnection: ISqlConnection; const aConfig: ISelectListFilter<T, FSelect>);
     destructor Destroy; override;
@@ -45,6 +48,7 @@ type
     property ProgressIndicator: IProgressIndicator read fProgressIndicator write fProgressIndicator;
     property ProgressText: string read fProgressText write fProgressText;
     property OnItemMatchesFilter: TFilterSelectItemMatchesFilter<T, FLoop> read fOnItemMatchesFilter write fOnItemMatchesFilter;
+    property UseTransaction: Boolean read fUseTransaction write fUseTransaction;
     property OnTransaction: TFilterSelectTransactionEvent read fOnTransaction write fOnTransaction;
   end;
 
@@ -76,14 +80,16 @@ begin
     fSqlSelect := fConnection.CreatePreparedQuery(fConfig.GetSelectListSQL);
   end;
   fConfig.SetSelectListSQLParameter(fFilterSelect, fSqlSelect);
-  ListEnumBegin;
   var lExceptionOccurred := False;
-  var lTransaction: ITransaction := nil;
+  fCurrentListEnumTransaction := nil;
+  if fUseTransaction then
+    fCurrentListEnumTransaction := fConnection.StartTransaction;
   if Assigned(fOnTransaction) then
-    fOnTransaction(Self, TFilterSelectTransactionEventState.StartTransaction, lTransaction);
+    fOnTransaction(Self, TFilterSelectTransactionEventState.StartTransaction, fCurrentListEnumTransaction);
   try
     try
-      var lSqlResult := fSqlSelect.Open(lTransaction);
+      ListEnumBegin;
+      var lSqlResult := fSqlSelect.Open(fCurrentListEnumTransaction);
       while lSqlResult.Next do
       begin
         var lRecord := default(T);
@@ -95,18 +101,23 @@ begin
       on Ex: Exception do
       begin
         lExceptionOccurred := True;
+        if Assigned(fCurrentListEnumTransaction) and fCurrentListEnumTransaction.Active then
+          fCurrentListEnumTransaction.Rollback;
         raise;
       end;
     end;
   finally
+    ListEnumEnd;
     if Assigned(fOnTransaction) then
     begin
       if lExceptionOccurred then
-        fOnTransaction(Self, TFilterSelectTransactionEventState.EndTransactionException, lTransaction)
+        fOnTransaction(Self, TFilterSelectTransactionEventState.EndTransactionException, fCurrentListEnumTransaction)
       else
-        fOnTransaction(Self, TFilterSelectTransactionEventState.EndTransactionSuccessful, lTransaction);
+        fOnTransaction(Self, TFilterSelectTransactionEventState.EndTransactionSuccessful, fCurrentListEnumTransaction);
     end;
-    ListEnumEnd;
+    if Assigned(fCurrentListEnumTransaction) and fCurrentListEnumTransaction.Active then
+      fCurrentListEnumTransaction.Commit;
+    fCurrentListEnumTransaction := nil;
   end;
 end;
 
