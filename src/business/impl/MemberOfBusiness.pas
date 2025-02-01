@@ -5,7 +5,7 @@ interface
 uses System.Classes, System.Generics.Collections, InterfacedBase, SqlConnection, MemberOfBusinessIntf,
   MemberOfConfigIntf, MemberOfUI, KeyIndexStrings, CrudConfig, FilterSelect, Transaction,
   DtoMemberAggregated, DtoMember, DtoRole, ListCrudCommands, SelectList, SelectListFilter,
-  ValueConverter, Vdm.Types, EntryCrudFunctions;
+  ValueConverter, Vdm.Types, Vdm.Versioning.Types, CrudCommands, EntryCrudFunctions;
 
 type
   TMemberOfBusinessRecordFilter = record
@@ -24,6 +24,7 @@ type
     fCurrentFilter: TMemberOfBusinessRecordFilter;
     fSelectListFilter: ISelectListFilter<TDtoMember, UInt32>;
     fValueConverter: IValueConverter<TDtoMember, TDtoMemberAggregated>;
+    fPersonMemberOfsCrudFunction: IPersonMemberOfsCrudFunction;
     procedure Initialize;
     procedure LoadMemberOfs(const aMasterId: UInt32);
     function GetShowInactiveMemberOfs: Boolean;
@@ -31,7 +32,8 @@ type
     function CreateNewEntry: TListEntry<TDtoMemberAggregated>;
     procedure AddNewEntry(const aEntry: TListEntry<TDtoMemberAggregated>);
     procedure ReloadEntries;
-    procedure SaveEntries(const aDeleteEntryFromUICallback: TListCrudCommandsEntryCallback<TDtoMemberAggregated>);
+    function SaveEntries(const aDeleteEntryFromUICallback: TListCrudCommandsEntryCallback<TDtoMemberAggregated>):
+      TCrudSaveResult;
     procedure ClearDetailItemCache;
     procedure ClearRoleCache;
 
@@ -41,7 +43,7 @@ type
     function GetDetailItemTitle: string;
   public
     constructor Create(const aConnection: ISqlConnection; const aMemberOfConfig: IMemberOfConfigIntf;
-      const aMemberOfsCrudFunctions: IEntriesCrudFunctions<TDtoMemberAggregated>; const aUI: IMemberOfUI);
+      const aMemberOfsCrudFunctions: IPersonMemberOfsCrudFunction; const aUI: IMemberOfUI);
     destructor Destroy; override;
   end;
 
@@ -63,12 +65,13 @@ type
 { TMemberOfBusiness }
 
 constructor TMemberOfBusiness.Create(const aConnection: ISqlConnection; const aMemberOfConfig: IMemberOfConfigIntf;
-  const aMemberOfsCrudFunctions: IEntriesCrudFunctions<TDtoMemberAggregated>; const aUI: IMemberOfUI);
+  const aMemberOfsCrudFunctions: IPersonMemberOfsCrudFunction; const aUI: IMemberOfUI);
 begin
   inherited Create;
   fConnection := aConnection;
   fUI := aUI;
   fMemberOfConfig := aMemberOfConfig;
+  fPersonMemberOfsCrudFunction := aMemberOfsCrudFunctions;
 
   if not Supports(fMemberOfConfig, ISelectListFilter<TDtoMember, UInt32>, fSelectListFilter) then
     raise ENotSupportedException.Create('aCrudConfig doesn''t support ISelectListFilter.');
@@ -190,18 +193,34 @@ begin
   aItemMatches := aItem.Active or aFilter.ShowInactiveMemberOfs;
 end;
 
-procedure TMemberOfBusiness.SaveEntries(
-  const aDeleteEntryFromUICallback: TListCrudCommandsEntryCallback<TDtoMemberAggregated>);
+function TMemberOfBusiness.SaveEntries(
+  const aDeleteEntryFromUICallback: TListCrudCommandsEntryCallback<TDtoMemberAggregated>):
+  TCrudSaveResult;
 begin
+  Result := default(TCrudSaveResult);
   if fCurrentMasterId = 0 then
   begin
     raise EArgumentException.Create('TMemberOfBusiness.SaveEntries: fCurrentMasterId = 0');
   end;
 
   var lTransaction: ITransaction := fConnection.StartTransaction;
-  fListCrudCommands.SaveChanges(aDeleteEntryFromUICallback, lTransaction);
-  if lTransaction.Active then
-    lTransaction.Commit;
+  try
+    fListCrudCommands.SaveChanges(aDeleteEntryFromUICallback, lTransaction);
+  finally
+    if lTransaction.Active then
+    begin
+      lTransaction.Commit;
+      Result := TCrudSaveResult.CreateRecord(TCrudSaveStatus.Successful);
+    end
+    else
+    begin
+      Result := TCrudSaveResult.CreateRecord(TCrudSaveStatus.Failed);
+    end;
+  end;
+  if fPersonMemberOfsCrudFunction.VersionConflictDetected then
+  begin
+    Result := TCrudSaveResult.CreateConflictedRecord(fPersonMemberOfsCrudFunction.ConflictedVersionEntry);
+  end;
 end;
 
 procedure TMemberOfBusiness.ReloadEntries;

@@ -9,11 +9,6 @@ uses System.Classes, InterfacedBase, CrudCommands, CrudConfig, Transaction, Pers
   EntryCrudFunctions, DtoMemberAggregated;
 
 type
-  IPersonMemberOfsCrudFunction = interface(IEntriesCrudFunctions<TDtoMemberAggregated>)
-    ['{B30D3E07-E3AD-41AC-B270-10D9542D90A5}']
-    procedure SetCurrentPersonEntry(const aPersonEntry: TDtoPersonAggregated);
-  end;
-
   TPersonBusiness = class(TInterfacedBase, IPersonBusinessIntf)
   strict private
     fConnection: ISqlConnection;
@@ -88,6 +83,8 @@ type
     fUI: IVersionInfoEntryUI;
     fVersionInfoConfig: IVersionInfoConfig<UInt32, UInt32>;
     fVersionInfoAccessor: TVersionInfoAccessor<UInt32, UInt32>;
+    fVersionInfoAccessorTransactionScope: IVersionInfoAccessorTransactionScope;
+    fConflictedVersionEntry: TVersionInfoEntry;
     procedure BeginLoadEntries(const aTransaction: ITransaction);
     procedure LoadEntry(const aEntry: TDtoMemberAggregated; const aTransaction: ITransaction);
     procedure EndLoadEntries(const aTransaction: ITransaction);
@@ -97,6 +94,8 @@ type
     procedure DeleteEntry(const aEntry: TDtoMemberAggregated; const aTransaction: ITransaction);
     procedure EndSaveEntries(const aTransaction: ITransaction);
 
+    function GetVersionConflictDetected: Boolean;
+    function GetConflictedVersionEntry: TVersionInfoEntry;
     procedure SetCurrentPersonEntry(const aPersonEntry: TDtoPersonAggregated);
   public
     constructor Create(const aConnection: ISqlConnection; const aUI: IVersionInfoEntryUI);
@@ -337,7 +336,7 @@ begin
 
         var lRecord := lUpdatedEntry.Person;
         var lResponse := fPersonRecordActions.SaveRecord(lRecord, lUpdatedEntry.VersionInfoBaseData, lSaveTransaction);
-        if lResponse.VersioningState = TRecordActionsVersioningResponseVersioningState.ConflictDetected then
+        if lResponse.VersioningState = TVersioningResponseVersioningState.ConflictDetected then
         begin
           if fNewEntryStarted then
             SetVersionInfoEntryToUI(lUpdatedEntry.VersionInfoBaseData)
@@ -345,7 +344,7 @@ begin
             fCurrentEntry.VersionInfoBaseData.Assign(lUpdatedEntry.VersionInfoBaseData);
           Exit(TCrudSaveResult.CreateConflictedRecord(lUpdatedEntry.VersionInfoBaseData));
         end;
-        if lResponse.Kind = TRecordActionsVersioningSaveKind.Created then
+        if lResponse.Kind = TVersioningSaveKind.Created then
         begin
           lUpdatedEntry.Id := lRecord.NameId.Id;
           lNewPersonCreated := True;
@@ -510,12 +509,14 @@ end;
 destructor TIPersonMemberOfsVersionInfoAccessor.Destroy;
 begin
   fVersionInfoAccessor.Free;
+  fConflictedVersionEntry.Free;
   inherited;
 end;
 
 procedure TIPersonMemberOfsVersionInfoAccessor.SetCurrentPersonEntry(const aPersonEntry: TDtoPersonAggregated);
 begin
   fCurrentPersonEntry := aPersonEntry;
+  FreeAndNil(fConflictedVersionEntry);
 end;
 
 procedure TIPersonMemberOfsVersionInfoAccessor.BeginLoadEntries(const aTransaction: ITransaction);
@@ -537,11 +538,14 @@ end;
 
 procedure TIPersonMemberOfsVersionInfoAccessor.BeginSaveEntries(const aTransaction: ITransaction);
 begin
-  var lTransactionScopeSaveEntries := fVersionInfoAccessor.StartTransaction(aTransaction);
-  if not fVersionInfoAccessor.UpdateVersionInfo(lTransactionScopeSaveEntries, fCurrentPersonEntry.Id,
+  fVersionInfoAccessorTransactionScope := fVersionInfoAccessor.StartTransaction(aTransaction);
+  if not fVersionInfoAccessor.UpdateVersionInfo(fVersionInfoAccessorTransactionScope, fCurrentPersonEntry.Id,
     fCurrentPersonEntry.VersionInfoMenberOfs) then
   begin
-    lTransactionScopeSaveEntries.RollbackOnVersionConflict;
+    fVersionInfoAccessorTransactionScope.RollbackOnVersionConflict;
+    fConflictedVersionEntry.Free;
+    fConflictedVersionEntry := TVersionInfoEntry.Create;
+    fConflictedVersionEntry.Assign(fCurrentPersonEntry.VersionInfoMenberOfs);
   end;
   fUI.SetVersionInfoEntryToUI(fCurrentPersonEntry.VersionInfoMenberOfs);
 end;
@@ -558,7 +562,17 @@ end;
 
 procedure TIPersonMemberOfsVersionInfoAccessor.EndSaveEntries(const aTransaction: ITransaction);
 begin
+  fVersionInfoAccessorTransactionScope := nil;
+end;
 
+function TIPersonMemberOfsVersionInfoAccessor.GetConflictedVersionEntry: TVersionInfoEntry;
+begin
+  Result := fConflictedVersionEntry;
+end;
+
+function TIPersonMemberOfsVersionInfoAccessor.GetVersionConflictDetected: Boolean;
+begin
+  Result := Assigned(fConflictedVersionEntry);
 end;
 
 end.

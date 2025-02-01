@@ -8,9 +8,11 @@ uses Vdm.Versioning.Types, InterfacedBase, Transaction, SqlConnection;
 type
   IVersionInfoAccessorTransactionScope = interface
     ['{EDC73D1F-32B1-4CC7-AB2D-D6B1B0E058C3}']
-    function GetTranscation: ITransaction;
     procedure RollbackOnVersionConflict;
+    function GetTranscation: ITransaction;
+    function GetRollbackOnVersionConflictCalled: Boolean;
     property Transaction: ITransaction read GetTranscation;
+    property RollbackOnVersionConflictCalled: Boolean read GetRollbackOnVersionConflictCalled;
   end;
 
   TVersionInfoAccessor<TRecord, TRecordIdentity> = class
@@ -40,8 +42,9 @@ type
     fConnection: ISqlConnection;
     fTransaction: ITransaction;
     fOwmsTransaction: Boolean;
-    fRollbackCalled: Boolean;
+    fRollbackOnVersionConflictCalled: Boolean;
     function GetTranscation: ITransaction;
+    function GetRollbackOnVersionConflictCalled: Boolean;
     procedure RollbackOnVersionConflict;
   public
     constructor Create(const aConnection: ISqlConnection; const aTransaction: ITransaction);
@@ -224,11 +227,16 @@ end;
 
 destructor TVersionInfoAccessorTransactionScope.Destroy;
 begin
-  if Assigned(fTransaction) and fOwmsTransaction and not fRollbackCalled then
+  if Assigned(fTransaction) and fOwmsTransaction and not fRollbackOnVersionConflictCalled then
   begin
     fTransaction.Commit;
   end;
   inherited;
+end;
+
+function TVersionInfoAccessorTransactionScope.GetRollbackOnVersionConflictCalled: Boolean;
+begin
+  Result := fRollbackOnVersionConflictCalled;
 end;
 
 function TVersionInfoAccessorTransactionScope.GetTranscation: ITransaction;
@@ -246,7 +254,7 @@ begin
   if Assigned(fTransaction) then
   begin
     fTransaction.Rollback;
-    fRollbackCalled := True;
+    fRollbackOnVersionConflictCalled := True;
   end;
 end;
 

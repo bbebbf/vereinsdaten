@@ -90,7 +90,7 @@ uses
   VersionInfoAccessor in 'general\common\Tools\VersionInfoAccessor.pas',
   VersionInfoEntryUI in 'general\intf\tools\VersionInfoEntryUI.pas',
   VclUITools in 'view\tools\VclUITools.pas',
-  VersionInfoEntryConfig in 'general\intf\tools\VersionInfoEntryConfig.pas',
+  VersionInfoEntryAccessor in 'general\intf\tools\VersionInfoEntryAccessor.pas',
   Report.ClubMembers in 'reports\Report.ClubMembers.pas' {fmReportClubMembers},
   TenantReader in 'general\common\Tools\TenantReader.pas',
   DtoTenant in 'data\DtoTenant.pas',
@@ -141,7 +141,6 @@ begin
     end;
 
     Application.CreateForm(TfmMain, fmMain);
-
     var lConnectProgress := TfmProgressForm.Create(Application);
     try
       lConnectProgress.ProgressBegin(0, False, 'Datenbankverbindung wird hergestellt ...');

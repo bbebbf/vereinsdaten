@@ -6,25 +6,6 @@ uses System.Generics.Collections, SqlConnection, Transaction, CrudConfig, CrudAc
   Vdm.Versioning.Types, VersionInfoAccessor;
 
 type
-  TRecordActionsVersioningResponseVersioningState = (NoConflict, ConflictDetected, VersionUpdated, InvalidVersionInfo);
-
-  TRecordActionsVersioningLoadResponse = record
-    Succeeded: Boolean;
-    EntryVersionInfo: TEntryVersionInfo;
-  end;
-
-  TRecordActionsVersioningSaveKind = (Created, Updated);
-  TRecordActionsVersioningSaveResponse = record
-    Kind: TRecordActionsVersioningSaveKind;
-    VersioningState: TRecordActionsVersioningResponseVersioningState;
-  end;
-
-  TRecordActionsVersioningDeleteResponse = record
-    Succeeded: Boolean;
-    VersioningState: TRecordActionsVersioningResponseVersioningState;
-    ConflictedEntryVersionInfo: TEntryVersionInfo;
-  end;
-
   TRecordActionsVersioning<TRecord, TRecordIdentity: record> = class
   strict private
     fConnection: ISqlConnection;
@@ -36,11 +17,13 @@ type
       const aVersionInfoConfig: IVersionInfoConfig<TRecord, TRecordIdentity>);
     destructor Destroy; override;
     function LoadRecord(const aRecordIdentity: TRecordIdentity; var aRecord: TRecord;
-      const aTransaction: ITransaction = nil): TRecordActionsVersioningLoadResponse;
+      const aTransaction: ITransaction = nil): TVersioningLoadResponse;
     function SaveRecord(var aRecord: TRecord; const aVersionInfoEntry: TVersionInfoEntry;
-      const aTransaction: ITransaction = nil): TRecordActionsVersioningSaveResponse;
+      const aTransaction: ITransaction = nil): TVersioningSaveResponse;
     function DeleteEntry(const aRecordIdentity: TRecordIdentity; const aVersionInfoEntry: TVersionInfoEntry;
-      const aTransaction: ITransaction = nil): TRecordActionsVersioningDeleteResponse;
+      const aTransaction: ITransaction = nil): TVersioningDeleteResponse;
+    function VersioningActive: Boolean;
+    property VersionInfoAccessor: TVersionInfoAccessor<TRecord, TRecordIdentity> read fVersionInfoAccessor;
   end;
 
 implementation
@@ -56,7 +39,8 @@ begin
   inherited Create;
   fConnection := aConnection;
   fRecordActions := TRecordActions<TRecord, TRecordIdentity>.Create(fConnection, aConfig);
-  fVersionInfoAccessor := TVersionInfoAccessor<TRecord, TRecordIdentity>.Create(fConnection, aVersionInfoConfig);
+  if Assigned(aVersionInfoConfig) then
+    fVersionInfoAccessor := TVersionInfoAccessor<TRecord, TRecordIdentity>.Create(fConnection, aVersionInfoConfig);
 end;
 
 destructor TRecordActionsVersioning<TRecord, TRecordIdentity>.Destroy;
@@ -68,69 +52,104 @@ begin
 end;
 
 function TRecordActionsVersioning<TRecord, TRecordIdentity>.LoadRecord(const aRecordIdentity: TRecordIdentity;
-  var aRecord: TRecord; const aTransaction: ITransaction): TRecordActionsVersioningLoadResponse;
+  var aRecord: TRecord; const aTransaction: ITransaction): TVersioningLoadResponse;
 begin
-  Result := default(TRecordActionsVersioningLoadResponse);
-  var lTransactionResult := fVersionInfoAccessor.StartTransaction(aTransaction);
-  if fRecordActions.LoadRecord(aRecordIdentity, aRecord, lTransactionResult.Transaction) then
+  Result := default(TVersioningLoadResponse);
+  if Assigned(fVersionInfoAccessor) then
   begin
-    Result.Succeeded := True;
-    Result.EntryVersionInfo := fVersionInfoAccessor.QueryVersionInfo(lTransactionResult, aRecordIdentity);
+    var lTransactionResult := fVersionInfoAccessor.StartTransaction(aTransaction);
+    if fRecordActions.LoadRecord(aRecordIdentity, aRecord, lTransactionResult.Transaction) then
+    begin
+      Result.Succeeded := True;
+      Result.EntryVersionInfo := fVersionInfoAccessor.QueryVersionInfo(lTransactionResult, aRecordIdentity);
+    end;
   end
   else
   begin
-    Result.Succeeded := True;
+    if fRecordActions.LoadRecord(aRecordIdentity, aRecord, aTransaction) then
+    begin
+      Result.Succeeded := True;
+    end;
   end;
 end;
 
 function TRecordActionsVersioning<TRecord, TRecordIdentity>.SaveRecord(var aRecord: TRecord;
-  const aVersionInfoEntry: TVersionInfoEntry; const aTransaction: ITransaction): TRecordActionsVersioningSaveResponse;
+  const aVersionInfoEntry: TVersionInfoEntry; const aTransaction: ITransaction): TVersioningSaveResponse;
 begin
-  Result := default(TRecordActionsVersioningSaveResponse);
-  var lTransactionResult := fVersionInfoAccessor.StartTransaction(aTransaction);
-  case fRecordActions.SaveRecord(aRecord, lTransactionResult.Transaction) of
-    TRecordActionsSaveResponse.Created:
-    begin
-      Result.Kind := TRecordActionsVersioningSaveKind.Created;
-      aVersionInfoEntry.Reset;
-    end;
-    TRecordActionsSaveResponse.Updated:
-    begin
-      Result.Kind := TRecordActionsVersioningSaveKind.Updated;
-    end;
-  end;
-
-  if fVersionInfoAccessor.UpdateVersionInfo(lTransactionResult, aRecord, aVersionInfoEntry) then
+  Result := default(TVersioningSaveResponse);
+  if Assigned(fVersionInfoAccessor) and Assigned(aVersionInfoEntry) then
   begin
-    Result.VersioningState := TRecordActionsVersioningResponseVersioningState.VersionUpdated;
+    var lTransactionResult := fVersionInfoAccessor.StartTransaction(aTransaction);
+    case fRecordActions.SaveRecord(aRecord, lTransactionResult.Transaction) of
+      TRecordActionsSaveResponse.Created:
+      begin
+        Result.Kind := TVersioningSaveKind.Created;
+        aVersionInfoEntry.Reset;
+      end;
+      TRecordActionsSaveResponse.Updated:
+      begin
+        Result.Kind := TVersioningSaveKind.Updated;
+      end;
+    end;
+
+    if fVersionInfoAccessor.UpdateVersionInfo(lTransactionResult, aRecord, aVersionInfoEntry) then
+    begin
+      Result.VersioningState := TVersioningResponseVersioningState.VersionUpdated;
+    end
+    else
+    begin
+      Result.VersioningState := TVersioningResponseVersioningState.ConflictDetected;
+      lTransactionResult.RollbackOnVersionConflict;
+    end;
   end
   else
   begin
-    Result.VersioningState := TRecordActionsVersioningResponseVersioningState.ConflictDetected;
-    lTransactionResult.RollbackOnVersionConflict;
+    case fRecordActions.SaveRecord(aRecord, aTransaction) of
+      TRecordActionsSaveResponse.Created:
+      begin
+        Result.Kind := TVersioningSaveKind.Created;
+        aVersionInfoEntry.Reset;
+      end;
+      TRecordActionsSaveResponse.Updated:
+      begin
+        Result.Kind := TVersioningSaveKind.Updated;
+      end;
+    end;
   end;
 end;
 
-function TRecordActionsVersioning<TRecord, TRecordIdentity>.DeleteEntry(const aRecordIdentity: TRecordIdentity;
-  const aVersionInfoEntry: TVersionInfoEntry; const aTransaction: ITransaction): TRecordActionsVersioningDeleteResponse;
+function TRecordActionsVersioning<TRecord, TRecordIdentity>.VersioningActive: Boolean;
 begin
-  Result := default(TRecordActionsVersioningDeleteResponse);
-  var lTransactionResult := fVersionInfoAccessor.StartTransaction(aTransaction);
-  if aVersionInfoEntry.LocalVersionInfo.Id = 0 then
-  begin
-    Result.VersioningState := TRecordActionsVersioningResponseVersioningState.InvalidVersionInfo;
-    lTransactionResult.RollbackOnVersionConflict;
-    Exit;
-  end;
+  Result := Assigned(fVersionInfoAccessor);
+end;
 
-  if not fVersionInfoAccessor.DeleteVersionInfo(lTransactionResult, aVersionInfoEntry) then
+function TRecordActionsVersioning<TRecord, TRecordIdentity>.DeleteEntry(const aRecordIdentity: TRecordIdentity;
+  const aVersionInfoEntry: TVersionInfoEntry; const aTransaction: ITransaction): TVersioningDeleteResponse;
+begin
+  Result := default(TVersioningDeleteResponse);
+  if Assigned(fVersionInfoAccessor) and Assigned(aVersionInfoEntry) then
   begin
-    Result.VersioningState := TRecordActionsVersioningResponseVersioningState.ConflictDetected;
-    lTransactionResult.RollbackOnVersionConflict;
-    Exit;
-  end;
+    var lTransactionResult := fVersionInfoAccessor.StartTransaction(aTransaction);
+    if aVersionInfoEntry.LocalVersionInfo.Id = 0 then
+    begin
+      Result.VersioningState := TVersioningResponseVersioningState.InvalidVersionInfo;
+      lTransactionResult.RollbackOnVersionConflict;
+      Exit;
+    end;
 
-  Result.Succeeded := fRecordActions.DeleteEntry(aRecordIdentity, aTransaction);
+    if not fVersionInfoAccessor.DeleteVersionInfo(lTransactionResult, aVersionInfoEntry) then
+    begin
+      Result.VersioningState := TVersioningResponseVersioningState.ConflictDetected;
+      lTransactionResult.RollbackOnVersionConflict;
+      Exit;
+    end;
+
+    Result.Succeeded := fRecordActions.DeleteEntry(aRecordIdentity, lTransactionResult.Transaction);
+  end
+  else
+  begin
+    Result.Succeeded := fRecordActions.DeleteEntry(aRecordIdentity, aTransaction);
+  end;
 end;
 
 end.

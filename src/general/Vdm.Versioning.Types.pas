@@ -41,6 +41,24 @@ type
     property LocalVersionInfo: TEntryVersionInfo read fLocalVersionInfo;
     property ServerVersionInfo: TEntryVersionInfo read fServerVersionInfo;
   end;
+  TVersioningResponseVersioningState = (NoConflict, ConflictDetected, VersionUpdated, InvalidVersionInfo);
+
+  TVersioningLoadResponse = record
+    Succeeded: Boolean;
+    EntryVersionInfo: TEntryVersionInfo;
+  end;
+
+  TVersioningSaveKind = (Created, Updated);
+  TVersioningSaveResponse = record
+    Kind: TVersioningSaveKind;
+    VersioningState: TVersioningResponseVersioningState;
+  end;
+
+  TVersioningDeleteResponse = record
+    Succeeded: Boolean;
+    VersioningState: TVersioningResponseVersioningState;
+    ConflictedEntryVersionInfo: TEntryVersionInfo;
+  end;
 
 implementation
 

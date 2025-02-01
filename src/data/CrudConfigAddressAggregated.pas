@@ -3,12 +3,12 @@ unit CrudConfigAddressAggregated;
 interface
 
 uses InterfacedBase, EntryCrudConfig, DtoAddressAggregated, SqlConnection, CrudConfigAddress, CrudConfig,
-  RecordActionsVersioning, DtoAddress, Vdm.Types, Vdm.Versioning.Types, CrudCommands, VersionInfoEntryConfig;
+  RecordActionsVersioning, DtoAddress, Vdm.Types, Vdm.Versioning.Types, CrudCommands, VersionInfoEntryAccessor;
 
 type
   TCrudConfigAddressAggregated = class(TInterfacedBase,
     IEntryCrudConfig<TDtoAddressAggregated, TDtoAddress, UInt32, TVoid>,
-    IVersionInfoEntryConfig<TDtoAddressAggregated>)
+    IVersionInfoEntryAccessor<TDtoAddressAggregated>)
   strict private
     fConnection: ISqlConnection;
     fCrudConfig: ICrudConfig<TDtoAddress, UInt32>;
@@ -140,11 +140,11 @@ begin
   Result := default(TCrudSaveResult);
   var lRecord := aEntry.Address;
   var lResponse := fRecordActions.SaveRecord(lRecord, aEntry.VersionInfo);
-  if lResponse.VersioningState = TRecordActionsVersioningResponseVersioningState.ConflictDetected then
+  if lResponse.VersioningState = TVersioningResponseVersioningState.ConflictDetected then
   begin
     Exit(TCrudSaveResult.CreateConflictedRecord(aEntry.VersionInfo));
   end;
-  if lResponse.Kind = TRecordActionsVersioningSaveKind.Created then
+  if lResponse.Kind = TVersioningSaveKind.Created then
   begin
     aEntry.Id := lRecord.Id;
   end;

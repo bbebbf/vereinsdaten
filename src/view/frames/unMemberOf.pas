@@ -67,7 +67,8 @@ implementation
 
 {$R *.dfm}
 
-uses System.Generics.Defaults, Vdm.Globals, ListCrudCommands.Types, VclUITools, Vdm.Types;
+uses System.Generics.Defaults, Vdm.Globals, ListCrudCommands.Types, VclUITools, Vdm.Types, CrudCommands,
+  MessageDialogs;
 
 { TfraPersonMemberOf }
 
@@ -133,7 +134,7 @@ end;
 
 procedure TfraMemberOf.acSaveMemberOfsExecute(Sender: TObject);
 begin
-  fBusinessIntf.SaveEntries(
+  var lResponse := fBusinessIntf.SaveEntries(
       procedure(const aEntry: TListEntry<TDtoMemberAggregated>)
       begin
         var lItem: TListItem;
@@ -141,12 +142,9 @@ begin
           lItem.Delete;
       end
     );
-  UpdateListActions(False);
-     {
-  var lResponse := fBusinessIntf.SaveCurrentEntry;
   if lResponse.Status = TCrudSaveStatus.Successful then
   begin
-    SetEditMode(False);
+    UpdateListActions(False);
   end
   else if lResponse.Status = TCrudSaveStatus.CancelledWithMessage then
   begin
@@ -156,7 +154,7 @@ begin
   begin
     TMessageDialogs.Ok('Versionkonflikt: ' +
       lResponse.ConflictedVersionInfoEntry.ToString, TMsgDlgType.mtWarning);
-  end;               }
+  end;
 end;
 
 procedure TfraMemberOf.acShowInactiveMemberOfsExecute(Sender: TObject);
