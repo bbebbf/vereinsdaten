@@ -97,6 +97,10 @@ begin
   var lVersionNumberNew: UInt32 := 1;
   var lRecordIdentity := fVersionInfoConfig.GetRecordIdentity(aRecord);
   var lUpdatedVersionInfo := aVersionInfoEntry.LocalVersionInfo;
+  if lUpdatedVersionInfo.Id = 0 then
+  begin
+    lUpdatedVersionInfo := QueryVersionInfo(aTransactionInfo, lRecordIdentity);
+  end;
   if lUpdatedVersionInfo.Id > 0 then
   begin
     if not Assigned(fUpdateVersioninfoCommand) then
@@ -106,11 +110,11 @@ begin
         ' WHERE versioninfo_id = :Id AND versioninfo_number = :ExistingNumber';
       fUpdateVersioninfoCommand := fConnection.CreatePreparedCommand(lCommandStr);
     end;
-    lVersionNumberNew := lVersionNumberNew + aVersionInfoEntry.LocalVersionInfo.VersionNumber;
+    lVersionNumberNew := lVersionNumberNew + lUpdatedVersionInfo.VersionNumber;
     fUpdateVersioninfoCommand.ParamByName('NewNumber').Value := lVersionNumberNew;
     fUpdateVersioninfoCommand.ParamByName('LastupdatedUtc').Value := TTimeZone.Local.ToUniversalTime(lLastUpdated);
-    fUpdateVersioninfoCommand.ParamByName('Id').Value := aVersionInfoEntry.LocalVersionInfo.Id;
-    fUpdateVersioninfoCommand.ParamByName('ExistingNumber').Value := aVersionInfoEntry.LocalVersionInfo.VersionNumber;
+    fUpdateVersioninfoCommand.ParamByName('Id').Value := lUpdatedVersionInfo.Id;
+    fUpdateVersioninfoCommand.ParamByName('ExistingNumber').Value := lUpdatedVersionInfo.VersionNumber;
     if fUpdateVersioninfoCommand.Execute(aTransactionInfo.Transaction) > 0 then
     begin
       lUpdatedVersionInfo.VersionNumber := lVersionNumberNew;
