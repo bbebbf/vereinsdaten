@@ -4,7 +4,7 @@ interface
 
 uses System.SysUtils, System.Generics.Collections, SqlConnection, FilterSelect, SelectListFilter,
   ListEnumerator, CrudConfig, CrudCommands, ListCrudCommands.Types, ValueConverter, Transaction,
-  Vdm.Versioning.Types, VersionInfoEntryAccessor, EntryCrudFunctions;
+  Vdm.Versioning.Types, VersionInfoEntryAccessor, EntriesCrudEvents;
 
 type
   TListEntry<T> = class
@@ -40,7 +40,7 @@ type
     fTargetEnumerator: IListEnumerator<TListEntry<TD>>;
     fVersionInfoConfig: IVersionInfoConfig<TS, TSIdent>;
     fVersionInfoEntryAccessor: IVersionInfoEntryAccessor<TD>;
-    fAdditionalCrud: IEntriesCrudFunctions<TD>;
+    fCrudEvents: IEntriesCrudEvents<TD>;
     function GetVersionInfoEntry(const aEntry: TD): TVersionInfoEntry;
   strict protected
     function CreateListEntry(const aItem: TD): TListEntry<TD>; virtual;
@@ -61,7 +61,7 @@ type
     property TargetEnumerator: IListEnumerator<TListEntry<TD>> read fTargetEnumerator write fTargetEnumerator;
     property VersionInfoConfig: IVersionInfoConfig<TS, TSIdent> read fVersionInfoConfig write fVersionInfoConfig;
     property VersionInfoEntryAccessor: IVersionInfoEntryAccessor<TD> read fVersionInfoEntryAccessor write fVersionInfoEntryAccessor;
-    property AdditionalCrud: IEntriesCrudFunctions<TD> read fAdditionalCrud write fAdditionalCrud;
+    property CrudEvents: IEntriesCrudEvents<TD> read fCrudEvents write fCrudEvents;
     property Items: TList<TListEntry<TD>> read fItems;
   end;
 
@@ -117,15 +117,15 @@ begin
   end;
   if Assigned(fTargetEnumerator) then
     fTargetEnumerator.ListEnumBegin;
-  if Assigned(fAdditionalCrud) then
-    fAdditionalCrud.BeginLoadEntries(CurrentListEnumTransaction);
+  if Assigned(fCrudEvents) then
+    fCrudEvents.BeginLoadEntries(CurrentListEnumTransaction);
 end;
 
 procedure TListCrudCommands<TS, TSIdent, TD, FSelect, FLoop>.ListEnumEnd;
 begin
   inherited;
-  if Assigned(fAdditionalCrud) then
-    fAdditionalCrud.EndLoadEntries(CurrentListEnumTransaction);
+  if Assigned(fCrudEvents) then
+    fCrudEvents.EndLoadEntries(CurrentListEnumTransaction);
   if Assigned(fTargetEnumerator) then
     fTargetEnumerator.ListEnumEnd;
 end;
@@ -135,8 +135,8 @@ begin
   inherited;
   var lTargetItem := default(TD);
   fValueConverter.Convert(aItem, lTargetItem);
-  if Assigned(fAdditionalCrud) then
-    fAdditionalCrud.LoadEntry(lTargetItem, CurrentListEnumTransaction);
+  if Assigned(fCrudEvents) then
+    fCrudEvents.LoadEntry(lTargetItem, CurrentListEnumTransaction);
   var lEntry := CreateListEntry(lTargetItem);
   fItems.Add(lEntry);
   if Assigned(fTargetEnumerator) then
@@ -168,8 +168,8 @@ begin
       lTransaction := fConnection.StartTransaction;
       lOwnsTransaction := True;
     end;
-    if Assigned(fAdditionalCrud) then
-      fAdditionalCrud.BeginSaveEntries(lTransaction);
+    if Assigned(fCrudEvents) then
+      fCrudEvents.BeginSaveEntries(lTransaction);
     for var i := fItems.Count - 1 downto 0 do
     begin
       if not lTransaction.Active then
@@ -186,14 +186,14 @@ begin
         fValueConverter.ConvertBack(lTD, lTS);
         lRecordActions.SaveRecord(lTS, GetVersionInfoEntry(lEntry.Data), lTransaction);
         fValueConverter.Convert(lTS, lTD);
-        if Assigned(fAdditionalCrud) then
-          fAdditionalCrud.SaveEntry(lEntry.Data, lTransaction);
+        if Assigned(fCrudEvents) then
+          fCrudEvents.SaveEntry(lEntry.Data, lTransaction);
         lEntry.Resetted;
       end
       else if lEntry.State = TListEntryCrudState.ToBeDeleted then
       begin
-        if Assigned(fAdditionalCrud) then
-          fAdditionalCrud.DeleteEntry(lEntry.Data, lTransaction);
+        if Assigned(fCrudEvents) then
+          fCrudEvents.DeleteEntry(lEntry.Data, lTransaction);
         var lTS := default(TS);
         fValueConverter.ConvertBack(lEntry.Data, lTS);
         lRecordActions.DeleteEntry(fCrudConfig.GetRecordIdentity(lTS), GetVersionInfoEntry(lEntry.Data), lTransaction);
@@ -201,8 +201,8 @@ begin
         fItems.Delete(i);
       end;
     end;
-    if Assigned(fAdditionalCrud) then
-      fAdditionalCrud.EndSaveEntries(lTransaction);
+    if Assigned(fCrudEvents) then
+      fCrudEvents.EndSaveEntries(lTransaction);
     if lOwnsTransaction and lTransaction.Active then
       lTransaction.Commit;
   finally

@@ -107,7 +107,7 @@ uses
   CrudMemberConfigMasterPerson in 'data\CrudMemberConfigMasterPerson.pas',
   MemberOfConfigIntf in 'business\intf\MemberOfConfigIntf.pas',
   CrudMemberConfigMasterUnit in 'data\CrudMemberConfigMasterUnit.pas',
-  EntryCrudFunctions in 'general\intf\crud\EntryCrudFunctions.pas',
+  EntriesCrudEvents in 'general\intf\crud\EntriesCrudEvents.pas',
   MemberOfVersionInfoConfig in 'business\impl\MemberOfVersionInfoConfig.pas';
 
 {$R *.res}

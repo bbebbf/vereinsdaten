@@ -5,7 +5,7 @@ interface
 uses System.Classes, System.Generics.Collections, InterfacedBase, SqlConnection, MemberOfBusinessIntf,
   MemberOfConfigIntf, MemberOfUI, KeyIndexStrings, CrudConfig, FilterSelect, Transaction,
   DtoMemberAggregated, DtoMember, DtoRole, ListCrudCommands, SelectList, SelectListFilter,
-  ValueConverter, Vdm.Types, Vdm.Versioning.Types, CrudCommands, EntryCrudFunctions;
+  ValueConverter, Vdm.Types, Vdm.Versioning.Types, CrudCommands, EntriesCrudEvents;
 
 type
   TMemberOfBusinessRecordFilter = record
@@ -102,7 +102,7 @@ begin
     UInt32, TMemberOfBusinessRecordFilter>.Create(
     fConnection, fSelectListFilter, fMemberOfConfig, fValueConverter);
   fListCrudCommands.TargetEnumerator := fUI;
-  fListCrudCommands.AdditionalCrud := aMemberOfsCrudFunctions;
+  fListCrudCommands.CrudEvents := aMemberOfsCrudFunctions;
   fListCrudCommands.OnItemMatchesFilter := OnItemMatchesFilter;
   fListCrudCommands.UseTransaction := True;
 end;

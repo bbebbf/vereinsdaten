@@ -6,7 +6,7 @@ uses System.Classes, InterfacedBase, CrudCommands, CrudConfig, Transaction, Pers
   DtoPersonAggregated, SqlConnection, PersonAggregatedUI, DtoPerson, RecordActions, RecordActionsVersioning,
   KeyIndexStrings, DtoPersonAddress, DtoAddress, DtoClubmembership, DtoMember, ClubmembershipTools,
   MemberOfBusinessIntf, MemberOfConfigIntf, ProgressIndicator, Vdm.Types, Vdm.Versioning.Types, CrudUI,
-  EntryCrudFunctions, DtoMemberAggregated;
+  EntriesCrudEvents, DtoMemberAggregated;
 
 type
   TPersonBusiness = class(TInterfacedBase, IPersonBusinessIntf)

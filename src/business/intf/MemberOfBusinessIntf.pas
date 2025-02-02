@@ -2,10 +2,10 @@ unit MemberOfBusinessIntf;
 
 interface
 
-uses ListCrudCommands, CrudCommands, Vdm.Versioning.Types, EntryCrudFunctions, DtoMemberAggregated, DtoPersonAggregated;
+uses ListCrudCommands, CrudCommands, Vdm.Versioning.Types, EntriesCrudEvents, DtoMemberAggregated, DtoPersonAggregated;
 
 type
-  IPersonMemberOfsCrudFunction = interface(IEntriesCrudFunctions<TDtoMemberAggregated>)
+  IPersonMemberOfsCrudFunction = interface(IEntriesCrudEvents<TDtoMemberAggregated>)
     ['{B30D3E07-E3AD-41AC-B270-10D9542D90A5}']
     procedure SetCurrentPersonEntry(const aPersonEntry: TDtoPersonAggregated);
     function GetVersionConflictDetected: Boolean;
