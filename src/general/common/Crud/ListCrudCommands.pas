@@ -188,17 +188,21 @@ begin
         fValueConverter.Convert(lTS, lTD);
         if Assigned(fCrudEvents) then
           fCrudEvents.SaveEntry(lEntry.Data, lTransaction);
-        lEntry.Resetted;
+        if lTransaction.Active then
+          lEntry.Resetted;
       end
       else if lEntry.State = TListEntryCrudState.ToBeDeleted then
       begin
         if Assigned(fCrudEvents) then
           fCrudEvents.DeleteEntry(lEntry.Data, lTransaction);
-        var lTS := default(TS);
-        fValueConverter.ConvertBack(lEntry.Data, lTS);
-        lRecordActions.DeleteEntry(fCrudConfig.GetRecordIdentity(lTS), GetVersionInfoEntry(lEntry.Data), lTransaction);
-        aDeleteEntryFromUICallback(lEntry);
-        fItems.Delete(i);
+        if lTransaction.Active then
+        begin
+          var lTS := default(TS);
+          fValueConverter.ConvertBack(lEntry.Data, lTS);
+          lRecordActions.DeleteEntry(fCrudConfig.GetRecordIdentity(lTS), GetVersionInfoEntry(lEntry.Data), lTransaction);
+          aDeleteEntryFromUICallback(lEntry);
+          fItems.Delete(i);
+        end;
       end;
     end;
     if Assigned(fCrudEvents) then

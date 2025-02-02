@@ -46,6 +46,7 @@ type
     procedure EndUpdate;
     procedure Clear;
     function Add(const aData: T): TListItem;
+    procedure InvalidateListItems;
     function UpdateData(const aData: T; const aCreateEntryIfNotExists: Boolean = True): Boolean;
     function TryGetListItemData(const aListItem: TListItem; out aData: T): Boolean;
     function TryGetListItem(const aData: T; out aListItem: TListItem): Boolean;
@@ -157,6 +158,19 @@ begin
         AddListItem(lEntry)
       else
         lEntry.ListItem := nil;
+    end;
+  finally
+    EndUpdate;
+  end;
+end;
+
+procedure TExtendedListview<T>.InvalidateListItems;
+begin
+  BeginUpdate;
+  try
+    for var lEntry in fDataItemsOwner do
+    begin
+      UpdateListItem(lEntry);
     end;
   finally
     EndUpdate;

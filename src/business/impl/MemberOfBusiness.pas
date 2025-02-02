@@ -24,7 +24,7 @@ type
     fCurrentFilter: TMemberOfBusinessRecordFilter;
     fSelectListFilter: ISelectListFilter<TDtoMember, UInt32>;
     fValueConverter: IValueConverter<TDtoMember, TDtoMemberAggregated>;
-    fPersonMemberOfsCrudFunction: IPersonMemberOfsCrudFunction;
+    fMemberOfsVersioningCrudEvents: IMemberOfsVersioningCrudEvents;
     procedure Initialize;
     procedure LoadMemberOfs(const aMasterId: UInt32);
     function GetShowInactiveMemberOfs: Boolean;
@@ -41,9 +41,10 @@ type
     procedure OnItemMatchesFilter(Sender: TObject;
       const aItem: TDtoMember; const aFilter: TMemberOfBusinessRecordFilter; var aItemMatches: Boolean);
     function GetDetailItemTitle: string;
+    function GetShowVersionInfoInMemberListview: Boolean;
   public
     constructor Create(const aConnection: ISqlConnection; const aMemberOfConfig: IMemberOfConfigIntf;
-      const aMemberOfsCrudFunctions: IPersonMemberOfsCrudFunction; const aUI: IMemberOfUI);
+      const aMemberOfsVersioningCrudEvents: IMemberOfsVersioningCrudEvents; const aUI: IMemberOfUI);
     destructor Destroy; override;
   end;
 
@@ -65,13 +66,13 @@ type
 { TMemberOfBusiness }
 
 constructor TMemberOfBusiness.Create(const aConnection: ISqlConnection; const aMemberOfConfig: IMemberOfConfigIntf;
-  const aMemberOfsCrudFunctions: IPersonMemberOfsCrudFunction; const aUI: IMemberOfUI);
+  const aMemberOfsVersioningCrudEvents: IMemberOfsVersioningCrudEvents; const aUI: IMemberOfUI);
 begin
   inherited Create;
   fConnection := aConnection;
   fUI := aUI;
   fMemberOfConfig := aMemberOfConfig;
-  fPersonMemberOfsCrudFunction := aMemberOfsCrudFunctions;
+  fMemberOfsVersioningCrudEvents := aMemberOfsVersioningCrudEvents;
 
   if not Supports(fMemberOfConfig, ISelectListFilter<TDtoMember, UInt32>, fSelectListFilter) then
     raise ENotSupportedException.Create('aCrudConfig doesn''t support ISelectListFilter.');
@@ -102,7 +103,7 @@ begin
     UInt32, TMemberOfBusinessRecordFilter>.Create(
     fConnection, fSelectListFilter, fMemberOfConfig, fValueConverter);
   fListCrudCommands.TargetEnumerator := fUI;
-  fListCrudCommands.CrudEvents := aMemberOfsCrudFunctions;
+  fListCrudCommands.CrudEvents := aMemberOfsVersioningCrudEvents;
   fListCrudCommands.OnItemMatchesFilter := OnItemMatchesFilter;
   fListCrudCommands.UseTransaction := True;
 end;
@@ -138,6 +139,11 @@ end;
 function TMemberOfBusiness.GetShowInactiveMemberOfs: Boolean;
 begin
   Result := fCurrentFilter.ShowInactiveMemberOfs;
+end;
+
+function TMemberOfBusiness.GetShowVersionInfoInMemberListview: Boolean;
+begin
+  Result := fMemberOfConfig.GetShowVersionInfoInMemberListview;
 end;
 
 function TMemberOfBusiness.CreateNewEntry: TListEntry<TDtoMemberAggregated>;
@@ -217,9 +223,9 @@ begin
       Result := TCrudSaveResult.CreateRecord(TCrudSaveStatus.Failed);
     end;
   end;
-  if fPersonMemberOfsCrudFunction.VersionConflictDetected then
+  if fMemberOfsVersioningCrudEvents.VersionConflictDetected then
   begin
-    Result := TCrudSaveResult.CreateConflictedRecord(fPersonMemberOfsCrudFunction.ConflictedVersionEntry);
+    Result := TCrudSaveResult.CreateConflictedRecord(fMemberOfsVersioningCrudEvents.ConflictedVersionEntry);
   end;
 end;
 

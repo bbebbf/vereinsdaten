@@ -15,6 +15,7 @@ type
     procedure SetSelectListSQLParameter(const aFilter: UInt32; const aQuery: ISqlPreparedQuery); override;
     function GetDetailItemTitle: string; override;
     function GetDetailItemMapper: TKeyIndexStrings; override;
+    function GetShowVersionInfoInMemberListview: Boolean; override;
     procedure SetMasterItemIdToMember(const aMasterItemId: UInt32; var aMember: TDtoMember); override;
     function GetDetailItemIdFromMember(const aMember: TDtoMember): UInt32; override;
     procedure SetDetailItemIdToMember(const aDetailItemId: UInt32; var aMember: TDtoMember); override;
@@ -83,6 +84,11 @@ begin
     + ' LEFT JOIN `role` AS r ON r.role_id = m.role_id'
     + ' WHERE m.unit_id = :UId'
     + ' ORDER BY ' + TVdmGlobals.GetRoleSortingSqlOrderBy('r') + ', pn.person_name, m.mb_active_since DESC';
+end;
+
+function TCrudMemberConfigMasterUnit.GetShowVersionInfoInMemberListview: Boolean;
+begin
+  Result := True;
 end;
 
 procedure TCrudMemberConfigMasterUnit.SetSelectListSQLParameter(const aFilter: UInt32;

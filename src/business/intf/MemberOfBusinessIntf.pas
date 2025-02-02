@@ -5,13 +5,17 @@ interface
 uses ListCrudCommands, CrudCommands, Vdm.Versioning.Types, EntriesCrudEvents, DtoMemberAggregated, DtoPersonAggregated;
 
 type
-  IPersonMemberOfsCrudFunction = interface(IEntriesCrudEvents<TDtoMemberAggregated>)
-    ['{B30D3E07-E3AD-41AC-B270-10D9542D90A5}']
-    procedure SetCurrentPersonEntry(const aPersonEntry: TDtoPersonAggregated);
+  IMemberOfsVersioningCrudEvents = interface(IEntriesCrudEvents<TDtoMemberAggregated>)
+    ['{513D561B-D237-4BB0-9AF6-F118BF2C1037}']
     function GetVersionConflictDetected: Boolean;
     function GetConflictedVersionEntry: TVersionInfoEntry;
     property VersionConflictDetected: Boolean read GetVersionConflictDetected;
     property ConflictedVersionEntry: TVersionInfoEntry read GetConflictedVersionEntry;
+  end;
+
+  IPersonMemberOfsCrudEvents = interface(IMemberOfsVersioningCrudEvents)
+    ['{58B7BF5B-8CD4-4016-897C-D1DB36F90380}']
+    procedure SetCurrentPersonEntry(const aPersonEntry: TDtoPersonAggregated);
   end;
 
   IMemberOfBusinessIntf = interface
@@ -28,6 +32,7 @@ type
     procedure ClearDetailItemCache;
     procedure ClearRoleCache;
     function GetDetailItemTitle: string;
+    function GetShowVersionInfoInMemberListview: Boolean;
     property ShowInactiveMemberOfs: Boolean read GetShowInactiveMemberOfs write SetShowInactiveMemberOfs;
   end;
 

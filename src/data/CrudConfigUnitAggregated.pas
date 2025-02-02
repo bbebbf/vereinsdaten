@@ -18,6 +18,8 @@ type
     fMemberSelectQuery: ISqlPreparedQuery;
     fMemberOfConfig: IMemberOfConfigIntf;
     fMemberOfBusiness: IMemberOfBusinessIntf;
+    fUnitMemberOfsVersionInfoAccessor: IMemberOfsVersioningCrudEvents;
+
     function GetListSqlResult: ISqlResult;
     function GetListEntryFromSqlResult(const aSqlResult: ISqlResult): TDtoUnit;
     function IsEntryValidForList(const aEntry: TDtoUnit; const aListFilter: TUnitFilter): Boolean;
@@ -40,7 +42,8 @@ type
 
 implementation
 
-uses System.SysUtils, SelectList, Vdm.Globals, MemberOfBusiness, CrudMemberConfigMasterUnit;
+uses System.SysUtils, SelectList, Vdm.Globals, MemberOfBusiness, CrudMemberConfigMasterUnit,
+  VersionInfoAccessor, Transaction, DtoMemberAggregated, MemberOfVersionInfoConfig;
 
 type
   TVersionInfoConfig = class(TInterfacedBase, IVersionInfoConfig<TDtoUnit, UInt32>)
@@ -49,6 +52,28 @@ type
     function GetRecordIdentity(const aRecord: TDtoUnit): UInt32;
     function GetVersioningIdentityColumnName: string;
     procedure SetVersionInfoParameter(const aRecordIdentity: UInt32; const aParameter: ISqlParameter);
+  end;
+
+  TUnitMemberOfsVersionInfoAccessor = class(TInterfacedBase, IMemberOfsVersioningCrudEvents)
+  strict private
+    fVersionInfoConfig: IVersionInfoConfig<UInt32, UInt32>;
+    fVersionInfoAccessor: TVersionInfoAccessor<UInt32, UInt32>;
+    fVersionInfoAccessorTransactionScope: IVersionInfoAccessorTransactionScope;
+    fConflictedVersionEntry: TVersionInfoEntry;
+    procedure BeginLoadEntries(const aTransaction: ITransaction);
+    procedure LoadEntry(const aEntry: TDtoMemberAggregated; const aTransaction: ITransaction);
+    procedure EndLoadEntries(const aTransaction: ITransaction);
+
+    procedure BeginSaveEntries(const aTransaction: ITransaction);
+    procedure SaveEntry(const aEntry: TDtoMemberAggregated; const aTransaction: ITransaction);
+    procedure DeleteEntry(const aEntry: TDtoMemberAggregated; const aTransaction: ITransaction);
+    procedure EndSaveEntries(const aTransaction: ITransaction);
+
+    function GetVersionConflictDetected: Boolean;
+    function GetConflictedVersionEntry: TVersionInfoEntry;
+  public
+    constructor Create(const aConnection: ISqlConnection);
+    destructor Destroy; override;
   end;
 
 { TCrudConfigUnitAggregated }
@@ -61,7 +86,9 @@ begin
   fVersionInfoConfig := TVersionInfoConfig.Create;
   fUnitRecordActions := TRecordActionsVersioning<TDtoUnit, UInt32>.Create(fConnection, fCrudConfigUnit, fVersionInfoConfig);
   fMemberOfConfig := TCrudMemberConfigMasterUnit.Create(fConnection);
-  fMemberOfBusiness := TMemberOfBusiness.Create(fConnection, fMemberOfConfig, nil, aMemberOfUI);
+
+  fUnitMemberOfsVersionInfoAccessor := TUnitMemberOfsVersionInfoAccessor.Create(aConnection);
+  fMemberOfBusiness := TMemberOfBusiness.Create(fConnection, fMemberOfConfig, fUnitMemberOfsVersionInfoAccessor, aMemberOfUI);
   fMemberOfBusiness.Initialize;
 end;
 
@@ -220,6 +247,90 @@ end;
 procedure TVersionInfoConfig.SetVersionInfoParameter(const aRecordIdentity: UInt32; const aParameter: ISqlParameter);
 begin
   aParameter.Value := aRecordIdentity;
+end;
+
+{ TUnitMemberOfsVersionInfoAccessor }
+
+constructor TUnitMemberOfsVersionInfoAccessor.Create(const aConnection: ISqlConnection);
+begin
+  inherited Create;
+  fVersionInfoConfig := TMemberOfVersionInfoConfig.Create;
+  fVersionInfoAccessor := TVersionInfoAccessor<UInt32, UInt32>.Create(aConnection, fVersionInfoConfig);
+end;
+
+destructor TUnitMemberOfsVersionInfoAccessor.Destroy;
+begin
+  fVersionInfoAccessor.Free;
+  fConflictedVersionEntry.Free;
+  inherited;
+end;
+
+procedure TUnitMemberOfsVersionInfoAccessor.BeginLoadEntries(const aTransaction: ITransaction);
+begin
+  fVersionInfoAccessorTransactionScope := fVersionInfoAccessor.StartTransaction(aTransaction);
+end;
+
+procedure TUnitMemberOfsVersionInfoAccessor.BeginSaveEntries(const aTransaction: ITransaction);
+begin
+  FreeAndNil(fConflictedVersionEntry);
+  fVersionInfoAccessorTransactionScope := fVersionInfoAccessor.StartTransaction(aTransaction);
+end;
+
+procedure TUnitMemberOfsVersionInfoAccessor.EndLoadEntries(const aTransaction: ITransaction);
+begin
+  fVersionInfoAccessorTransactionScope := nil;
+end;
+
+procedure TUnitMemberOfsVersionInfoAccessor.EndSaveEntries(const aTransaction: ITransaction);
+begin
+  fVersionInfoAccessorTransactionScope := nil;
+end;
+
+function TUnitMemberOfsVersionInfoAccessor.GetConflictedVersionEntry: TVersionInfoEntry;
+begin
+  Result := fConflictedVersionEntry;
+end;
+
+function TUnitMemberOfsVersionInfoAccessor.GetVersionConflictDetected: Boolean;
+begin
+  Result := Assigned(fConflictedVersionEntry);
+end;
+
+procedure TUnitMemberOfsVersionInfoAccessor.LoadEntry(const aEntry: TDtoMemberAggregated;
+  const aTransaction: ITransaction);
+begin
+  aEntry.VersionInfoPersonMenberOf.UpdateVersionInfo(
+    fVersionInfoAccessor.QueryVersionInfo(fVersionInfoAccessorTransactionScope, aEntry.Member.PersonId));
+end;
+
+procedure TUnitMemberOfsVersionInfoAccessor.SaveEntry(const aEntry: TDtoMemberAggregated;
+  const aTransaction: ITransaction);
+begin
+  if not fVersionInfoAccessor.UpdateVersionInfo(fVersionInfoAccessorTransactionScope, aEntry.PersonId,
+    aEntry.VersionInfoPersonMenberOf) then
+  begin
+    fVersionInfoAccessorTransactionScope.RollbackOnVersionConflict;
+    if not Assigned(fConflictedVersionEntry) then
+    begin
+      fConflictedVersionEntry := TVersionInfoEntry.Create;
+      fConflictedVersionEntry.Assign(aEntry.VersionInfoPersonMenberOf);
+    end;
+  end;
+end;
+
+procedure TUnitMemberOfsVersionInfoAccessor.DeleteEntry(const aEntry: TDtoMemberAggregated;
+  const aTransaction: ITransaction);
+begin
+  if not fVersionInfoAccessor.DeleteVersionInfo(fVersionInfoAccessorTransactionScope,
+    aEntry.VersionInfoPersonMenberOf) then
+  begin
+    fVersionInfoAccessorTransactionScope.RollbackOnVersionConflict;
+    if not Assigned(fConflictedVersionEntry) then
+    begin
+      fConflictedVersionEntry := TVersionInfoEntry.Create;
+      fConflictedVersionEntry.Assign(aEntry.VersionInfoPersonMenberOf);
+    end;
+  end;
 end;
 
 end.

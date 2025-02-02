@@ -25,6 +25,7 @@ type
     procedure SetSelectListSQLParameter(const aFilter: UInt32; const aQuery: ISqlPreparedQuery); virtual; abstract;
     function GetDetailItemTitle: string; virtual; abstract;
     function GetDetailItemMapper: TKeyIndexStrings; virtual; abstract;
+    function GetShowVersionInfoInMemberListview: Boolean; virtual;
     procedure SetMasterItemIdToMember(const aMasterItemId: UInt32; var aMember: TDtoMember); virtual; abstract;
     function GetDetailItemIdFromMember(const aMember: TDtoMember): UInt32; virtual; abstract;
     procedure SetDetailItemIdToMember(const aDetailItemId: UInt32; var aMember: TDtoMember); virtual; abstract;
@@ -60,6 +61,11 @@ end;
 function TCrudMemberConfigBase.GetSelectRecordSQL: string;
 begin
   Result := 'select * from member where mb_id = :MId';
+end;
+
+function TCrudMemberConfigBase.GetShowVersionInfoInMemberListview: Boolean;
+begin
+  Result := False;
 end;
 
 function TCrudMemberConfigBase.GetTablename: string;

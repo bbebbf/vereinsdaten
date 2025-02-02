@@ -144,6 +144,7 @@ begin
     );
   if lResponse.Status = TCrudSaveStatus.Successful then
   begin
+    fExtentedListviewMemberOfs.InvalidateListItems;
     UpdateListActions(False);
   end
   else if lResponse.Status = TCrudSaveStatus.CancelledWithMessage then
@@ -152,6 +153,7 @@ begin
   end
   else if lResponse.Status = TCrudSaveStatus.CancelledOnConflict then
   begin
+    fExtentedListviewMemberOfs.InvalidateListItems;
     TMessageDialogs.Ok('Versionkonflikt: ' +
       lResponse.ConflictedVersionInfoEntry.ToString, TMsgDlgType.mtWarning);
   end;
@@ -174,6 +176,10 @@ begin
       aListItem.SubItems.Add(TVdmGlobals.GetDateAsString(aData.Data.Member.ActiveSince));
       aListItem.SubItems.Add(TVdmGlobals.GetActiveStateAsString(aData.Data.Member.Active));
       aListItem.SubItems.Add(TVdmGlobals.GetDateAsString(aData.Data.Member.ActiveUntil));
+      if fBusinessIntf.GetShowVersionInfoInMemberListview then
+      begin
+        aListItem.SubItems.Add(aData.Data.VersionInfoPersonMenberOf.ToString);
+      end;
     end,
     TComparer<TListEntry<TDtoMemberAggregated>>.Construct(
       function(const aLeft, aRight: TListEntry<TDtoMemberAggregated>): Integer
@@ -209,6 +215,12 @@ begin
   fBusinessIntf := aCommands;
   lbMemberOfsVersionInfo.Caption := '';
   lvMemberOf.Columns[0].Caption := fBusinessIntf.GetDetailItemTitle;
+  if fBusinessIntf.GetShowVersionInfoInMemberListview then
+  begin
+    var lColumn := lvMemberOf.Columns.Add;
+    lColumn.Caption := 'Version';
+    lColumn.Width := 220;
+  end;
 end;
 
 procedure TfraMemberOf.ClearVersionInfoEntryFromUI(const aVersionInfoEntryIndex: UInt16);
