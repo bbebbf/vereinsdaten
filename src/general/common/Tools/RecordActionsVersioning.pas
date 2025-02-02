@@ -108,7 +108,6 @@ begin
       TRecordActionsSaveResponse.Created:
       begin
         Result.Kind := TVersioningSaveKind.Created;
-        aVersionInfoEntry.Reset;
       end;
       TRecordActionsSaveResponse.Updated:
       begin

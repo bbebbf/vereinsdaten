@@ -74,6 +74,7 @@ begin
   begin
     Caption := 'Verbindung bearbeiten';
   end;
+  ActiveControl := cbDetailItem;
   if ShowModal = mrOk then
   begin
     Result := True;

@@ -21,6 +21,9 @@ type
     function IsEntryValidForSaving(const aEntry: TDtoAddressAggregated): Boolean;
     procedure DestroyEntry(var aEntry: TDtoAddressAggregated);
     procedure DestroyListEntry(var aEntry: TDtoAddress);
+    procedure StartNewEntry;
+    procedure NewEntrySaved(const aEntry: TDtoAddressAggregated);
+    function GetIdFromEntry(const aEntry: TDtoAddressAggregated): UInt32;
     function TryLoadEntry(const aId: UInt32; out aEntry: TDtoAddressAggregated): Boolean;
     function CreateEntry: TDtoAddressAggregated;
     function CloneEntry(const aEntry: TDtoAddressAggregated): TDtoAddressAggregated;
@@ -94,6 +97,11 @@ begin
   aEntry := default(TDtoAddress);
 end;
 
+function TCrudConfigAddressAggregated.GetIdFromEntry(const aEntry: TDtoAddressAggregated): UInt32;
+begin
+  Result := aEntry.Id;
+end;
+
 function TCrudConfigAddressAggregated.GetListEntryFromSqlResult(const aSqlResult: ISqlResult): TDtoAddress;
 begin
   Result := default(TDtoAddress);
@@ -135,6 +143,11 @@ begin
   Result := True;
 end;
 
+procedure TCrudConfigAddressAggregated.NewEntrySaved(const aEntry: TDtoAddressAggregated);
+begin
+
+end;
+
 function TCrudConfigAddressAggregated.SaveEntry(var aEntry: TDtoAddressAggregated): TCrudSaveResult;
 begin
   Result := default(TCrudSaveResult);
@@ -148,6 +161,11 @@ begin
   begin
     aEntry.Id := lRecord.Id;
   end;
+end;
+
+procedure TCrudConfigAddressAggregated.StartNewEntry;
+begin
+
 end;
 
 function TCrudConfigAddressAggregated.TryLoadEntry(const aId: UInt32; out aEntry: TDtoAddressAggregated): Boolean;

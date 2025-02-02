@@ -95,39 +95,6 @@ object fraUnit: TfraUnit
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 2
-    object lvMemberOf: TListView
-      Left = 0
-      Top = 337
-      Width = 720
-      Height = 152
-      Align = alTop
-      Columns = <
-        item
-          Caption = 'Person'
-          Width = 200
-        end
-        item
-          Caption = 'Rolle'
-          Width = 200
-        end
-        item
-          Caption = 'Eintritt'
-          Width = 120
-        end
-        item
-          Caption = 'Status'
-          Width = 70
-        end
-        item
-          Caption = 'Austritt'
-          Width = 120
-        end>
-      ReadOnly = True
-      RowSelect = True
-      TabOrder = 1
-      ViewStyle = vsReport
-      OnCustomDrawItem = lvMemberOfCustomDrawItem
-    end
     object pnTopRight: TPanel
       Left = 0
       Top = 0
@@ -259,16 +226,14 @@ object fraUnit: TfraUnit
     end
     object pnMemberOf: TPanel
       Left = 0
-      Top = 489
+      Top = 337
       Width = 720
-      Height = 165
+      Height = 317
       Align = alClient
       BevelOuter = bvNone
-      TabOrder = 2
-      ExplicitLeft = 208
-      ExplicitTop = 520
-      ExplicitWidth = 289
-      ExplicitHeight = 121
+      TabOrder = 1
+      ExplicitTop = 489
+      ExplicitHeight = 165
     end
   end
   object pnTop: TPanel

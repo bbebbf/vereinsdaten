@@ -27,6 +27,7 @@ type
     fMemberOfsVersioningCrudEvents: IMemberOfsVersioningCrudEvents;
     procedure Initialize;
     procedure LoadMemberOfs(const aMasterId: UInt32);
+    procedure SetMasterId(const aMasterId: UInt32);
     function GetShowInactiveMemberOfs: Boolean;
     procedure SetShowInactiveMemberOfs(const aValue: Boolean);
     function CreateNewEntry: TListEntry<TDtoMemberAggregated>;
@@ -182,6 +183,11 @@ begin
    fListCrudCommands.FilterSelect := fCurrentMasterId;
   fListCrudCommands.FilterLoop := fCurrentFilter;
   fListCrudCommands.EndUpdateFilter;
+end;
+
+procedure TMemberOfBusiness.SetMasterId(const aMasterId: UInt32);
+begin
+  fCurrentMasterId := aMasterId;
 end;
 
 procedure TMemberOfBusiness.LoadMemberOfs(const aMasterId: UInt32);

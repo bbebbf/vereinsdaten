@@ -156,6 +156,10 @@ begin
       lDestroyTempSavingEntry := False;
       fUI.SetEntryToUI(fCurrentEntry, lEntryToUI);
       SetVersionInfoEntryToUI(fCurrentEntry);
+      if fNewEntryStarted then
+      begin
+        fConfig.NewEntrySaved(fCurrentEntry);
+      end;
       fNewEntryStarted := False;
       fDataChanged := True;
     end
@@ -183,11 +187,13 @@ procedure TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.StartNewEntry;
 begin
   fNewEntryStarted := True;
   fUI.ClearEntryFromUI;
+  ClearVersionInfoEntryFromUI;
+  fConfig.StartNewEntry;
 end;
 
 function TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.ReloadCurrentEntry: TCrudCommandResult;
 begin
-  fUI.SetEntryToUI(fCurrentEntry, TEntryToUIMode.OnLoadCurrentEntry);
+  LoadCurrentEntry(fConfig.GetIdFromEntry(fCurrentEntry));
 end;
 
 function TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.DeleteEntry(const aId: TId): TCrudCommandResult;

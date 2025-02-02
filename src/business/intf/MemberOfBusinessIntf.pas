@@ -22,6 +22,7 @@ type
     ['{6BF5D206-C946-4FDC-802C-70FD1B652F04}']
     procedure Initialize;
     procedure LoadMemberOfs(const aMasterId: UInt32);
+    procedure SetMasterId(const aMasterId: UInt32);
     function GetShowInactiveMemberOfs: Boolean;
     procedure SetShowInactiveMemberOfs(const aValue: Boolean);
     function CreateNewEntry: TListEntry<TDtoMemberAggregated>;

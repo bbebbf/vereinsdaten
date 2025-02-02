@@ -22,7 +22,6 @@ type
     pnFilter: TPanel;
     acStartNewEntry: TAction;
     btStartNewRecord: TButton;
-    lvMemberOf: TListView;
     cbShowInactiveUnits: TCheckBox;
     lbListviewItemCount: TLabel;
     pnTop: TPanel;
@@ -51,8 +50,6 @@ type
     procedure acSaveCurrentEntryExecute(Sender: TObject);
     procedure acReloadCurrentEntryExecute(Sender: TObject);
     procedure acStartNewEntryExecute(Sender: TObject);
-    procedure lvMemberOfCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
-      var DefaultDraw: Boolean);
     procedure cbShowInactiveUnitsClick(Sender: TObject);
     procedure btReturnClick(Sender: TObject);
     procedure lvListviewDblClick(Sender: TObject);
@@ -63,7 +60,6 @@ type
     fInEditMode: Boolean;
     fBusinessIntf: ICrudCommands<UInt32, TUnitFilter>;
     fExtendedListview: TExtendedListview<TDtoUnit>;
-    fExtendedListviewMemberOfs: TExtendedListview<TDtoUnitAggregatedPersonMemberOf>;
     fDelayedLoadEntry: TDelayedLoadEntry;
     fActiveSinceHandler: TCheckboxDatetimePickerHandler;
     fActiveUntilHandler: TCheckboxDatetimePickerHandler;
@@ -142,23 +138,6 @@ begin
       end
     )
   );
-  fExtendedListviewMemberOfs := TExtendedListview<TDtoUnitAggregatedPersonMemberOf>.Create(lvMemberOf,
-    procedure(const aData: TDtoUnitAggregatedPersonMemberOf; const aListItem: TListItem)
-    begin
-      aListItem.Caption := aData.PersonNameId.ToString;
-      aListItem.SubItems.Add(aData.RoleName);
-      aListItem.SubItems.Add(TVdmGlobals.GetDateAsString(aData.MemberActiveSince));
-      aListItem.SubItems.Add(TVdmGlobals.GetActiveStateAsString(aData.MemberActive));
-      aListItem.SubItems.Add(TVdmGlobals.GetDateAsString(aData.MemberActiveUntil));
-    end,
-    TComparer<TDtoUnitAggregatedPersonMemberOf>.Construct(
-      function(const aLeft, aRight: TDtoUnitAggregatedPersonMemberOf): Integer
-      begin
-        Result := TVdmGlobals.CompareId(aLeft.MemberRecordId, aRight.MemberRecordId);
-      end
-    )
-  );
-
   fDelayedLoadEntry := TDelayedLoadEntry.Create(
     procedure(const aData: TDelayedLoadEntryData)
     begin
@@ -180,7 +159,6 @@ end;
 destructor TfraUnit.Destroy;
 begin
   fDelayedLoadEntry.Free;
-  fExtendedListviewMemberOfs.Free;
   fExtendedListview.Free;
   fComponentValueChangedObserver.Free;
   fDataConfirmedOnHandler.Free;
@@ -192,6 +170,7 @@ end;
 procedure TfraUnit.acReloadCurrentEntryExecute(Sender: TObject);
 begin
   fBusinessIntf.ReloadCurrentEntry;
+  fUnitMemberOf.SetActionsEnabled(True);
   SetEditMode(False);
 end;
 
@@ -200,6 +179,7 @@ begin
   var lResponse := fBusinessIntf.SaveCurrentEntry;
   if lResponse.Status = TCrudSaveStatus.Successful then
   begin
+    fUnitMemberOf.SetActionsEnabled(True);
     SetEditMode(False);
   end
   else if lResponse.Status = TCrudSaveStatus.CancelledWithMessage then
@@ -216,6 +196,7 @@ end;
 procedure TfraUnit.acStartNewEntryExecute(Sender: TObject);
 begin
   fBusinessIntf.StartNewEntry;
+  fUnitMemberOf.SetActionsEnabled(False);
   StartEdit;
 end;
 
@@ -241,7 +222,6 @@ begin
   fActiveUntilHandler.Clear;
   fDataConfirmedOnHandler.Clear;
   fComponentValueChangedObserver.EndUpdate;
-  lvMemberOf.Items.Clear;
 end;
 
 procedure TfraUnit.ControlValuesChanged(Sender: TObject);
@@ -284,11 +264,13 @@ end;
 procedure TfraUnit.SetCrudCommands(const aCommands: ICrudCommands<UInt32, TUnitFilter>);
 begin
   fBusinessIntf := aCommands;
+  fUnitMemberOf.SetActionsEnabled(False);
 end;
 
 procedure TfraUnit.LoadCurrentEntry(const aEntryId: UInt32);
 begin
   fBusinessIntf.LoadCurrentEntry(aEntryId);
+  fUnitMemberOf.SetActionsEnabled(True);
   SetEditMode(False);
 end;
 
@@ -354,18 +336,6 @@ begin
   fDelayedLoadEntry.SetData(TDelayedLoadEntryData.Create(lRecord.Id, lRecordFound, aDoStartEdit));
 end;
 
-procedure TfraUnit.lvMemberOfCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
-  var DefaultDraw: Boolean);
-begin
-  DefaultDraw := true;
-  var lMemberOf: TDtoUnitAggregatedPersonMemberOf;
-  if fExtendedListviewMemberOfs.TryGetListItemData(Item, lMemberOf) then
-  begin
-    if not lMemberOf.MemberActive then
-      Sender.Canvas.Font.Color := TVdmGlobals.GetInactiveColor;
-  end;
-end;
-
 procedure TfraUnit.SetEditMode(const aEditMode: Boolean);
 begin
   var lInEditModeBefore := fInEditMode;
@@ -389,17 +359,6 @@ begin
   fExtendedListview.UpdateData(aEntry.&Unit);
 
   fComponentValueChangedObserver.EndUpdate;
-
-  fExtendedListviewMemberOfs.BeginUpdate;
-  try
-    fExtendedListviewMemberOfs.Clear;
-    for var lMemberOfEntry in aEntry.MemberOfList do
-    begin
-      fExtendedListviewMemberOfs.Add(lMemberOfEntry);
-    end;
-  finally
-    fExtendedListviewMemberOfs.EndUpdate;
-  end;
 end;
 
 procedure TfraUnit.SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry;

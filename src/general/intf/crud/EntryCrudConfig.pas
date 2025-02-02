@@ -13,6 +13,9 @@ type
     function IsEntryValidForSaving(const aEntry: TEntry): Boolean;
     procedure DestroyEntry(var aEntry: TEntry);
     procedure DestroyListEntry(var aEntry: TListEntry);
+    procedure StartNewEntry;
+    procedure NewEntrySaved(const aEntry: TEntry);
+    function GetIdFromEntry(const aEntry: TEntry): TId;
     function TryLoadEntry(const aId: TId; out aEntry: TEntry): Boolean;
     function CreateEntry: TEntry;
     function CloneEntry(const aEntry: TEntry): TEntry;
