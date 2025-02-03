@@ -539,8 +539,12 @@ end;
 procedure TPersonMemberOfsVersionInfoAccessor.BeginSaveEntries(const aTransaction: ITransaction);
 begin
   fVersionInfoAccessorTransactionScope := fVersionInfoAccessor.StartTransaction(aTransaction);
-  if not fVersionInfoAccessor.UpdateVersionInfo(fVersionInfoAccessorTransactionScope, fCurrentPersonEntry.Id,
+  if fVersionInfoAccessor.UpdateVersionInfo(fVersionInfoAccessorTransactionScope, fCurrentPersonEntry.Id,
     fCurrentPersonEntry.VersionInfoMenberOfs) then
+  begin
+    FreeAndNil(fConflictedVersionEntry);
+  end
+  else
   begin
     fVersionInfoAccessorTransactionScope.RollbackOnVersionConflict;
     if not Assigned(fConflictedVersionEntry) then
