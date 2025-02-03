@@ -17,6 +17,9 @@ type
     function IsEntryValidForSaving(const aEntry: TDtoRole): Boolean;
     procedure DestroyEntry(var aEntry: TDtoRole);
     procedure DestroyListEntry(var aEntry: TDtoRole);
+    procedure StartNewEntry;
+    procedure NewEntrySaved(const aEntry: TDtoRole);
+    function GetIdFromEntry(const aEntry: TDtoRole): UInt32;
     function TryLoadEntry(const aId: UInt32; out aEntry: TDtoRole): Boolean;
     function CreateEntry: TDtoRole;
     function CloneEntry(const aEntry: TDtoRole): TDtoRole;
@@ -74,6 +77,11 @@ begin
   aEntry := default(TDtoRole);
 end;
 
+function TCrudConfigRoleEntry.GetIdFromEntry(const aEntry: TDtoRole): UInt32;
+begin
+  Result := aEntry.Id;
+end;
+
 function TCrudConfigRoleEntry.GetListEntryFromSqlResult(const aSqlResult: ISqlResult): TDtoRole;
 begin
   Result := default(TDtoRole);
@@ -103,12 +111,22 @@ begin
   Result := True;
 end;
 
+procedure TCrudConfigRoleEntry.NewEntrySaved(const aEntry: TDtoRole);
+begin
+
+end;
+
 function TCrudConfigRoleEntry.SaveEntry(var aEntry: TDtoRole): TCrudSaveResult;
 begin
   Result := default(TCrudSaveResult);
   if fRecordActions.SaveRecord(aEntry) = TRecordActionsSaveResponse.Created then
   begin
   end;
+end;
+
+procedure TCrudConfigRoleEntry.StartNewEntry;
+begin
+
 end;
 
 function TCrudConfigRoleEntry.TryLoadEntry(const aId: UInt32; out aEntry: TDtoRole): Boolean;

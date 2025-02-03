@@ -3,24 +3,31 @@ unit CrudConfigUnitAggregated;
 interface
 
 uses InterfacedBase, EntryCrudConfig, DtoUnitAggregated, SqlConnection, CrudConfigUnit, CrudConfig, DtoUnit,
-  RecordActionsVersioning, Vdm.Types, Vdm.Versioning.Types, VersionInfoEntryConfig, CrudCommands;
+  RecordActionsVersioning, Vdm.Types, Vdm.Versioning.Types, VersionInfoEntryAccessor, CrudCommands,
+  MemberOfConfigIntf, MemberOfBusinessIntf, MemberOfUI;
 
 type
   TCrudConfigUnitAggregated = class(TInterfacedBase,
     IEntryCrudConfig<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>,
-    IVersionInfoEntryConfig<TDtoUnitAggregated>)
+    IVersionInfoEntryAccessor<TDtoUnitAggregated>)
   strict private
     fConnection: ISqlConnection;
     fCrudConfigUnit: ICrudConfig<TDtoUnit, UInt32>;
     fVersionInfoConfig: IVersionInfoConfig<TDtoUnit, UInt32>;
     fUnitRecordActions: TRecordActionsVersioning<TDtoUnit, UInt32>;
-    fMemberSelectQuery: ISqlPreparedQuery;
+    fMemberOfConfig: IMemberOfConfigIntf;
+    fMemberOfBusiness: IMemberOfBusinessIntf;
+    fUnitMemberOfsVersionInfoAccessor: IMemberOfsVersioningCrudEvents;
+
     function GetListSqlResult: ISqlResult;
     function GetListEntryFromSqlResult(const aSqlResult: ISqlResult): TDtoUnit;
     function IsEntryValidForList(const aEntry: TDtoUnit; const aListFilter: TUnitFilter): Boolean;
     function IsEntryValidForSaving(const aEntry: TDtoUnitAggregated): Boolean;
     procedure DestroyEntry(var aEntry: TDtoUnitAggregated);
     procedure DestroyListEntry(var aEntry: TDtoUnit);
+    procedure StartNewEntry;
+    procedure NewEntrySaved(const aEntry: TDtoUnitAggregated);
+    function GetIdFromEntry(const aEntry: TDtoUnitAggregated): UInt32;
     function TryLoadEntry(const aId: UInt32; out aEntry: TDtoUnitAggregated): Boolean;
     function CreateEntry: TDtoUnitAggregated;
     function CloneEntry(const aEntry: TDtoUnitAggregated): TDtoUnitAggregated;
@@ -31,13 +38,14 @@ type
     function GetVersionInfoEntry(const aEntry: TDtoUnitAggregated; out aVersionInfoEntry: TVersionInfoEntry): Boolean;
     procedure AssignVersionInfoEntry(const aSourceEntry, aTargetEntry: TDtoUnitAggregated);
   public
-    constructor Create(const aConnection: ISqlConnection);
+    constructor Create(const aConnection: ISqlConnection; const aMemberOfUI: IMemberOfUI);
     destructor Destroy; override;
   end;
 
 implementation
 
-uses System.SysUtils, SelectList, Vdm.Globals;
+uses System.SysUtils, SelectList, Vdm.Globals, MemberOfBusiness, CrudMemberConfigMasterUnit,
+  VersionInfoAccessor, Transaction, DtoMemberAggregated, MemberOfVersionInfoConfig;
 
 type
   TVersionInfoConfig = class(TInterfacedBase, IVersionInfoConfig<TDtoUnit, UInt32>)
@@ -48,19 +56,48 @@ type
     procedure SetVersionInfoParameter(const aRecordIdentity: UInt32; const aParameter: ISqlParameter);
   end;
 
+  TUnitMemberOfsVersionInfoAccessor = class(TInterfacedBase, IMemberOfsVersioningCrudEvents)
+  strict private
+    fVersionInfoConfig: IVersionInfoConfig<UInt32, UInt32>;
+    fVersionInfoAccessor: TVersionInfoAccessor<UInt32, UInt32>;
+    fVersionInfoAccessorTransactionScope: IVersionInfoAccessorTransactionScope;
+    fConflictedVersionEntry: TVersionInfoEntry;
+    procedure BeginLoadEntries(const aTransaction: ITransaction);
+    procedure LoadEntry(const aEntry: TDtoMemberAggregated; const aTransaction: ITransaction);
+    procedure EndLoadEntries(const aTransaction: ITransaction);
+
+    procedure BeginSaveEntries(const aTransaction: ITransaction);
+    procedure SaveEntry(const aEntry: TDtoMemberAggregated; const aTransaction: ITransaction);
+    procedure DeleteEntry(const aEntry: TDtoMemberAggregated; const aTransaction: ITransaction);
+    procedure EndSaveEntries(const aTransaction: ITransaction);
+
+    function GetVersionConflictDetected: Boolean;
+    function GetConflictedVersionEntry: TVersionInfoEntry;
+  public
+    constructor Create(const aConnection: ISqlConnection);
+    destructor Destroy; override;
+  end;
+
 { TCrudConfigUnitAggregated }
 
-constructor TCrudConfigUnitAggregated.Create(const aConnection: ISqlConnection);
+constructor TCrudConfigUnitAggregated.Create(const aConnection: ISqlConnection; const aMemberOfUI: IMemberOfUI);
 begin
   inherited Create;
   fConnection := aConnection;
   fCrudConfigUnit := TCrudConfigUnit.Create;
   fVersionInfoConfig := TVersionInfoConfig.Create;
   fUnitRecordActions := TRecordActionsVersioning<TDtoUnit, UInt32>.Create(fConnection, fCrudConfigUnit, fVersionInfoConfig);
+  fMemberOfConfig := TCrudMemberConfigMasterUnit.Create(fConnection);
+
+  fUnitMemberOfsVersionInfoAccessor := TUnitMemberOfsVersionInfoAccessor.Create(aConnection);
+  fMemberOfBusiness := TMemberOfBusiness.Create(fConnection, fMemberOfConfig, fUnitMemberOfsVersionInfoAccessor, aMemberOfUI);
+  fMemberOfBusiness.Initialize;
 end;
 
 destructor TCrudConfigUnitAggregated.Destroy;
 begin
+  fMemberOfBusiness := nil;
+  fMemberOfConfig := nil;
   fUnitRecordActions.Free;
   inherited;
 end;
@@ -68,8 +105,6 @@ end;
 function TCrudConfigUnitAggregated.CloneEntry(const aEntry: TDtoUnitAggregated): TDtoUnitAggregated;
 begin
   Result := TDtoUnitAggregated.Create(aEntry.&Unit);
-  for var lEntry in aEntry.MemberOfList do
-    Result.MemberOfList.Add(lEntry);
   Result.VersionInfo.Assign(aEntry.VersionInfo);
 end;
 
@@ -91,6 +126,11 @@ end;
 procedure TCrudConfigUnitAggregated.DestroyListEntry(var aEntry: TDtoUnit);
 begin
   aEntry := default(TDtoUnit);
+end;
+
+function TCrudConfigUnitAggregated.GetIdFromEntry(const aEntry: TDtoUnitAggregated): UInt32;
+begin
+  Result := aEntry.Id;
 end;
 
 function TCrudConfigUnitAggregated.GetListEntryFromSqlResult(const aSqlResult: ISqlResult): TDtoUnit;
@@ -134,19 +174,29 @@ begin
   Result := True;
 end;
 
+procedure TCrudConfigUnitAggregated.NewEntrySaved(const aEntry: TDtoUnitAggregated);
+begin
+  fMemberOfBusiness.SetMasterId(aEntry.Id);
+end;
+
 function TCrudConfigUnitAggregated.SaveEntry(var aEntry: TDtoUnitAggregated): TCrudSaveResult;
 begin
   Result := default(TCrudSaveResult);
   var lUnit := aEntry.&Unit;
   var lResponse := fUnitRecordActions.SaveRecord(lUnit, aEntry.VersionInfo);
-  if lResponse.VersioningState = TRecordActionsVersioningResponseVersioningState.ConflictDetected then
+  if lResponse.VersioningState = TVersioningResponseVersioningState.ConflictDetected then
   begin
     Exit(TCrudSaveResult.CreateConflictedRecord(aEntry.VersionInfo));
   end;
-  if lResponse.Kind = TRecordActionsVersioningSaveKind.Created then
+  if lResponse.Kind = TVersioningSaveKind.Created then
   begin
     aEntry.Id := lUnit.Id;
   end;
+end;
+
+procedure TCrudConfigUnitAggregated.StartNewEntry;
+begin
+  fMemberOfBusiness.LoadMemberOfs(0);
 end;
 
 function TCrudConfigUnitAggregated.TryLoadEntry(const aId: UInt32; out aEntry: TDtoUnitAggregated): Boolean;
@@ -159,35 +209,7 @@ begin
 
   aEntry := TDtoUnitAggregated.Create(lUnit);
   aEntry.VersionInfo.UpdateVersionInfo(lResponse.EntryVersionInfo);
-  if not Assigned(fMemberSelectQuery) then
-  begin
-    fMemberSelectQuery := fConnection.CreatePreparedQuery(
-        'SELECT m.mb_id, m.mb_active, m.mb_active_since, m.mb_active_until' +
-        ',p.person_id, p.person_vorname, p.person_praeposition, p.person_nachname, p.person_active, r.role_name' +
-        ' FROM `member` AS m' +
-        ' INNER JOIN `person` AS p ON p.person_id = m.person_id' +
-        ' LEFT JOIN `role` AS r ON r.role_id = m.role_id' +
-        ' WHERE m.unit_id = :UnitId' +
-        ' ORDER BY m.mb_active DESC, ' + TVdmGlobals.GetRoleSortingSqlOrderBy('r') + ', m.mb_active_since DESC' +
-        ' ,p.person_active DESC, p.person_nachname, p.person_vorname'
-      );
-  end;
-  fMemberSelectQuery.ParamByName('UnitId').Value := lUnit.Id;
-  var lSqlResult := fMemberSelectQuery.Open;
-  while lSqlResult.Next do
-  begin
-    var lMemberRec := default(TDtoUnitAggregatedPersonMemberOf);
-    lMemberRec.MemberRecordId := lSqlResult.FieldByName('mb_id').AsLargeInt;
-    lMemberRec.MemberActive := lSqlResult.FieldByName('mb_active').AsBoolean;
-    lMemberRec.MemberActiveSince := lSqlResult.FieldByName('mb_active_since').AsDateTime;
-    lMemberRec.MemberActiveUntil := lSqlResult.FieldByName('mb_active_until').AsDateTime;
-    lMemberRec.PersonNameId.Id := lSqlResult.FieldByName('person_id').AsLargeInt;
-    lMemberRec.PersonNameId.Vorname := lSqlResult.FieldByName('person_vorname').AsString;
-    lMemberRec.PersonNameId.Praeposition := lSqlResult.FieldByName('person_praeposition').AsString;
-    lMemberRec.PersonNameId.Nachname := lSqlResult.FieldByName('person_nachname').AsString;
-    lMemberRec.RoleName := lSqlResult.FieldByName('role_name').AsString;
-    aEntry.MemberOfList.Add(lMemberRec);
-  end;
+  fMemberOfBusiness.LoadMemberOfs(aId);
 end;
 
 { TVersionInfoConfig }
@@ -210,6 +232,90 @@ end;
 procedure TVersionInfoConfig.SetVersionInfoParameter(const aRecordIdentity: UInt32; const aParameter: ISqlParameter);
 begin
   aParameter.Value := aRecordIdentity;
+end;
+
+{ TUnitMemberOfsVersionInfoAccessor }
+
+constructor TUnitMemberOfsVersionInfoAccessor.Create(const aConnection: ISqlConnection);
+begin
+  inherited Create;
+  fVersionInfoConfig := TMemberOfVersionInfoConfig.Create;
+  fVersionInfoAccessor := TVersionInfoAccessor<UInt32, UInt32>.Create(aConnection, fVersionInfoConfig);
+end;
+
+destructor TUnitMemberOfsVersionInfoAccessor.Destroy;
+begin
+  fVersionInfoAccessor.Free;
+  fConflictedVersionEntry.Free;
+  inherited;
+end;
+
+procedure TUnitMemberOfsVersionInfoAccessor.BeginLoadEntries(const aTransaction: ITransaction);
+begin
+  fVersionInfoAccessorTransactionScope := fVersionInfoAccessor.StartTransaction(aTransaction);
+end;
+
+procedure TUnitMemberOfsVersionInfoAccessor.BeginSaveEntries(const aTransaction: ITransaction);
+begin
+  FreeAndNil(fConflictedVersionEntry);
+  fVersionInfoAccessorTransactionScope := fVersionInfoAccessor.StartTransaction(aTransaction);
+end;
+
+procedure TUnitMemberOfsVersionInfoAccessor.EndLoadEntries(const aTransaction: ITransaction);
+begin
+  fVersionInfoAccessorTransactionScope := nil;
+end;
+
+procedure TUnitMemberOfsVersionInfoAccessor.EndSaveEntries(const aTransaction: ITransaction);
+begin
+  fVersionInfoAccessorTransactionScope := nil;
+end;
+
+function TUnitMemberOfsVersionInfoAccessor.GetConflictedVersionEntry: TVersionInfoEntry;
+begin
+  Result := fConflictedVersionEntry;
+end;
+
+function TUnitMemberOfsVersionInfoAccessor.GetVersionConflictDetected: Boolean;
+begin
+  Result := Assigned(fConflictedVersionEntry);
+end;
+
+procedure TUnitMemberOfsVersionInfoAccessor.LoadEntry(const aEntry: TDtoMemberAggregated;
+  const aTransaction: ITransaction);
+begin
+  aEntry.VersionInfoPersonMenberOf.UpdateVersionInfo(
+    fVersionInfoAccessor.QueryVersionInfo(fVersionInfoAccessorTransactionScope, aEntry.Member.PersonId));
+end;
+
+procedure TUnitMemberOfsVersionInfoAccessor.SaveEntry(const aEntry: TDtoMemberAggregated;
+  const aTransaction: ITransaction);
+begin
+  if not fVersionInfoAccessor.UpdateVersionInfo(fVersionInfoAccessorTransactionScope, aEntry.PersonId,
+    aEntry.VersionInfoPersonMenberOf) then
+  begin
+    fVersionInfoAccessorTransactionScope.RollbackOnVersionConflict;
+    if not Assigned(fConflictedVersionEntry) then
+    begin
+      fConflictedVersionEntry := TVersionInfoEntry.Create;
+      fConflictedVersionEntry.Assign(aEntry.VersionInfoPersonMenberOf);
+    end;
+  end;
+end;
+
+procedure TUnitMemberOfsVersionInfoAccessor.DeleteEntry(const aEntry: TDtoMemberAggregated;
+  const aTransaction: ITransaction);
+begin
+  if not fVersionInfoAccessor.DeleteVersionInfo(fVersionInfoAccessorTransactionScope,
+    aEntry.VersionInfoPersonMenberOf) then
+  begin
+    fVersionInfoAccessorTransactionScope.RollbackOnVersionConflict;
+    if not Assigned(fConflictedVersionEntry) then
+    begin
+      fConflictedVersionEntry := TVersionInfoEntry.Create;
+      fConflictedVersionEntry.Assign(aEntry.VersionInfoPersonMenberOf);
+    end;
+  end;
 end;
 
 end.

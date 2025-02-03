@@ -3,7 +3,8 @@ unit ListCrudCommands;
 interface
 
 uses System.SysUtils, System.Generics.Collections, SqlConnection, FilterSelect, SelectListFilter,
-  ListEnumerator, CrudConfig, ListCrudCommands.Types, ValueConverter, Transaction;
+  ListEnumerator, CrudConfig, CrudCommands, ListCrudCommands.Types, ValueConverter, Transaction,
+  Vdm.Versioning.Types, VersionInfoEntryAccessor, EntriesCrudEvents;
 
 type
   TListEntry<T> = class
@@ -37,6 +38,10 @@ type
     fItems: TList<TListEntry<TD>>;
     fValueConverter: IValueConverter<TS, TD>;
     fTargetEnumerator: IListEnumerator<TListEntry<TD>>;
+    fVersionInfoConfig: IVersionInfoConfig<TS, TSIdent>;
+    fVersionInfoEntryAccessor: IVersionInfoEntryAccessor<TD>;
+    fCrudEvents: IEntriesCrudEvents<TD>;
+    function GetVersionInfoEntry(const aEntry: TD): TVersionInfoEntry;
   strict protected
     function CreateListEntry(const aItem: TD): TListEntry<TD>; virtual;
     procedure FilterChanged; override;
@@ -51,9 +56,12 @@ type
       );
     destructor Destroy; override;
     procedure Reload;
-    procedure SaveChanges(const aDeleteEntryCallback: TListCrudCommandsEntryCallback<TD>;
-      const aTransaction: ITransaction = nil);
+    function SaveChanges(const aDeleteEntryFromUICallback: TListCrudCommandsEntryCallback<TD>;
+      const aTransaction: ITransaction = nil): TCrudSaveResult;
     property TargetEnumerator: IListEnumerator<TListEntry<TD>> read fTargetEnumerator write fTargetEnumerator;
+    property VersionInfoConfig: IVersionInfoConfig<TS, TSIdent> read fVersionInfoConfig write fVersionInfoConfig;
+    property VersionInfoEntryAccessor: IVersionInfoEntryAccessor<TD> read fVersionInfoEntryAccessor write fVersionInfoEntryAccessor;
+    property CrudEvents: IEntriesCrudEvents<TD> read fCrudEvents write fCrudEvents;
     property Items: TList<TListEntry<TD>> read fItems;
   end;
 
@@ -65,7 +73,7 @@ type
 
 implementation
 
-uses RecordActions;
+uses RecordActionsVersioning;
 
 { TListCrudCommands<TS, TSIdent, TD, FSelect, FLoop> }
 
@@ -109,11 +117,15 @@ begin
   end;
   if Assigned(fTargetEnumerator) then
     fTargetEnumerator.ListEnumBegin;
+  if Assigned(fCrudEvents) then
+    fCrudEvents.BeginLoadEntries(CurrentListEnumTransaction);
 end;
 
 procedure TListCrudCommands<TS, TSIdent, TD, FSelect, FLoop>.ListEnumEnd;
 begin
   inherited;
+  if Assigned(fCrudEvents) then
+    fCrudEvents.EndLoadEntries(CurrentListEnumTransaction);
   if Assigned(fTargetEnumerator) then
     fTargetEnumerator.ListEnumEnd;
 end;
@@ -123,6 +135,8 @@ begin
   inherited;
   var lTargetItem := default(TD);
   fValueConverter.Convert(aItem, lTargetItem);
+  if Assigned(fCrudEvents) then
+    fCrudEvents.LoadEntry(lTargetItem, CurrentListEnumTransaction);
   var lEntry := CreateListEntry(lTargetItem);
   fItems.Add(lEntry);
   if Assigned(fTargetEnumerator) then
@@ -140,11 +154,12 @@ begin
   ApplyFilter;
 end;
 
-procedure TListCrudCommands<TS, TSIdent, TD, FSelect, FLoop>.SaveChanges(
-  const aDeleteEntryCallback: TListCrudCommandsEntryCallback<TD>;
-  const aTransaction: ITransaction);
+function TListCrudCommands<TS, TSIdent, TD, FSelect, FLoop>.SaveChanges(
+  const aDeleteEntryFromUICallback: TListCrudCommandsEntryCallback<TD>;
+  const aTransaction: ITransaction): TCrudSaveResult;
 begin
-  var lRecordActions := TRecordActions<TS, TSIdent>.Create(fConnection, fCrudConfig);
+  Result := default(TCrudSaveResult);
+  var lRecordActions := TRecordActionsVersioning<TS, TSIdent>.Create(fConnection, fCrudConfig, fVersionInfoConfig);
   try
     var lTransaction := aTransaction;
     var lOwnsTransaction := False;
@@ -153,35 +168,59 @@ begin
       lTransaction := fConnection.StartTransaction;
       lOwnsTransaction := True;
     end;
+    if Assigned(fCrudEvents) then
+      fCrudEvents.BeginSaveEntries(lTransaction);
     for var i := fItems.Count - 1 downto 0 do
     begin
+      if not lTransaction.Active then
+        Break;
       var lEntry := fItems[i];
       if lEntry.State = TListEntryCrudState.NewDeleted then
       begin
-        aDeleteEntryCallback(lEntry);
+        aDeleteEntryFromUICallback(lEntry);
       end
       else if lEntry.State in [TListEntryCrudState.Updated, TListEntryCrudState.New] then
       begin
         var lTS := default(TS);
         var lTD := lEntry.Data;
         fValueConverter.ConvertBack(lTD, lTS);
-        lRecordActions.SaveRecord(lTS, lTransaction);
+        lRecordActions.SaveRecord(lTS, GetVersionInfoEntry(lEntry.Data), lTransaction);
         fValueConverter.Convert(lTS, lTD);
-        lEntry.Resetted;
+        if Assigned(fCrudEvents) then
+          fCrudEvents.SaveEntry(lEntry.Data, lTransaction);
+        if lTransaction.Active then
+          lEntry.Resetted;
       end
       else if lEntry.State = TListEntryCrudState.ToBeDeleted then
       begin
-        var lTS := default(TS);
-        fValueConverter.ConvertBack(lEntry.Data, lTS);
-        lRecordActions.DeleteEntry(fCrudConfig.GetRecordIdentity(lTS), lTransaction);
-        aDeleteEntryCallback(lEntry);
-        fItems.Delete(i);
+        if Assigned(fCrudEvents) then
+          fCrudEvents.DeleteEntry(lEntry.Data, lTransaction);
+        if lTransaction.Active then
+        begin
+          var lTS := default(TS);
+          fValueConverter.ConvertBack(lEntry.Data, lTS);
+          lRecordActions.DeleteEntry(fCrudConfig.GetRecordIdentity(lTS), GetVersionInfoEntry(lEntry.Data), lTransaction);
+          aDeleteEntryFromUICallback(lEntry);
+          fItems.Delete(i);
+        end;
       end;
     end;
-    if lOwnsTransaction then
+    if Assigned(fCrudEvents) then
+      fCrudEvents.EndSaveEntries(lTransaction);
+    if lOwnsTransaction and lTransaction.Active then
       lTransaction.Commit;
   finally
     lRecordActions.Free;
+  end;
+end;
+
+function TListCrudCommands<TS, TSIdent, TD, FSelect, FLoop>.GetVersionInfoEntry(const aEntry: TD): TVersionInfoEntry;
+begin
+  Result := nil;
+  if Assigned(fVersionInfoEntryAccessor) then
+  begin
+    if not fVersionInfoEntryAccessor.GetVersionInfoEntry(aEntry, Result) then
+      Result := nil;
   end;
 end;
 

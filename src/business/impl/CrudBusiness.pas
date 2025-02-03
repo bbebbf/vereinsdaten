@@ -34,7 +34,7 @@ type
 
 implementation
 
-uses System.SysUtils, VersionInfoEntryConfig, VersionInfoEntryUI;
+uses System.SysUtils, VersionInfoEntryAccessor, VersionInfoEntryUI;
 
 { TCrudBusiness<TEntry, TListEntry, TId, TListFilter> }
 
@@ -156,6 +156,10 @@ begin
       lDestroyTempSavingEntry := False;
       fUI.SetEntryToUI(fCurrentEntry, lEntryToUI);
       SetVersionInfoEntryToUI(fCurrentEntry);
+      if fNewEntryStarted then
+      begin
+        fConfig.NewEntrySaved(fCurrentEntry);
+      end;
       fNewEntryStarted := False;
       fDataChanged := True;
     end
@@ -183,11 +187,13 @@ procedure TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.StartNewEntry;
 begin
   fNewEntryStarted := True;
   fUI.ClearEntryFromUI;
+  ClearVersionInfoEntryFromUI;
+  fConfig.StartNewEntry;
 end;
 
 function TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.ReloadCurrentEntry: TCrudCommandResult;
 begin
-  fUI.SetEntryToUI(fCurrentEntry, TEntryToUIMode.OnLoadCurrentEntry);
+  LoadCurrentEntry(fConfig.GetIdFromEntry(fCurrentEntry));
 end;
 
 function TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.DeleteEntry(const aId: TId): TCrudCommandResult;
@@ -201,11 +207,11 @@ begin
   if fConfig.IsEntryUndefined(aEntry) then
     Exit;
 
-  var lVersionInfoEntryConfig: IVersionInfoEntryConfig<TEntry>;
-  if Supports(fConfig, IVersionInfoEntryConfig<TEntry>, lVersionInfoEntryConfig) then
+  var lVersionInfoEntryAccessor: IVersionInfoEntryAccessor<TEntry>;
+  if Supports(fConfig, IVersionInfoEntryAccessor<TEntry>, lVersionInfoEntryAccessor) then
   begin
     var lVersionInfoEntry: TVersionInfoEntry;
-    if lVersionInfoEntryConfig.GetVersionInfoEntry(aEntry, lVersionInfoEntry) then
+    if lVersionInfoEntryAccessor.GetVersionInfoEntry(aEntry, lVersionInfoEntry) then
     begin
       var lVersionInfoEntryUI: IVersionInfoEntryUI;
       if Supports(fUI, IVersionInfoEntryUI, lVersionInfoEntryUI) then
@@ -217,10 +223,10 @@ end;
 procedure TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.AssignVersionInfoEntry(const aSourceEntry,
   aTargetEntry: TEntry);
 begin
-  var lVersionInfoEntryConfig: IVersionInfoEntryConfig<TEntry>;
-  if Supports(fConfig, IVersionInfoEntryConfig<TEntry>, lVersionInfoEntryConfig) then
+  var lVersionInfoEntryAccessor: IVersionInfoEntryAccessor<TEntry>;
+  if Supports(fConfig, IVersionInfoEntryAccessor<TEntry>, lVersionInfoEntryAccessor) then
   begin
-    lVersionInfoEntryConfig.AssignVersionInfoEntry(aSourceEntry, aTargetEntry);
+    lVersionInfoEntryAccessor.AssignVersionInfoEntry(aSourceEntry, aTargetEntry);
   end;
 end;
 

@@ -3,12 +3,12 @@ unit CrudConfigAddressAggregated;
 interface
 
 uses InterfacedBase, EntryCrudConfig, DtoAddressAggregated, SqlConnection, CrudConfigAddress, CrudConfig,
-  RecordActionsVersioning, DtoAddress, Vdm.Types, Vdm.Versioning.Types, CrudCommands, VersionInfoEntryConfig;
+  RecordActionsVersioning, DtoAddress, Vdm.Types, Vdm.Versioning.Types, CrudCommands, VersionInfoEntryAccessor;
 
 type
   TCrudConfigAddressAggregated = class(TInterfacedBase,
     IEntryCrudConfig<TDtoAddressAggregated, TDtoAddress, UInt32, TVoid>,
-    IVersionInfoEntryConfig<TDtoAddressAggregated>)
+    IVersionInfoEntryAccessor<TDtoAddressAggregated>)
   strict private
     fConnection: ISqlConnection;
     fCrudConfig: ICrudConfig<TDtoAddress, UInt32>;
@@ -21,6 +21,9 @@ type
     function IsEntryValidForSaving(const aEntry: TDtoAddressAggregated): Boolean;
     procedure DestroyEntry(var aEntry: TDtoAddressAggregated);
     procedure DestroyListEntry(var aEntry: TDtoAddress);
+    procedure StartNewEntry;
+    procedure NewEntrySaved(const aEntry: TDtoAddressAggregated);
+    function GetIdFromEntry(const aEntry: TDtoAddressAggregated): UInt32;
     function TryLoadEntry(const aId: UInt32; out aEntry: TDtoAddressAggregated): Boolean;
     function CreateEntry: TDtoAddressAggregated;
     function CloneEntry(const aEntry: TDtoAddressAggregated): TDtoAddressAggregated;
@@ -94,6 +97,11 @@ begin
   aEntry := default(TDtoAddress);
 end;
 
+function TCrudConfigAddressAggregated.GetIdFromEntry(const aEntry: TDtoAddressAggregated): UInt32;
+begin
+  Result := aEntry.Id;
+end;
+
 function TCrudConfigAddressAggregated.GetListEntryFromSqlResult(const aSqlResult: ISqlResult): TDtoAddress;
 begin
   Result := default(TDtoAddress);
@@ -135,19 +143,29 @@ begin
   Result := True;
 end;
 
+procedure TCrudConfigAddressAggregated.NewEntrySaved(const aEntry: TDtoAddressAggregated);
+begin
+
+end;
+
 function TCrudConfigAddressAggregated.SaveEntry(var aEntry: TDtoAddressAggregated): TCrudSaveResult;
 begin
   Result := default(TCrudSaveResult);
   var lRecord := aEntry.Address;
   var lResponse := fRecordActions.SaveRecord(lRecord, aEntry.VersionInfo);
-  if lResponse.VersioningState = TRecordActionsVersioningResponseVersioningState.ConflictDetected then
+  if lResponse.VersioningState = TVersioningResponseVersioningState.ConflictDetected then
   begin
     Exit(TCrudSaveResult.CreateConflictedRecord(aEntry.VersionInfo));
   end;
-  if lResponse.Kind = TRecordActionsVersioningSaveKind.Created then
+  if lResponse.Kind = TVersioningSaveKind.Created then
   begin
     aEntry.Id := lRecord.Id;
   end;
+end;
+
+procedure TCrudConfigAddressAggregated.StartNewEntry;
+begin
+
 end;
 
 function TCrudConfigAddressAggregated.TryLoadEntry(const aId: UInt32; out aEntry: TDtoAddressAggregated): Boolean;

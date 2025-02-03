@@ -205,7 +205,7 @@ begin
   fPersonBusinessIntf.Initialize;
   fPersonBusinessIntf.LoadList;
 
-  fCrudConfigUnit := TCrudConfigUnitAggregated.Create(fConnection);
+  fCrudConfigUnit := TCrudConfigUnitAggregated.Create(fConnection, ffraUnit.MemberOfUI);
   fBusinessUnit := TCrudBusiness<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>.Create(ffraUnit, fCrudConfigUnit);
   fBusinessUnit.Initialize;
 end;

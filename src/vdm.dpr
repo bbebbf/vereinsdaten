@@ -50,22 +50,22 @@ uses
   DtoRole in 'data\DtoRole.pas',
   DtoUnit in 'data\DtoUnit.pas',
   ListSelector in 'general\common\Db\ListSelector.pas',
-  unPersonMemberOf in 'view\frames\unPersonMemberOf.pas' {fraPersonMemberOf: TFrame},
+  unMemberOf in 'view\frames\unMemberOf.pas' {fraMemberOf: TFrame},
   ListCrudCommands in 'general\common\Crud\ListCrudCommands.pas',
   FilterSelect in 'general\common\Db\FilterSelect.pas',
   ListEnumerator in 'general\intf\tools\ListEnumerator.pas',
-  PersonMemberOfUI in 'view\intf\PersonMemberOfUI.pas',
+  MemberOfUI in 'view\intf\MemberOfUI.pas',
   DtoMemberAggregated in 'data\DtoMemberAggregated.pas',
   MemberOfBusinessIntf in 'business\intf\MemberOfBusinessIntf.pas',
   MemberOfBusiness in 'business\impl\MemberOfBusiness.pas',
-  CrudMemberConfig in 'data\CrudMemberConfig.pas',
+  CrudMemberConfigBase in 'data\CrudMemberConfigBase.pas',
   SelectRecord in 'general\intf\sql\SelectRecord.pas',
   Vdm.Types in 'general\Vdm.Types.pas',
   SelectList in 'general\intf\sql\SelectList.pas',
   SelectListFilter in 'general\intf\sql\SelectListFilter.pas',
   CrudConfigUnit in 'data\CrudConfigUnit.pas',
   CrudConfigRole in 'data\CrudConfigRole.pas',
-  unPersonMemberOfsEditDlg in 'view\forms\unPersonMemberOfsEditDlg.pas' {fmPersonMemberOfsEditDlg},
+  unMemberOfsEditDlg in 'view\forms\unMemberOfsEditDlg.pas' {fmMemberOfsEditDlg},
   DelayedExecute in 'general\common\Tools\DelayedExecute.pas',
   CheckboxDatetimePickerHandler in 'view\tools\CheckboxDatetimePickerHandler.pas',
   KeyIndexStrings in 'general\common\Tools\KeyIndexStrings.pas',
@@ -90,7 +90,7 @@ uses
   VersionInfoAccessor in 'general\common\Tools\VersionInfoAccessor.pas',
   VersionInfoEntryUI in 'general\intf\tools\VersionInfoEntryUI.pas',
   VclUITools in 'view\tools\VclUITools.pas',
-  VersionInfoEntryConfig in 'general\intf\tools\VersionInfoEntryConfig.pas',
+  VersionInfoEntryAccessor in 'general\intf\tools\VersionInfoEntryAccessor.pas',
   Report.ClubMembers in 'reports\Report.ClubMembers.pas' {fmReportClubMembers},
   TenantReader in 'general\common\Tools\TenantReader.pas',
   DtoTenant in 'data\DtoTenant.pas',
@@ -103,7 +103,12 @@ uses
   unUnit in 'view\frames\unUnit.pas' {fraUnit: TFrame},
   Report.MemberUnits in 'reports\Report.MemberUnits.pas' {fmReportMemberUnits},
   unSelectConnection in 'view\forms\unSelectConnection.pas' {fmSelectConnection},
-  Report.Persons in 'reports\Report.Persons.pas' {fmReportPersons};
+  Report.Persons in 'reports\Report.Persons.pas' {fmReportPersons},
+  CrudMemberConfigMasterPerson in 'data\CrudMemberConfigMasterPerson.pas',
+  MemberOfConfigIntf in 'business\intf\MemberOfConfigIntf.pas',
+  CrudMemberConfigMasterUnit in 'data\CrudMemberConfigMasterUnit.pas',
+  EntriesCrudEvents in 'general\intf\crud\EntriesCrudEvents.pas',
+  MemberOfVersionInfoConfig in 'business\impl\MemberOfVersionInfoConfig.pas';
 
 {$R *.res}
 
@@ -136,7 +141,6 @@ begin
     end;
 
     Application.CreateForm(TfmMain, fmMain);
-
     var lConnectProgress := TfmProgressForm.Create(Application);
     try
       lConnectProgress.ProgressBegin(0, False, 'Datenbankverbindung wird hergestellt ...');

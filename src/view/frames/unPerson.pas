@@ -8,7 +8,7 @@ uses
   System.Generics.Collections, CrudCommands, DtoPerson, ExtendedListview, Vcl.Menus, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.WinXPickers, System.Actions, Vcl.ActnList,
   PersonBusinessIntf, PersonAggregatedUI, DtoPersonAggregated, ComponentValueChangedObserver,
-  unPersonMemberOf, PersonMemberOfUI, CheckboxDatetimePickerHandler,
+  unMemberOf, MemberOfUI, CheckboxDatetimePickerHandler,
   Vdm.Types, Vdm.Versioning.Types, CrudUI, VersionInfoEntryUI, DtoPersonNameId;
 
 type
@@ -82,7 +82,7 @@ type
     fInEditMode: Boolean;
     fBusinessIntf: IPersonBusinessIntf;
     fExtendedListview: TExtendedListview<TDtoPerson>;
-    fPersonMemberOf: TfraPersonMemberOf;
+    fPersonMemberOf: TfraMemberOf;
     fDelayedLoadEntry: TDelayedLoadEntry;
     fPersonBirthdayHandler: TCheckboxDatetimePickerHandler;
     fActiveSinceHandler: TCheckboxDatetimePickerHandler;
@@ -93,7 +93,7 @@ type
     procedure ConfigControlsForNewAddress;
     function GetPersonFirstname(const aPersonName: TDtoPersonNameId): string;
 
-    function GetMemberOfUI: IPersonMemberOfUI;
+    function GetMemberOfUI: IMemberOfUI;
 
     procedure SetEditMode(const aEditMode: Boolean);
     procedure StartEdit;
@@ -132,7 +132,7 @@ uses System.Generics.Defaults, StringTools, MessageDialogs, Vdm.Globals, VclUITo
 constructor TfraPerson.Create(AOwner: TComponent);
 begin
   inherited;
-  fPersonMemberOf := TfraPersonMemberOf.Create(Self);
+  fPersonMemberOf := TfraMemberOf.Create(Self);
   fPersonMemberOf.Parent := tsMemberOf;
   fPersonMemberOf.Align := TAlign.alClient;
 
@@ -318,7 +318,7 @@ begin
 
 end;
 
-function TfraPerson.GetMemberOfUI: IPersonMemberOfUI;
+function TfraPerson.GetMemberOfUI: IMemberOfUI;
 begin
   Result := fPersonMemberOf;
 end;

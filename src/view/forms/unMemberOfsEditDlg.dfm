@@ -1,7 +1,7 @@
-object fmPersonMemberOfsEditDlg: TfmPersonMemberOfsEditDlg
+object fmMemberOfsEditDlg: TfmMemberOfsEditDlg
   Left = 0
   Top = 0
-  ActiveControl = cbUnit
+  ActiveControl = cbDetailItem
   BorderStyle = bsDialog
   Caption = 'Verbindung ...'
   ClientHeight = 359
@@ -16,7 +16,7 @@ object fmPersonMemberOfsEditDlg: TfmPersonMemberOfsEditDlg
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   TextHeight = 15
-  object lbUnit: TLabel
+  object lbDetailItem: TLabel
     Left = 23
     Top = 19
     Width = 36
@@ -44,7 +44,7 @@ object fmPersonMemberOfsEditDlg: TfmPersonMemberOfsEditDlg
     Height = 15
     Caption = 'Austrittsdatum'
   end
-  object cbUnit: TComboBox
+  object cbDetailItem: TComboBox
     Left = 23
     Top = 40
     Width = 457

@@ -1,19 +1,19 @@
-﻿unit unPersonMemberOfsEditDlg;
+﻿unit unMemberOfsEditDlg;
 
 interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls, DtoMemberAggregated,
-  CheckboxDatetimePickerHandler;
+  CheckboxDatetimePickerHandler, Vdm.Types;
 
 type
-  TfmPersonMemberOfsEditDlg = class(TForm)
-    cbUnit: TComboBox;
+  TfmMemberOfsEditDlg = class(TForm)
+    cbDetailItem: TComboBox;
     cbActive: TCheckBox;
     btSave: TButton;
     btReload: TButton;
-    lbUnit: TLabel;
+    lbDetailItem: TLabel;
     cbRole: TComboBox;
     lbRole: TLabel;
     lbMembershipBegin: TLabel;
@@ -25,13 +25,13 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure btSaveClick(Sender: TObject);
-  private
+  strict private
     fActiveSinceHandler: TCheckboxDatetimePickerHandler;
     fActiveUntilHandler: TCheckboxDatetimePickerHandler;
+    fDetailItemTitle: string;
   public
-    procedure FillAvailableUnits(const aUnits: TStrings);
-    procedure FillAvailableRoles(const aRoles: TStrings);
-    function Execute(const aMemberRecord: TDtoMemberAggregated; const aNewRecord: Boolean): Boolean;
+    function Execute(const aDetailItemTitle: string; const aMemberRecord: TDtoMemberAggregated;
+      const aNewRecord: Boolean): Boolean;
   end;
 
 implementation
@@ -42,23 +42,26 @@ uses MessageDialogs, VclUITools;
 
 { TfmPersonMemberOfsEditDlg }
 
-procedure TfmPersonMemberOfsEditDlg.btSaveClick(Sender: TObject);
+procedure TfmMemberOfsEditDlg.btSaveClick(Sender: TObject);
 begin
-  if cbUnit.ItemIndex < 0 then
+  if cbDetailItem.ItemIndex < 0 then
   begin
-    TMessageDialogs.Ok('Bitte die Einheit auswählen.', TMsgDlgType.mtInformation);
-    cbUnit.SetFocus;
+    TMessageDialogs.Ok('Bitte die ' + fDetailItemTitle + ' auswählen.', TMsgDlgType.mtInformation);
+    cbDetailItem.SetFocus;
     Exit;
   end;
   ModalResult := mrOk;
 end;
 
-function TfmPersonMemberOfsEditDlg.Execute(const aMemberRecord: TDtoMemberAggregated; const aNewRecord: Boolean): Boolean;
+function TfmMemberOfsEditDlg.Execute(const aDetailItemTitle: string;
+  const aMemberRecord: TDtoMemberAggregated; const aNewRecord: Boolean): Boolean;
 begin
   Result := False;
-  cbUnit.Items.Assign(aMemberRecord.AvailableUnits.Data.Strings);
+  fDetailItemTitle := aDetailItemTitle;
+  lbDetailItem.Caption := fDetailItemTitle;
+  cbDetailItem.Items.Assign(aMemberRecord.AvailableDetailItems.Data.Strings);
   cbRole.Items.Assign(aMemberRecord.AvailableRoles.Data.Strings);
-  TVclUITools.SetComboboxItemIndex(cbUnit, aMemberRecord.UnitIndex);
+  TVclUITools.SetComboboxItemIndex(cbDetailItem, aMemberRecord.DetailItemIndex);
   TVclUITools.SetComboboxItemIndex(cbRole, aMemberRecord.RoleIndex);
   cbActive.Checked := aMemberRecord.Member.Active;
   fActiveSinceHandler.Datetime := aMemberRecord.Member.ActiveSince;
@@ -71,10 +74,11 @@ begin
   begin
     Caption := 'Verbindung bearbeiten';
   end;
+  ActiveControl := cbDetailItem;
   if ShowModal = mrOk then
   begin
     Result := True;
-    aMemberRecord.UnitIndex := cbUnit.ItemIndex;
+    aMemberRecord.DetailItemIndex := cbDetailItem.ItemIndex;
     aMemberRecord.RoleIndex := cbRole.ItemIndex;
     aMemberRecord.Active := cbActive.Checked;
     aMemberRecord.ActiveSince := fActiveSinceHandler.Datetime;
@@ -82,23 +86,13 @@ begin
   end;
 end;
 
-procedure TfmPersonMemberOfsEditDlg.FillAvailableRoles(const aRoles: TStrings);
-begin
-  cbRole.Items.Assign(aRoles);
-end;
-
-procedure TfmPersonMemberOfsEditDlg.FillAvailableUnits(const aUnits: TStrings);
-begin
-  cbUnit.Items.Assign(aUnits);
-end;
-
-procedure TfmPersonMemberOfsEditDlg.FormCreate(Sender: TObject);
+procedure TfmMemberOfsEditDlg.FormCreate(Sender: TObject);
 begin
   fActiveSinceHandler := TCheckboxDatetimePickerHandler.Create(cbMembershipBeginKnown, dtMembershipBegin);
   fActiveUntilHandler := TCheckboxDatetimePickerHandler.Create(cbMembershipEndKnown, dtMembershipEnd);
 end;
 
-procedure TfmPersonMemberOfsEditDlg.FormDestroy(Sender: TObject);
+procedure TfmMemberOfsEditDlg.FormDestroy(Sender: TObject);
 begin
   fActiveSinceHandler.Free;
   fActiveUntilHandler.Free;

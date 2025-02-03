@@ -17,6 +17,9 @@ type
     function IsEntryValidForSaving(const aEntry: TDtoTenant): Boolean;
     procedure DestroyEntry(var aEntry: TDtoTenant);
     procedure DestroyListEntry(var aEntry: TDtoTenant);
+    procedure StartNewEntry;
+    procedure NewEntrySaved(const aEntry: TDtoTenant);
+    function GetIdFromEntry(const aEntry: TDtoTenant): UInt8;
     function TryLoadEntry(const aId: UInt8; out aEntry: TDtoTenant): Boolean;
     function CreateEntry: TDtoTenant;
     function CloneEntry(const aEntry: TDtoTenant): TDtoTenant;
@@ -74,6 +77,11 @@ begin
   aEntry := default(TDtoTenant);
 end;
 
+function TCrudConfigTenantEntry.GetIdFromEntry(const aEntry: TDtoTenant): UInt8;
+begin
+  Result := aEntry.Id;
+end;
+
 function TCrudConfigTenantEntry.GetListEntryFromSqlResult(const aSqlResult: ISqlResult): TDtoTenant;
 begin
   Result := default(TDtoTenant);
@@ -103,12 +111,22 @@ begin
   Result := True;
 end;
 
+procedure TCrudConfigTenantEntry.NewEntrySaved(const aEntry: TDtoTenant);
+begin
+
+end;
+
 function TCrudConfigTenantEntry.SaveEntry(var aEntry: TDtoTenant): TCrudSaveResult;
 begin
   Result := default(TCrudSaveResult);
   if fRecordActions.SaveRecord(aEntry) = TRecordActionsSaveResponse.Created then
   begin
   end;
+end;
+
+procedure TCrudConfigTenantEntry.StartNewEntry;
+begin
+
 end;
 
 function TCrudConfigTenantEntry.TryLoadEntry(const aId: UInt8; out aEntry: TDtoTenant): Boolean;

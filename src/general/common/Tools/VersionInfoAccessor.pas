@@ -8,9 +8,11 @@ uses Vdm.Versioning.Types, InterfacedBase, Transaction, SqlConnection;
 type
   IVersionInfoAccessorTransactionScope = interface
     ['{EDC73D1F-32B1-4CC7-AB2D-D6B1B0E058C3}']
-    function GetTranscation: ITransaction;
     procedure RollbackOnVersionConflict;
+    function GetTranscation: ITransaction;
+    function GetRollbackOnVersionConflictCalled: Boolean;
     property Transaction: ITransaction read GetTranscation;
+    property RollbackOnVersionConflictCalled: Boolean read GetRollbackOnVersionConflictCalled;
   end;
 
   TVersionInfoAccessor<TRecord, TRecordIdentity> = class
@@ -40,8 +42,9 @@ type
     fConnection: ISqlConnection;
     fTransaction: ITransaction;
     fOwmsTransaction: Boolean;
-    fRollbackCalled: Boolean;
+    fRollbackOnVersionConflictCalled: Boolean;
     function GetTranscation: ITransaction;
+    function GetRollbackOnVersionConflictCalled: Boolean;
     procedure RollbackOnVersionConflict;
   public
     constructor Create(const aConnection: ISqlConnection; const aTransaction: ITransaction);
@@ -94,6 +97,10 @@ begin
   var lVersionNumberNew: UInt32 := 1;
   var lRecordIdentity := fVersionInfoConfig.GetRecordIdentity(aRecord);
   var lUpdatedVersionInfo := aVersionInfoEntry.LocalVersionInfo;
+  if lUpdatedVersionInfo.Id = 0 then
+  begin
+    lUpdatedVersionInfo := QueryVersionInfo(aTransactionInfo, lRecordIdentity);
+  end;
   if lUpdatedVersionInfo.Id > 0 then
   begin
     if not Assigned(fUpdateVersioninfoCommand) then
@@ -103,11 +110,11 @@ begin
         ' WHERE versioninfo_id = :Id AND versioninfo_number = :ExistingNumber';
       fUpdateVersioninfoCommand := fConnection.CreatePreparedCommand(lCommandStr);
     end;
-    lVersionNumberNew := lVersionNumberNew + aVersionInfoEntry.LocalVersionInfo.VersionNumber;
+    lVersionNumberNew := lVersionNumberNew + lUpdatedVersionInfo.VersionNumber;
     fUpdateVersioninfoCommand.ParamByName('NewNumber').Value := lVersionNumberNew;
     fUpdateVersioninfoCommand.ParamByName('LastupdatedUtc').Value := TTimeZone.Local.ToUniversalTime(lLastUpdated);
-    fUpdateVersioninfoCommand.ParamByName('Id').Value := aVersionInfoEntry.LocalVersionInfo.Id;
-    fUpdateVersioninfoCommand.ParamByName('ExistingNumber').Value := aVersionInfoEntry.LocalVersionInfo.VersionNumber;
+    fUpdateVersioninfoCommand.ParamByName('Id').Value := lUpdatedVersionInfo.Id;
+    fUpdateVersioninfoCommand.ParamByName('ExistingNumber').Value := lUpdatedVersionInfo.VersionNumber;
     if fUpdateVersioninfoCommand.Execute(aTransactionInfo.Transaction) > 0 then
     begin
       lUpdatedVersionInfo.VersionNumber := lVersionNumberNew;
@@ -224,11 +231,16 @@ end;
 
 destructor TVersionInfoAccessorTransactionScope.Destroy;
 begin
-  if Assigned(fTransaction) and fOwmsTransaction and not fRollbackCalled then
+  if Assigned(fTransaction) and fOwmsTransaction and not fRollbackOnVersionConflictCalled then
   begin
     fTransaction.Commit;
   end;
   inherited;
+end;
+
+function TVersionInfoAccessorTransactionScope.GetRollbackOnVersionConflictCalled: Boolean;
+begin
+  Result := fRollbackOnVersionConflictCalled;
 end;
 
 function TVersionInfoAccessorTransactionScope.GetTranscation: ITransaction;
@@ -246,7 +258,7 @@ begin
   if Assigned(fTransaction) then
   begin
     fTransaction.Rollback;
-    fRollbackCalled := True;
+    fRollbackOnVersionConflictCalled := True;
   end;
 end;
 
