@@ -2,17 +2,24 @@ unit ProgressIndicator;
 
 interface
 
-uses InterfacedBase, ProgressIndicatorIntf, ProgressUI;
+uses System.Generics.Collections, InterfacedBase, ProgressIndicatorIntf, ProgressUI;
 
 type
+  TProgressIndicatorTier = class
+  public
+    Text: string;
+  end;
+
   TProgressIndicator = class(TInterfacedBase, IProgressIndicator)
   strict private
     fUI: IProgressUI;
-    fBeginCalls: Integer;
+    fTiers: TObjectStack<TProgressIndicatorTier>;
     procedure ProgressBegin(const aWorkCount: Integer; const aText: string = '');
-    procedure ProgressStep(const aStepCount: Integer; const aStepText: string = '');
+    procedure ProgressStep(const aStepCount: Integer);
     procedure ProgressEnd;
+    procedure ProgressText(const aText: string);
 
+    function GetTopTier: TProgressIndicatorTier;
     procedure HideUI;
   public
     constructor Create(const aUI: IProgressUI);
@@ -28,55 +35,88 @@ uses Vcl.Forms;
 constructor TProgressIndicator.Create(const aUI: IProgressUI);
 begin
   inherited Create;
+  fTiers := TObjectStack<TProgressIndicatorTier>.Create;
   fUI := aUI;
 end;
 
 destructor TProgressIndicator.Destroy;
 begin
   HideUI;
+  fTiers.Free;
   inherited;
 end;
 
 procedure TProgressIndicator.ProgressBegin(const aWorkCount: Integer;
   const aText: string);
 begin
-  var lNewBeginCalls := AtomicIncrement(fBeginCalls);
-  if lNewBeginCalls = 1 then
+  var lTopTier := GetTopTier;
+
+  var lNewTier := TProgressIndicatorTier.Create;
+  lNewTier.Text := aText;
+  fTiers.Push(lNewTier);
+
+  if Assigned(lTopTier) then
+  begin
+    lTopTier.Text := fUI.SecondaryText;
+    fUI.SecondaryText := aText;
+    fUI.MaximalWork := fUI.MaximalWork + aWorkCount;
+  end
+  else
   begin
     fUI.PrimaryText := aText;
     fUI.SecondaryText := '';
     fUI.MaximalWork := aWorkCount;
     fUI.DoneWork := 0;
     fUI.Show;
-  end
-  else
-  begin
-    fUI.SecondaryText := aText;
   end;
   Application.ProcessMessages;
 end;
 
 procedure TProgressIndicator.ProgressEnd;
 begin
-  var lNewBeginCalls := AtomicDecrement(fBeginCalls);
-  if lNewBeginCalls = 0 then
+  if fTiers.Count = 0 then
+    Exit;
+
+  fTiers.Pop;
+  var lTopTier := GetTopTier;
+
+  if Assigned(lTopTier) then
   begin
-    fUI.Hide;
+    fUI.SecondaryText := lTopTier.Text;
   end
   else
   begin
-    fUI.SecondaryText := '';
+    fUI.Hide;
   end;
   Application.ProcessMessages;
 end;
 
-procedure TProgressIndicator.ProgressStep(const aStepCount: Integer; const aStepText: string);
+procedure TProgressIndicator.ProgressStep(const aStepCount: Integer);
 begin
+  if fTiers.Count = 0 then
+    Exit;
+  fUI.DoneWork := aStepCount;
+end;
+
+procedure TProgressIndicator.ProgressText(const aText: string);
+begin
+  if fTiers.Count = 0 then
+    Exit;
+
+  fUI.SecondaryText := aText;
+end;
+
+function TProgressIndicator.GetTopTier: TProgressIndicatorTier;
+begin
+  if fTiers.Count = 0 then
+    Exit(nil);
+
+  Result := fTiers.Peek;
 end;
 
 procedure TProgressIndicator.HideUI;
 begin
-  while fBeginCalls > 0 do
+  while fTiers.Count > 0 do
     ProgressEnd;
 end;
 

@@ -207,7 +207,7 @@ end;
 
 function TPersonBusiness.LoadCurrentEntry(const aPersonId: UInt32): TCrudCommandResult;
 begin
-  var lProgress := TProgress.New(fUI.GetProgressIndicator, 0, 'Person wird geladen ...');
+  var lProgress := TProgress.New(fUI.GetProgressIndicator, 0, 'Basisdaten werden geladen ...');
   FreeAndNil(fCurrentEntry);
   fNewEntryStarted := False;
   var lRecord := default(TDtoPerson);
@@ -280,6 +280,7 @@ begin
   end
   else
   begin
+    var lProgress := TProgress.New(fUI.GetProgressIndicator, 0, 'Person wird geladen ...');
     fPersonMemberOfsVersionInfoAccessor.SetCurrentPersonEntry(fCurrentEntry);
     fMemberOfBusiness.LoadMemberOfs(fCurrentEntry.Id);
   end;

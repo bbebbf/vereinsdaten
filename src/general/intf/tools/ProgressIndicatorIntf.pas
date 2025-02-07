@@ -8,16 +8,18 @@ type
   IProgressIndicator = interface
     ['{BE3F280D-F437-4ECC-88B2-C49F8284C15C}']
     procedure ProgressBegin(const aWorkCount: Integer; const aText: string = '');
-    procedure ProgressStep(const aStepCount: Integer; const aStepText: string = '');
+    procedure ProgressStep(const aStepCount: Integer);
     procedure ProgressEnd;
+    procedure ProgressText(const aText: string);
   end;
 
   TProgress = class(TInterfacedBase, IProgressIndicator)
   strict private
     fIndicator: IProgressIndicator;
     procedure ProgressBegin(const aWorkCount: Integer; const aText: string = '');
-    procedure ProgressStep(const aStepCount: Integer; const aStepText: string = '');
+    procedure ProgressStep(const aStepCount: Integer);
     procedure ProgressEnd;
+    procedure ProgressText(const aText: string);
     constructor Create(const aIndicator: IProgressIndicator;
       const aWorkCount: Integer; const aText: string);
   public
@@ -62,10 +64,16 @@ begin
     fIndicator.ProgressEnd;
 end;
 
-procedure TProgress.ProgressStep(const aStepCount: Integer; const aStepText: string);
+procedure TProgress.ProgressStep(const aStepCount: Integer);
 begin
   if Assigned(fIndicator) then
-    fIndicator.ProgressStep(aStepCount, aStepText);
+    fIndicator.ProgressStep(aStepCount);
+end;
+
+procedure TProgress.ProgressText(const aText: string);
+begin
+  if Assigned(fIndicator) then
+    fIndicator.ProgressText(aText);
 end;
 
 end.
