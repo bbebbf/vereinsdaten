@@ -8,7 +8,7 @@ uses
   System.Generics.Collections, CrudCommands, DtoUnit, DtoUnitAggregated, ExtendedListview, Vcl.Menus, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.WinXPickers, System.Actions, Vcl.ActnList,
   ComponentValueChangedObserver, CrudUI, CheckboxDatetimePickerHandler, Vdm.Types,
-  Vdm.Versioning.Types, VersionInfoEntryUI, MemberOfUI, unMemberOf;
+  Vdm.Versioning.Types, VersionInfoEntryUI, MemberOfUI, unMemberOf, ProgressIndicatorIntf;
 
 type
   TfraUnit = class(TFrame, ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>, IVersionInfoEntryUI)
@@ -64,6 +64,7 @@ type
     fActiveSinceHandler: TCheckboxDatetimePickerHandler;
     fActiveUntilHandler: TCheckboxDatetimePickerHandler;
     fDataConfirmedOnHandler: TCheckboxDatetimePickerHandler;
+    fProgressIndicator: IProgressIndicator;
 
     procedure CMVisiblechanged(var Message: TMessage); message CM_VISIBLECHANGED;
 
@@ -82,13 +83,14 @@ type
     procedure SetEntryToUI(const aEntry: TDtoUnitAggregated; const aMode: TEntryToUIMode);
     function GetEntryFromUI(var aEntry: TDtoUnitAggregated): Boolean;
     procedure LoadCurrentEntry(const aEntryId: UInt32);
+    function GetProgressIndicator: IProgressIndicator;
 
     procedure SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry; const aVersionInfoEntryIndex: UInt16);
     procedure ClearVersionInfoEntryFromUI(const aVersionInfoEntryIndex: UInt16);
 
     function GetMemberOfUI: IMemberOfUI;
   public
-    constructor Create(AOwner: TComponent; const aReturnAction: TAction); reintroduce;
+    constructor Create(AOwner: TComponent; const aReturnAction: TAction; const aProgressIndicator: IProgressIndicator); reintroduce;
     destructor Destroy; override;
     property MemberOfUI: IMemberOfUI read GetMemberOfUI;
   end;
@@ -101,9 +103,10 @@ uses System.Generics.Defaults, StringTools, MessageDialogs, Vdm.Globals, VclUITo
 
 { TfraUnit }
 
-constructor TfraUnit.Create(AOwner: TComponent; const aReturnAction: TAction);
+constructor TfraUnit.Create(AOwner: TComponent; const aReturnAction: TAction; const aProgressIndicator: IProgressIndicator);
 begin
   inherited Create(AOwner);
+  fProgressIndicator := aProgressIndicator;
   fUnitMemberOf := TfraMemberOf.Create(Self);
   fUnitMemberOf.Parent := pnMemberOf;
   fUnitMemberOf.Align := TAlign.alClient;
@@ -259,6 +262,11 @@ end;
 function TfraUnit.GetMemberOfUI: IMemberOfUI;
 begin
   Result := fUnitMemberOf;
+end;
+
+function TfraUnit.GetProgressIndicator: IProgressIndicator;
+begin
+  Result := fProgressIndicator;
 end;
 
 procedure TfraUnit.SetCrudCommands(const aCommands: ICrudCommands<UInt32, TUnitFilter>);

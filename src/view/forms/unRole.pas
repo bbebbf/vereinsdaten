@@ -7,7 +7,7 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
   System.Generics.Collections, CrudCommands, DtoRole, ExtendedListview, Vcl.Menus, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.WinXPickers, System.Actions, Vcl.ActnList,
-  ComponentValueChangedObserver, CrudUI, Vdm.Types;
+  ComponentValueChangedObserver, CrudUI, Vdm.Types, ProgressIndicatorIntf;
 
 type
   TfmRole = class(TForm, ICrudUI<TDtoRole, TDtoRole, UInt32, TVoid>)
@@ -43,6 +43,7 @@ type
     fBusinessIntf: ICrudCommands<UInt32, TVoid>;
     fExtendedListview: TExtendedListview<TDtoRole>;
     fDelayedLoadEntry: TDelayedLoadEntry;
+    fProgressIndicator: IProgressIndicator;
 
     procedure SetEditMode(const aEditMode: Boolean);
     procedure StartEdit;
@@ -59,6 +60,7 @@ type
     procedure SetEntryToUI(const aEntry: TDtoRole; const aMode: TEntryToUIMode);
     function GetEntryFromUI(var aEntry: TDtoRole): Boolean;
     procedure LoadCurrentEntry(const aEntryId: UInt32);
+    function GetProgressIndicator: IProgressIndicator;
   end;
 
 implementation
@@ -198,6 +200,11 @@ begin
   Result := True;
   aEntry.Name := edRoleName.Text;
   aEntry.Sorting := lSortingInteger;
+end;
+
+function TfmRole.GetProgressIndicator: IProgressIndicator;
+begin
+  Result := fProgressIndicator;
 end;
 
 procedure TfmRole.SetCrudCommands(const aCommands: ICrudCommands<UInt32, TVoid>);

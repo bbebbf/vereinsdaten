@@ -4,7 +4,7 @@ interface
 
 uses InterfacedBase, EntryCrudConfig, DtoUnitAggregated, SqlConnection, CrudConfigUnit, CrudConfig, DtoUnit,
   RecordActionsVersioning, Vdm.Types, Vdm.Versioning.Types, VersionInfoEntryAccessor, CrudCommands,
-  MemberOfConfigIntf, MemberOfBusinessIntf, MemberOfUI;
+  MemberOfConfigIntf, MemberOfBusinessIntf, MemberOfUI, ProgressIndicatorIntf;
 
 type
   TCrudConfigUnitAggregated = class(TInterfacedBase,
@@ -34,11 +34,13 @@ type
     function IsEntryUndefined(const aEntry: TDtoUnitAggregated): Boolean;
     function SaveEntry(var aEntry: TDtoUnitAggregated): TCrudSaveResult;
     function DeleteEntry(const aId: UInt32): Boolean;
+    function GetEntryTitle(const aPlural: Boolean): string;
 
     function GetVersionInfoEntry(const aEntry: TDtoUnitAggregated; out aVersionInfoEntry: TVersionInfoEntry): Boolean;
     procedure AssignVersionInfoEntry(const aSourceEntry, aTargetEntry: TDtoUnitAggregated);
   public
-    constructor Create(const aConnection: ISqlConnection; const aMemberOfUI: IMemberOfUI);
+    constructor Create(const aConnection: ISqlConnection; const aMemberOfUI: IMemberOfUI;
+      const aProgressIndicator: IProgressIndicator);
     destructor Destroy; override;
   end;
 
@@ -80,7 +82,8 @@ type
 
 { TCrudConfigUnitAggregated }
 
-constructor TCrudConfigUnitAggregated.Create(const aConnection: ISqlConnection; const aMemberOfUI: IMemberOfUI);
+constructor TCrudConfigUnitAggregated.Create(const aConnection: ISqlConnection; const aMemberOfUI: IMemberOfUI;
+  const aProgressIndicator: IProgressIndicator);
 begin
   inherited Create;
   fConnection := aConnection;
@@ -90,7 +93,8 @@ begin
   fMemberOfConfig := TCrudMemberConfigMasterUnit.Create(fConnection);
 
   fUnitMemberOfsVersionInfoAccessor := TUnitMemberOfsVersionInfoAccessor.Create(aConnection);
-  fMemberOfBusiness := TMemberOfBusiness.Create(fConnection, fMemberOfConfig, fUnitMemberOfsVersionInfoAccessor, aMemberOfUI);
+  fMemberOfBusiness := TMemberOfBusiness.Create(fConnection, fMemberOfConfig, fUnitMemberOfsVersionInfoAccessor,
+    aMemberOfUI, aProgressIndicator);
   fMemberOfBusiness.Initialize;
 end;
 
@@ -126,6 +130,14 @@ end;
 procedure TCrudConfigUnitAggregated.DestroyListEntry(var aEntry: TDtoUnit);
 begin
   aEntry := default(TDtoUnit);
+end;
+
+function TCrudConfigUnitAggregated.GetEntryTitle(const aPlural: Boolean): string;
+begin
+  if aPlural then
+    Result := 'Einheiten'
+  else
+    Result := 'Einheit';
 end;
 
 function TCrudConfigUnitAggregated.GetIdFromEntry(const aEntry: TDtoUnitAggregated): UInt32;

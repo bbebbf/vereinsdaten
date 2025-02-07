@@ -30,14 +30,14 @@ object fmProgressForm: TfmProgressForm
     Padding.Bottom = 7
     ParentBackground = False
     TabOrder = 0
-    object lbMaintext: TLabel
+    object lbPrimarytext: TLabel
       Left = 8
       Top = 8
       Width = 514
-      Height = 53
+      Height = 56
       Align = alClient
       Alignment = taCenter
-      Caption = 'Maintext'
+      Caption = 'Primarytext'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -18
@@ -45,33 +45,35 @@ object fmProgressForm: TfmProgressForm
       Font.Style = []
       ParentFont = False
       Layout = tlCenter
-      ExplicitWidth = 68
+      ExplicitWidth = 89
       ExplicitHeight = 25
     end
-    object lbSteptext: TLabel
+    object lbSecondarytext: TLabel
       Left = 8
-      Top = 78
+      Top = 81
       Width = 514
-      Height = 20
+      Height = 17
       Align = alBottom
       Alignment = taCenter
-      Caption = 'Steptext'
+      Caption = 'Secondarytext'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
-      Font.Height = -15
+      Font.Height = -13
       Font.Name = 'Segoe UI'
       Font.Style = []
       ParentFont = False
       Layout = tlCenter
-      ExplicitWidth = 55
+      ExplicitTop = 78
+      ExplicitWidth = 82
     end
     object pbProgress: TProgressBar
       Left = 8
-      Top = 61
+      Top = 64
       Width = 514
       Height = 17
       Align = alBottom
       TabOrder = 0
+      ExplicitTop = 61
     end
   end
 end

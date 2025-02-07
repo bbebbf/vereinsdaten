@@ -36,7 +36,7 @@ uses
   CrudConfigClubmembership in 'data\CrudConfigClubmembership.pas',
   Vdm.Globals in 'general\Vdm.Globals.pas',
   FileTools in 'general\common\Tools\FileTools.pas',
-  ProgressIndicator in 'general\intf\tools\ProgressIndicator.pas',
+  ProgressIndicatorIntf in 'general\intf\tools\ProgressIndicatorIntf.pas',
   unProgressForm in 'view\forms\unProgressForm.pas' {fmProgressForm},
   ComponentValueChangedObserver in 'view\tools\ComponentValueChangedObserver.pas',
   ClubmembershipTools in 'data\ClubmembershipTools.pas',
@@ -108,7 +108,9 @@ uses
   MemberOfConfigIntf in 'business\intf\MemberOfConfigIntf.pas',
   CrudMemberConfigMasterUnit in 'data\CrudMemberConfigMasterUnit.pas',
   EntriesCrudEvents in 'general\intf\crud\EntriesCrudEvents.pas',
-  MemberOfVersionInfoConfig in 'business\impl\MemberOfVersionInfoConfig.pas';
+  MemberOfVersionInfoConfig in 'business\impl\MemberOfVersionInfoConfig.pas',
+  ProgressUI in 'general\intf\tools\ProgressUI.pas',
+  ProgressIndicator in 'general\common\Tools\ProgressIndicator.pas';
 
 {$R *.res}
 
@@ -141,26 +143,26 @@ begin
     end;
 
     Application.CreateForm(TfmMain, fmMain);
-    var lConnectProgress := TfmProgressForm.Create(Application);
+
+    var lConnectProgressUI := TfmProgressForm.Create(Application);
     try
-      lConnectProgress.ProgressBegin(0, False, 'Datenbankverbindung wird hergestellt ...');
+      var lProgressIndicator := TProgressIndicator.Create(lConnectProgressUI);
+      var lProgress := TProgress.New(lProgressIndicator, 0, 'Datenbankverbindung wird hergestellt ...');
       var lConnection := TConnectionFactory.CreateConnection;
       try
         lConnection.Connect;
+        lProgress := nil;
       except
-        lConnectProgress.Hide;
         TMessageDialogs.Ok('Verbindung zur Datenbank ist fehlgeschlagen. Programm wird beendet.', TMsgDlgType.mtError);
         Exit;
       end;
-      lConnectProgress.ProgressEnd;
 
       TTenantReader.Connection := lConnection;
 
       fmMain.Connection := lConnection;
-      fmMain.ProgressIndicator := lConnectProgress;
       Application.Run;
     finally
-      lConnectProgress.Free;
+      lConnectProgressUI.Free;
     end;
   finally
     if lJobObjectHandle > 0 then

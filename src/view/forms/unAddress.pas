@@ -7,7 +7,7 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
   System.Generics.Collections, CrudCommands, DtoAddress, DtoAddressAggregated, ExtendedListview, Vcl.Menus, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.WinXPickers, System.Actions, Vcl.ActnList,
-  ComponentValueChangedObserver, CrudUI, Vdm.Types, Vdm.Versioning.Types, VersionInfoEntryUI;
+  ComponentValueChangedObserver, CrudUI, Vdm.Types, Vdm.Versioning.Types, VersionInfoEntryUI, ProgressIndicatorIntf;
 
 type
   TfmAddress = class(TForm, ICrudUI<TDtoAddressAggregated, TDtoAddress, UInt32, TVoid>, IVersionInfoEntryUI)
@@ -47,6 +47,7 @@ type
     fExtendedListview: TExtendedListview<TDtoAddress>;
     fExtendedListviewMemberOfs: TExtendedListview<TDtoAddressAggregatedPersonMemberOf>;
     fDelayedLoadEntry: TDelayedLoadEntry;
+    fProgressIndicator: IProgressIndicator;
 
     procedure SetEditMode(const aEditMode: Boolean);
     procedure StartEdit;
@@ -63,6 +64,7 @@ type
     procedure SetEntryToUI(const aEntry: TDtoAddressAggregated; const aMode: TEntryToUIMode);
     function GetEntryFromUI(var aEntry: TDtoAddressAggregated): Boolean;
     procedure LoadCurrentEntry(const aEntryId: UInt32);
+    function GetProgressIndicator: IProgressIndicator;
 
     procedure SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry; const aVersionInfoEntryIndex: UInt16);
     procedure ClearVersionInfoEntryFromUI(const aVersionInfoEntryIndex: UInt16);
@@ -225,6 +227,11 @@ begin
   aEntry.Street := edAddressStreet.Text;
   aEntry.Postalcode := edAddressPostalcode.Text;
   aEntry.City := edAddressCity.Text;
+end;
+
+function TfmAddress.GetProgressIndicator: IProgressIndicator;
+begin
+  Result := fProgressIndicator;
 end;
 
 procedure TfmAddress.SetCrudCommands(const aCommands: ICrudCommands<UInt32, TVoid>);

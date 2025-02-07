@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
   System.Generics.Collections, CrudCommands, DtoTenant, System.Actions, Vcl.ActnList, Vcl.Menus, Vcl.ExtCtrls,
-  Vcl.ComCtrls, Vcl.WinXPickers,  ComponentValueChangedObserver, CrudUI, Vdm.Types;
+  Vcl.ComCtrls, Vcl.WinXPickers,  ComponentValueChangedObserver, CrudUI, Vdm.Types, ProgressIndicatorIntf;
 
 type
   TfmTenant = class(TForm, ICrudUI<TDtoTenant, TDtoTenant, UInt8, TVoid>)
@@ -29,6 +29,7 @@ type
     fInEditMode: Boolean;
     fBusinessIntf: ICrudCommands<UInt8, TVoid>;
     fTentantId: UInt8;
+    fProgressIndicator: IProgressIndicator;
 
     procedure SetEditMode(const aEditMode: Boolean);
     procedure ControlValuesChanged(Sender: TObject);
@@ -42,6 +43,7 @@ type
     procedure ClearEntryFromUI;
     procedure SetEntryToUI(const aEntry: TDtoTenant; const aMode: TEntryToUIMode);
     function GetEntryFromUI(var aEntry: TDtoTenant): Boolean;
+    function GetProgressIndicator: IProgressIndicator;
   public
     { Public-Deklarationen }
   end;
@@ -138,6 +140,11 @@ begin
   Result := True;
   aEntry.Id := fTentantId;
   aEntry.Title := edTenantTitle.Text;
+end;
+
+function TfmTenant.GetProgressIndicator: IProgressIndicator;
+begin
+  Result := fProgressIndicator;
 end;
 
 procedure TfmTenant.SetCrudCommands(const aCommands: ICrudCommands<UInt8, TVoid>);

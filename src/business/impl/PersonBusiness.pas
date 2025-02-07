@@ -5,7 +5,7 @@ interface
 uses System.Classes, InterfacedBase, CrudCommands, CrudConfig, Transaction, PersonBusinessIntf,
   DtoPersonAggregated, SqlConnection, PersonAggregatedUI, DtoPerson, RecordActions, RecordActionsVersioning,
   KeyIndexStrings, DtoPersonAddress, DtoAddress, DtoClubmembership, DtoMember, ClubmembershipTools,
-  MemberOfBusinessIntf, MemberOfConfigIntf, ProgressIndicator, Vdm.Types, Vdm.Versioning.Types, CrudUI,
+  MemberOfBusinessIntf, MemberOfConfigIntf, ProgressIndicatorIntf, Vdm.Types, Vdm.Versioning.Types, CrudUI,
   EntriesCrudEvents, DtoMemberAggregated;
 
 type
@@ -50,6 +50,7 @@ type
     function GetAvailableAddresses: TKeyIndexStrings;
     function GetListFilter: TVoid;
     procedure SetListFilter(const aValue: TVoid);
+    function LoadPerson(const aPersonId: UInt32; const aLoadMemberOfs: Boolean): TCrudCommandResult;
 
     procedure SetCurrentEntryToUI(const aMode: TEntryToUIMode);
     procedure ClearEntryFromUI;
@@ -150,7 +151,7 @@ begin
   fPersonMemberOfsVersionInfoAccessor := TPersonMemberOfsVersionInfoAccessor.Create(aConnection, lVersionInfoEntryUI);
 
   fMemberOfBusiness := TMemberOfBusiness.Create(fConnection, fMemberOfConfig,
-    fPersonMemberOfsVersionInfoAccessor, fUI.GetMemberOfUI);
+    fPersonMemberOfsVersionInfoAccessor, fUI.GetMemberOfUI, fUI.GetProgressIndicator);
 end;
 
 destructor TPersonBusiness.Destroy;
@@ -206,6 +207,7 @@ end;
 
 function TPersonBusiness.LoadCurrentEntry(const aPersonId: UInt32): TCrudCommandResult;
 begin
+  var lProgress := TProgress.New(fUI.GetProgressIndicator, 0, 'Person wird geladen ...');
   FreeAndNil(fCurrentEntry);
   fNewEntryStarted := False;
   var lRecord := default(TDtoPerson);
@@ -237,6 +239,7 @@ end;
 
 function TPersonBusiness.LoadList: TCrudCommandResult;
 begin
+  var lProgress := TProgress.New(fUI.GetProgressIndicator, 0, 'Personen werden geladen ...');
   Result := default(TCrudCommandResult);
   fNewEntryStarted := False;
   ClearEntryFromUI;
@@ -260,6 +263,14 @@ begin
   end;
 end;
 
+function TPersonBusiness.LoadPerson(const aPersonId: UInt32; const aLoadMemberOfs: Boolean): TCrudCommandResult;
+begin
+  var lProgress := TProgress.New(fUI.GetProgressIndicator, 0, 'Person wird geladen ...');
+  LoadCurrentEntry(aPersonId);
+  if aLoadMemberOfs then
+    LoadPersonsMemberOfs;
+end;
+
 procedure TPersonBusiness.LoadPersonsMemberOfs;
 begin
   if fNewEntryStarted then
@@ -281,6 +292,7 @@ end;
 
 function TPersonBusiness.SaveCurrentEntry: TCrudSaveResult;
 begin
+  var lProgress := TProgress.New(fUI.GetProgressIndicator, 0, 'Person wird gespeichert ...');
   Result := default(TCrudSaveResult);
   var lUpdatedEntryCloned := False;
   var lUpdatedEntry: TDtoPersonAggregated := nil;

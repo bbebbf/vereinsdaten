@@ -9,7 +9,7 @@ uses
   Vcl.ComCtrls, Vcl.WinXPickers, System.Actions, Vcl.ActnList,
   PersonBusinessIntf, PersonAggregatedUI, DtoPersonAggregated, ComponentValueChangedObserver,
   unMemberOf, MemberOfUI, CheckboxDatetimePickerHandler,
-  Vdm.Types, Vdm.Versioning.Types, CrudUI, VersionInfoEntryUI, DtoPersonNameId;
+  Vdm.Types, Vdm.Versioning.Types, CrudUI, VersionInfoEntryUI, DtoPersonNameId, ProgressIndicatorIntf;
 
 type
   TfraPerson = class(TFrame, IPersonAggregatedUI, IVersionInfoEntryUI)
@@ -87,6 +87,7 @@ type
     fPersonBirthdayHandler: TCheckboxDatetimePickerHandler;
     fActiveSinceHandler: TCheckboxDatetimePickerHandler;
     fActiveUntilHandler: TCheckboxDatetimePickerHandler;
+    fProgressIndicator: IProgressIndicator;
 
     procedure CMVisiblechanged(var Message: TMessage); message CM_VISIBLECHANGED;
     function NewAddressRequested: Boolean;
@@ -114,10 +115,11 @@ type
     procedure SetEntryToUI(const aRecord: TDtoPersonAggregated; const aMode: TEntryToUIMode);
     function GetEntryFromUI(var aRecord: TDtoPersonAggregated): Boolean;
     procedure LoadCurrentEntry(const aPersonId: UInt32);
+    function GetProgressIndicator: IProgressIndicator;
 
     procedure ExtentedListviewEndUpdate(Sender: TObject; const aTotalItemCount, aVisibleItemCount: Integer);
   public
-    constructor Create(AOwner: TComponent); override;
+    constructor Create(AOwner: TComponent; const aProgressIndicator: IProgressIndicator); reintroduce;
     destructor Destroy; override;
   end;
 
@@ -129,9 +131,10 @@ uses System.Generics.Defaults, StringTools, MessageDialogs, Vdm.Globals, VclUITo
 
 { TfraPerson }
 
-constructor TfraPerson.Create(AOwner: TComponent);
+constructor TfraPerson.Create(AOwner: TComponent; const aProgressIndicator: IProgressIndicator);
 begin
-  inherited;
+  inherited Create(AOwner);
+  fProgressIndicator := aProgressIndicator;
   fPersonMemberOf := TfraMemberOf.Create(Self);
   fPersonMemberOf.Parent := tsMemberOf;
   fPersonMemberOf.Align := TAlign.alClient;
@@ -330,6 +333,11 @@ begin
     Result := aPersonName.Nachname;
 end;
 
+function TfraPerson.GetProgressIndicator: IProgressIndicator;
+begin
+  Result := fProgressIndicator;
+end;
+
 function TfraPerson.GetEntryFromUI(var aRecord: TDtoPersonAggregated): Boolean;
 begin
   if TStringTools.IsEmpty(edPersonFirstname.Text) and TStringTools.IsEmpty(edPersonLastname.Text) then
@@ -431,11 +439,7 @@ end;
 
 procedure TfraPerson.LoadCurrentEntry(const aPersonId: UInt32);
 begin
-  fBusinessIntf.LoadCurrentEntry(aPersonId);
-  if pcPersonDetails.ActivePage = tsMemberOf then
-  begin
-    fBusinessIntf.LoadPersonsMemberOfs;
-  end;
+  fBusinessIntf.LoadPerson(aPersonId, (pcPersonDetails.ActivePage = tsMemberOf));
   SetEditMode(False);
 end;
 

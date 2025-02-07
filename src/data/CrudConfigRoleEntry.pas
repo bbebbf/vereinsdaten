@@ -26,6 +26,7 @@ type
     function IsEntryUndefined(const aEntry: TDtoRole): Boolean;
     function SaveEntry(var aEntry: TDtoRole): TCrudSaveResult;
     function DeleteEntry(const aId: UInt32): Boolean;
+    function GetEntryTitle(const aPlural: Boolean): string;
   public
     constructor Create(const aConnection: ISqlConnection);
     destructor Destroy; override;
@@ -75,6 +76,14 @@ end;
 procedure TCrudConfigRoleEntry.DestroyListEntry(var aEntry: TDtoRole);
 begin
   aEntry := default(TDtoRole);
+end;
+
+function TCrudConfigRoleEntry.GetEntryTitle(const aPlural: Boolean): string;
+begin
+  if aPlural then
+    Result := 'Rollen'
+  else
+    Result := 'Rolle';
 end;
 
 function TCrudConfigRoleEntry.GetIdFromEntry(const aEntry: TDtoRole): UInt32;

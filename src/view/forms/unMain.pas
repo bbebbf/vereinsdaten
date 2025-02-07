@@ -5,8 +5,9 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.Menus, System.Actions, Vcl.ActnList,
-  unPerson, unUnit, SqlConnection, ProgressIndicator, PersonBusinessIntf, PersonBusiness,
-  DtoUnit, DtoUnitAggregated, CrudConfigUnitAggregated, Vdm.Types, EntryCrudConfig, CrudCommands, Vcl.ExtCtrls;
+  unPerson, unUnit, SqlConnection, ProgressIndicatorIntf, PersonBusinessIntf, PersonBusiness,
+  DtoUnit, DtoUnitAggregated, CrudConfigUnitAggregated, Vdm.Types, EntryCrudConfig, CrudCommands, Vcl.ExtCtrls,
+  unProgressForm;
 
 type
   TfmMain = class(TForm)
@@ -49,16 +50,16 @@ type
   strict private
     fActivated: Boolean;
     fConnection: ISqlConnection;
-    fProgressIndicator: IProgressIndicator;
     fPersonBusinessIntf: IPersonBusinessIntf;
     ffraPerson: TfraPerson;
+    fProgressForm: TfmProgressForm;
+    fProgressIndicator: IProgressIndicator;
 
     fCrudConfigUnit: IEntryCrudConfig<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>;
     fBusinessUnit: ICrudCommands<UInt32, TUnitFilter>;
     ffraUnit: TfraUnit;
   public
     property Connection: ISqlConnection read fConnection write fConnection;
-    property ProgressIndicator: IProgressIndicator read fProgressIndicator write fProgressIndicator;
   end;
 
 var
@@ -69,7 +70,7 @@ implementation
 uses System.UITypes, Vdm.Globals, ConfigReader, CrudBusiness, DtoRole, CrudConfigRoleEntry, unRole,
   DtoAddress, DtoAddressAggregated, unAddress, CrudConfigAddressAggregated,
   Report.ClubMembers, Report.UnitMembers, TenantReader, DtoTenant, CrudConfigTenantEntry, unTenant,
-  Report.UnitRoles, Report.MemberUnits, Report.Persons;
+  Report.UnitRoles, Report.MemberUnits, Report.Persons, ProgressIndicator;
 
 {$R *.dfm}
 
@@ -205,7 +206,7 @@ begin
   fPersonBusinessIntf.Initialize;
   fPersonBusinessIntf.LoadList;
 
-  fCrudConfigUnit := TCrudConfigUnitAggregated.Create(fConnection, ffraUnit.MemberOfUI);
+  fCrudConfigUnit := TCrudConfigUnitAggregated.Create(fConnection, ffraUnit.MemberOfUI, fProgressIndicator);
   fBusinessUnit := TCrudBusiness<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>.Create(ffraUnit, fCrudConfigUnit);
   fBusinessUnit.Initialize;
 end;
@@ -230,12 +231,15 @@ begin
     lConnectionInfo := 'Remote Host: ' + TConfigReader.Instance.Connection.SshRemoteHost + ' / ' + lConnectionInfo;
   StatusBar.SimpleText := lConnectionInfo;
 
-  ffraPerson := TfraPerson.Create(Self);
+  fProgressForm := TfmProgressForm.Create(Self);
+  fProgressIndicator := TProgressIndicator.Create(fProgressForm);
+
+  ffraPerson := TfraPerson.Create(Self, fProgressIndicator);
   ffraPerson.Parent := Self;
   ffraPerson.Align := TAlign.alClient;
   ffraPerson.Show;
 
-  ffraUnit := TfraUnit.Create(Self, acMasterdataUnit);
+  ffraUnit := TfraUnit.Create(Self, acMasterdataUnit, fProgressIndicator);
   ffraUnit.Parent := Self;
   ffraUnit.Align := TAlign.alClient;
   ffraUnit.Hide;
@@ -244,8 +248,9 @@ end;
 procedure TfmMain.FormDestroy(Sender: TObject);
 begin
   fPersonBusinessIntf := nil;
-  fProgressIndicator := nil;
   fConnection := nil;
+  fProgressIndicator := nil;
+  fProgressForm.Free;
 end;
 
 end.

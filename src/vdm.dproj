@@ -204,7 +204,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="data\CrudConfigClubmembership.pas"/>
         <DCCReference Include="general\Vdm.Globals.pas"/>
         <DCCReference Include="general\common\Tools\FileTools.pas"/>
-        <DCCReference Include="general\intf\tools\ProgressIndicator.pas"/>
+        <DCCReference Include="general\intf\tools\ProgressIndicatorIntf.pas"/>
         <DCCReference Include="view\forms\unProgressForm.pas">
             <Form>fmProgressForm</Form>
         </DCCReference>
@@ -318,6 +318,8 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="data\CrudMemberConfigMasterUnit.pas"/>
         <DCCReference Include="general\intf\crud\EntriesCrudEvents.pas"/>
         <DCCReference Include="business\impl\MemberOfVersionInfoConfig.pas"/>
+        <DCCReference Include="general\intf\tools\ProgressUI.pas"/>
+        <DCCReference Include="general\common\Tools\ProgressIndicator.pas"/>
         <None Include="inc\CompilerDirectives.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>

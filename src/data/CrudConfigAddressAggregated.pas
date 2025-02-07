@@ -30,6 +30,7 @@ type
     function IsEntryUndefined(const aEntry: TDtoAddressAggregated): Boolean;
     function SaveEntry(var aEntry: TDtoAddressAggregated): TCrudSaveResult;
     function DeleteEntry(const aId: UInt32): Boolean;
+    function GetEntryTitle(const aPlural: Boolean): string;
 
     function GetVersionInfoEntry(const aEntry: TDtoAddressAggregated; out aVersionInfoEntry: TVersionInfoEntry): Boolean;
     procedure AssignVersionInfoEntry(const aSourceEntry, aTargetEntry: TDtoAddressAggregated);
@@ -95,6 +96,14 @@ end;
 procedure TCrudConfigAddressAggregated.DestroyListEntry(var aEntry: TDtoAddress);
 begin
   aEntry := default(TDtoAddress);
+end;
+
+function TCrudConfigAddressAggregated.GetEntryTitle(const aPlural: Boolean): string;
+begin
+  if aPlural then
+    Result := 'Adressen'
+  else
+    Result := 'Adresse';
 end;
 
 function TCrudConfigAddressAggregated.GetIdFromEntry(const aEntry: TDtoAddressAggregated): UInt32;

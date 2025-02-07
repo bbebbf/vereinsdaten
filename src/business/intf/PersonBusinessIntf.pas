@@ -10,6 +10,7 @@ type
     function GetAvailableAddresses: TKeyIndexStrings;
     function GetShowInactivePersons: Boolean;
     procedure SetShowInactivePersons(const aValue: Boolean);
+    function LoadPerson(const aPersonId: UInt32; const aLoadMemberOfs: Boolean): TCrudCommandResult;
     procedure LoadPersonsMemberOfs;
     procedure ClearAddressCache;
     procedure ClearUnitCache;

@@ -34,7 +34,7 @@ type
 
 implementation
 
-uses System.SysUtils, VersionInfoEntryAccessor, VersionInfoEntryUI;
+uses System.SysUtils, VersionInfoEntryAccessor, VersionInfoEntryUI, ProgressIndicatorIntf;
 
 { TCrudBusiness<TEntry, TListEntry, TId, TListFilter> }
 
@@ -75,6 +75,7 @@ end;
 
 function TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.LoadList: TCrudCommandResult;
 begin
+  var lProgress := TProgress.New(fUI.GetProgressIndicator, 0, fConfig.GetEntryTitle(True) + ' werden geladen ...');
   Result := default(TCrudCommandResult);
   fNewEntryStarted := False;
   fUI.ClearEntryFromUI;
@@ -98,6 +99,7 @@ end;
 
 function TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.LoadCurrentEntry(const aId: TId): TCrudCommandResult;
 begin
+  var lProgress := TProgress.New(fUI.GetProgressIndicator, 0, fConfig.GetEntryTitle(False) + ' wird geladen ...');
   fConfig.DestroyEntry(fCurrentEntry);
   fNewEntryStarted := False;
   if fConfig.TryLoadEntry(aId, fCurrentEntry) then
@@ -115,6 +117,7 @@ end;
 
 function TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.SaveCurrentEntry: TCrudSaveResult;
 begin
+  var lProgress := TProgress.New(fUI.GetProgressIndicator, 0, fConfig.GetEntryTitle(False) + ' wird gespeichert ...');
   Result := default(TCrudSaveResult);
   var lDestroyTempSavingEntry := True;
   var lTempSavingEntry: TEntry;

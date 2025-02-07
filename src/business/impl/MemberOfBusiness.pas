@@ -5,7 +5,7 @@ interface
 uses System.Classes, System.Generics.Collections, InterfacedBase, SqlConnection, MemberOfBusinessIntf,
   MemberOfConfigIntf, MemberOfUI, KeyIndexStrings, CrudConfig, FilterSelect, Transaction,
   DtoMemberAggregated, DtoMember, DtoRole, ListCrudCommands, SelectList, SelectListFilter,
-  ValueConverter, Vdm.Types, Vdm.Versioning.Types, CrudCommands, EntriesCrudEvents;
+  ValueConverter, Vdm.Types, Vdm.Versioning.Types, CrudCommands, EntriesCrudEvents, ProgressIndicatorIntf;
 
 type
   TMemberOfBusinessRecordFilter = record
@@ -25,6 +25,7 @@ type
     fSelectListFilter: ISelectListFilter<TDtoMember, UInt32>;
     fValueConverter: IValueConverter<TDtoMember, TDtoMemberAggregated>;
     fMemberOfsVersioningCrudEvents: IMemberOfsVersioningCrudEvents;
+    fProgressIndicator: IProgressIndicator;
     procedure Initialize;
     procedure LoadMemberOfs(const aMasterId: UInt32);
     procedure SetMasterId(const aMasterId: UInt32);
@@ -45,7 +46,8 @@ type
     function GetShowVersionInfoInMemberListview: Boolean;
   public
     constructor Create(const aConnection: ISqlConnection; const aMemberOfConfig: IMemberOfConfigIntf;
-      const aMemberOfsVersioningCrudEvents: IMemberOfsVersioningCrudEvents; const aUI: IMemberOfUI);
+      const aMemberOfsVersioningCrudEvents: IMemberOfsVersioningCrudEvents; const aUI: IMemberOfUI;
+      const aProgressIndicator: IProgressIndicator);
     destructor Destroy; override;
   end;
 
@@ -67,9 +69,11 @@ type
 { TMemberOfBusiness }
 
 constructor TMemberOfBusiness.Create(const aConnection: ISqlConnection; const aMemberOfConfig: IMemberOfConfigIntf;
-  const aMemberOfsVersioningCrudEvents: IMemberOfsVersioningCrudEvents; const aUI: IMemberOfUI);
+  const aMemberOfsVersioningCrudEvents: IMemberOfsVersioningCrudEvents; const aUI: IMemberOfUI;
+  const aProgressIndicator: IProgressIndicator);
 begin
   inherited Create;
+  fProgressIndicator := aProgressIndicator;
   fConnection := aConnection;
   fUI := aUI;
   fMemberOfConfig := aMemberOfConfig;
@@ -179,6 +183,7 @@ end;
 
 procedure TMemberOfBusiness.UpdateFilter;
 begin
+  var lProgress := TProgress.New(fProgressIndicator, 0, 'Verbindungen werden geladen ...');
   fListCrudCommands.BeginUpdateFilter;
    fListCrudCommands.FilterSelect := fCurrentMasterId;
   fListCrudCommands.FilterLoop := fCurrentFilter;
@@ -215,6 +220,7 @@ begin
     raise EArgumentException.Create('TMemberOfBusiness.SaveEntries: fCurrentMasterId = 0');
   end;
 
+  var lProgress := TProgress.New(fProgressIndicator, 0, 'Verbindungen werden gespeichert ...');
   var lTransaction: ITransaction := fConnection.StartTransaction;
   try
     fListCrudCommands.SaveChanges(aDeleteEntryFromUICallback, lTransaction);

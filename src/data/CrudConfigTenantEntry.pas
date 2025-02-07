@@ -26,6 +26,7 @@ type
     function IsEntryUndefined(const aEntry: TDtoTenant): Boolean;
     function SaveEntry(var aEntry: TDtoTenant): TCrudSaveResult;
     function DeleteEntry(const aId: UInt8): Boolean;
+    function GetEntryTitle(const aPlural: Boolean): string;
   public
     constructor Create(const aConnection: ISqlConnection);
     destructor Destroy; override;
@@ -75,6 +76,11 @@ end;
 procedure TCrudConfigTenantEntry.DestroyListEntry(var aEntry: TDtoTenant);
 begin
   aEntry := default(TDtoTenant);
+end;
+
+function TCrudConfigTenantEntry.GetEntryTitle(const aPlural: Boolean): string;
+begin
+  Result := 'Vereinsdaten';
 end;
 
 function TCrudConfigTenantEntry.GetIdFromEntry(const aEntry: TDtoTenant): UInt8;

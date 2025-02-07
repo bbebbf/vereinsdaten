@@ -5,20 +5,25 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ComCtrls,
-  ProgressIndicator;
+  ProgressUI;
 
 type
-  TfmProgressForm = class(TForm, IProgressIndicator)
+  TfmProgressForm = class(TForm, IProgressUI)
     pnMain: TPanel;
-    lbMaintext: TLabel;
-    lbSteptext: TLabel;
+    lbPrimarytext: TLabel;
+    lbSecondarytext: TLabel;
     pbProgress: TProgressBar;
   private
+    function GetPrimaryText: string;
+    procedure SetPrimaryText(const aValue: string);
+    function GetSecondaryText: string;
+    procedure SetSecondaryText(const aValue: string);
+    function GetDoneWork: Integer;
+    procedure SetDoneWork(const aValue: Integer);
+    function GetMaxmimalWork: Integer;
+    procedure SetMaximalWork(const aValue: Integer);
   public
     constructor Create(AOwner: TComponent); override;
-    procedure ProgressBegin(const aWorkCount: Integer; const aSteptextAvailable: Boolean; const aText: string = '');
-    procedure ProgressStep(const aStepCount: Integer; const aStepText: string = '');
-    procedure ProgressEnd;
   end;
 
 implementation
@@ -30,49 +35,49 @@ implementation
 constructor TfmProgressForm.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  if AOwner is TCustomForm then
-  begin
-    Position := TPosition.poOwnerFormCenter;
-  end
-  else
-  begin
-    Position := TPosition.poScreenCenter;
-  end;
+  Position := TPosition.poScreenCenter;
 end;
 
-procedure TfmProgressForm.ProgressBegin(const aWorkCount: Integer; const aSteptextAvailable: Boolean;
-  const aText: string);
+function TfmProgressForm.GetDoneWork: Integer;
 begin
-  lbMaintext.Caption := aText;
-  if aWorkCount > 0 then
-  begin
-    pbProgress.Max := aWorkCount;
-    pbProgress.Min := 0;
-    pbProgress.Position := 0;
-    pbProgress.Visible := True;
-  end
-  else
-  begin
-    pbProgress.Visible := False;
-  end;
-  lbSteptext.Visible := aSteptextAvailable;
-  Show;
-  Application.ProcessMessages;
+  Result := pbProgress.Position;
 end;
 
-procedure TfmProgressForm.ProgressEnd;
+function TfmProgressForm.GetPrimaryText: string;
 begin
-  Hide;
-  Application.ProcessMessages;
+  Result := lbPrimarytext.Caption;
 end;
 
-procedure TfmProgressForm.ProgressStep(const aStepCount: Integer; const aStepText: string);
+function TfmProgressForm.GetMaxmimalWork: Integer;
 begin
-  if pbProgress.Visible and (pbProgress.Position < pbProgress.Max) then
-    pbProgress.Position := aStepCount;
-  if lbSteptext.Visible then
-    lbSteptext.Caption := aStepText;
-  Application.ProcessMessages;
+  Result := pbProgress.Max;
+end;
+
+function TfmProgressForm.GetSecondaryText: string;
+begin
+  Result := lbSecondarytext.Caption;
+end;
+
+procedure TfmProgressForm.SetDoneWork(const aValue: Integer);
+begin
+  pbProgress.Position := aValue;
+end;
+
+procedure TfmProgressForm.SetPrimaryText(const aValue: string);
+begin
+  lbPrimarytext.Caption := aValue;
+end;
+
+procedure TfmProgressForm.SetMaximalWork(const aValue: Integer);
+begin
+  pbProgress.Min := 0;
+  pbProgress.Max := aValue;
+  pbProgress.Visible := aValue > 0;
+end;
+
+procedure TfmProgressForm.SetSecondaryText(const aValue: string);
+begin
+  lbSecondarytext.Caption := aValue;
 end;
 
 end.

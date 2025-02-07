@@ -2,7 +2,7 @@ unit CrudUI;
 
 interface
 
-uses System.Generics.Collections, CrudCommands, ListEnumerator;
+uses System.Generics.Collections, CrudCommands, ListEnumerator, ProgressIndicatorIntf;
 
 type
   TEntryToUIMode = (OnLoadCurrentEntry, OnUpdatedExistingEntry, OnCreatedNewEntry);
@@ -14,6 +14,7 @@ type
     procedure ClearEntryFromUI;
     procedure SetEntryToUI(const aEntry: TEntry; const aMode: TEntryToUIMode);
     function GetEntryFromUI(var aEntry: TEntry): Boolean;
+    function GetProgressIndicator: IProgressIndicator;
   end;
 
 implementation

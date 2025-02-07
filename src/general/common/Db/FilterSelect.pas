@@ -2,7 +2,7 @@ unit FilterSelect;
 
 interface
 
-uses System.Classes, SqlConnection, SelectListFilter, ListEnumerator, ProgressIndicator, Transaction;
+uses System.Classes, SqlConnection, SelectListFilter, ListEnumerator, ProgressIndicatorIntf, Transaction;
 
 type
   TFilterSelectItemMatchesFilter<T, F> = procedure(Sender: TObject; const aItem: T; const aFilter: F; var aItemMatches: Boolean) of object;
@@ -162,7 +162,7 @@ end;
 procedure TFilterSelect<T, FSelect, FLoop>.ListEnumBegin;
 begin
   if Assigned(fProgressIndicator) then
-    fProgressIndicator.ProgressBegin(-1, False, fProgressText);
+    fProgressIndicator.ProgressBegin(-1, fProgressText);
   fItemCount := 0;
   if Assigned(fEnumerator) then
     fEnumerator.ListEnumBegin;

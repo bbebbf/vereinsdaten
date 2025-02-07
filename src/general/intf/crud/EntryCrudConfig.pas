@@ -22,6 +22,7 @@ type
     function IsEntryUndefined(const aEntry: TEntry): Boolean;
     function SaveEntry(var aEntry: TEntry): TCrudSaveResult;
     function DeleteEntry(const aId: TId): Boolean;
+    function GetEntryTitle(const aPlural: Boolean): string;
   end;
 
 implementation
