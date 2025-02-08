@@ -74,9 +74,9 @@ begin
   var lSelectStmt := 'SELECT p.person_id, p.person_active, p.person_birthday, pn.person_name, a.address_title' +
     ',IF(p.person_active, null, "X") AS person_inactive' +
     ' FROM person AS p' +
-    ' INNER JOIN `vw_person_name` AS pn ON pn.person_id = p.person_id' +
-    ' LEFT JOIN `person_address` AS pa ON pa.person_id = p.person_id' +
-    ' LEFT JOIN `vw_select_address` AS a ON a.adr_id = pa.adr_id';
+    ' INNER JOIN vw_person_name AS pn ON pn.person_id = p.person_id' +
+    ' LEFT JOIN person_address AS pa ON pa.person_id = p.person_id' +
+    ' LEFT JOIN vw_select_address AS a ON a.adr_id = pa.adr_id';
   if not fShowInactivePersons then
     lSelectStmt := lSelectStmt + ' WHERE p.person_active = 1';
   lSelectStmt := lSelectStmt + ' ORDER BY pn.person_name';

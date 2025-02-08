@@ -191,12 +191,12 @@ begin
   if not Assigned(fMemberSelectQuery) then
   begin
     fMemberSelectQuery := fConnection.CreatePreparedQuery(
-        'SELECT p.person_id, p.person_vorname, p.person_praeposition, p.person_nachname' +
-        ' FROM `person_address` AS pa' +
-        ' INNER JOIN `person` AS p ON p.person_id = pa.person_id' +
+        'SELECT p.person_id, p.person_firstname, p.person_nameaddition, p.person_lastname' +
+        ' FROM person_address AS pa' +
+        ' INNER JOIN person AS p ON p.person_id = pa.person_id' +
         ' WHERE pa.adr_id = :AdrId' +
         ' AND p.person_active = 1' +
-        ' ORDER BY p.person_active DESC, p.person_nachname, p.person_vorname'
+        ' ORDER BY p.person_lastname, p.person_firstname'
       );
   end;
   fMemberSelectQuery.ParamByName('AdrId').Value := lRecord.Id;
@@ -205,9 +205,9 @@ begin
   begin
     var lMemberRec := default(TDtoAddressAggregatedPersonMemberOf);
     lMemberRec.PersonNameId.Id := lSqlResult.FieldByName('person_id').AsLargeInt;
-    lMemberRec.PersonNameId.Vorname := lSqlResult.FieldByName('person_vorname').AsString;
-    lMemberRec.PersonNameId.Praeposition := lSqlResult.FieldByName('person_praeposition').AsString;
-    lMemberRec.PersonNameId.Nachname := lSqlResult.FieldByName('person_nachname').AsString;
+    lMemberRec.PersonNameId.Firstname := lSqlResult.FieldByName('person_firstname').AsString;
+    lMemberRec.PersonNameId.NameAddition := lSqlResult.FieldByName('person_nameaddition').AsString;
+    lMemberRec.PersonNameId.Lastname := lSqlResult.FieldByName('person_lastname').AsString;
     aEntry.MemberOfList.Add(lMemberRec);
   end;
 end;

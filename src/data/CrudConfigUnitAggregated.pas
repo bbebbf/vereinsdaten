@@ -296,7 +296,7 @@ end;
 procedure TUnitMemberOfsVersionInfoAccessor.LoadEntry(const aEntry: TDtoMemberAggregated;
   const aTransaction: ITransaction);
 begin
-  aEntry.VersionInfoPersonMenberOf.UpdateVersionInfo(
+  aEntry.VersionInfoPersonMemberOf.UpdateVersionInfo(
     fVersionInfoAccessor.QueryVersionInfo(fVersionInfoAccessorTransactionScope, aEntry.Member.PersonId));
 end;
 
@@ -304,13 +304,13 @@ procedure TUnitMemberOfsVersionInfoAccessor.SaveEntry(const aEntry: TDtoMemberAg
   const aTransaction: ITransaction);
 begin
   if not fVersionInfoAccessor.UpdateVersionInfo(fVersionInfoAccessorTransactionScope, aEntry.PersonId,
-    aEntry.VersionInfoPersonMenberOf) then
+    aEntry.VersionInfoPersonMemberOf) then
   begin
     fVersionInfoAccessorTransactionScope.RollbackOnVersionConflict;
     if not Assigned(fConflictedVersionEntry) then
     begin
       fConflictedVersionEntry := TVersionInfoEntry.Create;
-      fConflictedVersionEntry.Assign(aEntry.VersionInfoPersonMenberOf);
+      fConflictedVersionEntry.Assign(aEntry.VersionInfoPersonMemberOf);
     end;
   end;
 end;
@@ -319,13 +319,13 @@ procedure TUnitMemberOfsVersionInfoAccessor.DeleteEntry(const aEntry: TDtoMember
   const aTransaction: ITransaction);
 begin
   if not fVersionInfoAccessor.DeleteVersionInfo(fVersionInfoAccessorTransactionScope,
-    aEntry.VersionInfoPersonMenberOf) then
+    aEntry.VersionInfoPersonMemberOf) then
   begin
     fVersionInfoAccessorTransactionScope.RollbackOnVersionConflict;
     if not Assigned(fConflictedVersionEntry) then
     begin
       fConflictedVersionEntry := TVersionInfoEntry.Create;
-      fConflictedVersionEntry.Assign(aEntry.VersionInfoPersonMenberOf);
+      fConflictedVersionEntry.Assign(aEntry.VersionInfoPersonMemberOf);
     end;
   end;
 end;

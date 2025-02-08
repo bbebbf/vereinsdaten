@@ -10,13 +10,13 @@ type
     fMember: TDtoMember;
     fMemberOfConfigIntf: IMemberOfConfigIntf;
     fAvailableRoles: TKeyIndexStrings;
-    fVersionInfoPersonMenberOf: TVersionInfoEntry;
+    fVersionInfoPersonMemberOf: TVersionInfoEntry;
     function GetAvailableDetailItems: TKeyIndexStrings;
     function GetRoleIndex: Integer;
     function GetDetailItemIndex: Integer;
     procedure SetRoleIndex(const aValue: Integer);
     procedure SetDetailItemIndex(const aValue: Integer);
-    function GetVersionInfoPersonMenberOf: TVersionInfoEntry;
+    function GetVersionInfoPersonMemberOf: TVersionInfoEntry;
   public
     constructor Create(const aMemberOfConfigIntf: IMemberOfConfigIntf; const aAvailableRoles: TKeyIndexStrings); overload;
     constructor Create(const aMemberOfConfigIntf: IMemberOfConfigIntf;
@@ -35,7 +35,7 @@ type
     property RoleIndex: Integer read GetRoleIndex write SetRoleIndex;
     property AvailableDetailItems: TKeyIndexStrings read GetAvailableDetailItems;
     property AvailableRoles: TKeyIndexStrings read fAvailableRoles;
-    property VersionInfoPersonMenberOf: TVersionInfoEntry read GetVersionInfoPersonMenberOf;
+    property VersionInfoPersonMemberOf: TVersionInfoEntry read GetVersionInfoPersonMemberOf;
   end;
 
 implementation
@@ -62,7 +62,7 @@ end;
 
 destructor TDtoMemberAggregated.Destroy;
 begin
-  fVersionInfoPersonMenberOf.Free;
+  fVersionInfoPersonMemberOf.Free;
   inherited;
 end;
 
@@ -71,11 +71,11 @@ begin
   Result := fAvailableRoles.Data.Mapper.GetIndex(fMember.RoleId);
 end;
 
-function TDtoMemberAggregated.GetVersionInfoPersonMenberOf: TVersionInfoEntry;
+function TDtoMemberAggregated.GetVersionInfoPersonMemberOf: TVersionInfoEntry;
 begin
-  if not Assigned(fVersionInfoPersonMenberOf) then
-    fVersionInfoPersonMenberOf := TVersionInfoEntry.Create;
-  Result := fVersionInfoPersonMenberOf;
+  if not Assigned(fVersionInfoPersonMemberOf) then
+    fVersionInfoPersonMemberOf := TVersionInfoEntry.Create;
+  Result := fVersionInfoPersonMemberOf;
 end;
 
 function TDtoMemberAggregated.GetAvailableDetailItems: TKeyIndexStrings;

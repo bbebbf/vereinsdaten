@@ -253,7 +253,7 @@ begin
     begin
       var lRecord := default(TDtoPerson);
       fPersonConfig.GetRecordFromSqlResult(lSqlResult, lRecord);
-      if fShowInactivePersons or lRecord.Aktiv then
+      if fShowInactivePersons or lRecord.Active then
       begin
         fUI.ListEnumProcessItem(lRecord);
       end;
@@ -535,9 +535,9 @@ end;
 procedure TPersonMemberOfsVersionInfoAccessor.BeginLoadEntries(const aTransaction: ITransaction);
 begin
   var lTransactionScopeLoadEntries := fVersionInfoAccessor.StartTransaction(aTransaction);
-  fCurrentPersonEntry.VersionInfoMenberOfs.UpdateVersionInfo(
+  fCurrentPersonEntry.VersionInfoMemberOfs.UpdateVersionInfo(
     fVersionInfoAccessor.QueryVersionInfo(lTransactionScopeLoadEntries, fCurrentPersonEntry.Id));
-  fUI.SetVersionInfoEntryToUI(fCurrentPersonEntry.VersionInfoMenberOfs);
+  fUI.SetVersionInfoEntryToUI(fCurrentPersonEntry.VersionInfoMemberOfs);
 end;
 
 procedure TPersonMemberOfsVersionInfoAccessor.LoadEntry(const aEntry: TDtoMemberAggregated;
@@ -553,7 +553,7 @@ procedure TPersonMemberOfsVersionInfoAccessor.BeginSaveEntries(const aTransactio
 begin
   fVersionInfoAccessorTransactionScope := fVersionInfoAccessor.StartTransaction(aTransaction);
   if fVersionInfoAccessor.UpdateVersionInfo(fVersionInfoAccessorTransactionScope, fCurrentPersonEntry.Id,
-    fCurrentPersonEntry.VersionInfoMenberOfs) then
+    fCurrentPersonEntry.VersionInfoMemberOfs) then
   begin
     FreeAndNil(fConflictedVersionEntry);
   end
@@ -562,9 +562,9 @@ begin
     fVersionInfoAccessorTransactionScope.RollbackOnVersionConflict;
     if not Assigned(fConflictedVersionEntry) then
       fConflictedVersionEntry := TVersionInfoEntry.Create;
-    fConflictedVersionEntry.Assign(fCurrentPersonEntry.VersionInfoMenberOfs);
+    fConflictedVersionEntry.Assign(fCurrentPersonEntry.VersionInfoMemberOfs);
   end;
-  fUI.SetVersionInfoEntryToUI(fCurrentPersonEntry.VersionInfoMenberOfs);
+  fUI.SetVersionInfoEntryToUI(fCurrentPersonEntry.VersionInfoMemberOfs);
 end;
 
 procedure TPersonMemberOfsVersionInfoAccessor.SaveEntry(const aEntry: TDtoMemberAggregated;

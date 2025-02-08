@@ -7,8 +7,8 @@ uses DtoPersonNameId;
 type
   TDtoPerson = record
     NameId: TDtoPersonNameId;
-    Aktiv: Boolean;
-    Geburtsdatum: TDate;
+    Active: Boolean;
+    Birthday: TDate;
     function ToString: string;
   end;
 

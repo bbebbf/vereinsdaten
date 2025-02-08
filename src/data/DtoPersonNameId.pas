@@ -5,9 +5,9 @@ interface
 type
   TDtoPersonNameId = record
     Id: UInt32;
-    Vorname: string;
-    Praeposition: string;
-    Nachname: string;
+    Firstname: string;
+    NameAddition: string;
+    Lastname: string;
     function ToString: string;
   end;
 
@@ -19,7 +19,7 @@ uses System.SysUtils, StringTools;
 
 function TDtoPersonNameId.ToString: string;
 begin
-  Result := TStringTools.Combine(Nachname, ', ', TStringTools.Combine(Vorname, ' ', Praeposition));
+  Result := TStringTools.Combine(Lastname, ', ', TStringTools.Combine(Firstname, ' ', NameAddition));
 {$ifdef INTERNAL_DB_ID_VISIBLE}
   Result := Result + ' (' + IntToStr(Id) + ')';
 {$endif}

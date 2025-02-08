@@ -328,9 +328,9 @@ end;
 
 function TfraPerson.GetPersonFirstname(const aPersonName: TDtoPersonNameId): string;
 begin
-  Result := aPersonName.Vorname;
+  Result := aPersonName.Firstname;
   if Length(Result) = 0 then
-    Result := aPersonName.Nachname;
+    Result := aPersonName.Lastname;
 end;
 
 function TfraPerson.GetProgressIndicator: IProgressIndicator;
@@ -356,7 +356,7 @@ begin
 
   Result := True;
   aRecord.Firstname := edPersonFirstname.Text;
-  aRecord.Praeposition := edPersonPraeposition.Text;
+  aRecord.NameAddition := edPersonPraeposition.Text;
   aRecord.Lastname := edPersonLastname.Text;
   aRecord.Birthday := fPersonBirthdayHandler.Datetime;
   aRecord.Active := cbPersonActive.Checked;
@@ -471,7 +471,7 @@ begin
   var lPerson: TDtoPerson;
   if fExtendedListview.TryGetListItemData(Item, lPerson) then
   begin
-    if not lPerson.Aktiv then
+    if not lPerson.Active then
       Sender.Canvas.Font.Color := TVdmGlobals.GetInactiveColor;
   end;
 end;
@@ -562,7 +562,7 @@ begin
   cbPersonAddress.Items.Assign(fBusinessIntf.AvailableAddresses.Data.Strings);
 
   edPersonFirstname.Text := aRecord.Firstname;
-  edPersonPraeposition.Text := aRecord.Praeposition;
+  edPersonPraeposition.Text := aRecord.NameAddition;
   edPersonLastname.Text := aRecord.Lastname;
   fPersonBirthdayHandler.Datetime := aRecord.Birthday;
 

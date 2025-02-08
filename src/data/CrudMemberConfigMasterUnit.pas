@@ -79,9 +79,9 @@ end;
 function TCrudMemberConfigMasterUnit.GetSelectListSQL: string;
 begin
   Result := 'SELECT m.*'
-    + ' FROM `member`AS m'
-    + ' INNER JOIN `vw_person_name` AS pn ON pn.person_id = m.person_id'
-    + ' LEFT JOIN `role` AS r ON r.role_id = m.role_id'
+    + ' FROM member AS m'
+    + ' INNER JOIN vw_person_name AS pn ON pn.person_id = m.person_id'
+    + ' LEFT JOIN role AS r ON r.role_id = m.role_id'
     + ' WHERE m.unit_id = :UId'
     + ' ORDER BY ' + TVdmGlobals.GetRoleSortingSqlOrderBy('r') + ', pn.person_name, m.mb_active_since DESC';
 end;

@@ -178,7 +178,7 @@ begin
       aListItem.SubItems.Add(TVdmGlobals.GetDateAsString(aData.Data.Member.ActiveUntil));
       if fBusinessIntf.GetShowVersionInfoInMemberListview then
       begin
-        aListItem.SubItems.Add(aData.Data.VersionInfoPersonMenberOf.ToString);
+        aListItem.SubItems.Add(aData.Data.VersionInfoPersonMemberOf.ToString);
       end;
     end,
     TComparer<TListEntry<TDtoMemberAggregated>>.Construct(

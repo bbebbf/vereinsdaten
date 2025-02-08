@@ -107,10 +107,10 @@ begin
   fQuery := fConnection.CreatePreparedQuery(
     'SELECT u.unit_id, u.unit_name, u.unit_data_confirmed_on, pn.person_name, r.role_name' +
     ' FROM unit AS u' +
-    ' LEFT JOIN `member` AS m ON m.unit_id = u.unit_id AND m.mb_active = 1' +
-    ' LEFT JOIN `person` AS p ON p.person_id = m.person_id AND p.person_active = 1' +
-    ' LEFT JOIN `vw_person_name` AS pn ON pn.person_id = p.person_id' +
-    ' LEFT JOIN `role` AS r ON r.role_id = m.role_id' +
+    ' LEFT JOIN member AS m ON m.unit_id = u.unit_id AND m.mb_active = 1' +
+    ' LEFT JOIN person AS p ON p.person_id = m.person_id AND p.person_active = 1' +
+    ' LEFT JOIN vw_person_name AS pn ON pn.person_id = p.person_id' +
+    ' LEFT JOIN role AS r ON r.role_id = m.role_id' +
     ' WHERE u.unit_active = 1' +
     ' ORDER BY u.unit_name, ' + TVdmGlobals.GetRoleSortingSqlOrderBy('r') + ', pn.person_name'
   );

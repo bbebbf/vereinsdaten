@@ -9,7 +9,7 @@ type
   strict private
     fPerson: TDtoPerson;
     fVersionInfoBaseData: TVersionInfoEntry;
-    fVersionInfoMenberOfs: TVersionInfoEntry;
+    fVersionInfoMemberOfs: TVersionInfoEntry;
     fExistingAddressId: UInt32;
     fAddressId: UInt32;
     fAvailableAddresses: TKeyIndexStrings;
@@ -38,13 +38,13 @@ type
     procedure UpdateExistingAddressId;
     property Person: TDtoPerson read fPerson;
     property VersionInfoBaseData: TVersionInfoEntry read fVersionInfoBaseData;
-    property VersionInfoMenberOfs: TVersionInfoEntry read fVersionInfoMenberOfs;
+    property VersionInfoMemberOfs: TVersionInfoEntry read fVersionInfoMemberOfs;
     property Id: UInt32 read fPerson.NameId.Id write fPerson.NameId.Id;
-    property Firstname: string read fPerson.NameId.Vorname write fPerson.NameId.Vorname;
-    property Praeposition: string read fPerson.NameId.Praeposition write fPerson.NameId.Praeposition;
-    property Lastname: string read fPerson.NameId.Nachname write fPerson.NameId.Nachname;
-    property Active: Boolean read fPerson.Aktiv write fPerson.Aktiv;
-    property Birthday: TDate read fPerson.Geburtsdatum write fPerson.Geburtsdatum;
+    property Firstname: string read fPerson.NameId.Firstname write fPerson.NameId.Firstname;
+    property NameAddition: string read fPerson.NameId.NameAddition write fPerson.NameId.NameAddition;
+    property Lastname: string read fPerson.NameId.Lastname write fPerson.NameId.Lastname;
+    property Active: Boolean read fPerson.Active write fPerson.Active;
+    property Birthday: TDate read fPerson.Birthday write fPerson.Birthday;
 
     property ExistingAddressId: UInt32 read fExistingAddressId;
     property AddressId: UInt32 read fAddressId write fAddressId;
@@ -74,7 +74,7 @@ constructor TDtoPersonAggregated.Create(const aPerson: TDtoPerson; const aExisti
 begin
   inherited Create;
   fVersionInfoBaseData := TVersionInfoEntry.Create;
-  fVersionInfoMenberOfs := TVersionInfoEntry.Create;
+  fVersionInfoMemberOfs := TVersionInfoEntry.Create;
   fPerson := aPerson;
   fExistingAddressId := aExistingAddressId;
   fAvailableAddresses := aAvailableAddresses;
@@ -82,7 +82,7 @@ end;
 
 destructor TDtoPersonAggregated.Destroy;
 begin
-  fVersionInfoMenberOfs.Free;
+  fVersionInfoMemberOfs.Free;
   fVersionInfoBaseData.Free;
   inherited;
 end;
@@ -92,7 +92,7 @@ begin
   Result := TDtoPersonAggregated.Create(fPerson, fExistingAddressId, fAvailableAddresses);
 
   Result.VersionInfoBaseData.Assign(fVersionInfoBaseData);
-  Result.VersionInfoMenberOfs.Assign(fVersionInfoMenberOfs);
+  Result.VersionInfoMemberOfs.Assign(fVersionInfoMemberOfs);
   Result.AddressId := fAddressId;
   Result.CreateNewAddress := fCreateNewAddress;
   Result.NewAddressStreet := fNewAddressStreet;
