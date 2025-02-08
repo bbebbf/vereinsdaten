@@ -5,7 +5,7 @@ interface
 uses InterfacedBase, CrudConfig, SelectList, SqlConnection, CrudAccessor, DtoUnit;
 
 type
-  TCrudConfigUnit = class(TInterfacedBase, ICrudConfig<TDtoUnit, UInt32>, ISelectList<TDtoUnit>, ISelectListActiveEntries<TDtoUnit>)
+  TCrudConfigUnit = class(TInterfacedBase, ICrudConfig<TDtoUnit, UInt32>, ISelectList<TDtoUnit>)
   strict private
     function GetTablename: string;
     function GetIdentityColumns: TArray<string>;
@@ -19,7 +19,6 @@ type
 
     procedure GetRecordFromSqlResult(const aSqlResult: ISqlResult; var aData: TDtoUnit);
     function GetSelectListSQL: string;
-    function GetSelectListActiveEntriesSQL: string;
   end;
 
 implementation
@@ -44,11 +43,6 @@ end;
 function TCrudConfigUnit.GetRecordIdentity(const aRecord: TDtoUnit): UInt32;
 begin
   Result := aRecord.Id;
-end;
-
-function TCrudConfigUnit.GetSelectListActiveEntriesSQL: string;
-begin
-  Result := 'select * from unit where unit_active = 1 order by unit_name';
 end;
 
 function TCrudConfigUnit.GetSelectListSQL: string;
