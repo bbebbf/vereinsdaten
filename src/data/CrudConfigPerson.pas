@@ -5,7 +5,7 @@ interface
 uses InterfacedBase, CrudConfig, SelectList, CrudAccessor, SqlConnection, DtoPerson, Vdm.Types;
 
 type
-  TCrudConfigPerson = class(TInterfacedBase, ICrudConfig<TDtoPerson, UInt32>, ISelectList<TDtoPerson>)
+  TCrudConfigPerson = class(TInterfacedBase, ICrudConfig<TDtoPerson, UInt32>, ISelectList<TDtoPerson>, ISelectListActiveEntries<TDtoPerson>)
   strict private
     function GetTablename: string;
     function GetIdentityColumns: TArray<string>;
@@ -17,6 +17,7 @@ type
     procedure SetValuesForDelete(const aRecordIdentity: UInt32; const aAccessor: TCrudAccessorDelete);
     procedure UpdateRecordIdentity(const aAccessor: TCrudAccessorInsert; var aRecord: TDtoPerson);
     function GetSelectListSQL: string;
+    function GetSelectListActiveEntriesSQL: string;
     function GetRecordIdentity(const aRecord: TDtoPerson): UInt32;
   end;
 
@@ -42,6 +43,11 @@ end;
 function TCrudConfigPerson.GetIdentityColumns: TArray<string>;
 begin
   Result := [];
+end;
+
+function TCrudConfigPerson.GetSelectListActiveEntriesSQL: string;
+begin
+  Result := 'select * from person where person_active = 1 order by person_lastname, person_firstname, person_nameaddition';
 end;
 
 function TCrudConfigPerson.GetSelectListSQL: string;

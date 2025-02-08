@@ -8,7 +8,7 @@ type
   TCrudMemberConfigMasterUnit = class(TCrudMemberConfigBase)
   strict private
     fConnection: ISqlConnection;
-    fDetailItemListConfig: ISelectList<TDtoPerson>;
+    fDetailItemListConfig: ISelectListActiveEntries<TDtoPerson>;
     fDetailItemMapper: TKeyIndexStrings;
   strict protected
     function GetSelectListSQL: string; override;
@@ -55,7 +55,7 @@ begin
           aData := TKeyIndexStringsData.Create;
           try
             aData.BeginUpdate;
-            var lSqlResult := fConnection.GetSelectResult(fDetailItemListConfig.GetSelectListSQL);
+            var lSqlResult := fConnection.GetSelectResult(fDetailItemListConfig.GetSelectListActiveEntriesSQL);
             while lSqlResult.Next do
             begin
               var lRecord := default(TDtoPerson);
