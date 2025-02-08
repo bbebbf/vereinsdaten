@@ -14,7 +14,6 @@ type
     destructor Destroy; override;
     procedure BeginUpdate;
     procedure EndUpdate;
-    procedure AddString(const aValue: string);
     procedure AddMappedString(const aStringId: UInt32; const aStringValue: string);
     property Mapper: TKeyIndexMapper<UInt32> read fMapper;
     property Strings: TStrings read fStrings;
@@ -40,11 +39,6 @@ begin
   fStrings.Free;
   fMapper.Free;
   inherited;
-end;
-
-procedure TKeyIndexStringsData.AddString(const aValue: string);
-begin
-  fStrings.Add(aValue);
 end;
 
 procedure TKeyIndexStringsData.AddMappedString(const aStringId: UInt32; const aStringValue: string);
