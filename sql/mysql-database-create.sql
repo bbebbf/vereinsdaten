@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS `person` (
   `person_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `person_vorname` varchar(100) DEFAULT NULL,
-  `person_praeposition` varchar(20) DEFAULT NULL,
-  `person_nachname` varchar(100) DEFAULT NULL,
+  `person_firstname` varchar(100) DEFAULT NULL,
+  `person_nameaddition` varchar(20) DEFAULT NULL,
+  `person_lastname` varchar(100) DEFAULT NULL,
   `person_active` bit(1) NOT NULL,
   `person_birthday` date DEFAULT NULL,
   PRIMARY KEY (`person_id`) USING BTREE
@@ -103,12 +103,8 @@ CREATE TABLE IF NOT EXISTS `version_info` (
 
 
 
-CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `vw_person_name` AS select `person`.`person_id` AS `person_id`,concat_ws(', ',`person`.`person_nachname`,concat_ws(' ',`person`.`person_vorname`,`person`.`person_praeposition`)) AS `person_name` from `person`;
+CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `vw_person_name` AS select `person`.`person_id` AS `person_id`,concat_ws(', ',`person`.`person_lastname`,concat_ws(' ',`person`.`person_firstname`,`person`.`person_nameaddition`)) AS `person_name` from `person`;
 
 CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `vw_select_address` AS select `a`.`adr_id` AS `adr_id`,concat_ws(', ',`a`.`adr_street`,concat_ws(' ',`a`.`adr_postalcode`,`a`.`adr_city`)) AS `address_title` from `address` `a`;
 
 CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `vw_active_person` AS select `pn`.`person_id` AS `person_id`,`pn`.`person_name` AS `person_name` from (`vw_person_name` `pn` join `person` `p` on(`p`.`person_id` = `pn`.`person_id`)) where `p`.`person_active` = 1;
-
-CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `vw_active_unit_member` AS select `u`.`unit_id` AS `unit_id`,`u`.`unit_active_since` AS `unit_active_since`,`m`.`mb_id` AS `mb_id`,`m`.`person_id` AS `person_id`,`m`.`role_id` AS `role_id`,`m`.`mb_active_since` AS `mb_active_since` from (`unit` `u` join `member` `m` on(`m`.`unit_id` = `u`.`unit_id` and `m`.`mb_active` = 1)) where `u`.`unit_active` = 1;
-
-CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `vw_active_unit_roles` AS select `m`.`mb_id` AS `mb_id`,`u`.`unit_id` AS `unit_id`,`u`.`unit_name` AS `unit_name`,`r`.`role_id` AS `role_id`,`r`.`role_name` AS `role_name`,`r`.`role_sorting` AS `role_sorting`,`p`.`person_id` AS `person_id`,`p`.`person_name` AS `person_name` from (((`unit` `u` join `vw_active_unit_member` `m` on(`m`.`unit_id` = `u`.`unit_id`)) join `role` `r` on(`r`.`role_id` = `m`.`role_id`)) join `vw_person_name` `p` on(`p`.`person_id` = `m`.`person_id`)) where `u`.`unit_active` = 1;
