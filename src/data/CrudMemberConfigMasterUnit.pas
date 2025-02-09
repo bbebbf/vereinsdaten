@@ -9,12 +9,12 @@ type
   strict private
     fConnection: ISqlConnection;
     fDetailItemListConfig: ISelectList<TDtoPerson>;
-    fDetailItemMapper: TKeyIndexStrings;
+    fDetailItemMapper: TActiveKeyIndexStringsLoader;
   strict protected
     function GetSelectListSQL: string; override;
     procedure SetSelectListSQLParameter(const aFilter: UInt32; const aQuery: ISqlPreparedQuery); override;
     function GetDetailItemTitle: string; override;
-    function GetDetailItemMapper: TKeyIndexStrings; override;
+    function GetDetailItemMapper: TActiveKeyIndexStringsLoader; override;
     function GetShowVersionInfoInMemberListview: Boolean; override;
     procedure SetMasterItemIdToMember(const aMasterItemId: UInt32; var aMember: TDtoMember); override;
     function GetDetailItemIdFromMember(const aMember: TDtoMember): UInt32; override;
@@ -43,27 +43,22 @@ begin
   inherited;
 end;
 
-function TCrudMemberConfigMasterUnit.GetDetailItemMapper: TKeyIndexStrings;
+function TCrudMemberConfigMasterUnit.GetDetailItemMapper: TActiveKeyIndexStringsLoader;
 begin
   if not Assigned(fDetailItemMapper) then
   begin
     fDetailItemListConfig := TCrudConfigPerson.Create;
-    fDetailItemMapper := TKeyIndexStrings.Create(
-        function(var aData: TKeyIndexStringsData): Boolean
+    fDetailItemMapper := TActiveKeyIndexStringsLoader.Create(
+        function(var aData: TActiveKeyIndexStrings): Boolean
         begin
           Result := True;
-          aData := TKeyIndexStringsData.Create;
-          try
-            aData.BeginUpdate;
-            var lSqlResult := fConnection.GetSelectResult(fDetailItemListConfig.GetSelectListSQL);
-            while lSqlResult.Next do
-            begin
-              var lRecord := default(TDtoPerson);
-              fDetailItemListConfig.GetRecordFromSqlResult(lSqlResult, lRecord);
-              aData.AddMappedString(lRecord.NameId.Id, lRecord.ToString);
-            end;
-          finally
-            aData.EndUpdate;
+          aData := TActiveKeyIndexStrings.Create;
+          var lSqlResult := fConnection.GetSelectResult(fDetailItemListConfig.GetSelectListSQL);
+          while lSqlResult.Next do
+          begin
+            var lRecord := default(TDtoPerson);
+            fDetailItemListConfig.GetRecordFromSqlResult(lSqlResult, lRecord);
+            aData.AddString(lRecord.NameId.Id, lRecord.Active, lRecord.ToString);
           end;
         end
       );

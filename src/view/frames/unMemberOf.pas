@@ -7,7 +7,7 @@ uses
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.ExtCtrls, Vcl.StdCtrls,
   ExtendedListview, DtoMember, DtoMemberAggregated, MemberOfUI, MemberOfBusinessIntf,
   unMemberOfsEditDlg, System.Actions, Vcl.ActnList, ListCrudCommands, Vcl.Menus,
-  Vdm.Versioning.Types, VersionInfoEntryUI;
+  Vdm.Versioning.Types, VersionInfoEntryUI, KeyIndexStrings;
 
 type
   TfraMemberOf = class(TFrame, IMemberOfUI, IVersionInfoEntryUI)
@@ -46,6 +46,7 @@ type
     fBusinessIntf: IMemberOfBusinessIntf;
     fExtentedListviewMemberOfs: TExtendedListview<TListEntry<TDtoMemberAggregated>>;
     fDialog: TfmMemberOfsEditDlg;
+    fAllDetailedItemsStringsData: TKeyIndexStringsData;
     procedure SetCommands(const aCommands: IMemberOfBusinessIntf);
     procedure ListEnumBegin;
     procedure ListEnumProcessItem(const aItem: TListEntry<TDtoMemberAggregated>);
@@ -170,7 +171,11 @@ begin
   fExtentedListviewMemberOfs := TExtendedListview<TListEntry<TDtoMemberAggregated>>.Create(lvMemberOf,
     procedure(const aData: TListEntry<TDtoMemberAggregated>; const aListItem: TListItem)
     begin
-      aListItem.Caption := GetStringByIndex(aData.Data.AvailableDetailItems.Data.Strings, aData.Data.DetailItemIndex);
+      if not Assigned(fAllDetailedItemsStringsData) then
+        fAllDetailedItemsStringsData := aData.Data.AvailableDetailItems.Data.GetAllEntries;
+
+      aListItem.Caption := GetStringByIndex(fAllDetailedItemsStringsData.Strings,
+        fAllDetailedItemsStringsData.Mapper.GetIndex(aData.Data.DetailItemId));
       aListItem.SubItems.Clear;
       aListItem.SubItems.Add(GetStringByIndex(aData.Data.AvailableRoles.Data.Strings, aData.Data.RoleIndex));
       aListItem.SubItems.Add(TVdmGlobals.GetDateAsString(aData.Data.Member.ActiveSince));
@@ -193,6 +198,7 @@ end;
 
 destructor TfraMemberOf.Destroy;
 begin
+  fAllDetailedItemsStringsData.Free;
   fDialog.Free;
   fExtentedListviewMemberOfs.Free;
   inherited;

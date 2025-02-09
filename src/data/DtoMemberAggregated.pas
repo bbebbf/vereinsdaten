@@ -11,11 +11,11 @@ type
     fMemberOfConfigIntf: IMemberOfConfigIntf;
     fAvailableRoles: TKeyIndexStrings;
     fVersionInfoPersonMemberOf: TVersionInfoEntry;
-    function GetAvailableDetailItems: TKeyIndexStrings;
+    function GetAvailableDetailItems: TActiveKeyIndexStringsLoader;
     function GetRoleIndex: Integer;
-    function GetDetailItemIndex: Integer;
+    function GetDetailItemId: UInt32;
     procedure SetRoleIndex(const aValue: Integer);
-    procedure SetDetailItemIndex(const aValue: Integer);
+    procedure SetDetailItemId(const aValue: UInt32);
     function GetVersionInfoPersonMemberOf: TVersionInfoEntry;
   public
     constructor Create(const aMemberOfConfigIntf: IMemberOfConfigIntf; const aAvailableRoles: TKeyIndexStrings); overload;
@@ -31,9 +31,9 @@ type
     property Active: Boolean read fMember.Active write fMember.Active;
     property ActiveSince: TDate read fMember.ActiveSince write fMember.ActiveSince;
     property ActiveUntil: TDate read fMember.ActiveUntil write fMember.ActiveUntil;
-    property DetailItemIndex: Integer read GetDetailItemIndex write SetDetailItemIndex;
+    property DetailItemId: UInt32 read GetDetailItemId write SetDetailItemId;
     property RoleIndex: Integer read GetRoleIndex write SetRoleIndex;
-    property AvailableDetailItems: TKeyIndexStrings read GetAvailableDetailItems;
+    property AvailableDetailItems: TActiveKeyIndexStringsLoader read GetAvailableDetailItems;
     property AvailableRoles: TKeyIndexStrings read fAvailableRoles;
     property VersionInfoPersonMemberOf: TVersionInfoEntry read GetVersionInfoPersonMemberOf;
   end;
@@ -78,14 +78,14 @@ begin
   Result := fVersionInfoPersonMemberOf;
 end;
 
-function TDtoMemberAggregated.GetAvailableDetailItems: TKeyIndexStrings;
+function TDtoMemberAggregated.GetAvailableDetailItems: TActiveKeyIndexStringsLoader;
 begin
   Result := fMemberOfConfigIntf.GetDetailItemMapper;
 end;
 
-function TDtoMemberAggregated.GetDetailItemIndex: Integer;
+function TDtoMemberAggregated.GetDetailItemId: UInt32;
 begin
-  Result := fMemberOfConfigIntf.GetDetailItemMapper.Data.Mapper.GetIndex(fMemberOfConfigIntf.GetDetailItemIdFromMember(fMember));
+  Result := fMemberOfConfigIntf.GetDetailItemIdFromMember(fMember);
 end;
 
 procedure TDtoMemberAggregated.SetRoleIndex(const aValue: Integer);
@@ -93,9 +93,9 @@ begin
   fMember.RoleId := fAvailableRoles.Data.Mapper.GetKey(aValue);
 end;
 
-procedure TDtoMemberAggregated.SetDetailItemIndex(const aValue: Integer);
+procedure TDtoMemberAggregated.SetDetailItemId(const aValue: UInt32);
 begin
-  fMemberOfConfigIntf.SetDetailItemIdToMember(fMemberOfConfigIntf.GetDetailItemMapper.Data.Mapper.GetKey(aValue), fMember);
+  fMemberOfConfigIntf.SetDetailItemIdToMember(aValue, fMember);
 end;
 
 procedure TDtoMemberAggregated.UpdateByDtoMember(const aMember: TDtoMember);

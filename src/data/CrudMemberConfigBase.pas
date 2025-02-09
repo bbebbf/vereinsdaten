@@ -24,7 +24,7 @@ type
     function GetSelectListSQL: string; virtual; abstract;
     procedure SetSelectListSQLParameter(const aFilter: UInt32; const aQuery: ISqlPreparedQuery); virtual; abstract;
     function GetDetailItemTitle: string; virtual; abstract;
-    function GetDetailItemMapper: TKeyIndexStrings; virtual; abstract;
+    function GetDetailItemMapper: TActiveKeyIndexStringsLoader; virtual; abstract;
     function GetShowVersionInfoInMemberListview: Boolean; virtual;
     procedure SetMasterItemIdToMember(const aMasterItemId: UInt32; var aMember: TDtoMember); virtual; abstract;
     function GetDetailItemIdFromMember(const aMember: TDtoMember): UInt32; virtual; abstract;
