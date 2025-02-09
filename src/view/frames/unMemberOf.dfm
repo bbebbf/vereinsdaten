@@ -101,7 +101,7 @@ object fraMemberOf: TfraMemberOf
     object btDeleteMemberOf: TButton
       Left = 367
       Top = 11
-      Width = 154
+      Width = 226
       Height = 25
       Action = acDeleteMemberOf
       TabOrder = 2
@@ -119,7 +119,7 @@ object fraMemberOf: TfraMemberOf
       OnExecute = acEditMemberOfExecute
     end
     object acDeleteMemberOf: TAction
-      Caption = 'Verbindung entfernen'
+      Caption = 'Verbindung zur L'#246'schung markieren'
       OnExecute = acDeleteMemberOfExecute
     end
     object acSaveMemberOfs: TAction
