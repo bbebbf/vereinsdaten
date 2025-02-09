@@ -151,9 +151,9 @@ object fraPerson: TfraPerson
         object lbPersonAdress: TLabel
           Left = 23
           Top = 115
-          Width = 41
+          Width = 244
           Height = 15
-          Caption = 'Adresse'
+          Caption = 'Adresse ausw'#228'hlen bzw. neue Stra'#223'e / Hausnr.'
         end
         object lbNewAddressPostalcodeCity: TLabel
           Left = 23
