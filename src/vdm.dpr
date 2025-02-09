@@ -3,7 +3,7 @@ program vdm;
 uses
   {$ifdef FASTMM}
   FastMM4,
-  {$endif FASTMM}
+  {$endif}
   Vcl.Forms,
   Vcl.Dialogs,
   FireDAC.VCLUI.Wait,
@@ -118,12 +118,19 @@ begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
   Application.Title := TVdmGlobals.GetVdmApplicationTitle;
-  var lJobObjectHandle := CreateJobObject(nil, nil);
+  var lJobObjectHandle: THandle := 0;
   try
+    {$ifdef FASTMM}
+    // only to proof that FastMM works.
+    TObject.Create;
+    {$else}
+    // FastMM has a problem with job objects.
+    lJobObjectHandle := CreateJobObject(nil, nil);
     var lJobLimitInfo := default(JOBOBJECT_EXTENDED_LIMIT_INFORMATION);
     lJobLimitInfo.BasicLimitInformation.LimitFlags := JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
     SetInformationJobObject(lJobObjectHandle, JobObjectExtendedLimitInformation, @lJobLimitInfo, SizeOf(lJobLimitInfo));
     AssignProcessToJobObject(lJobObjectHandle, GetCurrentProcess);
+    {$endif}
 
     var lConnectionCount := TConfigReader.Instance.ConnectionNames.Count;
     if lConnectionCount = 0 then
