@@ -138,9 +138,7 @@ begin
   var lResponse := fBusinessIntf.SaveEntries(
       procedure(const aEntry: TListEntry<TDtoMemberAggregated>)
       begin
-        var lItem: TListItem;
-        if fExtentedListviewMemberOfs.TryGetListItem(aEntry, lItem) then
-          lItem.Delete;
+        fExtentedListviewMemberOfs.Delete(aEntry);
       end
     );
   if lResponse.Status = TCrudSaveStatus.Successful then

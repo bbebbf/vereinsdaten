@@ -46,6 +46,7 @@ type
     procedure EndUpdate;
     procedure Clear;
     function Add(const aData: T): TListItem;
+    function Delete(const aData: T): Boolean;
     procedure InvalidateListItems;
     function UpdateData(const aData: T; const aCreateEntryIfNotExists: Boolean = True): Boolean;
     function TryGetListItemData(const aListItem: TListItem; out aData: T): Boolean;
@@ -211,6 +212,28 @@ begin
       Exit(False);
 
     aListItem := lFoundEntry.ListItem;
+    Result := True;
+  finally
+    lSearchEntry.Free;
+  end;
+end;
+
+function TExtendedListview<T>.Delete(const aData: T): Boolean;
+begin
+  SortDataItems;
+  var lSearchEntry := CreateEntry;
+  try
+    lSearchEntry.Data := aData;
+    var lFoundIndex: Integer;
+    if not fDataItemsSortedList.BinarySearch(lSearchEntry, lFoundIndex) then
+      Exit(False);
+
+    var lFoundEntry := fDataItemsSortedList[lFoundIndex];
+
+    lFoundEntry.ListItem.Free;
+    fDataItemsOwner.Delete(lFoundIndex);
+    fDataItemsOwner.Remove(lFoundEntry);
+
     Result := True;
   finally
     lSearchEntry.Free;
