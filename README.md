@@ -31,7 +31,7 @@ Dazu kann man für jede dieser Verbindungen zwischen Person und Einheit eine Rol
 
 #### Adressen
 
-Adressen sind separat gespeichert und werden Personen zugeordnet. Dadurch wird die Wahrscheinlichkeit von Rechschreibfehlern in Adressdaten reduziert. z.B. kann man Familienmitglieder dieselbe Adresse zuordnen.
+Adressen sind separat gespeichert und werden Personen zugeordnet. Dadurch wird die Wahrscheinlichkeit von Rechschreibfehlern in Adressdaten reduziert. z.B. kann man Familienmitgliedern dieselbe Adresse zuordnen.
 
 #### Einheiten
 
