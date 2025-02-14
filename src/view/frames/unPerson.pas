@@ -190,7 +190,7 @@ begin
       end
       else
       begin
-        ClearEntryFromUI;
+        acPersonStartNewRecord.Execute;
       end;
     end,
     200

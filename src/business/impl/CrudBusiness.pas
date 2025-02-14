@@ -77,7 +77,7 @@ function TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.LoadList: TCrudComm
 begin
   var lProgress := TProgress.New(fUI.GetProgressIndicator, 0, fConfig.GetEntryTitle(True) + ' werden geladen ...');
   Result := default(TCrudCommandResult);
-  fNewEntryStarted := False;
+  fNewEntryStarted := True;
   fUI.ClearEntryFromUI;
   fUI.ListEnumBegin;
   try
@@ -87,7 +87,10 @@ begin
       var lEntry := fConfig.GetListEntryFromSqlResult(lSqlResult);
       try
         if fConfig.IsEntryValidForList(lEntry, fListFilter) then
+        begin
           fUI.ListEnumProcessItem(lEntry);
+          fNewEntryStarted := True;
+        end;
       finally
         fConfig.DestroyListEntry(lEntry);
       end;

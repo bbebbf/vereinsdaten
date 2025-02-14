@@ -152,7 +152,7 @@ begin
       end
       else
       begin
-        ClearEntryFromUI;
+        acStartNewEntry.Execute;
       end;
     end,
     200

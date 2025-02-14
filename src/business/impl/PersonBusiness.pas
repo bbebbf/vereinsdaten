@@ -241,7 +241,7 @@ function TPersonBusiness.LoadList: TCrudCommandResult;
 begin
   var lProgress := TProgress.New(fUI.GetProgressIndicator, 0, 'Personen werden geladen ...');
   Result := default(TCrudCommandResult);
-  fNewEntryStarted := False;
+  fNewEntryStarted := True;
   ClearEntryFromUI;
   fUI.ListEnumBegin;
   try
@@ -256,6 +256,7 @@ begin
       if fShowInactivePersons or lRecord.Active then
       begin
         fUI.ListEnumProcessItem(lRecord);
+        fNewEntryStarted := False;
       end;
     end;
   finally
