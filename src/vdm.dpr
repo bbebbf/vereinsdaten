@@ -113,7 +113,8 @@ uses
   ProgressIndicator in 'general\common\Tools\ProgressIndicator.pas',
   Singleton in 'general\common\Tools\Singleton.pas',
   RoleMapper in 'business\impl\RoleMapper.pas',
-  UnitMapper in 'business\impl\UnitMapper.pas';
+  UnitMapper in 'business\impl\UnitMapper.pas',
+  PersonMapper in 'business\impl\PersonMapper.pas';
 
 {$R *.res}
 
