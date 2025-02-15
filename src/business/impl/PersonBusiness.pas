@@ -45,8 +45,6 @@ type
     procedure SetShowInactivePersons(const aValue: Boolean);
     procedure LoadPersonsMemberOfs;
     procedure ClearAddressCache;
-    procedure ClearUnitCache;
-    procedure ClearRoleCache;
     function GetAvailableAddresses: TKeyIndexStrings;
     function GetListFilter: TVoid;
     procedure SetListFilter(const aValue: TVoid);
@@ -67,7 +65,7 @@ implementation
 uses System.SysUtils, System.Generics.Collections, SelectList, KeyIndexMapper,
   CrudConfigPerson, CrudConfigAddress, CrudConfigPersonAddress, CrudConfigClubmembership,
   MemberOfBusiness, EntryCrudConfig, CrudConfigUnitAggregated, CrudBusiness, CrudMemberConfigMasterPerson,
-  VersionInfoEntryUI, VersionInfoAccessor, MemberOfVersionInfoConfig;
+  VersionInfoEntryUI, VersionInfoAccessor, MemberOfVersionInfoConfig, PersonMapper;
 
 type
   TPersonBasedataVersionInfoConfig = class(TInterfacedBase, IVersionInfoConfig<TDtoPerson, UInt32>)
@@ -144,7 +142,7 @@ begin
   fClubmembershipConfig := TCrudConfigClubmembership.Create;
   fClubmembershipRecordActions := TRecordActions<TDtoClubmembership, UInt32>.Create(fConnection, fClubmembershipConfig);
   fClubMembershipNumberChecker := TClubMembershipNumberChecker.Create(fConnection);
-  fMemberOfConfig := TCrudMemberConfigMasterPerson.Create(fConnection);
+  fMemberOfConfig := TCrudMemberConfigMasterPerson.Create;
 
   var lVersionInfoEntryUI: IVersionInfoEntryUI;
   Supports(fUI.GetMemberOfUI, IVersionInfoEntryUI, lVersionInfoEntryUI);
@@ -392,6 +390,7 @@ begin
             lUpdatedEntry.SetDtoClubmembership(lMembershipRecord);
           end;
         end;
+        TPersonMapper.Invalidate;
         lSaveTransaction.Commit;
         fCurrentEntry.Free;
         fCurrentEntry := lUpdatedEntry;
@@ -475,16 +474,6 @@ end;
 procedure TPersonBusiness.ClearAddressCache;
 begin
   fAddressMapper.Invalidate;
-end;
-
-procedure TPersonBusiness.ClearRoleCache;
-begin
-  fMemberOfBusiness.ClearRoleCache;
-end;
-
-procedure TPersonBusiness.ClearUnitCache;
-begin
-  fMemberOfBusiness.ClearDetailItemCache;
 end;
 
 { TPersonBasedataVersionInfoConfig }

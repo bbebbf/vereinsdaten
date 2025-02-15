@@ -321,6 +321,10 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="business\impl\MemberOfVersionInfoConfig.pas"/>
         <DCCReference Include="general\intf\tools\ProgressUI.pas"/>
         <DCCReference Include="general\common\Tools\ProgressIndicator.pas"/>
+        <DCCReference Include="general\common\Tools\Singleton.pas"/>
+        <DCCReference Include="business\impl\RoleMapper.pas"/>
+        <DCCReference Include="business\impl\UnitMapper.pas"/>
+        <DCCReference Include="business\impl\PersonMapper.pas"/>
         <None Include="inc\CompilerDirectives.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>

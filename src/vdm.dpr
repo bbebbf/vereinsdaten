@@ -110,7 +110,10 @@ uses
   EntriesCrudEvents in 'general\intf\crud\EntriesCrudEvents.pas',
   MemberOfVersionInfoConfig in 'business\impl\MemberOfVersionInfoConfig.pas',
   ProgressUI in 'general\intf\tools\ProgressUI.pas',
-  ProgressIndicator in 'general\common\Tools\ProgressIndicator.pas';
+  ProgressIndicator in 'general\common\Tools\ProgressIndicator.pas',
+  Singleton in 'general\common\Tools\Singleton.pas',
+  RoleMapper in 'business\impl\RoleMapper.pas',
+  UnitMapper in 'business\impl\UnitMapper.pas';
 
 {$R *.res}
 
@@ -165,6 +168,9 @@ begin
       end;
 
       TTenantReader.Connection := lConnection;
+      TRoleMapper.Connection := lConnection;
+      TUnitMapper.Connection := lConnection;
+      TPersonMapper.Connection := lConnection;
 
       fmMain.Connection := lConnection;
       Application.Run;

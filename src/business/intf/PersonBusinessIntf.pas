@@ -13,8 +13,6 @@ type
     function LoadPerson(const aPersonId: UInt32; const aLoadMemberOfs: Boolean): TCrudCommandResult;
     procedure LoadPersonsMemberOfs;
     procedure ClearAddressCache;
-    procedure ClearUnitCache;
-    procedure ClearRoleCache;
     property ShowInactivePersons: Boolean read GetShowInactivePersons write SetShowInactivePersons;
     property AvailableAddresses: TKeyIndexStrings read GetAvailableAddresses;
   end;

@@ -6,10 +6,6 @@ uses CrudMemberConfigBase, SqlConnection, DtoMember, DtoUnit, KeyIndexStrings, S
 
 type
   TCrudMemberConfigMasterPerson = class(TCrudMemberConfigBase)
-  strict private
-    fConnection: ISqlConnection;
-    fDetailItemListConfig: ISelectList<TDtoUnit>;
-    fDetailItemMapper: TActiveKeyIndexStringsLoader;
   strict protected
     function GetSelectListSQL: string; override;
     procedure SetSelectListSQLParameter(const aFilter: UInt32; const aQuery: ISqlPreparedQuery); override;
@@ -18,51 +14,17 @@ type
     procedure SetMasterItemIdToMember(const aMasterItemId: UInt32; var aMember: TDtoMember); override;
     function GetDetailItemIdFromMember(const aMember: TDtoMember): UInt32; override;
     procedure SetDetailItemIdToMember(const aDetailItemId: UInt32; var aMember: TDtoMember); override;
-  public
-    constructor Create(const aConnection: ISqlConnection);
-    destructor Destroy; override;
   end;
 
 implementation
 
-uses Vdm.Globals, CrudConfigUnit;
+uses Vdm.Globals, UnitMapper;
 
 { TCrudMemberConfigMasterPerson }
 
-constructor TCrudMemberConfigMasterPerson.Create(const aConnection: ISqlConnection);
-begin
-  inherited Create;
-  fConnection := aConnection;
-end;
-
-destructor TCrudMemberConfigMasterPerson.Destroy;
-begin
-  fDetailItemMapper.Free;
-  fDetailItemListConfig := nil;
-  inherited;
-end;
-
 function TCrudMemberConfigMasterPerson.GetDetailItemMapper: TActiveKeyIndexStringsLoader;
 begin
-  if not Assigned(fDetailItemMapper) then
-  begin
-    fDetailItemListConfig := TCrudConfigUnit.Create;
-    fDetailItemMapper := TActiveKeyIndexStringsLoader.Create(
-        function(var aData: TActiveKeyIndexStrings): Boolean
-        begin
-          Result := True;
-          aData := TActiveKeyIndexStrings.Create;
-          var lSqlResult := fConnection.GetSelectResult(fDetailItemListConfig.GetSelectListSQL);
-          while lSqlResult.Next do
-          begin
-            var lRecord := default(TDtoUnit);
-            fDetailItemListConfig.GetRecordFromSqlResult(lSqlResult, lRecord);
-            aData.AddString(lRecord.Id, lRecord.Active, lRecord.ToString);
-          end;
-        end
-      );
-  end;
-  Result := fDetailItemMapper;
+  Result := TUnitMapper.Instance;
 end;
 
 function TCrudMemberConfigMasterPerson.GetDetailItemTitle: string;

@@ -70,7 +70,7 @@ implementation
 uses System.UITypes, Vdm.Globals, ConfigReader, CrudBusiness, DtoRole, CrudConfigRoleEntry, unRole,
   DtoAddress, DtoAddressAggregated, unAddress, CrudConfigAddressAggregated,
   Report.ClubMembers, Report.UnitMembers, TenantReader, DtoTenant, CrudConfigTenantEntry, unTenant,
-  Report.UnitRoles, Report.MemberUnits, Report.Persons, ProgressIndicator;
+  Report.UnitRoles, Report.MemberUnits, Report.Persons, ProgressIndicator, RoleMapper, UnitMapper;
 
 {$R *.dfm}
 
@@ -101,7 +101,7 @@ begin
     lDialog.ShowModal;
     if lBusiness.DataChanged then
     begin
-      fPersonBusinessIntf.ClearUnitCache;
+      TRoleMapper.Invalidate;
     end;
   finally
     lDialog.Free;
@@ -138,7 +138,7 @@ begin
   else
   begin
     if fBusinessUnit.DataChanged then
-      fPersonBusinessIntf.ClearUnitCache;
+      TUnitMapper.Invalidate;
     ffraPerson.Show;
     ffraUnit.Hide;
   end;

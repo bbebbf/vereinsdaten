@@ -30,8 +30,6 @@ type
     procedure ReloadEntries;
     function SaveEntries(const aDeleteEntryFromUICallback: TListCrudCommandsEntryCallback<TDtoMemberAggregated>):
       TCrudSaveResult;
-    procedure ClearDetailItemCache;
-    procedure ClearRoleCache;
     function GetDetailItemTitle: string;
     function GetShowVersionInfoInMemberListview: Boolean;
     property ShowInactiveMemberOfs: Boolean read GetShowInactiveMemberOfs write SetShowInactiveMemberOfs;

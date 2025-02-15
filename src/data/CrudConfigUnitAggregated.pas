@@ -90,7 +90,7 @@ begin
   fCrudConfigUnit := TCrudConfigUnit.Create;
   fVersionInfoConfig := TVersionInfoConfig.Create;
   fUnitRecordActions := TRecordActionsVersioning<TDtoUnit, UInt32>.Create(fConnection, fCrudConfigUnit, fVersionInfoConfig);
-  fMemberOfConfig := TCrudMemberConfigMasterUnit.Create(fConnection);
+  fMemberOfConfig := TCrudMemberConfigMasterUnit.Create;
 
   fUnitMemberOfsVersionInfoAccessor := TUnitMemberOfsVersionInfoAccessor.Create(aConnection);
   fMemberOfBusiness := TMemberOfBusiness.Create(fConnection, fMemberOfConfig, fUnitMemberOfsVersionInfoAccessor,
