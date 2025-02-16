@@ -58,7 +58,7 @@ type
     procedure DeleteEntryFromUI(const aUnitId: UInt32);
     procedure ClearEntryFromUI;
     procedure SetEntryToUI(const aEntry: TDtoRole; const aMode: TEntryToUIMode);
-    function GetEntryFromUI(var aEntry: TDtoRole): Boolean;
+    function GetEntryFromUI(var aEntry: TDtoRole; const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
     procedure LoadCurrentEntry(const aEntryId: UInt32);
     function GetProgressIndicator: IProgressIndicator;
   end;
@@ -176,11 +176,12 @@ begin
   fComponentValueChangedObserver.Free;
 end;
 
-function TfmRole.GetEntryFromUI(var aEntry: TDtoRole): Boolean;
+function TfmRole.GetEntryFromUI(var aEntry: TDtoRole; const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
 begin
   if TStringTools.IsEmpty(edRoleName.Text) then
   begin
     edRoleName.SetFocus;
+    aProgressUISuspendScope.Suspend;
     TMessageDialogs.Ok('Die Bezeichnung muss angegeben sein.', TMsgDlgType.mtInformation);
     Exit(False);
   end;
@@ -192,6 +193,7 @@ begin
     if (lSortingInteger < 0) or (lSortingInteger > 255) then
     begin
       edRoleName.SetFocus;
+      aProgressUISuspendScope.Suspend;
       TMessageDialogs.Ok('Die Sorting muss ein Wert zwischen 0 und 255 sein.', TMsgDlgType.mtInformation);
       Exit(False);
     end;

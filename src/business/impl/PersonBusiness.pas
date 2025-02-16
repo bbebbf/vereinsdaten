@@ -303,9 +303,15 @@ begin
       lUpdatedEntry := fCurrentEntry.Clone;
     lUpdatedEntryCloned := True;
 
-    if not fUI.GetEntryFromUI(lUpdatedEntry) then
-    begin
-      Exit(TCrudSaveResult.CreateRecord(TCrudSaveStatus.Cancelled));
+    var lSuspendScope := lProgress.SuspendUI;
+    try
+      if not fUI.GetEntryFromUI(lUpdatedEntry, lSuspendScope) then
+      begin
+        lSuspendScope := nil;
+        Exit(TCrudSaveResult.CreateRecord(TCrudSaveStatus.Cancelled));
+      end;
+    finally
+      lSuspendScope := nil;
     end;
     if not lUpdatedEntry.MembershipNoMembership then
     begin

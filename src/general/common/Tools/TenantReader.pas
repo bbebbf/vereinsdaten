@@ -2,29 +2,24 @@ unit TenantReader;
 
 interface
 
-uses SqlConnection, DtoTenant;
+uses Singleton, SqlConnection, DtoTenant;
 
 type
-  TTenantReader = class
+  TTenantReader = class(TSingletonObject<TTenantReader>)
   strict private
-    class var
-      fInstance: TTenantReader;
-      fConnection: ISqlConnection;
-
+    class var fConnection: ISqlConnection;
     var
-    fTenant: TDtoTenant;
-    fFound: Boolean;
-    procedure ReadTenant;
-    function GetTenant: TDtoTenant;
-    function GetFound: Boolean;
-
-    class function GetInstance: TTenantReader; static;
+      fTenant: TDtoTenant;
+      fFound: Boolean;
+      procedure ReadTenant;
+      function GetTenant: TDtoTenant;
+      function GetFound: Boolean;
+  strict protected
+    class function CreateNewInstance: TTenantReader; override;
   public
-    class destructor ClassDestroy;
     class property Connection: ISqlConnection read fConnection write fConnection;
-    class property Instance: TTenantReader read GetInstance;
-
-    procedure Invalidate;
+    class procedure Invalidate;
+    procedure Reset;
     property Found: Boolean read GetFound;
     property Tenant: TDtoTenant read GetTenant;
   end;
@@ -35,34 +30,32 @@ implementation
 
 uses System.SysUtils;
 
-class destructor TTenantReader.ClassDestroy;
-begin
-  fInstance.Free;
-  fConnection := nil;
-end;
-
 function TTenantReader.GetTenant: TDtoTenant;
 begin
   ReadTenant;
   Result := fTenant;
 end;
 
-procedure TTenantReader.Invalidate;
+class function TTenantReader.CreateNewInstance: TTenantReader;
 begin
-  fFound := False;
+  Result := TTenantReader.Create;
+  Result.Connection := fConnection;
+end;
+
+class procedure TTenantReader.Invalidate;
+begin
+  CallProcIfInstanceAvailable(
+    procedure(aInstance: TTenantReader)
+    begin
+      aInstance.Reset;
+    end
+  );
 end;
 
 function TTenantReader.GetFound: Boolean;
 begin
   ReadTenant;
   Result := fFound;
-end;
-
-class function TTenantReader.GetInstance: TTenantReader;
-begin
-  if not Assigned(fInstance) then
-    fInstance := TTenantReader.Create;
-  Result := fInstance;
 end;
 
 procedure TTenantReader.ReadTenant;
@@ -81,6 +74,11 @@ begin
     fTenant.Title := lSqlResult.FieldByName('ten_title').AsString;
   end;
   fFound := True;
+end;
+
+procedure TTenantReader.Reset;
+begin
+  fFound := False;
 end;
 
 end.

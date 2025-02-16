@@ -81,7 +81,7 @@ type
     procedure DeleteEntryFromUI(const aUnitId: UInt32);
     procedure ClearEntryFromUI;
     procedure SetEntryToUI(const aEntry: TDtoUnitAggregated; const aMode: TEntryToUIMode);
-    function GetEntryFromUI(var aEntry: TDtoUnitAggregated): Boolean;
+    function GetEntryFromUI(var aEntry: TDtoUnitAggregated; const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
     procedure LoadCurrentEntry(const aEntryId: UInt32);
     function GetProgressIndicator: IProgressIndicator;
 
@@ -242,11 +242,12 @@ begin
 
 end;
 
-function TfraUnit.GetEntryFromUI(var aEntry: TDtoUnitAggregated): Boolean;
+function TfraUnit.GetEntryFromUI(var aEntry: TDtoUnitAggregated; const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
 begin
   if TStringTools.IsEmpty(edUnitName.Text) then
   begin
     edUnitName.SetFocus;
+    aProgressUISuspendScope.Suspend;
     TMessageDialogs.Ok('Die Bezeichnung muss angegeben sein.', TMsgDlgType.mtInformation);
     Exit(False);
   end;

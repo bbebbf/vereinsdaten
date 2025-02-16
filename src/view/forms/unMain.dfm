@@ -12,9 +12,9 @@ object fmMain: TfmMain
   Font.Style = []
   Menu = MainMenu
   WindowState = wsMaximized
-  OnActivate = FormActivate
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnShow = FormShow
   TextHeight = 15
   object shaTestConnectionWarning: TShape
     Left = 0

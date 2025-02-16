@@ -113,7 +113,7 @@ type
     procedure DeleteEntryFromUI(const aPersonId: UInt32);
     procedure ClearEntryFromUI;
     procedure SetEntryToUI(const aRecord: TDtoPersonAggregated; const aMode: TEntryToUIMode);
-    function GetEntryFromUI(var aRecord: TDtoPersonAggregated): Boolean;
+    function GetEntryFromUI(var aRecord: TDtoPersonAggregated; const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
     procedure LoadCurrentEntry(const aPersonId: UInt32);
     function GetProgressIndicator: IProgressIndicator;
 
@@ -338,17 +338,19 @@ begin
   Result := fProgressIndicator;
 end;
 
-function TfraPerson.GetEntryFromUI(var aRecord: TDtoPersonAggregated): Boolean;
+function TfraPerson.GetEntryFromUI(var aRecord: TDtoPersonAggregated; const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
 begin
   if TStringTools.IsEmpty(edPersonFirstname.Text) and TStringTools.IsEmpty(edPersonLastname.Text) then
   begin
     edPersonFirstname.SetFocus;
+    aProgressUISuspendScope.Suspend;
     TMessageDialogs.Ok('Vorname oder Nachname müssen angegeben sein.', TMsgDlgType.mtInformation);
     Exit(False);
   end;
   if (cbMembership.ItemIndex > 0) and TStringTools.IsEmpty(edMembershipNumber.Text) then
   begin
     edMembershipNumber.SetFocus;
+    aProgressUISuspendScope.Suspend;
     TMessageDialogs.Ok('Die Mitgliedsnummer muss angegeben sein.', TMsgDlgType.mtInformation);
     Exit(False);
   end;
@@ -372,8 +374,9 @@ begin
     var lNewAddessTitle := aRecord.NewAddressStreet +
       ', ' + aRecord.NewAddressPostalcode +
       ' ' + aRecord.NewAddressCity;
-    if TMessageDialogs.YesNo('Neue Adresse "' + lNewAddessTitle + '" anlegen und ' + GetPersonFirstname(aRecord.Person.NameId) +
-      ' zuordnen?', TMsgDlgType.mtConfirmation) <> mrYes then
+    aProgressUISuspendScope.Suspend;
+    if TMessageDialogs.YesNo('Neue Adresse "' + lNewAddessTitle + '" anlegen und "' + GetPersonFirstname(aRecord.Person.NameId) +
+      '" zuordnen?', TMsgDlgType.mtConfirmation) <> mrYes then
       Exit(False);
   end;
 

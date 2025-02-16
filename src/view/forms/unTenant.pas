@@ -42,7 +42,7 @@ type
     procedure DeleteEntryFromUI(const aUnitId: UInt8);
     procedure ClearEntryFromUI;
     procedure SetEntryToUI(const aEntry: TDtoTenant; const aMode: TEntryToUIMode);
-    function GetEntryFromUI(var aEntry: TDtoTenant): Boolean;
+    function GetEntryFromUI(var aEntry: TDtoTenant; const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
     function GetProgressIndicator: IProgressIndicator;
   public
     { Public-Deklarationen }
@@ -128,11 +128,12 @@ begin
   fComponentValueChangedObserver.Free;
 end;
 
-function TfmTenant.GetEntryFromUI(var aEntry: TDtoTenant): Boolean;
+function TfmTenant.GetEntryFromUI(var aEntry: TDtoTenant; const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
 begin
   if TStringTools.IsEmpty(edTenantTitle.Text) then
   begin
     edTenantTitle.SetFocus;
+    aProgressUISuspendScope.Suspend;
     TMessageDialogs.Ok('Die Bezeichnung muss angegeben sein.', TMsgDlgType.mtInformation);
     Exit(False);
   end;

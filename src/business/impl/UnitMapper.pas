@@ -8,6 +8,7 @@ type
   TUnitMapper = class(TSingletonObject<TActiveKeyIndexStringsLoader>)
   strict private
     class var fConnection: ISqlConnection;
+  strict protected
     class function CreateNewInstance: TActiveKeyIndexStringsLoader; override;
   public
     class property Connection: ISqlConnection read fConnection write fConnection;

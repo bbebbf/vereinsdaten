@@ -18,6 +18,7 @@ type
     procedure ProgressStep(const aStepCount: Integer);
     procedure ProgressEnd;
     procedure ProgressText(const aText: string);
+    function SuspendUI: IProgressUISuspendScope;
 
     function GetTopTier: TProgressIndicatorTier;
     procedure HideUI;
@@ -29,6 +30,18 @@ type
 implementation
 
 uses Vcl.Forms;
+
+type
+  TProgressUISuspendScope = class(TInterfacedBase, IProgressUISuspendScope)
+  strict private
+    fUI: IProgressUI;
+    fSuspended: Boolean;
+    procedure Suspend;
+    procedure Resume;
+  public
+    constructor Create(const aUI: IProgressUI);
+    destructor Destroy; override;
+  end;
 
 { TProgressIndicator }
 
@@ -106,6 +119,11 @@ begin
   fUI.SecondaryText := aText;
 end;
 
+function TProgressIndicator.SuspendUI: IProgressUISuspendScope;
+begin
+  Result := TProgressUISuspendScope.Create(fUI);
+end;
+
 function TProgressIndicator.GetTopTier: TProgressIndicatorTier;
 begin
   if fTiers.Count = 0 then
@@ -118,6 +136,32 @@ procedure TProgressIndicator.HideUI;
 begin
   while fTiers.Count > 0 do
     ProgressEnd;
+end;
+
+{ TProgressUISuspendScope }
+
+constructor TProgressUISuspendScope.Create(const aUI: IProgressUI);
+begin
+  inherited Create;
+  fUI := aUI;
+end;
+
+destructor TProgressUISuspendScope.Destroy;
+begin
+  Resume;
+  inherited;
+end;
+
+procedure TProgressUISuspendScope.Resume;
+begin
+  if fSuspended then
+    fUI.Show;
+end;
+
+procedure TProgressUISuspendScope.Suspend;
+begin
+  fUI.Hide;
+  fSuspended := True;
 end;
 
 end.

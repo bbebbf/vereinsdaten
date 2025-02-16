@@ -13,7 +13,7 @@ type
     procedure DeleteEntryFromUI(const aRecordIdentity: TRecordIdentity);
     procedure ClearEntryFromUI;
     procedure SetEntryToUI(const aEntry: TEntry; const aMode: TEntryToUIMode);
-    function GetEntryFromUI(var aEntry: TEntry): Boolean;
+    function GetEntryFromUI(var aEntry: TEntry; const aProgressUISuspendScope: IProgressUISuspendScope = nil): Boolean;
     function GetProgressIndicator: IProgressIndicator;
   end;
 

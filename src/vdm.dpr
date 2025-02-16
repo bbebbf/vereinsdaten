@@ -114,7 +114,10 @@ uses
   Singleton in 'general\common\Tools\Singleton.pas',
   RoleMapper in 'business\impl\RoleMapper.pas',
   UnitMapper in 'business\impl\UnitMapper.pas',
-  PersonMapper in 'business\impl\PersonMapper.pas';
+  PersonMapper in 'business\impl\PersonMapper.pas',
+  MainBusinessIntf in 'business\intf\MainBusinessIntf.pas',
+  MainBusiness in 'business\impl\MainBusiness.pas',
+  MainUI in 'view\intf\MainUI.pas';
 
 {$R *.res}
 
@@ -153,8 +156,6 @@ begin
       end;
     end;
 
-    Application.CreateForm(TfmMain, fmMain);
-
     var lConnectProgressUI := TfmProgressForm.Create(Application);
     try
       var lProgressIndicator := TProgressIndicator.Create(lConnectProgressUI);
@@ -168,12 +169,9 @@ begin
         Exit;
       end;
 
-      TTenantReader.Connection := lConnection;
-      TRoleMapper.Connection := lConnection;
-      TUnitMapper.Connection := lConnection;
-      TPersonMapper.Connection := lConnection;
-
-      fmMain.Connection := lConnection;
+      Application.CreateForm(TfmMain, fmMain);
+      var lMainBusiness: IMainBusiness := TMainBusiness.Create(lConnection, fmMain);
+      lMainBusiness.Initialize;
       Application.Run;
     finally
       lConnectProgressUI.Free;

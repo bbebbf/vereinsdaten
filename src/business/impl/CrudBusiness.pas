@@ -134,13 +134,20 @@ begin
       lTempSavingEntry := fConfig.CloneEntry(fCurrentEntry);
     end;
 
-    if not fUI.GetEntryFromUI(lTempSavingEntry) then
-    begin
-      Exit(TCrudSaveResult.CreateRecord(TCrudSaveStatus.Cancelled));
-    end;
-    if not fConfig.IsEntryValidForSaving(lTempSavingEntry) then
-    begin
-      Exit(TCrudSaveResult.CreateRecord(TCrudSaveStatus.Cancelled));
+    var lSuspendScope := lProgress.SuspendUI;
+    try
+      if not fUI.GetEntryFromUI(lTempSavingEntry, lSuspendScope) then
+      begin
+        lSuspendScope := nil;
+        Exit(TCrudSaveResult.CreateRecord(TCrudSaveStatus.Cancelled));
+      end;
+      if not fConfig.IsEntryValidForSaving(lTempSavingEntry) then
+      begin
+        lSuspendScope := nil;
+        Exit(TCrudSaveResult.CreateRecord(TCrudSaveStatus.Cancelled));
+      end;
+    finally
+      lSuspendScope := nil;
     end;
 
     var lResponse := fConfig.SaveEntry(lTempSavingEntry);

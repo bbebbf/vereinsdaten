@@ -8,6 +8,7 @@ type
   TRoleMapper = class(TSingletonObject<TKeyIndexStrings>)
   strict private
     class var fConnection: ISqlConnection;
+  strict protected
     class function CreateNewInstance: TKeyIndexStrings; override;
   public
     class property Connection: ISqlConnection read fConnection write fConnection;

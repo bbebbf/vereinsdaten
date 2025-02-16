@@ -62,7 +62,7 @@ type
     procedure DeleteEntryFromUI(const aUnitId: UInt32);
     procedure ClearEntryFromUI;
     procedure SetEntryToUI(const aEntry: TDtoAddressAggregated; const aMode: TEntryToUIMode);
-    function GetEntryFromUI(var aEntry: TDtoAddressAggregated): Boolean;
+    function GetEntryFromUI(var aEntry: TDtoAddressAggregated; const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
     procedure LoadCurrentEntry(const aEntryId: UInt32);
     function GetProgressIndicator: IProgressIndicator;
 
@@ -214,11 +214,12 @@ begin
   fComponentValueChangedObserver.Free;
 end;
 
-function TfmAddress.GetEntryFromUI(var aEntry: TDtoAddressAggregated): Boolean;
+function TfmAddress.GetEntryFromUI(var aEntry: TDtoAddressAggregated; const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
 begin
   if TStringTools.IsEmpty(edAddressCity.Text) then
   begin
     edAddressCity.SetFocus;
+    aProgressUISuspendScope.Suspend;
     TMessageDialogs.Ok('Der Ortsname muss angegeben sein.', TMsgDlgType.mtInformation);
     Exit(False);
   end;

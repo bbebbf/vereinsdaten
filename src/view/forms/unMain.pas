@@ -4,13 +4,12 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.Menus, System.Actions, Vcl.ActnList,
-  unPerson, unUnit, SqlConnection, ProgressIndicatorIntf, PersonBusinessIntf, PersonBusiness,
-  DtoUnit, DtoUnitAggregated, CrudConfigUnitAggregated, Vdm.Types, EntryCrudConfig, CrudCommands, Vcl.ExtCtrls,
-  unProgressForm;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.Menus, System.Actions, Vcl.ActnList, Vcl.ExtCtrls,
+  ProgressIndicatorIntf, unProgressForm, unPerson, unUnit, DtoUnit, DtoUnitAggregated, Vdm.Types,
+  MainUI, MainBusinessIntf, ConfigReader, PersonAggregatedUI, CrudUI, MemberOfUI;
 
 type
-  TfmMain = class(TForm)
+  TfmMain = class(TForm, IMainUI)
     MainMenu: TMainMenu;
     Stammdaten1: TMenuItem;
     StatusBar: TStatusBar;
@@ -37,7 +36,6 @@ type
     Personen1: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure FormActivate(Sender: TObject);
     procedure acMasterdataUnitExecute(Sender: TObject);
     procedure acMasterdataRoleExecute(Sender: TObject);
     procedure acMasterdataAddressExecute(Sender: TObject);
@@ -46,20 +44,21 @@ type
     procedure acMasterdataTenantExecute(Sender: TObject);
     procedure acReportUnitRolesExecute(Sender: TObject);
     procedure acReportMemberUnitsExecute(Sender: TObject);
+    procedure FormShow(Sender: TObject);
     procedure acReportPersonsExecute(Sender: TObject);
   strict private
-    fActivated: Boolean;
-    fConnection: ISqlConnection;
-    fPersonBusinessIntf: IPersonBusinessIntf;
-    ffraPerson: TfraPerson;
+    fBusiness: IMainBusiness;
     fProgressForm: TfmProgressForm;
     fProgressIndicator: IProgressIndicator;
-
-    fCrudConfigUnit: IEntryCrudConfig<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>;
-    fBusinessUnit: ICrudCommands<UInt32, TUnitFilter>;
+    ffraPerson: TfraPerson;
     ffraUnit: TfraUnit;
-  public
-    property Connection: ISqlConnection read fConnection write fConnection;
+    procedure SetBusiness(const aMainBusiness: IMainBusiness);
+    procedure SetApplicationTitle(const aTitle: string);
+    procedure SetConfiguration(const aConfig: TConfigConnection);
+    function GetProgressIndicator: IProgressIndicator;
+    function GetPersonAggregatedUI: IPersonAggregatedUI;
+    function GetUnitCrudUI: ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>;
+    function GetUnitMemberOfsUI: IMemberOfUI;
   end;
 
 var
@@ -67,10 +66,7 @@ var
 
 implementation
 
-uses System.UITypes, Vdm.Globals, ConfigReader, CrudBusiness, DtoRole, CrudConfigRoleEntry, unRole,
-  DtoAddress, DtoAddressAggregated, unAddress, CrudConfigAddressAggregated,
-  Report.ClubMembers, Report.UnitMembers, TenantReader, DtoTenant, CrudConfigTenantEntry, unTenant,
-  Report.UnitRoles, Report.MemberUnits, Report.Persons, ProgressIndicator, RoleMapper, UnitMapper;
+uses System.UITypes, Vdm.Globals, unRole, unAddress, unTenant, ProgressIndicator;
 
 {$R *.dfm}
 
@@ -78,14 +74,12 @@ procedure TfmMain.acMasterdataAddressExecute(Sender: TObject);
 begin
   var lDialog := TfmAddress.Create(Self);
   try
-    var lCrudConfig: IEntryCrudConfig<TDtoAddressAggregated, TDtoAddress, UInt32, TVoid> := TCrudConfigAddressAggregated.Create(fConnection);
-    var lBusiness: ICrudCommands<UInt32, TVoid> := TCrudBusiness<TDtoAddressAggregated, TDtoAddress, UInt32, TVoid>.Create(lDialog, lCrudConfig);
-    lBusiness.Initialize;
-    lDialog.ShowModal;
-    if lBusiness.DataChanged then
-    begin
-      fPersonBusinessIntf.ClearAddressCache;
-    end;
+    fBusiness.OpenCrudAddress(lDialog,
+      function: Integer
+      begin
+        Result := lDialog.ShowModal;
+      end
+    );
   finally
     lDialog.Free;
   end;
@@ -95,14 +89,12 @@ procedure TfmMain.acMasterdataRoleExecute(Sender: TObject);
 begin
   var lDialog := TfmRole.Create(Self);
   try
-    var lCrudConfig: IEntryCrudConfig<TDtoRole, TDtoRole, UInt32, TVoid> := TCrudConfigRoleEntry.Create(fConnection);
-    var lBusiness: ICrudCommands<UInt32, TVoid> := TCrudBusiness<TDtoRole, TDtoRole, UInt32, TVoid>.Create(lDialog, lCrudConfig);
-    lBusiness.Initialize;
-    lDialog.ShowModal;
-    if lBusiness.DataChanged then
-    begin
-      TRoleMapper.Invalidate;
-    end;
+    fBusiness.OpenCrudRole(lDialog,
+      function: Integer
+      begin
+        Result := lDialog.ShowModal;
+      end
+    );
   finally
     lDialog.Free;
   end;
@@ -112,15 +104,12 @@ procedure TfmMain.acMasterdataTenantExecute(Sender: TObject);
 begin
   var lDialog := TfmTenant.Create(Self);
   try
-    var lCrudConfig: IEntryCrudConfig<TDtoTenant, TDtoTenant, UInt8, TVoid> := TCrudConfigTenantEntry.Create(fConnection);
-    var lBusiness: ICrudCommands<UInt8, TVoid> := TCrudBusiness<TDtoTenant, TDtoTenant, UInt8, TVoid>.Create(lDialog, lCrudConfig);
-    lBusiness.Initialize;
-    lDialog.ShowModal;
-    if lBusiness.DataChanged then
-    begin
-      TTenantReader.Instance.Invalidate;
-      Caption := TVdmGlobals.GetVdmApplicationTitle + ': ' + TTenantReader.Instance.Tenant.Title;
-    end;
+    fBusiness.OpenCrudTenant(lDialog,
+      function: Integer
+      begin
+        Result := lDialog.ShowModal;
+      end
+    );
   finally
     lDialog.Free;
   end;
@@ -133,104 +122,43 @@ begin
   begin
     ffraUnit.Show;
     ffraPerson.Hide;
-    fBusinessUnit.LoadList;
+    fBusiness.SwitchedFromPersonsToUnitsCrud;
   end
   else
   begin
-    if fBusinessUnit.DataChanged then
-      TUnitMapper.Invalidate;
     ffraPerson.Show;
     ffraUnit.Hide;
+    fBusiness.SwitchedFromUnitsToPersonsCrud;
   end;
 end;
 
 procedure TfmMain.acReportClubMembersExecute(Sender: TObject);
 begin
-  var lReport := TfmReportClubMembers.Create(fConnection);
-  try
-    lReport.Preview;
-  finally
-    lReport.Free;
-  end;
+  fBusiness.OpenReportClubMembers;
 end;
 
 procedure TfmMain.acReportMemberUnitsExecute(Sender: TObject);
 begin
-  var lReport := TfmReportMemberUnits.Create(fConnection);
-  try
-    lReport.Preview;
-  finally
-    lReport.Free;
-  end;
+  fBusiness.OpenReportMemberUnits;
 end;
 
 procedure TfmMain.acReportPersonsExecute(Sender: TObject);
 begin
-  var lReport := TfmReportPersons.Create(fConnection);
-  try
-    lReport.Preview;
-  finally
-    lReport.Free;
-  end;
+  fBusiness.OpenReportPersons;
 end;
 
 procedure TfmMain.acReportUnitMembersExecute(Sender: TObject);
 begin
-  var lReport := TfmReportUnitMembers.Create(fConnection);
-  try
-    lReport.Preview;
-  finally
-    lReport.Free;
-  end;
+  fBusiness.OpenReportUnitMembers;
 end;
 
 procedure TfmMain.acReportUnitRolesExecute(Sender: TObject);
 begin
-  var lReport := TfmReportUnitRoles.Create(fConnection);
-  try
-    lReport.Preview;
-  finally
-    lReport.Free;
-  end;
-end;
-
-procedure TfmMain.FormActivate(Sender: TObject);
-begin
-  if fActivated then
-    Exit;
-
-  Caption := TVdmGlobals.GetVdmApplicationTitle + ': ' + TTenantReader.Instance.Tenant.Title;
-
-  fActivated := True;
-  fPersonBusinessIntf := TPersonBusiness.Create(fConnection, ffraPerson, fProgressIndicator);
-  fPersonBusinessIntf.Initialize;
-  fPersonBusinessIntf.LoadList;
-
-  fCrudConfigUnit := TCrudConfigUnitAggregated.Create(fConnection, ffraUnit.MemberOfUI, fProgressIndicator);
-  fBusinessUnit := TCrudBusiness<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>.Create(ffraUnit, fCrudConfigUnit);
-  fBusinessUnit.Initialize;
+  fBusiness.OpenReportUnitRoles;
 end;
 
 procedure TfmMain.FormCreate(Sender: TObject);
 begin
-  Caption := TVdmGlobals.GetVdmApplicationTitle;
-
-  shaTestConnectionWarning.Visible := TConfigReader.Instance.Connection.ShapeVisible;
-  if shaTestConnectionWarning.Visible then
-  begin
-    var lColor: TColor;
-    if not TryStringToColor('$' + TConfigReader.Instance.Connection.ShapeColor, lColor) then
-      lColor := TColorRec.SysHighlight;
-    shaTestConnectionWarning.Brush.Color := lColor;
-  end;
-
-  var lConnectionInfo := 'Server: ' + TConfigReader.Instance.Connection.Host +
-    ':' + IntToStr(TConfigReader.Instance.Connection.Port) +
-    ' / Database: ' + TConfigReader.Instance.Connection.Databasename;
-  if Length(TConfigReader.Instance.Connection.SshRemoteHost) > 0 then
-    lConnectionInfo := 'Remote Host: ' + TConfigReader.Instance.Connection.SshRemoteHost + ' / ' + lConnectionInfo;
-  StatusBar.SimpleText := lConnectionInfo;
-
   fProgressForm := TfmProgressForm.Create(Self);
   fProgressIndicator := TProgressIndicator.Create(fProgressForm);
 
@@ -247,10 +175,59 @@ end;
 
 procedure TfmMain.FormDestroy(Sender: TObject);
 begin
-  fPersonBusinessIntf := nil;
-  fConnection := nil;
   fProgressIndicator := nil;
   fProgressForm.Free;
+end;
+
+procedure TfmMain.FormShow(Sender: TObject);
+begin
+  fBusiness.UIIsReady;
+end;
+
+function TfmMain.GetPersonAggregatedUI: IPersonAggregatedUI;
+begin
+  Result := ffraPerson;
+end;
+
+function TfmMain.GetProgressIndicator: IProgressIndicator;
+begin
+  Result := fProgressIndicator;
+end;
+
+function TfmMain.GetUnitCrudUI: ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>;
+begin
+  Result := ffraUnit;
+end;
+
+function TfmMain.GetUnitMemberOfsUI: IMemberOfUI;
+begin
+  Result := ffraUnit.MemberOfUI;
+end;
+
+procedure TfmMain.SetApplicationTitle(const aTitle: string);
+begin
+  Caption := aTitle;
+end;
+
+procedure TfmMain.SetBusiness(const aMainBusiness: IMainBusiness);
+begin
+  fBusiness := aMainBusiness;
+end;
+
+procedure TfmMain.SetConfiguration(const aConfig: TConfigConnection);
+begin
+  shaTestConnectionWarning.Visible := aConfig.ShapeVisible;
+  if shaTestConnectionWarning.Visible then
+  begin
+    var lColor: TColor;
+    if not TryStringToColor('$' + aConfig.ShapeColor, lColor) then
+      lColor := TColorRec.SysHighlight;
+    shaTestConnectionWarning.Brush.Color := lColor;
+  end;
+  var lConnectionInfo := 'Server: ' + aConfig.Host + ':' + IntToStr(aConfig.Port) + ' / Database: ' + aConfig.Databasename;
+  if Length(aConfig.SshRemoteHost) > 0 then
+    lConnectionInfo := 'Remote Host: ' + aConfig.SshRemoteHost + ' / ' + lConnectionInfo;
+  StatusBar.SimpleText := lConnectionInfo;
 end;
 
 end.

@@ -325,6 +325,9 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="business\impl\RoleMapper.pas"/>
         <DCCReference Include="business\impl\UnitMapper.pas"/>
         <DCCReference Include="business\impl\PersonMapper.pas"/>
+        <DCCReference Include="business\intf\MainBusinessIntf.pas"/>
+        <DCCReference Include="business\impl\MainBusiness.pas"/>
+        <DCCReference Include="view\intf\MainUI.pas"/>
         <None Include="inc\CompilerDirectives.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
