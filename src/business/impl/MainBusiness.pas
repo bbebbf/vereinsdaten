@@ -75,6 +75,7 @@ begin
   aModalProc;
   if lBusiness.DataChanged then
   begin
+    fPersonBusinessIntf.ClearAddressCache;
   end;
 end;
 
