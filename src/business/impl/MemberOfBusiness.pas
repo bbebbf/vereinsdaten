@@ -116,7 +116,7 @@ end;
 function TMemberOfBusiness.CreateNewEntry: TListEntry<TDtoMemberAggregated>;
 begin
   Result := TObjectListEntry<TDtoMemberAggregated>.CreateNew(
-    TDtoMemberAggregated.Create(fMemberOfConfig, TRoleMapper.Instance)
+    TDtoMemberAggregated.Create(fMemberOfConfig, TRoleMapper.Instance.Data)
     );
   Result.Data.Active := True;
 end;
@@ -225,7 +225,7 @@ begin
   end
   else
   begin
-    aTarget := TDtoMemberAggregated.Create(fMemberOfConfig, TRoleMapper.Instance, aValue);
+    aTarget := TDtoMemberAggregated.Create(fMemberOfConfig, TRoleMapper.Instance.Data, aValue);
   end;
 end;
 

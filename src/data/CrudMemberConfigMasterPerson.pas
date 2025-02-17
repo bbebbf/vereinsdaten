@@ -24,7 +24,7 @@ uses Vdm.Globals, UnitMapper;
 
 function TCrudMemberConfigMasterPerson.GetDetailItemMapper: TActiveKeyIndexStringsLoader;
 begin
-  Result := TUnitMapper.Instance;
+  Result := TUnitMapper.Instance.Data;
 end;
 
 function TCrudMemberConfigMasterPerson.GetDetailItemTitle: string;

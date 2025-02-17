@@ -5,14 +5,20 @@ interface
 uses Singleton, KeyIndexStrings, SqlConnection;
 
 type
-  TUnitMapper = class(TSingletonObject<TActiveKeyIndexStringsLoader>)
+  TUnitMapper = class(TSingletonObject<TUnitMapper>)
   strict private
     class var fConnection: ISqlConnection;
+    var
+      fData: TActiveKeyIndexStringsLoader;
   strict protected
-    class function CreateNewInstance: TActiveKeyIndexStringsLoader; override;
+    class function CreateNewInstance: TUnitMapper; override;
   public
     class property Connection: ISqlConnection read fConnection write fConnection;
     class procedure Invalidate;
+
+    constructor Create;
+    destructor Destroy; override;
+    property Data: TActiveKeyIndexStringsLoader read fData;
   end;
 
 implementation
@@ -21,9 +27,25 @@ uses DtoUnit, SelectList, CrudConfigUnit;
 
 { TUnitMapper }
 
-class function TUnitMapper.CreateNewInstance: TActiveKeyIndexStringsLoader;
+class function TUnitMapper.CreateNewInstance: TUnitMapper;
 begin
-  Result := TActiveKeyIndexStringsLoader.Create(
+  Result := TUnitMapper.Create;
+end;
+
+class procedure TUnitMapper.Invalidate;
+begin
+  CallProcIfInstanceAvailable(
+    procedure(aInstance: TUnitMapper)
+    begin
+      aInstance.Data.Invalidate;
+    end
+  );
+end;
+
+constructor TUnitMapper.Create;
+begin
+  inherited Create;
+  fData := TActiveKeyIndexStringsLoader.Create(
       function(var aData: TActiveKeyIndexStrings): Boolean
       begin
         Result := True;
@@ -40,15 +62,10 @@ begin
     );
 end;
 
-class procedure TUnitMapper.Invalidate;
+destructor TUnitMapper.Destroy;
 begin
-  CallProcIfInstanceAvailable(
-    procedure(aInstance: TActiveKeyIndexStringsLoader)
-    begin
-      aInstance.Invalidate;
-    end
-  );
+  fData.Free;
+  inherited;
 end;
 
 end.
-

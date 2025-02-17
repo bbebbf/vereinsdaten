@@ -5,14 +5,20 @@ interface
 uses Singleton, KeyIndexStrings, SqlConnection;
 
 type
-  TRoleMapper = class(TSingletonObject<TKeyIndexStrings>)
+  TRoleMapper = class(TSingletonObject<TRoleMapper>)
   strict private
     class var fConnection: ISqlConnection;
+    var
+      fData: TKeyIndexStrings;
   strict protected
-    class function CreateNewInstance: TKeyIndexStrings; override;
+    class function CreateNewInstance: TRoleMapper; override;
   public
     class property Connection: ISqlConnection read fConnection write fConnection;
     class procedure Invalidate;
+
+    constructor Create;
+    destructor Destroy; override;
+    property Data: TKeyIndexStrings read fData;
   end;
 
 implementation
@@ -21,9 +27,25 @@ uses DtoRole, SelectList, CrudConfigRole;
 
 { TRoleMapper }
 
-class function TRoleMapper.CreateNewInstance: TKeyIndexStrings;
+class function TRoleMapper.CreateNewInstance: TRoleMapper;
 begin
-  Result := TKeyIndexStrings.Create(
+  Result := TRoleMapper.Create;
+end;
+
+class procedure TRoleMapper.Invalidate;
+begin
+  CallProcIfInstanceAvailable(
+    procedure(aInstance: TRoleMapper)
+    begin
+      aInstance.Data.Invalidate;
+    end
+  );
+end;
+
+constructor TRoleMapper.Create;
+begin
+  inherited Create;
+  fData := TKeyIndexStrings.Create(
       function(var aData: TKeyIndexStringsData): Boolean
       begin
         Result := True;
@@ -45,14 +67,11 @@ begin
     );
 end;
 
-class procedure TRoleMapper.Invalidate;
+destructor TRoleMapper.Destroy;
 begin
-  CallProcIfInstanceAvailable(
-    procedure(aInstance: TKeyIndexStrings)
-    begin
-      aInstance.Invalidate;
-    end
-  );
+  fData.Free;
+  inherited;
 end;
 
 end.
+

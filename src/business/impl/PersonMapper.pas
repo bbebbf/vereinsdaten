@@ -5,14 +5,20 @@ interface
 uses Singleton, KeyIndexStrings, SqlConnection;
 
 type
-  TPersonMapper = class(TSingletonObject<TActiveKeyIndexStringsLoader>)
+  TPersonMapper = class(TSingletonObject<TPersonMapper>)
   strict private
     class var fConnection: ISqlConnection;
+    var
+      fData: TActiveKeyIndexStringsLoader;
   strict protected
-    class function CreateNewInstance: TActiveKeyIndexStringsLoader; override;
+    class function CreateNewInstance: TPersonMapper; override;
   public
     class property Connection: ISqlConnection read fConnection write fConnection;
     class procedure Invalidate;
+
+    constructor Create;
+    destructor Destroy; override;
+    property Data: TActiveKeyIndexStringsLoader read fData;
   end;
 
 implementation
@@ -21,9 +27,25 @@ uses DtoPerson, SelectList, CrudConfigPerson;
 
 { TPersonMapper }
 
-class function TPersonMapper.CreateNewInstance: TActiveKeyIndexStringsLoader;
+class function TPersonMapper.CreateNewInstance: TPersonMapper;
 begin
-  Result := TActiveKeyIndexStringsLoader.Create(
+  Result := TPersonMapper.Create;
+end;
+
+class procedure TPersonMapper.Invalidate;
+begin
+  CallProcIfInstanceAvailable(
+    procedure(aInstance: TPersonMapper)
+    begin
+      aInstance.Data.Invalidate;
+    end
+  );
+end;
+
+constructor TPersonMapper.Create;
+begin
+  inherited Create;
+  fData := TActiveKeyIndexStringsLoader.Create(
       function(var aData: TActiveKeyIndexStrings): Boolean
       begin
         Result := True;
@@ -40,14 +62,10 @@ begin
     );
 end;
 
-class procedure TPersonMapper.Invalidate;
+destructor TPersonMapper.Destroy;
 begin
-  CallProcIfInstanceAvailable(
-    procedure(aInstance: TActiveKeyIndexStringsLoader)
-    begin
-      aInstance.Invalidate;
-    end
-  );
+  fData.Free;
+  inherited;
 end;
 
 end.
