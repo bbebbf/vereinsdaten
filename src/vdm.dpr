@@ -117,7 +117,8 @@ uses
   PersonMapper in 'business\impl\PersonMapper.pas',
   MainBusinessIntf in 'business\intf\MainBusinessIntf.pas',
   MainBusiness in 'business\impl\MainBusiness.pas',
-  MainUI in 'view\intf\MainUI.pas';
+  MainUI in 'view\intf\MainUI.pas',
+  ActionlistWrapper in 'view\tools\ActionlistWrapper.pas';
 
 {$R *.res}
 
