@@ -7,7 +7,7 @@ uses
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.ExtCtrls, Vcl.StdCtrls,
   ExtendedListview, DtoMember, DtoMemberAggregated, MemberOfUI, MemberOfBusinessIntf,
   unMemberOfsEditDlg, System.Actions, Vcl.ActnList, ListCrudCommands, Vcl.Menus,
-  Vdm.Versioning.Types, VersionInfoEntryUI, KeyIndexStrings;
+  Vdm.Versioning.Types, VersionInfoEntryUI, KeyIndexStrings, ActionlistWrapper;
 
 type
   TfraMemberOf = class(TFrame, IMemberOfUI, IVersionInfoEntryUI)
@@ -47,6 +47,7 @@ type
     fExtentedListviewMemberOfs: TExtendedListview<TListEntry<TDtoMemberAggregated>>;
     fDialog: TfmMemberOfsEditDlg;
     fAllDetailedItemsStringsData: TKeyIndexStringsData;
+    fActionlistWrapper: TActionlistWrapper;
     procedure SetCommands(const aCommands: IMemberOfBusinessIntf);
     procedure ListEnumBegin;
     procedure ListEnumProcessItem(const aItem: TListEntry<TDtoMemberAggregated>);
@@ -192,6 +193,7 @@ begin
     )
   );
   fDialog := TfmMemberOfsEditDlg.Create(Self);
+  fActionlistWrapper := TActionlistWrapper.Create(alMemberOfsActionList);
 end;
 
 destructor TfraMemberOf.Destroy;
@@ -199,19 +201,13 @@ begin
   fAllDetailedItemsStringsData.Free;
   fDialog.Free;
   fExtentedListviewMemberOfs.Free;
+  fActionlistWrapper.Free;
   inherited;
 end;
 
 procedure TfraMemberOf.SetActionsEnabled(const aEnabled: Boolean);
 begin
-  if aEnabled then
-  begin
-    alMemberOfsActionList.State := TActionListState.asNormal;
-  end
-  else
-  begin
-    alMemberOfsActionList.State := TActionListState.asSuspended;
-  end;
+  fActionlistWrapper.Enabled := aEnabled;
 end;
 
 procedure TfraMemberOf.SetCommands(const aCommands: IMemberOfBusinessIntf);
@@ -289,14 +285,14 @@ end;
 
 procedure TfraMemberOf.UpdateEditItemActions(const aEnabled: Boolean);
 begin
-  acEditMemberOf.Enabled := aEnabled;
-  acDeleteMemberOf.Enabled := aEnabled;
+  fActionlistWrapper.SetActionEnabled(acEditMemberOf, aEnabled);
+  fActionlistWrapper.SetActionEnabled(acDeleteMemberOf, aEnabled);
 end;
 
 procedure TfraMemberOf.UpdateListActions(const aEnabled: Boolean);
 begin
-  acSaveMemberOfs.Enabled := aEnabled;
-  acReloadMemberOfs.Enabled := aEnabled;
+  fActionlistWrapper.SetActionEnabled(acSaveMemberOfs, aEnabled);
+  fActionlistWrapper.SetActionEnabled(acReloadMemberOfs, aEnabled);
 end;
 
 function TfraMemberOf.GetStringByIndex(const aStrings: TStrings; const aIndex: Integer): string;
