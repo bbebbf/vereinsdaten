@@ -33,14 +33,13 @@ type
     lbVersionInfo: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure FormActivate(Sender: TObject);
     procedure lvListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
     procedure acSaveCurrentEntryExecute(Sender: TObject);
     procedure acReloadCurrentEntryExecute(Sender: TObject);
     procedure acStartNewEntryExecute(Sender: TObject);
     procedure lvListviewDblClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
   strict private
-    fActivated: Boolean;
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
     fBusinessIntf: ICrudCommands<UInt32, TVoid>;
@@ -136,16 +135,6 @@ begin
 
 end;
 
-procedure TfmAddress.FormActivate(Sender: TObject);
-begin
-  if fActivated then
-    Exit;
-  fActivated := True;
-
-  SetEditMode(False);
-  fBusinessIntf.LoadList;
-end;
-
 procedure TfmAddress.FormCreate(Sender: TObject);
 begin
   fComponentValueChangedObserver := TComponentValueChangedObserver.Create;
@@ -204,6 +193,8 @@ begin
     end,
     200
   );
+
+  lbVersionInfo.Caption := '';
 end;
 
 procedure TfmAddress.FormDestroy(Sender: TObject);
@@ -212,6 +203,12 @@ begin
   fExtendedListviewMemberOfs.Free;
   fExtendedListview.Free;
   fComponentValueChangedObserver.Free;
+end;
+
+procedure TfmAddress.FormShow(Sender: TObject);
+begin
+  SetEditMode(False);
+  fBusinessIntf.LoadList;
 end;
 
 function TfmAddress.GetEntryFromUI(var aEntry: TDtoAddressAggregated; const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;

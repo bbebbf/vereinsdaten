@@ -19,12 +19,11 @@ type
     btReload: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure FormActivate(Sender: TObject);
     procedure acSaveCurrentEntryExecute(Sender: TObject);
     procedure acReloadCurrentEntryExecute(Sender: TObject);
     procedure acStartNewEntryExecute(Sender: TObject);
+    procedure FormShow(Sender: TObject);
   strict private
-    fActivated: Boolean;
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
     fBusinessIntf: ICrudCommands<UInt8, TVoid>;
@@ -104,16 +103,6 @@ begin
 
 end;
 
-procedure TfmTenant.FormActivate(Sender: TObject);
-begin
-  if fActivated then
-    Exit;
-  fActivated := True;
-
-  SetEditMode(False);
-  fBusinessIntf.LoadList;
-end;
-
 procedure TfmTenant.FormCreate(Sender: TObject);
 begin
   fComponentValueChangedObserver := TComponentValueChangedObserver.Create;
@@ -126,6 +115,12 @@ end;
 procedure TfmTenant.FormDestroy(Sender: TObject);
 begin
   fComponentValueChangedObserver.Free;
+end;
+
+procedure TfmTenant.FormShow(Sender: TObject);
+begin
+  SetEditMode(False);
+  fBusinessIntf.LoadList;
 end;
 
 function TfmTenant.GetEntryFromUI(var aEntry: TDtoTenant; const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;

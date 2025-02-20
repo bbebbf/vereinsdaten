@@ -44,6 +44,8 @@ type
     cbDataConfirmedOnKnown: TCheckBox;
     dtDataConfirmedOn: TDateTimePicker;
     pnMemberOf: TPanel;
+    lbFilter: TLabel;
+    edFilter: TEdit;
     procedure lvListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure lvListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
@@ -53,6 +55,7 @@ type
     procedure cbShowInactiveUnitsClick(Sender: TObject);
     procedure btReturnClick(Sender: TObject);
     procedure lvListviewDblClick(Sender: TObject);
+    procedure edFilterChange(Sender: TObject);
   strict private
     fUnitMemberOf: TfraMemberOf;
     fReturnAction: TAction;
@@ -157,6 +160,8 @@ begin
     end,
     200
   );
+
+  lbVersionInfo.Caption := '';
 end;
 
 destructor TfraUnit.Destroy;
@@ -168,6 +173,17 @@ begin
   fActiveSinceHandler.Free;
   fActiveUntilHandler.Free;
   inherited;
+end;
+
+procedure TfraUnit.edFilterChange(Sender: TObject);
+begin
+  const lEmptyFilter = Length(edFilter.Text) = 0;
+  fExtendedListview.Filter<string>(LowerCase(edFilter.Text),
+    function(const aFilterExpression: string; const aData: TDtoUnit): Boolean
+    begin
+      Result := lEmptyFilter or (Pos(aFilterExpression, LowerCase(aData.ToString)) > 0);
+    end
+  );
 end;
 
 procedure TfraUnit.acReloadCurrentEntryExecute(Sender: TObject);

@@ -42,9 +42,9 @@ object fraUnit: TfraUnit
     end
     object lvListview: TListView
       Left = 0
-      Top = 41
+      Top = 73
       Width = 350
-      Height = 563
+      Height = 531
       Align = alClient
       Columns = <
         item
@@ -58,15 +58,29 @@ object fraUnit: TfraUnit
       OnCustomDrawItem = lvListviewCustomDrawItem
       OnDblClick = lvListviewDblClick
       OnSelectItem = lvListviewSelectItem
+      ExplicitTop = 41
+      ExplicitHeight = 563
     end
     object pnFilter: TPanel
       Left = 0
       Top = 0
       Width = 350
-      Height = 41
+      Height = 73
       Align = alTop
       BevelOuter = bvNone
       TabOrder = 0
+      DesignSize = (
+        350
+        73)
+      object lbFilter: TLabel
+        Left = 16
+        Top = 47
+        Width = 29
+        Height = 15
+        Anchors = [akLeft, akBottom]
+        Caption = 'Filter:'
+        ExplicitTop = 87
+      end
       object cbShowInactiveUnits: TCheckBox
         Left = 16
         Top = 13
@@ -75,6 +89,15 @@ object fraUnit: TfraUnit
         Caption = 'Inaktive Einheiten anzeigen'
         TabOrder = 0
         OnClick = cbShowInactiveUnitsClick
+      end
+      object edFilter: TEdit
+        Left = 53
+        Top = 44
+        Width = 291
+        Height = 23
+        Anchors = [akLeft, akRight, akBottom]
+        TabOrder = 1
+        OnChange = edFilterChange
       end
     end
     object btStartNewRecord: TButton
@@ -232,8 +255,6 @@ object fraUnit: TfraUnit
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 1
-      ExplicitTop = 489
-      ExplicitHeight = 165
     end
   end
   object pnTop: TPanel

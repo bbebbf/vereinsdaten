@@ -38,16 +38,13 @@ end;
 
 procedure TActionlistWrapper.SetActionEnabled(const aAction: TContainedAction; const aEnabled: Boolean);
 begin
-  if not fActionEnabledDict.ContainsKey(aAction) then
-    Exit;
-
   if fEnabled then
   begin
     aAction.Enabled := aEnabled;
   end
-  else
+  else if fActionEnabledDict.ContainsKey(aAction) then
   begin
-    fActionEnabledDict[aAction] := aEnabled;
+    fActionEnabledDict.AddOrSetValue(aAction, aEnabled);
   end;
 end;
 

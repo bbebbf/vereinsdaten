@@ -12,9 +12,9 @@ object fmAddress: TfmAddress
   Font.Name = 'Segoe UI'
   Font.Style = []
   Position = poOwnerFormCenter
-  OnActivate = FormActivate
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnShow = FormShow
   TextHeight = 15
   object Splitter1: TSplitter
     Left = 570

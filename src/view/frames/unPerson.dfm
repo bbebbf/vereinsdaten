@@ -92,7 +92,7 @@ object fraPerson: TfraPerson
         Top = 44
         Width = 226
         Height = 23
-        Anchors = [akRight, akBottom]
+        Anchors = [akLeft, akRight, akBottom]
         TabOrder = 1
         OnChange = edFilterChange
       end

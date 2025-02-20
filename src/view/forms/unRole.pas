@@ -30,14 +30,13 @@ type
     lbListviewItemCount: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure FormActivate(Sender: TObject);
     procedure lvListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
     procedure acSaveCurrentEntryExecute(Sender: TObject);
     procedure acReloadCurrentEntryExecute(Sender: TObject);
     procedure acStartNewEntryExecute(Sender: TObject);
     procedure lvListviewDblClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
   strict private
-    fActivated: Boolean;
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
     fBusinessIntf: ICrudCommands<UInt32, TVoid>;
@@ -120,16 +119,6 @@ begin
 
 end;
 
-procedure TfmRole.FormActivate(Sender: TObject);
-begin
-  if fActivated then
-    Exit;
-  fActivated := True;
-
-  SetEditMode(False);
-  fBusinessIntf.LoadList;
-end;
-
 procedure TfmRole.FormCreate(Sender: TObject);
 begin
   fComponentValueChangedObserver := TComponentValueChangedObserver.Create;
@@ -174,6 +163,12 @@ begin
   fDelayedLoadEntry.Free;
   fExtendedListview.Free;
   fComponentValueChangedObserver.Free;
+end;
+
+procedure TfmRole.FormShow(Sender: TObject);
+begin
+  SetEditMode(False);
+  fBusinessIntf.LoadList;
 end;
 
 function TfmRole.GetEntryFromUI(var aEntry: TDtoRole; const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
