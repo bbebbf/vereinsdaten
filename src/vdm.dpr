@@ -139,6 +139,7 @@ begin
     SetInformationJobObject(lJobObjectHandle, JobObjectExtendedLimitInformation, @lJobLimitInfo, SizeOf(lJobLimitInfo));
     AssignProcessToJobObject(lJobObjectHandle, GetCurrentProcess);
     {$endif}
+    Application.CreateForm(TfmMain, fmMain);
 
     var lConnectionCount := TConfigReader.Instance.ConnectionNames.Count;
     if lConnectionCount = 0 then
@@ -169,14 +170,13 @@ begin
         TMessageDialogs.Ok('Verbindung zur Datenbank ist fehlgeschlagen. Programm wird beendet.', TMsgDlgType.mtError);
         Exit;
       end;
-
-      Application.CreateForm(TfmMain, fmMain);
       var lMainBusiness: IMainBusiness := TMainBusiness.Create(lConnection, fmMain);
       lMainBusiness.Initialize;
-      Application.Run;
     finally
       lConnectProgressUI.Free;
     end;
+
+    Application.Run;
   finally
     if lJobObjectHandle > 0 then
       CloseHandle(lJobObjectHandle);
