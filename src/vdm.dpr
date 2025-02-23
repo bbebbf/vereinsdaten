@@ -167,7 +167,8 @@ begin
         lConnection.Connect;
         lProgress := nil;
       except
-        TMessageDialogs.Ok('Verbindung zur Datenbank ist fehlgeschlagen. Programm wird beendet.', TMsgDlgType.mtError);
+        lProgress := nil;
+        TMessageDialogs.Ok('Verbindung zur Datenbank ist fehlgeschlagen. Das Programm wird beendet.', TMsgDlgType.mtError);
         Exit;
       end;
       var lMainBusiness: IMainBusiness := TMainBusiness.Create(lConnection, fmMain);
