@@ -58,7 +58,7 @@ begin
           lListConfig.GetRecordFromSqlResult(lSqlResult, lRecord);
           aData.AddString(lRecord.Id, lRecord.Active, lRecord.ToString);
         end;
-    end
+      end
     );
 end;
 

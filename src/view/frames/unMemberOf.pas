@@ -47,6 +47,7 @@ type
     fExtentedListviewMemberOfs: TExtendedListview<TListEntry<TDtoMemberAggregated>>;
     fDialog: TfmMemberOfsEditDlg;
     fAllDetailedItemsStringsData: TKeyIndexStringsData;
+    fAllRolesStringsData: TKeyIndexStringsData;
     fActionlistWrapper: TActionlistWrapper;
     procedure SetCommands(const aCommands: IMemberOfBusinessIntf);
     procedure ListEnumBegin;
@@ -172,11 +173,14 @@ begin
     begin
       if not Assigned(fAllDetailedItemsStringsData) then
         fAllDetailedItemsStringsData := aData.Data.AvailableDetailItems.Data.GetAllEntries;
+      if not Assigned(fAllRolesStringsData) then
+        fAllRolesStringsData := aData.Data.AvailableRoles.Data.GetAllEntries;
 
       aListItem.Caption := GetStringByIndex(fAllDetailedItemsStringsData.Strings,
         fAllDetailedItemsStringsData.Mapper.GetIndex(aData.Data.DetailItemId));
       aListItem.SubItems.Clear;
-      aListItem.SubItems.Add(GetStringByIndex(aData.Data.AvailableRoles.Data.Strings, aData.Data.RoleIndex));
+      aListItem.SubItems.Add(GetStringByIndex(fAllRolesStringsData.Strings,
+        fAllRolesStringsData.Mapper.GetIndex(aData.Data.RoleId)));
       aListItem.SubItems.Add(TVdmGlobals.GetDateAsString(aData.Data.Member.ActiveSince));
       aListItem.SubItems.Add(TVdmGlobals.GetActiveStateAsString(aData.Data.Member.Active));
       aListItem.SubItems.Add(TVdmGlobals.GetDateAsString(aData.Data.Member.ActiveUntil));
@@ -198,6 +202,7 @@ end;
 
 destructor TfraMemberOf.Destroy;
 begin
+  fAllRolesStringsData.Free;
   fAllDetailedItemsStringsData.Free;
   fDialog.Free;
   fExtentedListviewMemberOfs.Free;

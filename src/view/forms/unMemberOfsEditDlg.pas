@@ -60,38 +60,42 @@ begin
   fDetailItemTitle := aDetailItemTitle;
   lbDetailItem.Caption := fDetailItemTitle;
 
-  var lStringsMapping: TKeyIndexStringsData := nil;
+  var lDetailStringsMapping: TKeyIndexStringsData := nil;
+  var lRoleStringsMapping: TKeyIndexStringsData := nil;
   try
     if aNewRecord then
     begin
       Caption := 'Neue Verbindung hinzufügen';
-      lStringsMapping := aMemberRecord.AvailableDetailItems.Data.GetActiveEntries;
+      lDetailStringsMapping := aMemberRecord.AvailableDetailItems.Data.GetActiveEntries;
+      lRoleStringsMapping := aMemberRecord.AvailableRoles.Data.GetActiveEntries;
     end
     else
     begin
       Caption := 'Verbindung bearbeiten';
-      lStringsMapping := aMemberRecord.AvailableDetailItems.Data.GetAllEntries;
+      lDetailStringsMapping := aMemberRecord.AvailableDetailItems.Data.GetAllEntries;
+      lRoleStringsMapping := aMemberRecord.AvailableRoles.Data.GetAllEntries;
     end;
     ActiveControl := cbDetailItem;
 
-    cbDetailItem.Items.Assign(lStringsMapping.Strings);
-    cbRole.Items.Assign(aMemberRecord.AvailableRoles.Data.Strings);
-    TVclUITools.SetComboboxItemIndex(cbDetailItem, lStringsMapping.Mapper.GetIndex(aMemberRecord.DetailItemId));
-    TVclUITools.SetComboboxItemIndex(cbRole, aMemberRecord.RoleIndex);
+    cbDetailItem.Items.Assign(lDetailStringsMapping.Strings);
+    cbRole.Items.Assign(lRoleStringsMapping.Strings);
+    TVclUITools.SetComboboxItemIndex(cbDetailItem, lDetailStringsMapping.Mapper.GetIndex(aMemberRecord.DetailItemId));
+    TVclUITools.SetComboboxItemIndex(cbRole, lRoleStringsMapping.Mapper.GetIndex(aMemberRecord.RoleId));
     cbActive.Checked := aMemberRecord.Member.Active;
     fActiveSinceHandler.Datetime := aMemberRecord.Member.ActiveSince;
     fActiveUntilHandler.Datetime := aMemberRecord.Member.ActiveUntil;
     if ShowModal = mrOk then
     begin
       Result := True;
-      aMemberRecord.DetailItemId := lStringsMapping.Mapper.GetKey(cbDetailItem.ItemIndex);
-      aMemberRecord.RoleIndex := cbRole.ItemIndex;
+      aMemberRecord.DetailItemId := lDetailStringsMapping.Mapper.GetKey(cbDetailItem.ItemIndex);
+      aMemberRecord.RoleId := lRoleStringsMapping.Mapper.GetKey(cbRole.ItemIndex);
       aMemberRecord.Active := cbActive.Checked;
       aMemberRecord.ActiveSince := fActiveSinceHandler.Datetime;
       aMemberRecord.ActiveUntil := fActiveUntilHandler.Datetime;
     end;
   finally
-    lStringsMapping.Free;
+    lRoleStringsMapping.Free;
+    lDetailStringsMapping.Free;
   end;
 end;
 

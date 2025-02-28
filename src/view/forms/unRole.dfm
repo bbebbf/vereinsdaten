@@ -102,7 +102,7 @@ object fmRole: TfmRole
     end
     object lbSorting: TLabel
       Left = 23
-      Top = 83
+      Top = 114
       Width = 55
       Height = 15
       Caption = 'Sortierung'
@@ -122,7 +122,7 @@ object fmRole: TfmRole
       Height = 25
       Action = acSaveCurrentEntry
       Default = True
-      TabOrder = 2
+      TabOrder = 3
     end
     object btReload: TButton
       Left = 190
@@ -131,14 +131,22 @@ object fmRole: TfmRole
       Height = 25
       Action = acReloadCurrentEntry
       Cancel = True
-      TabOrder = 3
+      TabOrder = 4
     end
     object edRoleSorting: TEdit
       Left = 23
-      Top = 107
+      Top = 138
       Width = 55
       Height = 23
       NumbersOnly = True
+      TabOrder = 2
+    end
+    object cbRoleActive: TCheckBox
+      Left = 23
+      Top = 82
+      Width = 145
+      Height = 16
+      Caption = 'Aktiv'
       TabOrder = 1
     end
   end

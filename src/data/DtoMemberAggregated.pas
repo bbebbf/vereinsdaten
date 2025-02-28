@@ -9,18 +9,16 @@ type
   strict private
     fMember: TDtoMember;
     fMemberOfConfigIntf: IMemberOfConfigIntf;
-    fAvailableRoles: TKeyIndexStrings;
+    fAvailableRoles: TActiveKeyIndexStringsLoader;
     fVersionInfoPersonMemberOf: TVersionInfoEntry;
     function GetAvailableDetailItems: TActiveKeyIndexStringsLoader;
-    function GetRoleIndex: Integer;
     function GetDetailItemId: UInt32;
-    procedure SetRoleIndex(const aValue: Integer);
     procedure SetDetailItemId(const aValue: UInt32);
     function GetVersionInfoPersonMemberOf: TVersionInfoEntry;
   public
-    constructor Create(const aMemberOfConfigIntf: IMemberOfConfigIntf; const aAvailableRoles: TKeyIndexStrings); overload;
+    constructor Create(const aMemberOfConfigIntf: IMemberOfConfigIntf; const aAvailableRoles: TActiveKeyIndexStringsLoader); overload;
     constructor Create(const aMemberOfConfigIntf: IMemberOfConfigIntf;
-      const aAvailableRoles: TKeyIndexStrings; const aMember: TDtoMember); overload;
+      const aAvailableRoles: TActiveKeyIndexStringsLoader; const aMember: TDtoMember); overload;
     destructor Destroy; override;
     procedure UpdateByDtoMember(const aMember: TDtoMember);
     property Member: TDtoMember read fMember;
@@ -32,9 +30,8 @@ type
     property ActiveSince: TDate read fMember.ActiveSince write fMember.ActiveSince;
     property ActiveUntil: TDate read fMember.ActiveUntil write fMember.ActiveUntil;
     property DetailItemId: UInt32 read GetDetailItemId write SetDetailItemId;
-    property RoleIndex: Integer read GetRoleIndex write SetRoleIndex;
     property AvailableDetailItems: TActiveKeyIndexStringsLoader read GetAvailableDetailItems;
-    property AvailableRoles: TKeyIndexStrings read fAvailableRoles;
+    property AvailableRoles: TActiveKeyIndexStringsLoader read fAvailableRoles;
     property VersionInfoPersonMemberOf: TVersionInfoEntry read GetVersionInfoPersonMemberOf;
   end;
 
@@ -43,7 +40,7 @@ implementation
 { TDtoMemberAggregated }
 
 constructor TDtoMemberAggregated.Create(const aMemberOfConfigIntf: IMemberOfConfigIntf;
-  const aAvailableRoles: TKeyIndexStrings);
+  const aAvailableRoles: TActiveKeyIndexStringsLoader);
 begin
   inherited Create;
   fMemberOfConfigIntf := aMemberOfConfigIntf;
@@ -52,7 +49,7 @@ begin
 end;
 
 constructor TDtoMemberAggregated.Create(const aMemberOfConfigIntf: IMemberOfConfigIntf;
-  const aAvailableRoles: TKeyIndexStrings; const aMember: TDtoMember);
+  const aAvailableRoles: TActiveKeyIndexStringsLoader; const aMember: TDtoMember);
 begin
   inherited Create;
   fMemberOfConfigIntf := aMemberOfConfigIntf;
@@ -64,11 +61,6 @@ destructor TDtoMemberAggregated.Destroy;
 begin
   fVersionInfoPersonMemberOf.Free;
   inherited;
-end;
-
-function TDtoMemberAggregated.GetRoleIndex: Integer;
-begin
-  Result := fAvailableRoles.Data.Mapper.GetIndex(fMember.RoleId);
 end;
 
 function TDtoMemberAggregated.GetVersionInfoPersonMemberOf: TVersionInfoEntry;
@@ -86,11 +78,6 @@ end;
 function TDtoMemberAggregated.GetDetailItemId: UInt32;
 begin
   Result := fMemberOfConfigIntf.GetDetailItemIdFromMember(fMember);
-end;
-
-procedure TDtoMemberAggregated.SetRoleIndex(const aValue: Integer);
-begin
-  fMember.RoleId := fAvailableRoles.Data.Mapper.GetKey(aValue);
 end;
 
 procedure TDtoMemberAggregated.SetDetailItemId(const aValue: UInt32);

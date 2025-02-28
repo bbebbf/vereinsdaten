@@ -34,6 +34,7 @@ procedure TCrudConfigRole.GetRecordFromSqlResult(const aSqlResult: ISqlResult; v
 begin
   aData.Id := aSqlResult.FieldByName('role_id').AsLargeInt;
   aData.Name := aSqlResult.FieldByName('role_name').AsString;
+  aData.Active := aSqlResult.FieldByName('role_active').AsBoolean;
   aData.Sorting := aSqlResult.FieldByName('role_sorting').AsInteger;
 end;
 
@@ -76,6 +77,7 @@ begin
   if aForUpdate then
     aAccessor.SetValue('role_id', aRecord.Id);
   aAccessor.SetValue('role_name', aRecord.Name);
+  aAccessor.SetValue('role_active', aRecord.Active);
   aAccessor.SetValue('role_sorting', aRecord.Sorting);
 end;
 

@@ -28,6 +28,7 @@ type
     edRoleSorting: TEdit;
     lbSorting: TLabel;
     lbListviewItemCount: TLabel;
+    cbRoleActive: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure lvListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
@@ -100,6 +101,7 @@ begin
   fComponentValueChangedObserver.BeginUpdate;
 
   edRoleName.Text := '';
+  cbRoleActive.Checked := True;
   edRoleSorting.Text := '';
   fComponentValueChangedObserver.EndUpdate;
 end;
@@ -126,6 +128,7 @@ begin
   fComponentValueChangedObserver.OnValuesUnchanged := ControlValuesUnchanged;
 
   fComponentValueChangedObserver.RegisterEdit(edRoleName);
+  fComponentValueChangedObserver.RegisterCheckbox(cbRoleActive);
   fComponentValueChangedObserver.RegisterEdit(edRoleSorting);
 
   fExtendedListview := TExtendedListview<TDtoRole>.Create(lvListview,
@@ -196,6 +199,7 @@ begin
 
   Result := True;
   aEntry.Name := edRoleName.Text;
+  aEntry.Active := cbRoleActive.Checked;
   aEntry.Sorting := lSortingInteger;
 end;
 
@@ -280,6 +284,7 @@ begin
   fComponentValueChangedObserver.BeginUpdate;
 
   edRoleName.Text := aEntry.Name;
+  cbRoleActive.Checked := aEntry.Active;
   edRoleSorting.Text := IntToStr(aEntry.Sorting);
 
   fExtendedListview.UpdateData(aEntry);

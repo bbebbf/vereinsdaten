@@ -6,6 +6,7 @@ type
   TDtoRole = record
     Id: UInt32;
     Name: string;
+    Active: Boolean;
     Sorting: UInt8;
     function ToString: string;
   end;

@@ -9,7 +9,7 @@ type
   strict private
     class var fConnection: ISqlConnection;
     var
-      fData: TKeyIndexStrings;
+      fData: TActiveKeyIndexStringsLoader;
   strict protected
     class function CreateNewInstance: TRoleMapper; override;
   public
@@ -18,7 +18,7 @@ type
 
     constructor Create;
     destructor Destroy; override;
-    property Data: TKeyIndexStrings read fData;
+    property Data: TActiveKeyIndexStringsLoader read fData;
   end;
 
 implementation
@@ -45,23 +45,18 @@ end;
 constructor TRoleMapper.Create;
 begin
   inherited Create;
-  fData := TKeyIndexStrings.Create(
-      function(var aData: TKeyIndexStringsData): Boolean
+  fData := TActiveKeyIndexStringsLoader.Create(
+      function(var aData: TActiveKeyIndexStrings): Boolean
       begin
         Result := True;
         var lListConfig: ISelectList<TDtoRole> := TCrudConfigRole.Create;
-        aData := TKeyIndexStringsData.Create;
-        try
-          aData.BeginUpdate;
-          var lSqlResult := fConnection.GetSelectResult(lListConfig.GetSelectListSQL);
-          while lSqlResult.Next do
-          begin
-            var lRecord := default(TDtoRole);
-            lListConfig.GetRecordFromSqlResult(lSqlResult, lRecord);
-            aData.AddMappedString(lRecord.Id, lRecord.ToString);
-          end;
-        finally
-          aData.EndUpdate;
+        aData := TActiveKeyIndexStrings.Create;
+        var lSqlResult := fConnection.GetSelectResult(lListConfig.GetSelectListSQL);
+        while lSqlResult.Next do
+        begin
+          var lRecord := default(TDtoRole);
+          lListConfig.GetRecordFromSqlResult(lSqlResult, lRecord);
+          aData.AddString(lRecord.Id, lRecord.Active, lRecord.ToString);
         end;
       end
     );
