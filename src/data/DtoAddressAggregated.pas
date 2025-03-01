@@ -24,6 +24,7 @@ type
     property Id: UInt32 read fAddress.Id write fAddress.Id;
     property Street: string read fAddress.Street write fAddress.Street;
     property Postalcode: string read fAddress.Postalcode write fAddress.Postalcode;
+    property Active: Boolean read fAddress.Active write fAddress.Active;
     property City: string read fAddress.City write fAddress.City;
     property MemberOfList: TList<TDtoAddressAggregatedPersonMemberOf> read fMemberOfList;
   end;

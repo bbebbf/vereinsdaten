@@ -10,7 +10,7 @@ uses
   ComponentValueChangedObserver, CrudUI, Vdm.Types, ProgressIndicatorIntf;
 
 type
-  TfmRole = class(TForm, ICrudUI<TDtoRole, TDtoRole, UInt32, TVoid>)
+  TfmRole = class(TForm, ICrudUI<TDtoRole, TDtoRole, UInt32, TEntryFilter>)
     pnListview: TPanel;
     Splitter1: TSplitter;
     pnDetails: TPanel;
@@ -29,6 +29,7 @@ type
     lbSorting: TLabel;
     lbListviewItemCount: TLabel;
     cbRoleActive: TCheckBox;
+    cbShowInactiveEntries: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure lvListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
@@ -37,10 +38,13 @@ type
     procedure acStartNewEntryExecute(Sender: TObject);
     procedure lvListviewDblClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure lvListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
+      var DefaultDraw: Boolean);
+    procedure cbShowInactiveEntriesClick(Sender: TObject);
   strict private
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
-    fBusinessIntf: ICrudCommands<UInt32, TVoid>;
+    fBusinessIntf: ICrudCommands<UInt32, TEntryFilter>;
     fExtendedListview: TExtendedListview<TDtoRole>;
     fDelayedLoadEntry: TDelayedLoadEntry;
     fProgressIndicator: IProgressIndicator;
@@ -51,14 +55,15 @@ type
     procedure ControlValuesUnchanged(Sender: TObject);
     procedure EnqueueLoadEntry(const aListItem: TListItem; const aDoStartEdit: Boolean);
 
-    procedure SetCrudCommands(const aCommands: ICrudCommands<UInt32, TVoid>);
+    procedure SetCrudCommands(const aCommands: ICrudCommands<UInt32, TEntryFilter>);
     procedure ListEnumBegin;
     procedure ListEnumProcessItem(const aEntry: TDtoRole);
     procedure ListEnumEnd;
     procedure DeleteEntryFromUI(const aUnitId: UInt32);
     procedure ClearEntryFromUI;
     procedure SetEntryToUI(const aEntry: TDtoRole; const aMode: TEntryToUIMode);
-    function GetEntryFromUI(var aEntry: TDtoRole; const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
+    function GetEntryFromUI(var aEntry: TDtoRole; const aMode: TUIToEntryMode;
+      const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
     procedure LoadCurrentEntry(const aEntryId: UInt32);
     function GetProgressIndicator: IProgressIndicator;
   end;
@@ -94,6 +99,13 @@ procedure TfmRole.acStartNewEntryExecute(Sender: TObject);
 begin
   fBusinessIntf.StartNewEntry;
   StartEdit;
+end;
+
+procedure TfmRole.cbShowInactiveEntriesClick(Sender: TObject);
+begin
+  var lListFilter := fBusinessIntf.ListFilter;
+  lListFilter.ShowInactiveEntries := cbShowInactiveEntries.Checked;
+  fBusinessIntf.ListFilter := lListFilter;
 end;
 
 procedure TfmRole.ClearEntryFromUI;
@@ -174,7 +186,8 @@ begin
   fBusinessIntf.LoadList;
 end;
 
-function TfmRole.GetEntryFromUI(var aEntry: TDtoRole; const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
+function TfmRole.GetEntryFromUI(var aEntry: TDtoRole; const aMode: TUIToEntryMode;
+  const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
 begin
   if TStringTools.IsEmpty(edRoleName.Text) then
   begin
@@ -208,7 +221,7 @@ begin
   Result := fProgressIndicator;
 end;
 
-procedure TfmRole.SetCrudCommands(const aCommands: ICrudCommands<UInt32, TVoid>);
+procedure TfmRole.SetCrudCommands(const aCommands: ICrudCommands<UInt32, TEntryFilter>);
 begin
   fBusinessIntf := aCommands;
 end;
@@ -239,6 +252,18 @@ begin
   fExtendedListview.EndUpdate;
   lbListviewItemCount.Caption := IntToStr(lvListview.Items.Count) + ' Datensätze';
   lvListview.SetFocus;
+end;
+
+procedure TfmRole.lvListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
+  var DefaultDraw: Boolean);
+begin
+  DefaultDraw := true;
+  var lRole: TDtoRole;
+  if fExtendedListview.TryGetListItemData(Item, lRole) then
+  begin
+    if not lRole.Active then
+      Sender.Canvas.Font.Color := TVdmGlobals.GetInactiveColor;
+  end;
 end;
 
 procedure TfmRole.lvListviewDblClick(Sender: TObject);

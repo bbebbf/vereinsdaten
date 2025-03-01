@@ -6,14 +6,14 @@ uses InterfacedBase, EntryCrudConfig, SqlConnection, CrudConfigRole, CrudConfig,
   Vdm.Types, CrudCommands;
 
 type
-  TCrudConfigRoleEntry = class(TInterfacedBase, IEntryCrudConfig<TDtoRole, TDtoRole, UInt32, TVoid>)
+  TCrudConfigRoleEntry = class(TInterfacedBase, IEntryCrudConfig<TDtoRole, TDtoRole, UInt32, TEntryFilter>)
   strict private
     fConnection: ISqlConnection;
     fCrudConfig: ICrudConfig<TDtoRole, UInt32>;
     fRecordActions: TRecordActions<TDtoRole, UInt32>;
     function GetListSqlResult: ISqlResult;
     function GetListEntryFromSqlResult(const aSqlResult: ISqlResult): TDtoRole;
-    function IsEntryValidForList(const aEntry: TDtoRole; const aListFilter: TVoid): Boolean;
+    function IsEntryValidForList(const aEntry: TDtoRole; const aListFilter: TEntryFilter): Boolean;
     function IsEntryValidForSaving(const aEntry: TDtoRole): Boolean;
     procedure DestroyEntry(var aEntry: TDtoRole);
     procedure DestroyListEntry(var aEntry: TDtoRole);
@@ -110,9 +110,9 @@ begin
   Result := False;
 end;
 
-function TCrudConfigRoleEntry.IsEntryValidForList(const aEntry: TDtoRole; const aListFilter: TVoid): Boolean;
+function TCrudConfigRoleEntry.IsEntryValidForList(const aEntry: TDtoRole; const aListFilter: TEntryFilter): Boolean;
 begin
-  Result := True;
+  Result := aEntry.Active or aListFilter.ShowInactiveEntries;
 end;
 
 function TCrudConfigRoleEntry.IsEntryValidForSaving(const aEntry: TDtoRole): Boolean;

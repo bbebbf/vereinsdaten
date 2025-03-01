@@ -11,14 +11,14 @@ type
     fConnection: ISqlConnection;
     fUI: IMainUI;
     fPersonBusinessIntf: IPersonBusinessIntf;
-    fCrudConfigUnit: IEntryCrudConfig<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>;
-    fBusinessUnit: ICrudCommands<UInt32, TUnitFilter>;
+    fCrudConfigUnit: IEntryCrudConfig<TDtoUnitAggregated, TDtoUnit, UInt32, TEntryFilter>;
+    fBusinessUnit: ICrudCommands<UInt32, TEntryFilter>;
 
     procedure Initialize;
     procedure UIIsReady;
-    procedure OpenCrudAddress(const aAdressUI: ICrudUI<TDtoAddressAggregated, TDtoAddress, UInt32, TVoid>;
+    procedure OpenCrudAddress(const aAdressUI: ICrudUI<TDtoAddressAggregated, TDtoAddress, UInt32, TEntryFilter>;
       const aModalProc: TFunc<Integer>);
-    procedure OpenCrudRole(const aRoleUI: ICrudUI<TDtoRole, TDtoRole, UInt32, TVoid>;
+    procedure OpenCrudRole(const aRoleUI: ICrudUI<TDtoRole, TDtoRole, UInt32, TEntryFilter>;
       const aModalProc: TFunc<Integer>);
     procedure OpenCrudTenant(const aTenantUI: ICrudUI<TDtoTenant, TDtoTenant, UInt8, TVoid>;
       const aModalProc: TFunc<Integer>);
@@ -51,7 +51,7 @@ begin
   fPersonBusinessIntf.Initialize;
 
   fCrudConfigUnit := TCrudConfigUnitAggregated.Create(fConnection, fUI.GetUnitMemberOfsUI, fUi.GetProgressIndicator);
-  fBusinessUnit := TCrudBusiness<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>.Create(fUI.GetUnitCrudUI, fCrudConfigUnit);
+  fBusinessUnit := TCrudBusiness<TDtoUnitAggregated, TDtoUnit, UInt32, TEntryFilter>.Create(fUI.GetUnitCrudUI, fCrudConfigUnit);
   fBusinessUnit.Initialize;
 end;
 
@@ -66,11 +66,11 @@ begin
   fUI.SetConfiguration(TConfigReader.Instance.Connection);
 end;
 
-procedure TMainBusiness.OpenCrudAddress(const aAdressUI: ICrudUI<TDtoAddressAggregated, TDtoAddress, UInt32, TVoid>;
+procedure TMainBusiness.OpenCrudAddress(const aAdressUI: ICrudUI<TDtoAddressAggregated, TDtoAddress, UInt32, TEntryFilter>;
   const aModalProc: TFunc<Integer>);
 begin
-  var lCrudConfig: IEntryCrudConfig<TDtoAddressAggregated, TDtoAddress, UInt32, TVoid> := TCrudConfigAddressAggregated.Create(fConnection);
-  var lBusiness: ICrudCommands<UInt32, TVoid> := TCrudBusiness<TDtoAddressAggregated, TDtoAddress, UInt32, TVoid>.Create(aAdressUI, lCrudConfig);
+  var lCrudConfig: IEntryCrudConfig<TDtoAddressAggregated, TDtoAddress, UInt32, TEntryFilter> := TCrudConfigAddressAggregated.Create(fConnection);
+  var lBusiness: ICrudCommands<UInt32, TEntryFilter> := TCrudBusiness<TDtoAddressAggregated, TDtoAddress, UInt32, TEntryFilter>.Create(aAdressUI, lCrudConfig);
   lBusiness.Initialize;
   aModalProc;
   if lBusiness.DataChanged then
@@ -79,11 +79,11 @@ begin
   end;
 end;
 
-procedure TMainBusiness.OpenCrudRole(const aRoleUI: ICrudUI<TDtoRole, TDtoRole, UInt32, TVoid>;
+procedure TMainBusiness.OpenCrudRole(const aRoleUI: ICrudUI<TDtoRole, TDtoRole, UInt32, TEntryFilter>;
   const aModalProc: TFunc<Integer>);
 begin
-  var lCrudConfig: IEntryCrudConfig<TDtoRole, TDtoRole, UInt32, TVoid> := TCrudConfigRoleEntry.Create(fConnection);
-  var lBusiness: ICrudCommands<UInt32, TVoid> := TCrudBusiness<TDtoRole, TDtoRole, UInt32, TVoid>.Create(aRoleUI, lCrudConfig);
+  var lCrudConfig: IEntryCrudConfig<TDtoRole, TDtoRole, UInt32, TEntryFilter> := TCrudConfigRoleEntry.Create(fConnection);
+  var lBusiness: ICrudCommands<UInt32, TEntryFilter> := TCrudBusiness<TDtoRole, TDtoRole, UInt32, TEntryFilter>.Create(aRoleUI, lCrudConfig);
   lBusiness.Initialize;
   aModalProc;
   if lBusiness.DataChanged then

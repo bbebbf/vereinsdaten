@@ -10,7 +10,7 @@ uses
   ComponentValueChangedObserver, CrudUI, Vdm.Types, Vdm.Versioning.Types, VersionInfoEntryUI, ProgressIndicatorIntf;
 
 type
-  TfmAddress = class(TForm, ICrudUI<TDtoAddressAggregated, TDtoAddress, UInt32, TVoid>, IVersionInfoEntryUI)
+  TfmAddress = class(TForm, ICrudUI<TDtoAddressAggregated, TDtoAddress, UInt32, TEntryFilter>, IVersionInfoEntryUI)
     pnListview: TPanel;
     Splitter1: TSplitter;
     pnDetails: TPanel;
@@ -31,6 +31,10 @@ type
     acDeleteCurrentEntry: TAction;
     lbListviewItemCount: TLabel;
     lbVersionInfo: TLabel;
+    cbAddressActive: TCheckBox;
+    cbShowInactiveEntries: TCheckBox;
+    edFilter: TEdit;
+    lbFilter: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure lvListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
@@ -39,10 +43,14 @@ type
     procedure acStartNewEntryExecute(Sender: TObject);
     procedure lvListviewDblClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure lvListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
+      var DefaultDraw: Boolean);
+    procedure cbShowInactiveEntriesClick(Sender: TObject);
+    procedure edFilterChange(Sender: TObject);
   strict private
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
-    fBusinessIntf: ICrudCommands<UInt32, TVoid>;
+    fBusinessIntf: ICrudCommands<UInt32, TEntryFilter>;
     fExtendedListview: TExtendedListview<TDtoAddress>;
     fExtendedListviewMemberOfs: TExtendedListview<TDtoAddressAggregatedPersonMemberOf>;
     fDelayedLoadEntry: TDelayedLoadEntry;
@@ -54,14 +62,15 @@ type
     procedure ControlValuesUnchanged(Sender: TObject);
     procedure EnqueueLoadEntry(const aListItem: TListItem; const aDoStartEdit: Boolean);
 
-    procedure SetCrudCommands(const aCommands: ICrudCommands<UInt32, TVoid>);
+    procedure SetCrudCommands(const aCommands: ICrudCommands<UInt32, TEntryFilter>);
     procedure ListEnumBegin;
     procedure ListEnumProcessItem(const aEntry: TDtoAddress);
     procedure ListEnumEnd;
     procedure DeleteEntryFromUI(const aUnitId: UInt32);
     procedure ClearEntryFromUI;
     procedure SetEntryToUI(const aEntry: TDtoAddressAggregated; const aMode: TEntryToUIMode);
-    function GetEntryFromUI(var aEntry: TDtoAddressAggregated; const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
+    function GetEntryFromUI(var aEntry: TDtoAddressAggregated; const aMode: TUIToEntryMode;
+      const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
     procedure LoadCurrentEntry(const aEntryId: UInt32);
     function GetProgressIndicator: IProgressIndicator;
 
@@ -109,6 +118,13 @@ begin
   SetEditMode(False);
 end;
 
+procedure TfmAddress.cbShowInactiveEntriesClick(Sender: TObject);
+begin
+  var lListFilter := fBusinessIntf.ListFilter;
+  lListFilter.ShowInactiveEntries := cbShowInactiveEntries.Checked;
+  fBusinessIntf.ListFilter := lListFilter;
+end;
+
 procedure TfmAddress.ClearEntryFromUI;
 begin
   fComponentValueChangedObserver.BeginUpdate;
@@ -116,6 +132,7 @@ begin
   edAddressStreet.Text := '';
   edAddressPostalcode.Text := '';
   edAddressCity.Text := '';
+  cbAddressActive.Checked := True;
   fComponentValueChangedObserver.EndUpdate;
   lvMemberOf.Items.Clear;
 end;
@@ -135,6 +152,17 @@ begin
 
 end;
 
+procedure TfmAddress.edFilterChange(Sender: TObject);
+begin
+  const lEmptyFilter = Length(edFilter.Text) = 0;
+  fExtendedListview.Filter<string>(LowerCase(edFilter.Text),
+    function(const aFilterExpression: string; const aData: TDtoAddress): Boolean
+    begin
+      Result := lEmptyFilter or (Pos(aFilterExpression, LowerCase(aData.ToString)) > 0);
+    end
+  );
+end;
+
 procedure TfmAddress.FormCreate(Sender: TObject);
 begin
   fComponentValueChangedObserver := TComponentValueChangedObserver.Create;
@@ -144,6 +172,7 @@ begin
   fComponentValueChangedObserver.RegisterEdit(edAddressStreet);
   fComponentValueChangedObserver.RegisterEdit(edAddressPostalcode);
   fComponentValueChangedObserver.RegisterEdit(edAddressCity);
+  fComponentValueChangedObserver.RegisterCheckbox(cbAddressActive);
 
   fExtendedListview := TExtendedListview<TDtoAddress>.Create(lvListview,
     procedure(const aData: TDtoAddress; const aListItem: TListItem)
@@ -211,7 +240,8 @@ begin
   fBusinessIntf.LoadList;
 end;
 
-function TfmAddress.GetEntryFromUI(var aEntry: TDtoAddressAggregated; const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
+function TfmAddress.GetEntryFromUI(var aEntry: TDtoAddressAggregated; const aMode: TUIToEntryMode;
+  const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
 begin
   if TStringTools.IsEmpty(edAddressCity.Text) then
   begin
@@ -225,6 +255,7 @@ begin
   aEntry.Street := edAddressStreet.Text;
   aEntry.Postalcode := edAddressPostalcode.Text;
   aEntry.City := edAddressCity.Text;
+  aEntry.Active := cbAddressActive.Checked;
 end;
 
 function TfmAddress.GetProgressIndicator: IProgressIndicator;
@@ -232,7 +263,7 @@ begin
   Result := fProgressIndicator;
 end;
 
-procedure TfmAddress.SetCrudCommands(const aCommands: ICrudCommands<UInt32, TVoid>);
+procedure TfmAddress.SetCrudCommands(const aCommands: ICrudCommands<UInt32, TEntryFilter>);
 begin
   fBusinessIntf := aCommands;
 end;
@@ -263,6 +294,18 @@ begin
   fExtendedListview.EndUpdate;
   lbListviewItemCount.Caption := IntToStr(lvListview.Items.Count) + ' Datensätze';
   lvListview.SetFocus;
+end;
+
+procedure TfmAddress.lvListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
+  var DefaultDraw: Boolean);
+begin
+  DefaultDraw := true;
+  var lAddress: TDtoAddress;
+  if fExtendedListview.TryGetListItemData(Item, lAddress) then
+  begin
+    if not lAddress.Active then
+      Sender.Canvas.Font.Color := TVdmGlobals.GetInactiveColor;
+  end;
 end;
 
 procedure TfmAddress.lvListviewDblClick(Sender: TObject);
@@ -311,6 +354,7 @@ begin
   edAddressStreet.Text := aEntry.Street;
   edAddressPostalcode.Text := aEntry.Postalcode;
   edAddressCity.Text := aEntry.City;
+  cbAddressActive.Checked := aEntry.Active;
   fExtendedListview.UpdateData(aEntry.Address);
 
   fComponentValueChangedObserver.EndUpdate;

@@ -57,7 +57,7 @@ type
     procedure SetConfiguration(const aConfig: TConfigConnection);
     function GetProgressIndicator: IProgressIndicator;
     function GetPersonAggregatedUI: IPersonAggregatedUI;
-    function GetUnitCrudUI: ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>;
+    function GetUnitCrudUI: ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32, TEntryFilter>;
     function GetUnitMemberOfsUI: IMemberOfUI;
   end;
 
@@ -194,7 +194,7 @@ begin
   Result := fProgressIndicator;
 end;
 
-function TfmMain.GetUnitCrudUI: ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>;
+function TfmMain.GetUnitCrudUI: ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32, TEntryFilter>;
 begin
   Result := ffraUnit;
 end;

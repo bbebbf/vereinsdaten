@@ -41,7 +41,8 @@ type
     procedure DeleteEntryFromUI(const aUnitId: UInt8);
     procedure ClearEntryFromUI;
     procedure SetEntryToUI(const aEntry: TDtoTenant; const aMode: TEntryToUIMode);
-    function GetEntryFromUI(var aEntry: TDtoTenant; const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
+    function GetEntryFromUI(var aEntry: TDtoTenant; const aMode: TUIToEntryMode;
+      const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
     function GetProgressIndicator: IProgressIndicator;
   public
     { Public-Deklarationen }
@@ -123,7 +124,8 @@ begin
   fBusinessIntf.LoadList;
 end;
 
-function TfmTenant.GetEntryFromUI(var aEntry: TDtoTenant; const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
+function TfmTenant.GetEntryFromUI(var aEntry: TDtoTenant; const aMode: TUIToEntryMode;
+  const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
 begin
   if TStringTools.IsEmpty(edTenantTitle.Text) then
   begin

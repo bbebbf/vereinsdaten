@@ -8,7 +8,7 @@ uses InterfacedBase, EntryCrudConfig, DtoUnitAggregated, SqlConnection, CrudConf
 
 type
   TCrudConfigUnitAggregated = class(TInterfacedBase,
-    IEntryCrudConfig<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>,
+    IEntryCrudConfig<TDtoUnitAggregated, TDtoUnit, UInt32, TEntryFilter>,
     IVersionInfoEntryAccessor<TDtoUnitAggregated>)
   strict private
     fConnection: ISqlConnection;
@@ -21,7 +21,7 @@ type
 
     function GetListSqlResult: ISqlResult;
     function GetListEntryFromSqlResult(const aSqlResult: ISqlResult): TDtoUnit;
-    function IsEntryValidForList(const aEntry: TDtoUnit; const aListFilter: TUnitFilter): Boolean;
+    function IsEntryValidForList(const aEntry: TDtoUnit; const aListFilter: TEntryFilter): Boolean;
     function IsEntryValidForSaving(const aEntry: TDtoUnitAggregated): Boolean;
     procedure DestroyEntry(var aEntry: TDtoUnitAggregated);
     procedure DestroyListEntry(var aEntry: TDtoUnit);
@@ -176,9 +176,9 @@ begin
   Result := not Assigned(aEntry);
 end;
 
-function TCrudConfigUnitAggregated.IsEntryValidForList(const aEntry: TDtoUnit; const aListFilter: TUnitFilter): Boolean;
+function TCrudConfigUnitAggregated.IsEntryValidForList(const aEntry: TDtoUnit; const aListFilter: TEntryFilter): Boolean;
 begin
-  Result := aEntry.Active or aListFilter.ShowInactiveUnits;
+  Result := aEntry.Active or aListFilter.ShowInactiveEntries;
 end;
 
 function TCrudConfigUnitAggregated.IsEntryValidForSaving(const aEntry: TDtoUnitAggregated): Boolean;

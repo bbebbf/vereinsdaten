@@ -136,7 +136,10 @@ begin
 
     var lSuspendScope := lProgress.SuspendUI;
     try
-      if not fUI.GetEntryFromUI(lTempSavingEntry, lSuspendScope) then
+      var lUIToEntryMode := TUIToEntryMode.OnUpdateEntry;
+      if fNewEntryStarted then
+        lUIToEntryMode := TUIToEntryMode.OnNewEntry;
+      if not fUI.GetEntryFromUI(lTempSavingEntry, lUIToEntryMode, lSuspendScope) then
       begin
         lSuspendScope := nil;
         Exit(TCrudSaveResult.CreateRecord(TCrudSaveStatus.Cancelled));

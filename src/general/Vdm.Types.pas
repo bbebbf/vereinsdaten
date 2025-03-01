@@ -7,8 +7,8 @@ uses DelayedExecute;
 type
   TVoid = record end;
 
-  TUnitFilter = record
-    ShowInactiveUnits: Boolean;
+  TEntryFilter = record
+    ShowInactiveEntries: Boolean;
   end;
 
   TDelayedLoadEntryData = record

@@ -7,7 +7,7 @@ uses InterfacedBase, EntryCrudConfig, DtoAddressAggregated, SqlConnection, CrudC
 
 type
   TCrudConfigAddressAggregated = class(TInterfacedBase,
-    IEntryCrudConfig<TDtoAddressAggregated, TDtoAddress, UInt32, TVoid>,
+    IEntryCrudConfig<TDtoAddressAggregated, TDtoAddress, UInt32, TEntryFilter>,
     IVersionInfoEntryAccessor<TDtoAddressAggregated>)
   strict private
     fConnection: ISqlConnection;
@@ -17,7 +17,7 @@ type
     fMemberSelectQuery: ISqlPreparedQuery;
     function GetListSqlResult: ISqlResult;
     function GetListEntryFromSqlResult(const aSqlResult: ISqlResult): TDtoAddress;
-    function IsEntryValidForList(const aEntry: TDtoAddress; const aListFilter: TVoid): Boolean;
+    function IsEntryValidForList(const aEntry: TDtoAddress; const aListFilter: TEntryFilter): Boolean;
     function IsEntryValidForSaving(const aEntry: TDtoAddressAggregated): Boolean;
     procedure DestroyEntry(var aEntry: TDtoAddressAggregated);
     procedure DestroyListEntry(var aEntry: TDtoAddress);
@@ -142,9 +142,9 @@ begin
   Result := not Assigned(aEntry);
 end;
 
-function TCrudConfigAddressAggregated.IsEntryValidForList(const aEntry: TDtoAddress; const aListFilter: TVoid): Boolean;
+function TCrudConfigAddressAggregated.IsEntryValidForList(const aEntry: TDtoAddress; const aListFilter: TEntryFilter): Boolean;
 begin
-  Result := True;
+  Result := aEntry.Active or aListFilter.ShowInactiveEntries;
 end;
 
 function TCrudConfigAddressAggregated.IsEntryValidForSaving(const aEntry: TDtoAddressAggregated): Boolean;

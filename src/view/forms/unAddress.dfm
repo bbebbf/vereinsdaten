@@ -48,9 +48,9 @@ object fmAddress: TfmAddress
     end
     object lvListview: TListView
       Left = 0
-      Top = 41
+      Top = 80
       Width = 570
-      Height = 629
+      Height = 590
       Align = alClient
       Columns = <
         item
@@ -69,17 +69,50 @@ object fmAddress: TfmAddress
       RowSelect = True
       TabOrder = 1
       ViewStyle = vsReport
+      OnCustomDrawItem = lvListviewCustomDrawItem
       OnDblClick = lvListviewDblClick
       OnSelectItem = lvListviewSelectItem
+      ExplicitTop = 41
+      ExplicitHeight = 629
     end
     object pnFilter: TPanel
       Left = 0
       Top = 0
       Width = 570
-      Height = 41
+      Height = 80
       Align = alTop
       BevelOuter = bvNone
       TabOrder = 0
+      DesignSize = (
+        570
+        80)
+      object lbFilter: TLabel
+        Left = 16
+        Top = 47
+        Width = 29
+        Height = 15
+        Anchors = [akLeft, akBottom]
+        Caption = 'Filter:'
+        ExplicitTop = 87
+      end
+      object cbShowInactiveEntries: TCheckBox
+        Left = 16
+        Top = 13
+        Width = 169
+        Height = 17
+        Caption = 'Inaktive Adressen anzeigen'
+        TabOrder = 0
+        OnClick = cbShowInactiveEntriesClick
+      end
+      object edFilter: TEdit
+        Left = 53
+        Top = 44
+        Width = 291
+        Height = 23
+        Anchors = [akLeft, akRight, akBottom]
+        TabOrder = 1
+        OnChange = edFilterChange
+      end
     end
   end
   object pnDetails: TPanel
@@ -115,7 +148,7 @@ object fmAddress: TfmAddress
     end
     object lbVersionInfo: TLabel
       Left = 23
-      Top = 191
+      Top = 225
       Width = 322
       Height = 38
       AutoSize = False
@@ -124,27 +157,27 @@ object fmAddress: TfmAddress
     end
     object btSave: TButton
       Left = 23
-      Top = 152
+      Top = 186
       Width = 154
       Height = 25
       Action = acSaveCurrentEntry
       Default = True
-      TabOrder = 3
+      TabOrder = 4
     end
     object btReload: TButton
       Left = 190
-      Top = 152
+      Top = 186
       Width = 154
       Height = 25
       Action = acReloadCurrentEntry
       Cancel = True
-      TabOrder = 4
+      TabOrder = 5
     end
     object lvMemberOf: TListView
       Left = 0
-      Top = 240
+      Top = 272
       Width = 387
-      Height = 455
+      Height = 423
       Align = alBottom
       Columns = <
         item
@@ -154,7 +187,7 @@ object fmAddress: TfmAddress
       ReadOnly = True
       RowSelect = True
       ShowColumnHeaders = False
-      TabOrder = 5
+      TabOrder = 6
       ViewStyle = vsReport
     end
     object edAddressStreet: TEdit
@@ -180,6 +213,14 @@ object fmAddress: TfmAddress
       Height = 23
       MaxLength = 50
       TabOrder = 2
+    end
+    object cbAddressActive: TCheckBox
+      Left = 23
+      Top = 148
+      Width = 145
+      Height = 16
+      Caption = 'Aktiv'
+      TabOrder = 3
     end
   end
   object alActionList: TActionList

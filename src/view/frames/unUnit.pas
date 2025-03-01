@@ -11,7 +11,7 @@ uses
   Vdm.Versioning.Types, VersionInfoEntryUI, MemberOfUI, unMemberOf, ProgressIndicatorIntf;
 
 type
-  TfraUnit = class(TFrame, ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>, IVersionInfoEntryUI)
+  TfraUnit = class(TFrame, ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32, TEntryFilter>, IVersionInfoEntryUI)
     pnListview: TPanel;
     Splitter1: TSplitter;
     pnDetails: TPanel;
@@ -61,7 +61,7 @@ type
     fReturnAction: TAction;
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
-    fBusinessIntf: ICrudCommands<UInt32, TUnitFilter>;
+    fBusinessIntf: ICrudCommands<UInt32, TEntryFilter>;
     fExtendedListview: TExtendedListview<TDtoUnit>;
     fDelayedLoadEntry: TDelayedLoadEntry;
     fActiveSinceHandler: TCheckboxDatetimePickerHandler;
@@ -77,14 +77,15 @@ type
     procedure ControlValuesUnchanged(Sender: TObject);
     procedure EnqueueLoadEntry(const aListItem: TListItem; const aDoStartEdit: Boolean);
 
-    procedure SetCrudCommands(const aCommands: ICrudCommands<UInt32, TUnitFilter>);
+    procedure SetCrudCommands(const aCommands: ICrudCommands<UInt32, TEntryFilter>);
     procedure ListEnumBegin;
     procedure ListEnumProcessItem(const aEntry: TDtoUnit);
     procedure ListEnumEnd;
     procedure DeleteEntryFromUI(const aUnitId: UInt32);
     procedure ClearEntryFromUI;
     procedure SetEntryToUI(const aEntry: TDtoUnitAggregated; const aMode: TEntryToUIMode);
-    function GetEntryFromUI(var aEntry: TDtoUnitAggregated; const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
+    function GetEntryFromUI(var aEntry: TDtoUnitAggregated; const aMode: TUIToEntryMode;
+      const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
     procedure LoadCurrentEntry(const aEntryId: UInt32);
     function GetProgressIndicator: IProgressIndicator;
 
@@ -227,7 +228,7 @@ end;
 procedure TfraUnit.cbShowInactiveUnitsClick(Sender: TObject);
 begin
   var lListFilter := fBusinessIntf.ListFilter;
-  lListFilter.ShowInactiveUnits := cbShowInactiveUnits.Checked;
+  lListFilter.ShowInactiveEntries := cbShowInactiveUnits.Checked;
   fBusinessIntf.ListFilter := lListFilter;
 end;
 
@@ -258,7 +259,8 @@ begin
 
 end;
 
-function TfraUnit.GetEntryFromUI(var aEntry: TDtoUnitAggregated; const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
+function TfraUnit.GetEntryFromUI(var aEntry: TDtoUnitAggregated; const aMode: TUIToEntryMode;
+  const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
 begin
   if TStringTools.IsEmpty(edUnitName.Text) then
   begin
@@ -286,7 +288,7 @@ begin
   Result := fProgressIndicator;
 end;
 
-procedure TfraUnit.SetCrudCommands(const aCommands: ICrudCommands<UInt32, TUnitFilter>);
+procedure TfraUnit.SetCrudCommands(const aCommands: ICrudCommands<UInt32, TEntryFilter>);
 begin
   fBusinessIntf := aCommands;
   fUnitMemberOf.SetActionsEnabled(False);

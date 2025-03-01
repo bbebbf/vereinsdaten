@@ -14,7 +14,7 @@ type
 
     function GetProgressIndicator: IProgressIndicator;
     function GetPersonAggregatedUI: IPersonAggregatedUI;
-    function GetUnitCrudUI: ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32, TUnitFilter>;
+    function GetUnitCrudUI: ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32, TEntryFilter>;
     function GetUnitMemberOfsUI: IMemberOfUI;
   end;
 

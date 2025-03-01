@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS `clubmembership` (
 
 CREATE TABLE IF NOT EXISTS `address` (
   `adr_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `adr_active` BIT(1) NOT NULL,
   `adr_street` varchar(100) NOT NULL,
   `adr_postalcode` varchar(5) NOT NULL,
   `adr_city` varchar(50) NOT NULL,
@@ -52,6 +53,7 @@ CREATE TABLE IF NOT EXISTS `unit` (
 
 CREATE TABLE IF NOT EXISTS `role` (
   `role_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `role_active` BIT(1) NOT NULL,
   `role_name` varchar(50) NOT NULL,
   `role_sorting` tinyint(3) unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY (`role_id`) USING BTREE

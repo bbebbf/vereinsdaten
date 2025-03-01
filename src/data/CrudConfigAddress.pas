@@ -55,6 +55,7 @@ end;
 procedure TCrudConfigAddress.GetRecordFromSqlResult(const aSqlResult: ISqlResult; var aRecord: TDtoAddress);
 begin
   aRecord.Id := aSqlResult.FieldByName('adr_id').AsLongWord;
+  aRecord.Active := aSqlResult.FieldByName('adr_active').AsBoolean;
   aRecord.Street := aSqlResult.FieldByName('adr_street').AsString;
   aRecord.Postalcode := aSqlResult.FieldByName('adr_postalcode').AsString;
   aRecord.City := aSqlResult.FieldByName('adr_city').AsString;
@@ -70,6 +71,7 @@ procedure TCrudConfigAddress.SetValues(const aRecord: TDtoAddress; const aAccess
 begin
   if aForUpdate then
     aAccessor.SetValue('adr_id', aRecord.Id);
+  aAccessor.SetValue('adr_active', aRecord.Active);
   aAccessor.SetValue('adr_street', aRecord.Street);
   aAccessor.SetValue('adr_postalcode', aRecord.Postalcode);
   aAccessor.SetValue('adr_city', aRecord.City);

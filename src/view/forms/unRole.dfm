@@ -60,6 +60,7 @@ object fmRole: TfmRole
       ShowColumnHeaders = False
       TabOrder = 1
       ViewStyle = vsReport
+      OnCustomDrawItem = lvListviewCustomDrawItem
       OnDblClick = lvListviewDblClick
       OnSelectItem = lvListviewSelectItem
     end
@@ -71,6 +72,15 @@ object fmRole: TfmRole
       Align = alTop
       BevelOuter = bvNone
       TabOrder = 0
+      object cbShowInactiveEntries: TCheckBox
+        Left = 16
+        Top = 13
+        Width = 169
+        Height = 17
+        Caption = 'Inaktive Rollen anzeigen'
+        TabOrder = 0
+        OnClick = cbShowInactiveEntriesClick
+      end
     end
     object btStartNewRecord: TButton
       Left = 0

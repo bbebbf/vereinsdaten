@@ -12,7 +12,7 @@ type
     fVersionInfoMemberOfs: TVersionInfoEntry;
     fExistingAddressId: UInt32;
     fAddressId: UInt32;
-    fAvailableAddresses: TKeyIndexStrings;
+    fAvailableAddresses: TActiveKeyIndexStringsLoader;
     fCreateNewAddress: Boolean;
     fNewAddressStreet: string;
     fNewAddressPostalcode: string;
@@ -25,12 +25,9 @@ type
     fMembershipEndDate: TDate;
     fMembershipEndDateText: string;
     fMembershipEndReason: string;
-
-    function GetAddressIndex: Integer;
-    procedure SetAddressIndex(const aValue: Integer);
   public
     constructor Create(const aPerson: TDtoPerson; const aExistingAddressId: UInt32;
-      const aAvailableAddresses: TKeyIndexStrings);
+      const aAvailableAddresses: TActiveKeyIndexStringsLoader);
     destructor Destroy; override;
     function Clone: TDtoPersonAggregated;
     function GetDtoClubmembership: TDtoClubmembership;
@@ -48,8 +45,7 @@ type
 
     property ExistingAddressId: UInt32 read fExistingAddressId;
     property AddressId: UInt32 read fAddressId write fAddressId;
-    property AvailableAddresses: TKeyIndexStrings read fAvailableAddresses;
-    property AddressIndex: Integer read GetAddressIndex write SetAddressIndex;
+    property AvailableAddresses: TActiveKeyIndexStringsLoader read fAvailableAddresses;
     property CreateNewAddress: Boolean read fCreateNewAddress write fCreateNewAddress;
     property NewAddressStreet: string read fNewAddressStreet write fNewAddressStreet;
     property NewAddressPostalcode: string read fNewAddressPostalcode write fNewAddressPostalcode;
@@ -70,7 +66,7 @@ implementation
 { TDtoPersonAggregated }
 
 constructor TDtoPersonAggregated.Create(const aPerson: TDtoPerson; const aExistingAddressId: UInt32;
-  const aAvailableAddresses: TKeyIndexStrings);
+  const aAvailableAddresses: TActiveKeyIndexStringsLoader);
 begin
   inherited Create;
   fVersionInfoBaseData := TVersionInfoEntry.Create;
@@ -107,16 +103,6 @@ begin
   Result.MembershipEndDate := fMembershipEndDate;
   Result.MembershipEndDateText := fMembershipEndDateText;
   Result.MembershipEndReason := fMembershipEndReason;
-end;
-
-function TDtoPersonAggregated.GetAddressIndex: Integer;
-begin
-  Result := fAvailableAddresses.Data.Mapper.GetIndex(fAddressId);
-end;
-
-procedure TDtoPersonAggregated.SetAddressIndex(const aValue: Integer);
-begin
-  fAddressId := fAvailableAddresses.Data.Mapper.GetKey(aValue);
 end;
 
 function TDtoPersonAggregated.GetDtoClubmembership: TDtoClubmembership;

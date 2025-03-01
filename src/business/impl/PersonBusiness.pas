@@ -25,7 +25,7 @@ type
     fUI: IPersonAggregatedUI;
     fCurrentEntry: TDtoPersonAggregated;
     fNewEntryStarted: Boolean;
-    fAddressMapper: TKeyIndexStrings;
+    fAddressMapper: TActiveKeyIndexStringsLoader;
     fShowInactivePersons: Boolean;
     fClubMembershipNumberChecker: TClubMembershipNumberChecker;
     fMemberOfConfig: IMemberOfConfigIntf;
@@ -45,7 +45,7 @@ type
     procedure SetShowInactivePersons(const aValue: Boolean);
     procedure LoadPersonsMemberOfs;
     procedure ClearAddressCache;
-    function GetAvailableAddresses: TKeyIndexStrings;
+    function GetAvailableAddresses: TActiveKeyIndexStringsLoader;
     function GetListFilter: TVoid;
     procedure SetListFilter(const aValue: TVoid);
     function LoadPerson(const aPersonId: UInt32; const aLoadMemberOfs: Boolean): TCrudCommandResult;
@@ -110,26 +110,21 @@ begin
   fConnection := aConnection;
   fProgressIndicator := aProgressIndicator;
   fUI := aUI;
-  fAddressMapper := TKeyIndexStrings.Create(
-      function(var aData: TKeyIndexStringsData): Boolean
+  fAddressMapper := TActiveKeyIndexStringsLoader.Create(
+      function(var aData: TActiveKeyIndexStrings): Boolean
       begin
         Result := True;
-        aData := TKeyIndexStringsData.Create;
-        try
-          aData.BeginUpdate;
-          var lSelectList: ISelectList<TDtoAddress>;
-          var lSqlResult: ISqlResult := nil;
-          if not Supports(fAddressConfig, ISelectList<TDtoAddress>, lSelectList) then
-            raise ENotImplemented.Create('fAddressConfig must implement ISelectList<TDtoAddress>.');
-          lSqlResult :=  fConnection.GetSelectResult(lSelectList.GetSelectListSQL);
-          while lSqlResult.Next do
-          begin
-            var lRecord := default(TDtoAddress);
-            fAddressConfig.GetRecordFromSqlResult(lSqlResult, lRecord);
-            aData.AddMappedString(lRecord.Id, lRecord.ToString);
-          end;
-        finally
-          aData.EndUpdate;
+        var lSelectList: ISelectList<TDtoAddress>;
+        var lSqlResult: ISqlResult := nil;
+        if not Supports(fAddressConfig, ISelectList<TDtoAddress>, lSelectList) then
+          raise ENotImplemented.Create('fAddressConfig must implement ISelectList<TDtoAddress>.');
+        aData := TActiveKeyIndexStrings.Create;
+        lSqlResult := fConnection.GetSelectResult(lSelectList.GetSelectListSQL);
+        while lSqlResult.Next do
+        begin
+          var lRecord := default(TDtoAddress);
+          fAddressConfig.GetRecordFromSqlResult(lSqlResult, lRecord);
+          aData.AddString(lRecord.Id, lRecord.Active, lRecord.ToString);
         end;
       end
   );
@@ -172,7 +167,7 @@ begin
   inherited;
 end;
 
-function TPersonBusiness.GetAvailableAddresses: TKeyIndexStrings;
+function TPersonBusiness.GetAvailableAddresses: TActiveKeyIndexStringsLoader;
 begin
   Result := fAddressMapper;
 end;
@@ -305,7 +300,10 @@ begin
 
     var lSuspendScope := lProgress.SuspendUI;
     try
-      if not fUI.GetEntryFromUI(lUpdatedEntry, lSuspendScope) then
+      var lUIToEntryMode := TUIToEntryMode.OnUpdateEntry;
+      if fNewEntryStarted then
+        lUIToEntryMode := TUIToEntryMode.OnNewEntry;
+      if not fUI.GetEntryFromUI(lUpdatedEntry, lUIToEntryMode, lSuspendScope) then
       begin
         lSuspendScope := nil;
         Exit(TCrudSaveResult.CreateRecord(TCrudSaveStatus.Cancelled));
@@ -335,6 +333,7 @@ begin
         if lUpdatedEntry.CreateNewAddress then
         begin
           var lNewAddressRecord := default(TDtoAddress);
+          lNewAddressRecord.Active := True;
           lNewAddressRecord.Street := lUpdatedEntry.NewAddressStreet;
           lNewAddressRecord.Postalcode := lUpdatedEntry.NewAddressPostalcode;
           lNewAddressRecord.City := lUpdatedEntry.NewAddressCity;

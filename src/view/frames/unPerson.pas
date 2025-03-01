@@ -113,7 +113,8 @@ type
     procedure DeleteEntryFromUI(const aPersonId: UInt32);
     procedure ClearEntryFromUI;
     procedure SetEntryToUI(const aRecord: TDtoPersonAggregated; const aMode: TEntryToUIMode);
-    function GetEntryFromUI(var aRecord: TDtoPersonAggregated; const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
+    function GetEntryFromUI(var aRecord: TDtoPersonAggregated; const aMode: TUIToEntryMode;
+      const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
     procedure LoadCurrentEntry(const aPersonId: UInt32);
     function GetProgressIndicator: IProgressIndicator;
 
@@ -127,7 +128,7 @@ implementation
 
 {$R *.dfm}
 
-uses System.Generics.Defaults, StringTools, MessageDialogs, Vdm.Globals, VclUITools;
+uses System.Generics.Defaults, KeyIndexStrings, StringTools, MessageDialogs, Vdm.Globals, VclUITools;
 
 { TfraPerson }
 
@@ -282,8 +283,15 @@ end;
 procedure TfraPerson.ClearEntryFromUI;
 begin
   fComponentValueChangedObserver.BeginUpdate;
-  cbPersonAddress.Items.Assign(fBusinessIntf.AvailableAddresses.Data.Strings);
-  TVclUITools.SetComboboxItemIndex(cbPersonAddress, -1);
+
+  var lAddressStringsMapping := fBusinessIntf.AvailableAddresses.Data.GetActiveEntries;
+  try
+    cbPersonAddress.Items.Assign(lAddressStringsMapping.Strings);
+    TVclUITools.SetComboboxItemIndex(cbPersonAddress,
+      lAddressStringsMapping.Mapper.GetIndex(0));
+  finally
+    lAddressStringsMapping.Free;
+  end;
 
   edPersonFirstname.Text := '';
   edPersonPraeposition.Text := '';
@@ -338,7 +346,8 @@ begin
   Result := fProgressIndicator;
 end;
 
-function TfraPerson.GetEntryFromUI(var aRecord: TDtoPersonAggregated; const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
+function TfraPerson.GetEntryFromUI(var aRecord: TDtoPersonAggregated; const aMode: TUIToEntryMode;
+  const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
 begin
   if TStringTools.IsEmpty(edPersonFirstname.Text) and TStringTools.IsEmpty(edPersonLastname.Text) then
   begin
@@ -362,11 +371,32 @@ begin
   aRecord.Lastname := edPersonLastname.Text;
   aRecord.Birthday := fPersonBirthdayHandler.Datetime;
   aRecord.Active := cbPersonActive.Checked;
-  aRecord.AddressIndex := cbPersonAddress.ItemIndex;
+
+  var lAddressStringsMapping: TKeyIndexStringsData := nil;
+  try
+    if aMode = TUIToEntryMode.OnNewEntry then
+    begin
+      lAddressStringsMapping := fBusinessIntf.AvailableAddresses.Data.GetActiveEntries;
+    end
+    else
+    begin
+      lAddressStringsMapping := fBusinessIntf.AvailableAddresses.Data.GetAllEntries;
+    end;
+    aRecord.AddressId := lAddressStringsMapping.Mapper.GetKey(cbPersonAddress.ItemIndex);
+  finally
+    lAddressStringsMapping.Free;
+  end;
 
   aRecord.CreateNewAddress := False;
   if NewAddressRequested then
   begin
+    if Length(edNewAddressCity.Text) = 0 then
+    begin
+      edNewAddressCity.SetFocus;
+      aProgressUISuspendScope.Suspend;
+      TMessageDialogs.Ok('Neue Adresse: Der Ortsname muss angegeben sein.', TMsgDlgType.mtInformation);
+      Exit(False);
+    end;
     aRecord.CreateNewAddress := True;
     aRecord.NewAddressStreet := cbPersonAddress.Text;
     aRecord.NewAddressPostalcode := edNewAddressPostalcode.Text;
@@ -562,7 +592,15 @@ end;
 procedure TfraPerson.SetEntryToUI(const aRecord: TDtoPersonAggregated; const aMode: TEntryToUIMode);
 begin
   fComponentValueChangedObserver.BeginUpdate;
-  cbPersonAddress.Items.Assign(fBusinessIntf.AvailableAddresses.Data.Strings);
+
+  var lAddressStringsMapping := fBusinessIntf.AvailableAddresses.Data.GetAllEntries;
+  try
+    cbPersonAddress.Items.Assign(lAddressStringsMapping.Strings);
+    TVclUITools.SetComboboxItemIndex(cbPersonAddress,
+      lAddressStringsMapping.Mapper.GetIndex(aRecord.AddressId));
+  finally
+    lAddressStringsMapping.Free;
+  end;
 
   edPersonFirstname.Text := aRecord.Firstname;
   edPersonPraeposition.Text := aRecord.NameAddition;
@@ -572,7 +610,6 @@ begin
   fExtendedListview.UpdateData(aRecord.Person);
 
   cbPersonActive.Checked := aRecord.Active;
-  TVclUITools.SetComboboxItemIndex(cbPersonAddress, aRecord.AddressIndex);
   edNewAddressPostalcode.Text := '';
   edNewAddressCity.Text := '';
   ConfigControlsForNewAddress;
