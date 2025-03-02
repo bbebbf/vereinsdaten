@@ -7,6 +7,8 @@ uses System.Generics.Collections, System.Generics.Defaults, Vcl.ComCtrls, Interf
 type
   TExtendedListviewDataToListItem<T> = reference to procedure(const aData: T; const aListItem: TListItem);
   TExtendedListviewDataPredicate<F, T> = reference to function(const aFilterExpression: F; const aData: T): Boolean;
+  TExtendedListviewCompareColumn<T> = reference to procedure(const aData1, aData2: T;
+    const aColumnIndex: Integer; var aCompareResult: Integer);
 
   TExtendedListviewOnEndUpdateEvent = procedure(Sender: TObject; const aTotalItemCount, aVisibleItemCount: Integer) of object;
 
@@ -31,10 +33,15 @@ type
     fDataIdComparer: IComparer<T>;
     fListItemToEntryDict: TDictionary<TListItem, TExtendedListviewEntry<T>>;
     fOnEndUpdate: TExtendedListviewOnEndUpdateEvent;
+    fColumnClickedColumn: TListColumn;
+    fColumnClickedSortDescending: Boolean;
+    fOnCompareColumn: TExtendedListviewCompareColumn<T>;
     procedure ClearListItems;
     function AddListItem(const aEntry: TExtendedListviewEntry<T>): TListItem;
     procedure SortDataItems;
     procedure UpdateListItem(const aEntry: TExtendedListviewEntry<T>);
+    procedure OnListviewColumnClick(Sender: TObject; Column: TListColumn);
+    procedure LVCompareEvent(Sender: TObject; Item1, Item2: TListItem; Data: Integer; var Compare: Integer);
   strict protected
     function CreateEntry: TExtendedListviewEntry<T>; virtual;
   public
@@ -53,6 +60,7 @@ type
     function TryGetListItem(const aData: T; out aListItem: TListItem): Boolean;
     procedure Filter<F>(const aFilterExpression: F; const aPredicate: TExtendedListviewDataPredicate<F, T>);
     property OnEndUpdate: TExtendedListviewOnEndUpdateEvent read fOnEndUpdate write fOnEndUpdate;
+    property OnCompareColumn: TExtendedListviewCompareColumn<T> read fOnCompareColumn write fOnCompareColumn;
   end;
 
   TExtendedListviewObjectEntry<T: class> = class(TExtendedListviewEntry<T>)
@@ -69,6 +77,8 @@ type
 
 implementation
 
+uses System.SysUtils, Winapi.Windows;
+
 { TExtendedListview<T> }
 
 constructor TExtendedListview<T>.Create(const aListview: TListView;
@@ -76,6 +86,8 @@ constructor TExtendedListview<T>.Create(const aListview: TListView;
 begin
   inherited Create;
   fListview := aListview;
+  fListview.OnColumnClick := OnListviewColumnClick;
+  fListview.OnCompare := LVCompareEvent;
   fDataToListItemProc := aDataToListItemProc;
   fDataItemsOwner := TObjectList<TExtendedListviewEntry<T>>.Create;
 
@@ -176,6 +188,52 @@ begin
   finally
     EndUpdate;
   end;
+end;
+
+procedure TExtendedListview<T>.LVCompareEvent(Sender: TObject; Item1, Item2: TListItem; Data: Integer;
+  var Compare: Integer);
+begin
+  Compare := 0;
+  if Assigned(fOnCompareColumn) then
+  begin
+    var lData1 := default(T);
+    if not TryGetListItemData(Item1, lData1) then
+      lData1 := default(T);
+    var lData2 := default(T);
+    if not TryGetListItemData(Item2, lData2) then
+      lData2 := default(T);
+    fOnCompareColumn(lData1, lData2, Data, Compare);
+  end
+  else
+  begin
+    var lText1 := '';
+    if Data = 0 then
+      lText1 := Item1.Caption
+    else if Data <= Item1.SubItems.Count then
+      lText1 := Item1.SubItems[Data - 1];
+    var lText2 := '';
+    if Data = 0 then
+      lText2 := Item2.Caption
+    else if Data <= Item2.SubItems.Count then
+      lText2 := Item2.SubItems[Data - 1];
+    Compare := CompareText(lText1, lText2);
+  end;
+  if fColumnClickedSortDescending and (Compare <> 0) then
+    Compare := -Compare;
+end;
+
+procedure TExtendedListview<T>.OnListviewColumnClick(Sender: TObject; Column: TListColumn);
+begin
+  if fColumnClickedColumn = Column then
+  begin
+    fColumnClickedSortDescending := not fColumnClickedSortDescending;
+  end
+  else
+  begin
+    fColumnClickedColumn := Column;
+    fColumnClickedSortDescending := False;
+  end;
+  fListview.CustomSort(nil, fColumnClickedColumn.Index);
 end;
 
 procedure TExtendedListview<T>.SortDataItems;
