@@ -70,8 +70,8 @@ implementation
 
 {$R *.dfm}
 
-uses System.Generics.Defaults, Vdm.Globals, ListCrudCommands.Types, VclUITools, Vdm.Types, CrudCommands,
-  MessageDialogs;
+uses System.Generics.Defaults, System.DateUtils, Vdm.Globals, ListCrudCommands.Types, VclUITools, Vdm.Types,
+  CrudCommands, MessageDialogs;
 
 { TfraPersonMemberOf }
 
@@ -196,6 +196,33 @@ begin
       end
     )
   );
+  fExtentedListviewMemberOfs.OnCompareColumn := procedure(const aData1, aData2: TListEntry<TDtoMemberAggregated>;
+    const aColumnIndex: Integer; var aCompareResult: Integer; var aHandled: Boolean)
+  begin
+      if fBusinessIntf.GetShowVersionInfoInMemberListview and (aColumnIndex = 5) then
+      begin
+        var lVersion1 := aData1.Data.VersionInfoPersonMemberOf.LocalVersionInfo.VersionNumber;
+        var lVersion2 := aData2.Data.VersionInfoPersonMemberOf.LocalVersionInfo.VersionNumber;
+        if lVersion1 < lVersion2 then
+        begin
+          aCompareResult := -1;
+        end
+        else if lVersion1 > lVersion2 then
+        begin
+          aCompareResult := 1;
+        end
+        else
+        begin
+          var lTimestamp1 := aData1.Data.VersionInfoPersonMemberOf.LocalVersionInfo.LastUpdated;
+          var lTimestamp2 := aData2.Data.VersionInfoPersonMemberOf.LocalVersionInfo.LastUpdated;
+          aCompareResult := CompareDateTime(lTimestamp1, lTimestamp2);
+        end;
+      end
+      else
+      begin
+        aHandled := False;
+      end;
+  end;
   fDialog := TfmMemberOfsEditDlg.Create(Self);
   fActionlistWrapper := TActionlistWrapper.Create(alMemberOfsActionList);
 end;

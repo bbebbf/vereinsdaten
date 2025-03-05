@@ -8,7 +8,7 @@ type
   TExtendedListviewDataToListItem<T> = reference to procedure(const aData: T; const aListItem: TListItem);
   TExtendedListviewDataPredicate<F, T> = reference to function(const aFilterExpression: F; const aData: T): Boolean;
   TExtendedListviewCompareColumn<T> = reference to procedure(const aData1, aData2: T;
-    const aColumnIndex: Integer; var aCompareResult: Integer);
+    const aColumnIndex: Integer; var aCompareResult: Integer; var aHandled: Boolean);
 
   TExtendedListviewOnEndUpdateEvent = procedure(Sender: TObject; const aTotalItemCount, aVisibleItemCount: Integer) of object;
 
@@ -194,6 +194,7 @@ procedure TExtendedListview<T>.LVCompareEvent(Sender: TObject; Item1, Item2: TLi
   var Compare: Integer);
 begin
   Compare := 0;
+  var lHandled := False;
   if Assigned(fOnCompareColumn) then
   begin
     var lData1 := default(T);
@@ -202,9 +203,10 @@ begin
     var lData2 := default(T);
     if not TryGetListItemData(Item2, lData2) then
       lData2 := default(T);
-    fOnCompareColumn(lData1, lData2, Data, Compare);
-  end
-  else
+    lHandled := True;
+    fOnCompareColumn(lData1, lData2, Data, Compare, lHandled);
+  end;
+  if not lHandled then
   begin
     var lText1 := '';
     if Data = 0 then
