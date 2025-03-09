@@ -7,13 +7,14 @@ uses System.Classes, System.Generics.Collections;
 type
   TConfigConnection = record
     ConnnectionName: string;
-    Host: string;
-    Port: Integer;
-    Databasename: string;
-    Username: string;
-    Password: string;
-    SshRemoteHost: string;
-    SshRemotePort: Integer;
+    DatabaseHost: string;
+    DatabasePort: Integer;
+    DatabaseUserName: string;
+    DatabaseUserPassword: string;
+    DatabaseName: string;
+    SshServerHost: string;
+    SshServerPort: Integer;
+    SshLocalTunnelPort: Integer;
     ShapeVisible: Boolean;
     ShapeColor: string;
   end;
@@ -127,13 +128,14 @@ begin
             Continue;
 
           var lConnection := default(TConfigConnection);
-          lConnection.Host := lIniFile.ReadString(lSection, 'Host', 'localhost');
-          lConnection.Port := lIniFile.ReadInteger(lSection, 'Port', 0);
-          lConnection.Databasename := lIniFile.ReadString(lSection, 'Databasename', '');
-          lConnection.Username := lIniFile.ReadString(lSection, 'Username', '');
-          lConnection.Password := lIniFile.ReadString(lSection, 'Password', '');
-          lConnection.SshRemoteHost := lIniFile.ReadString(lSection, 'SshRemoteHost', '');
-          lConnection.SshRemotePort := lIniFile.ReadInteger(lSection, 'SshRemotePort', 0);
+          lConnection.DatabaseHost := lIniFile.ReadString(lSection, 'DatabaseHost', 'localhost');
+          lConnection.DatabasePort := lIniFile.ReadInteger(lSection, 'DatabasePort', 0);
+          lConnection.DatabaseUserName := lIniFile.ReadString(lSection, 'DatabaseUserName', '');
+          lConnection.DatabaseUserPassword := lIniFile.ReadString(lSection, 'DatabaseUserPassword', '');
+          lConnection.DatabaseName := lIniFile.ReadString(lSection, 'DatabaseName', '');
+          lConnection.SshServerHost := lIniFile.ReadString(lSection, 'SshServerHost', '');
+          lConnection.SshServerPort := lIniFile.ReadInteger(lSection, 'SshServerPort', 0);
+          lConnection.SshLocalTunnelPort := lIniFile.ReadInteger(lSection, 'SshLocalTunnelPort', 0);
           lConnection.ShapeVisible := lIniFile.ValueExists(lSection, 'ShapeColor');
           lConnection.ShapeColor := lIniFile.ReadString(lSection, 'ShapeColor', '');
 
@@ -174,13 +176,14 @@ begin
   var lIniFile := TIniFile.Create(lIniPath);
   try
     // Write example entries.
-    lIniFile.WriteString('Connection', 'Host', 'localhost');
-    lIniFile.WriteInteger('Connection', 'Port', 0);
-    lIniFile.WriteString('Connection', 'Databasename', '');
-    lIniFile.WriteString('Connection', 'Username', '');
-    lIniFile.WriteString('Connection', 'Password', '');
-    lIniFile.WriteString('Connection', 'SshRemoteHost', '');
-    lIniFile.WriteInteger('Connection', 'SshRemotePort', 0);
+    lIniFile.WriteString('Connection', 'DatabaseHost', 'localhost');
+    lIniFile.WriteInteger('Connection', 'DatabasePort', 0);
+    lIniFile.WriteString('Connection', 'DatabaseUserName', '');
+    lIniFile.WriteString('Connection', 'DatabaseUserPassword', '');
+    lIniFile.WriteString('Connection', 'DatabaseName', '');
+    lIniFile.WriteString('Connection', 'SshServerHost', '');
+    lIniFile.WriteInteger('Connection', 'SshServerPort', 0);
+    lIniFile.WriteInteger('Connection', 'SshLocalTunnelPort', 0);
     lIniFile.WriteString('Connection', 'ShapeColor', '0000ff');
   finally
     lIniFile.Free;

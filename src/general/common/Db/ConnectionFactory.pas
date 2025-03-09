@@ -22,11 +22,12 @@ class function TConnectionFactory.CreateConnection: ISqlConnection;
 begin
   var lSqlConnection: ISqlConnection := TMySqlConnection.Create;
   ApplyConfig(lSqlConnection);
-  if Length(TConfigReader.Instance.Connection.SshRemoteHost) > 0 then
+  if Length(TConfigReader.Instance.Connection.SshServerHost) > 0 then
   begin
     var lSshConnection: ISqlConnection := TSshTunnelSqlConnection.Create(lSqlConnection,
-      TConfigReader.Instance.Connection.SshRemoteHost,
-      TConfigReader.Instance.Connection.SshRemotePort
+      TConfigReader.Instance.Connection.SshServerHost,
+      TConfigReader.Instance.Connection.SshServerPort,
+      TConfigReader.Instance.Connection.SshLocalTunnelPort
     );
     Result := lSshConnection;
   end
@@ -41,11 +42,11 @@ begin
   if not TConfigReader.Instance.Found then
     raise Exception.Create('Connection parameter not found.');
 
-  aConnection.Parameters.Host := TConfigReader.Instance.Connection.Host;
-  aConnection.Parameters.Port := TConfigReader.Instance.Connection.Port;
-  aConnection.Parameters.Databasename := TConfigReader.Instance.Connection.Databasename;
-  aConnection.Parameters.Username := TConfigReader.Instance.Connection.Username;
-  aConnection.Parameters.Password := TConfigReader.Instance.Connection.Password;
+  aConnection.Parameters.Host := TConfigReader.Instance.Connection.DatabaseHost;
+  aConnection.Parameters.Port := TConfigReader.Instance.Connection.DatabasePort;
+  aConnection.Parameters.Databasename := TConfigReader.Instance.Connection.DatabaseName;
+  aConnection.Parameters.Username := TConfigReader.Instance.Connection.DatabaseUserName;
+  aConnection.Parameters.Password := TConfigReader.Instance.Connection.DatabaseUserPassword;
 end;
 
 end.

@@ -11,7 +11,9 @@ type
     property LocalPort: Integer read GetLocalPort;
   end;
 
-function CreateSshTunnelProcess(const aRemoteHost: string; const aRemotePort, aLocalPort: Integer): ISshTunnel;
+function CreateSshTunnelProcess(const aLocalPort: Integer;
+      const aSshHost: string; const aSshPort: Integer;
+      const aRemoteHost: string; const aRemotePort: Integer): ISshTunnel;
 
 implementation
 
@@ -20,6 +22,8 @@ uses System.SysUtils, InterfacedBase, Winapi.Windows, WindowsProcess;
 type
   TSshTunnel = class(TInterfacedBase, ISshTunnel)
   strict private
+    fSshHost: string;
+    fSshPort: Integer;
     fRemoteHost: string;
     fRemotePort: Integer;
     fLocalPort: Integer;
@@ -30,23 +34,31 @@ type
     function ComposeCommandline: string;
     function GetWorkingDir: string;
   public
-    constructor Create(const aRemoteHost: string; const aRemotePort, aLocalPort: Integer);
+    constructor Create(const aLocalPort: Integer;
+      const aSshHost: string; const aSshPort: Integer;
+      const aRemoteHost: string; const aRemotePort: Integer);
     destructor Destroy; override;
   end;
 
-function CreateSshTunnelProcess(const aRemoteHost: string; const aRemotePort, aLocalPort: Integer): ISshTunnel;
+function CreateSshTunnelProcess(const aLocalPort: Integer;
+      const aSshHost: string; const aSshPort: Integer;
+      const aRemoteHost: string; const aRemotePort: Integer): ISshTunnel;
 begin
-  Result := TSshTunnel.Create(aRemoteHost, aRemotePort, aLocalPort);
+  Result := TSshTunnel.Create(aLocalPort, aSshHost, aSshPort, aRemoteHost, aRemotePort);
 end;
 
 { TSshTunnel }
 
-constructor TSshTunnel.Create(const aRemoteHost: string; const aRemotePort, aLocalPort: Integer);
+constructor TSshTunnel.Create(const aLocalPort: Integer;
+      const aSshHost: string; const aSshPort: Integer;
+      const aRemoteHost: string; const aRemotePort: Integer);
 begin
   inherited Create;
+  fLocalPort := aLocalPort;
+  fSshHost := aSshHost;
+  fSshPort := aSshPort;
   fRemoteHost := aRemoteHost;
   fRemotePort := aRemotePort;
-  fLocalPort := aLocalPort;
 end;
 
 destructor TSshTunnel.Destroy;
@@ -91,8 +103,16 @@ end;
 
 function TSshTunnel.ComposeCommandline: string;
 begin
-  Result := 'ssh.exe -N -L ' + IntToStr(fLocalPort)+':localhost:' + IntToStr(fRemotePort) +
-    ' ' + fRemoteHost;
+  var lRemoteHost := fRemoteHost;
+  if Length(lRemoteHost) = 0 then
+    lRemoteHost := 'localhost';
+
+  Result := 'ssh.exe -N -L' +
+    ' localhost:' + IntToStr(fLocalPort) +
+    ':' + lRemoteHost + ':' + IntToStr(fRemotePort) +
+    ' ' + fSshHost;
+  if (fSshPort > 0) and (fSshPort <> 22) then
+    Result := Result + ' -p ' + IntToStr(fSshPort);
 end;
 
 end.

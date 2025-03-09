@@ -224,9 +224,10 @@ begin
       lColor := TColorRec.SysHighlight;
     shaTestConnectionWarning.Brush.Color := lColor;
   end;
-  var lConnectionInfo := 'Server: ' + aConfig.Host + ':' + IntToStr(aConfig.Port) + ' / Database: ' + aConfig.Databasename;
-  if Length(aConfig.SshRemoteHost) > 0 then
-    lConnectionInfo := 'Remote Host: ' + aConfig.SshRemoteHost + ' / ' + lConnectionInfo;
+  var lConnectionInfo := 'Server: ' + aConfig.DatabaseHost + ':' + IntToStr(aConfig.DatabasePort) +
+    ' / Database: ' + aConfig.DatabaseName;
+  if Length(aConfig.SshServerHost) > 0 then
+    lConnectionInfo := 'Ssh Server: ' + aConfig.SshServerHost + ' / ' + lConnectionInfo;
   StatusBar.SimpleText := lConnectionInfo;
 end;
 
