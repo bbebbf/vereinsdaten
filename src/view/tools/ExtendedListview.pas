@@ -36,6 +36,8 @@ type
     fColumnClickedColumn: TListColumn;
     fColumnClickedSortDescending: Boolean;
     fOnCompareColumn: TExtendedListviewCompareColumn<T>;
+    fImageIndexSortUp: Integer;
+    fImageIndexSortDown: Integer;
     procedure ClearListItems;
     function AddListItem(const aEntry: TExtendedListviewEntry<T>): TListItem;
     procedure SortDataItems;
@@ -61,6 +63,8 @@ type
     procedure Filter<F>(const aFilterExpression: F; const aPredicate: TExtendedListviewDataPredicate<F, T>);
     property OnEndUpdate: TExtendedListviewOnEndUpdateEvent read fOnEndUpdate write fOnEndUpdate;
     property OnCompareColumn: TExtendedListviewCompareColumn<T> read fOnCompareColumn write fOnCompareColumn;
+    property ImageIndexSortUp: Integer read fImageIndexSortUp write fImageIndexSortUp;
+    property ImageIndexSortDown: Integer read fImageIndexSortDown write fImageIndexSortDown;
   end;
 
   TExtendedListviewObjectEntry<T: class> = class(TExtendedListviewEntry<T>)
@@ -105,6 +109,8 @@ begin
 
   fListItemToEntryDict := TDictionary<TListItem, TExtendedListviewEntry<T>>.Create;
   fDataItemsAreSorted := True;
+  fImageIndexSortUp := -1;
+  fImageIndexSortDown := -1;
 end;
 
 destructor TExtendedListview<T>.Destroy;
@@ -136,6 +142,7 @@ end;
 function TExtendedListview<T>.AddListItem(const aEntry: TExtendedListviewEntry<T>): TListItem;
 begin
   Result := fListview.Items.Add;
+  Result.ImageIndex := -1;
   aEntry.ListItem := Result;
   fListItemToEntryDict.Add(Result, aEntry);
   UpdateListItem(aEntry);
@@ -145,6 +152,8 @@ procedure TExtendedListview<T>.ClearListItems;
 begin
   fListItemToEntryDict.Clear;
   fListview.Items.Clear;
+  for var i := 0 to fListview.Columns.Count - 1 do
+    fListview.Columns[i].ImageIndex := -1;
 end;
 
 procedure TExtendedListview<T>.BeginUpdate;
@@ -232,8 +241,20 @@ begin
   end
   else
   begin
+    if Assigned(fColumnClickedColumn) then
+    begin
+      fColumnClickedColumn.ImageIndex := -1;
+    end;
     fColumnClickedColumn := Column;
     fColumnClickedSortDescending := False;
+  end;
+  if fColumnClickedSortDescending then
+  begin
+    fColumnClickedColumn.ImageIndex := fImageIndexSortDown;
+  end
+  else
+  begin
+    fColumnClickedColumn.ImageIndex := fImageIndexSortUp;
   end;
   fListview.CustomSort(nil, fColumnClickedColumn.Index);
 end;
