@@ -47,6 +47,7 @@ type
       var DefaultDraw: Boolean);
     procedure cbShowInactiveEntriesClick(Sender: TObject);
     procedure edFilterChange(Sender: TObject);
+    procedure FormKeyPress(Sender: TObject; var Key: Char);
   strict private
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
@@ -232,6 +233,15 @@ begin
   fExtendedListviewMemberOfs.Free;
   fExtendedListview.Free;
   fComponentValueChangedObserver.Free;
+end;
+
+procedure TfmAddress.FormKeyPress(Sender: TObject; var Key: Char);
+begin
+  if (Key = #27) and not fInEditMode then
+  begin
+    Key := #0;
+    Close;
+  end;
 end;
 
 procedure TfmAddress.FormShow(Sender: TObject);

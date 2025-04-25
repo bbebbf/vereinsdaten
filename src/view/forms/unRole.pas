@@ -41,6 +41,7 @@ type
     procedure lvListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure cbShowInactiveEntriesClick(Sender: TObject);
+    procedure FormKeyPress(Sender: TObject; var Key: Char);
   strict private
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
@@ -178,6 +179,15 @@ begin
   fDelayedLoadEntry.Free;
   fExtendedListview.Free;
   fComponentValueChangedObserver.Free;
+end;
+
+procedure TfmRole.FormKeyPress(Sender: TObject; var Key: Char);
+begin
+  if (Key = #27) and not fInEditMode then
+  begin
+    Key := #0;
+    Close;
+  end;
 end;
 
 procedure TfmRole.FormShow(Sender: TObject);

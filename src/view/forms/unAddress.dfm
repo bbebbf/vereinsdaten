@@ -11,9 +11,11 @@ object fmAddress: TfmAddress
   Font.Height = -12
   Font.Name = 'Segoe UI'
   Font.Style = []
+  KeyPreview = True
   Position = poOwnerFormCenter
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnKeyPress = FormKeyPress
   OnShow = FormShow
   TextHeight = 15
   object Splitter1: TSplitter
@@ -72,8 +74,6 @@ object fmAddress: TfmAddress
       OnCustomDrawItem = lvListviewCustomDrawItem
       OnDblClick = lvListviewDblClick
       OnSelectItem = lvListviewSelectItem
-      ExplicitTop = 41
-      ExplicitHeight = 629
     end
     object pnFilter: TPanel
       Left = 0

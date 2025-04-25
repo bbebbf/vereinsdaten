@@ -11,9 +11,11 @@ object fmRole: TfmRole
   Font.Height = -12
   Font.Name = 'Segoe UI'
   Font.Style = []
+  KeyPreview = True
   Position = poOwnerFormCenter
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnKeyPress = FormKeyPress
   OnShow = FormShow
   TextHeight = 15
   object Splitter1: TSplitter
@@ -33,7 +35,6 @@ object fmRole: TfmRole
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitHeight = 400
     object lbListviewItemCount: TLabel
       Left = 0
       Top = 358
@@ -90,7 +91,6 @@ object fmRole: TfmRole
       Action = acStartNewEntry
       Align = alBottom
       TabOrder = 2
-      ExplicitTop = 375
     end
   end
   object pnDetails: TPanel
@@ -101,8 +101,6 @@ object fmRole: TfmRole
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
-    ExplicitWidth = 541
-    ExplicitHeight = 400
     object lbRoleName: TLabel
       Left = 23
       Top = 19

@@ -11,9 +11,11 @@ object fmTenant: TfmTenant
   Font.Height = -12
   Font.Name = 'Segoe UI'
   Font.Style = []
+  KeyPreview = True
   Position = poOwnerFormCenter
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnKeyPress = FormKeyPress
   OnShow = FormShow
   TextHeight = 15
   object lbTenantTitle: TLabel

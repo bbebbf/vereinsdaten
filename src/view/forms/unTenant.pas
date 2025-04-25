@@ -23,6 +23,7 @@ type
     procedure acReloadCurrentEntryExecute(Sender: TObject);
     procedure acStartNewEntryExecute(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure FormKeyPress(Sender: TObject; var Key: Char);
   strict private
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
@@ -116,6 +117,15 @@ end;
 procedure TfmTenant.FormDestroy(Sender: TObject);
 begin
   fComponentValueChangedObserver.Free;
+end;
+
+procedure TfmTenant.FormKeyPress(Sender: TObject; var Key: Char);
+begin
+  if (Key = #27) and not fInEditMode then
+  begin
+    Key := #0;
+    Close;
+  end;
 end;
 
 procedure TfmTenant.FormShow(Sender: TObject);
