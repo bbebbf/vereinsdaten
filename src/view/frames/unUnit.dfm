@@ -58,8 +58,6 @@ object fraUnit: TfraUnit
       OnCustomDrawItem = lvListviewCustomDrawItem
       OnDblClick = lvListviewDblClick
       OnSelectItem = lvListviewSelectItem
-      ExplicitTop = 41
-      ExplicitHeight = 563
     end
     object pnFilter: TPanel
       Left = 0
@@ -264,9 +262,6 @@ object fraUnit: TfraUnit
     Height = 40
     Align = alTop
     TabOrder = 0
-    DesignSize = (
-      1077
-      40)
     object lbTitle: TLabel
       Left = 16
       Top = 7
@@ -279,16 +274,6 @@ object fraUnit: TfraUnit
       Font.Name = 'Segoe UI'
       Font.Style = []
       ParentFont = False
-    end
-    object btReturn: TButton
-      Left = 984
-      Top = 7
-      Width = 78
-      Height = 26
-      Anchors = [akTop, akRight]
-      Caption = 'Zur'#252'ck'
-      TabOrder = 0
-      OnClick = btReturnClick
     end
   end
   object alActionList: TActionList

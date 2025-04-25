@@ -26,7 +26,6 @@ type
     lbListviewItemCount: TLabel;
     pnTop: TPanel;
     lbTitle: TLabel;
-    btReturn: TButton;
     pnTopRight: TPanel;
     lbUnitName: TLabel;
     lbUnitActiveSince: TLabel;
@@ -53,12 +52,10 @@ type
     procedure acReloadCurrentEntryExecute(Sender: TObject);
     procedure acStartNewEntryExecute(Sender: TObject);
     procedure cbShowInactiveUnitsClick(Sender: TObject);
-    procedure btReturnClick(Sender: TObject);
     procedure lvListviewDblClick(Sender: TObject);
     procedure edFilterChange(Sender: TObject);
   strict private
     fUnitMemberOf: TfraMemberOf;
-    fReturnAction: TAction;
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
     fBusinessIntf: ICrudCommands<UInt32, TEntryFilter>;
@@ -94,7 +91,7 @@ type
 
     function GetMemberOfUI: IMemberOfUI;
   public
-    constructor Create(AOwner: TComponent; const aReturnAction: TAction; const aProgressIndicator: IProgressIndicator); reintroduce;
+    constructor Create(AOwner: TComponent; const aProgressIndicator: IProgressIndicator); reintroduce;
     destructor Destroy; override;
     property MemberOfUI: IMemberOfUI read GetMemberOfUI;
   end;
@@ -107,7 +104,7 @@ uses System.Generics.Defaults, StringTools, MessageDialogs, Vdm.Globals, VclUITo
 
 { TfraUnit }
 
-constructor TfraUnit.Create(AOwner: TComponent; const aReturnAction: TAction; const aProgressIndicator: IProgressIndicator);
+constructor TfraUnit.Create(AOwner: TComponent; const aProgressIndicator: IProgressIndicator);
 begin
   inherited Create(AOwner);
   fProgressIndicator := aProgressIndicator;
@@ -115,7 +112,6 @@ begin
   fUnitMemberOf.Parent := pnMemberOf;
   fUnitMemberOf.Align := TAlign.alClient;
 
-  fReturnAction := aReturnAction;
   fActiveSinceHandler := TCheckboxDatetimePickerHandler.Create(cbUnitActiveSinceKnown, dtUnitActiveSince);
   fActiveUntilHandler := TCheckboxDatetimePickerHandler.Create(cbUnitActiveUntilKnown, dtUnitActiveUntil);
   fDataConfirmedOnHandler := TCheckboxDatetimePickerHandler.Create(cbDataConfirmedOnKnown, dtDataConfirmedOn);
@@ -218,11 +214,6 @@ begin
   fBusinessIntf.StartNewEntry;
   fUnitMemberOf.SetActionsEnabled(False);
   StartEdit;
-end;
-
-procedure TfraUnit.btReturnClick(Sender: TObject);
-begin
-  fReturnAction.Execute;
 end;
 
 procedure TfraUnit.cbShowInactiveUnitsClick(Sender: TObject);
