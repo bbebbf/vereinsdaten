@@ -43,11 +43,14 @@ object fmMain: TfmMain
     Top = 128
     object Stammdaten1: TMenuItem
       Caption = 'Stammdaten'
-      object Adressenbearbeiten1: TMenuItem
-        Action = acMasterdataAddress
+      object acMasterdataPerson1: TMenuItem
+        Action = acMasterdataPerson
       end
       object Einheitenbearbeiten1: TMenuItem
         Action = acMasterdataUnit
+      end
+      object Adressenbearbeiten1: TMenuItem
+        Action = acMasterdataAddress
       end
       object Rollenbearbeiten1: TMenuItem
         Action = acMasterdataRole
@@ -81,6 +84,10 @@ object fmMain: TfmMain
     object acMasterdataAddress: TAction
       Caption = 'Adressen bearbeiten'
       OnExecute = acMasterdataAddressExecute
+    end
+    object acMasterdataPerson: TAction
+      Caption = 'Personen bearbeiten'
+      OnExecute = acMasterdataPersonExecute
     end
     object acMasterdataUnit: TAction
       Caption = 'Einheiten bearbeiten'

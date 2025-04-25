@@ -34,6 +34,8 @@ type
     acReportMemberUnits1: TMenuItem;
     acReportPersons: TAction;
     Personen1: TMenuItem;
+    acMasterdataPerson: TAction;
+    acMasterdataPerson1: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure acMasterdataUnitExecute(Sender: TObject);
@@ -46,6 +48,7 @@ type
     procedure acReportMemberUnitsExecute(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure acReportPersonsExecute(Sender: TObject);
+    procedure acMasterdataPersonExecute(Sender: TObject);
   strict private
     fBusiness: IMainBusiness;
     fProgressForm: TfmProgressForm;
@@ -85,6 +88,15 @@ begin
   end;
 end;
 
+procedure TfmMain.acMasterdataPersonExecute(Sender: TObject);
+begin
+  acMasterdataPerson.Enabled := False;
+  acMasterdataUnit.Enabled := True;
+  ffraPerson.Show;
+  ffraUnit.Hide;
+  fBusiness.SwitchedFromUnitsToPersonsCrud;
+end;
+
 procedure TfmMain.acMasterdataRoleExecute(Sender: TObject);
 begin
   var lDialog := TfmRole.Create(Self);
@@ -117,19 +129,11 @@ end;
 
 procedure TfmMain.acMasterdataUnitExecute(Sender: TObject);
 begin
-  acMasterdataUnit.Checked := not acMasterdataUnit.Checked;
-  if acMasterdataUnit.Checked then
-  begin
-    ffraUnit.Show;
-    ffraPerson.Hide;
-    fBusiness.SwitchedFromPersonsToUnitsCrud;
-  end
-  else
-  begin
-    ffraPerson.Show;
-    ffraUnit.Hide;
-    fBusiness.SwitchedFromUnitsToPersonsCrud;
-  end;
+  acMasterdataUnit.Enabled := False;
+  acMasterdataPerson.Enabled := True;
+  ffraUnit.Show;
+  ffraPerson.Hide;
+  fBusiness.SwitchedFromPersonsToUnitsCrud;
 end;
 
 procedure TfmMain.acReportClubMembersExecute(Sender: TObject);
@@ -166,11 +170,13 @@ begin
   ffraPerson.Parent := Self;
   ffraPerson.Align := TAlign.alClient;
   ffraPerson.Show;
+  acMasterdataPerson.Enabled := False;
 
   ffraUnit := TfraUnit.Create(Self, acMasterdataUnit, fProgressIndicator);
   ffraUnit.Parent := Self;
   ffraUnit.Align := TAlign.alClient;
   ffraUnit.Hide;
+  acMasterdataUnit.Enabled := True;
 end;
 
 procedure TfmMain.FormDestroy(Sender: TObject);
