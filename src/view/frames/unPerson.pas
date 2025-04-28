@@ -9,10 +9,10 @@ uses
   Vcl.ComCtrls, Vcl.WinXPickers, System.Actions, Vcl.ActnList,
   PersonBusinessIntf, PersonAggregatedUI, DtoPersonAggregated, ComponentValueChangedObserver,
   unMemberOf, MemberOfUI, CheckboxDatetimePickerHandler,
-  Vdm.Types, Vdm.Versioning.Types, CrudUI, VersionInfoEntryUI, DtoPersonNameId, ProgressIndicatorIntf;
+  Vdm.Types, Vdm.Versioning.Types, CrudUI, VersionInfoEntryUI, DtoPersonNameId, ProgressIndicatorIntf, WorkSection;
 
 type
-  TfraPerson = class(TFrame, IPersonAggregatedUI, IVersionInfoEntryUI)
+  TfraPerson = class(TFrame, IPersonAggregatedUI, IVersionInfoEntryUI, IWorkSection)
     pnPersonListview: TPanel;
     Splitter1: TSplitter;
     pnPersonDetails: TPanel;
@@ -101,6 +101,9 @@ type
     procedure ControlValuesChanged(Sender: TObject);
     procedure ControlValuesUnchanged(Sender: TObject);
     procedure EnqueueLoadEntry(const aListItem: TListItem; const aDoStartEdit: Boolean);
+
+    procedure BeginWork;
+    procedure EndWork;
 
     procedure SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry; const aVersionInfoEntryIndex: UInt16);
     procedure ClearVersionInfoEntryFromUI(const aVersionInfoEntryIndex: UInt16);
@@ -256,6 +259,14 @@ procedure TfraPerson.acPersonStartNewRecordExecute(Sender: TObject);
 begin
   fBusinessIntf.StartNewEntry;
   StartEdit;
+end;
+
+procedure TfraPerson.BeginWork;
+begin
+  Show;
+  var lWorkSection: IWorkSection;
+  Supports(fPersonMemberOf, IWorkSection, lWorkSection);
+  lWorkSection.BeginWork;
 end;
 
 procedure TfraPerson.cbMembershipEndKnownClick(Sender: TObject);
@@ -541,6 +552,14 @@ begin
   edNewAddressPostalcode.Enabled := lNewEnabled;
   lbNewAddressPostalcodeCity.Enabled := lNewEnabled;
   edNewAddressCity.Enabled := lNewEnabled;
+end;
+
+procedure TfraPerson.EndWork;
+begin
+  var lWorkSection: IWorkSection;
+  Supports(fPersonMemberOf, IWorkSection, lWorkSection);
+  lWorkSection.EndWork;
+  Hide;
 end;
 
 procedure TfraPerson.EnqueueLoadEntry(const aListItem: TListItem; const aDoStartEdit: Boolean);

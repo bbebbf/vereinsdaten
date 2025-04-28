@@ -118,7 +118,8 @@ uses
   MainBusinessIntf in 'business\intf\MainBusinessIntf.pas',
   MainBusiness in 'business\impl\MainBusiness.pas',
   MainUI in 'view\intf\MainUI.pas',
-  ActionlistWrapper in 'view\tools\ActionlistWrapper.pas';
+  ActionlistWrapper in 'view\tools\ActionlistWrapper.pas',
+  WorkSection in 'general\intf\tools\WorkSection.pas';
 
 {$R *.res}
 

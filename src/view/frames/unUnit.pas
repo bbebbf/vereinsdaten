@@ -8,10 +8,10 @@ uses
   System.Generics.Collections, CrudCommands, DtoUnit, DtoUnitAggregated, ExtendedListview, Vcl.Menus, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.WinXPickers, System.Actions, Vcl.ActnList,
   ComponentValueChangedObserver, CrudUI, CheckboxDatetimePickerHandler, Vdm.Types,
-  Vdm.Versioning.Types, VersionInfoEntryUI, MemberOfUI, unMemberOf, ProgressIndicatorIntf;
+  Vdm.Versioning.Types, VersionInfoEntryUI, MemberOfUI, unMemberOf, ProgressIndicatorIntf, WorkSection;
 
 type
-  TfraUnit = class(TFrame, ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32, TEntryFilter>, IVersionInfoEntryUI)
+  TfraUnit = class(TFrame, ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32, TEntryFilter>, IVersionInfoEntryUI, IWorkSection)
     pnListview: TPanel;
     Splitter1: TSplitter;
     pnDetails: TPanel;
@@ -73,6 +73,9 @@ type
     procedure ControlValuesChanged(Sender: TObject);
     procedure ControlValuesUnchanged(Sender: TObject);
     procedure EnqueueLoadEntry(const aListItem: TListItem; const aDoStartEdit: Boolean);
+
+    procedure BeginWork;
+    procedure EndWork;
 
     procedure SetCrudCommands(const aCommands: ICrudCommands<UInt32, TEntryFilter>);
     procedure ListEnumBegin;
@@ -216,6 +219,14 @@ begin
   StartEdit;
 end;
 
+procedure TfraUnit.BeginWork;
+begin
+  Show;
+  var lWorkSection: IWorkSection;
+  Supports(fUnitMemberOf, IWorkSection, lWorkSection);
+  lWorkSection.BeginWork;
+end;
+
 procedure TfraUnit.cbShowInactiveUnitsClick(Sender: TObject);
 begin
   var lListFilter := fBusinessIntf.ListFilter;
@@ -338,6 +349,14 @@ begin
     EnqueueLoadEntry(Item, False)
   else
     EnqueueLoadEntry(nil, False);
+end;
+
+procedure TfraUnit.EndWork;
+begin
+  var lWorkSection: IWorkSection;
+  Supports(fUnitMemberOf, IWorkSection, lWorkSection);
+  lWorkSection.EndWork;
+  Hide;
 end;
 
 procedure TfraUnit.EnqueueLoadEntry(const aListItem: TListItem; const aDoStartEdit: Boolean);

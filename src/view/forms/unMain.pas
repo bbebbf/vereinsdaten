@@ -92,9 +92,7 @@ procedure TfmMain.acMasterdataPersonExecute(Sender: TObject);
 begin
   acMasterdataPerson.Enabled := False;
   acMasterdataUnit.Enabled := True;
-  ffraPerson.Show;
-  ffraUnit.Hide;
-  fBusiness.SwitchedFromUnitsToPersonsCrud;
+  fBusiness.OpenCrudPerson;
 end;
 
 procedure TfmMain.acMasterdataRoleExecute(Sender: TObject);
@@ -131,9 +129,7 @@ procedure TfmMain.acMasterdataUnitExecute(Sender: TObject);
 begin
   acMasterdataUnit.Enabled := False;
   acMasterdataPerson.Enabled := True;
-  ffraUnit.Show;
-  ffraPerson.Hide;
-  fBusiness.SwitchedFromPersonsToUnitsCrud;
+  fBusiness.OpenCrudUnit;
 end;
 
 procedure TfmMain.acReportClubMembersExecute(Sender: TObject);

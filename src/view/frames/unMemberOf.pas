@@ -7,10 +7,10 @@ uses
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.ExtCtrls, Vcl.StdCtrls,
   ExtendedListview, DtoMember, DtoMemberAggregated, MemberOfUI, MemberOfBusinessIntf,
   unMemberOfsEditDlg, System.Actions, Vcl.ActnList, ListCrudCommands, Vcl.Menus,
-  Vdm.Versioning.Types, VersionInfoEntryUI, KeyIndexStrings, ActionlistWrapper;
+  Vdm.Versioning.Types, VersionInfoEntryUI, KeyIndexStrings, WorkSection, ActionlistWrapper;
 
 type
-  TfraMemberOf = class(TFrame, IMemberOfUI, IVersionInfoEntryUI)
+  TfraMemberOf = class(TFrame, IMemberOfUI, IVersionInfoEntryUI, IWorkSection)
     lvMemberOf: TListView;
     pnCommands: TPanel;
     cbShowInactiveMemberOfs: TCheckBox;
@@ -60,6 +60,9 @@ type
     function GetStringByIndex(const aStrings: TStrings; const aIndex: Integer): string;
     procedure UpdateEditItemActions(const aEnabled: Boolean);
     procedure UpdateListActions(const aEnabled: Boolean);
+
+    procedure BeginWork;
+    procedure EndWork;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -165,6 +168,12 @@ begin
   fBusinessIntf.ShowInactiveMemberOfs := acShowInactiveMemberOfs.Checked;
 end;
 
+procedure TfraMemberOf.BeginWork;
+begin
+  FreeAndNil(fAllDetailedItemsStringsData);
+  FreeAndNil(fAllRolesStringsData);
+end;
+
 constructor TfraMemberOf.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
@@ -235,6 +244,11 @@ begin
   fExtentedListviewMemberOfs.Free;
   fActionlistWrapper.Free;
   inherited;
+end;
+
+procedure TfraMemberOf.EndWork;
+begin
+
 end;
 
 procedure TfraMemberOf.SetActionsEnabled(const aEnabled: Boolean);

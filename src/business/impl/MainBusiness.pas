@@ -16,6 +16,8 @@ type
 
     procedure Initialize;
     procedure UIIsReady;
+    procedure OpenCrudPerson;
+    procedure OpenCrudUnit;
     procedure OpenCrudAddress(const aAdressUI: ICrudUI<TDtoAddressAggregated, TDtoAddress, UInt32, TEntryFilter>;
       const aModalProc: TFunc<Integer>);
     procedure OpenCrudRole(const aRoleUI: ICrudUI<TDtoRole, TDtoRole, UInt32, TEntryFilter>;
@@ -27,8 +29,6 @@ type
     procedure OpenReportPersons;
     procedure OpenReportUnitMembers;
     procedure OpenReportUnitRoles;
-    procedure SwitchedFromPersonsToUnitsCrud;
-    procedure SwitchedFromUnitsToPersonsCrud;
   public
     constructor Create(const aConnection: ISqlConnection; const aMainUI: IMainUI);
   end;
@@ -37,7 +37,7 @@ implementation
 
 uses Vdm.Globals, ConfigReader, TenantReader, RoleMapper, UnitMapper, PersonMapper, PersonBusiness,
   CrudBusiness, CrudConfigUnitAggregated, CrudConfigAddressAggregated, CrudConfigRoleEntry, CrudConfigTenantEntry,
-  Report.ClubMembers, Report.UnitMembers, Report.UnitRoles, Report.MemberUnits, Report.Persons;
+  Report.ClubMembers, Report.UnitMembers, Report.UnitRoles, Report.MemberUnits, Report.Persons, WorkSection;
 
 { TMainBusiness }
 
@@ -79,6 +79,19 @@ begin
   end;
 end;
 
+procedure TMainBusiness.OpenCrudPerson;
+begin
+  var lWorkSectionPerson: IWorkSection;
+  Supports(fUI.GetPersonAggregatedUI, IWorkSection, lWorkSectionPerson);
+  var lWorkSectionUnit: IWorkSection;
+  Supports(fUI.GetUnitCrudUI, IWorkSection, lWorkSectionUnit);
+
+  lWorkSectionUnit.EndWork;
+  TUnitMapper.Invalidate;
+  lWorkSectionPerson.BeginWork;
+  fPersonBusinessIntf.LoadList;
+end;
+
 procedure TMainBusiness.OpenCrudRole(const aRoleUI: ICrudUI<TDtoRole, TDtoRole, UInt32, TEntryFilter>;
   const aModalProc: TFunc<Integer>);
 begin
@@ -104,6 +117,19 @@ begin
     TTenantReader.Invalidate;
     fUI.SetApplicationTitle(TVdmGlobals.GetVdmApplicationTitle + ': ' + TTenantReader.Instance.Tenant.Title);
   end;
+end;
+
+procedure TMainBusiness.OpenCrudUnit;
+begin
+  var lWorkSectionPerson: IWorkSection;
+  Supports(fUI.GetPersonAggregatedUI, IWorkSection, lWorkSectionPerson);
+  var lWorkSectionUnit: IWorkSection;
+  Supports(fUI.GetUnitCrudUI, IWorkSection, lWorkSectionUnit);
+
+  lWorkSectionPerson.EndWork;
+  TPersonMapper.Invalidate;
+  lWorkSectionUnit.BeginWork;
+  fBusinessUnit.LoadList;
 end;
 
 procedure TMainBusiness.OpenReportClubMembers;
@@ -154,18 +180,6 @@ begin
   finally
     lReport.Free;
   end;
-end;
-
-procedure TMainBusiness.SwitchedFromPersonsToUnitsCrud;
-begin
-  TPersonMapper.Invalidate;
-  fBusinessUnit.LoadList;
-end;
-
-procedure TMainBusiness.SwitchedFromUnitsToPersonsCrud;
-begin
-  TUnitMapper.Invalidate;
-  fPersonBusinessIntf.LoadList;
 end;
 
 procedure TMainBusiness.UIIsReady;
