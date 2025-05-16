@@ -30,6 +30,7 @@ type
     lbAppTitle: TLabel;
     Label1: TLabel;
     rdUnitDataConfirmed: TRLDBText;
+    rdMemberCount: TRLDBText;
     procedure RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure bdDetailAfterPrint(Sender: TObject);
     procedure rdUnitDividerBeforePrint(Sender: TObject; var PrintIt: Boolean);
@@ -63,9 +64,10 @@ end;
 
 procedure TfmReportUnitMembers.bdDetailBeforePrint(Sender: TObject; var PrintIt: Boolean);
 begin
+  var lUnitBreak := rdUinitId.Field.AsLargeInt <> fPreviousUnitId;
   if fOneUnitPerPage then
   begin
-    if not fNewPageStarted and (rdUinitId.Field.AsLargeInt <> fPreviousUnitId) then
+    if not fNewPageStarted and lUnitBreak then
     begin
       bdDetail.FGreenBarFlag := False;
       bdDetail.PageBreaking := pbBeforePrint
@@ -90,12 +92,18 @@ end;
 
 procedure TfmReportUnitMembers.rdUnitDividerBeforePrint(Sender: TObject; var PrintIt: Boolean);
 begin
-  PrintIt := fNewPageStarted or (rdUinitId.Field.AsLargeInt <> fPreviousUnitId);
+  var lUnitBreak := rdUinitId.Field.AsLargeInt <> fPreviousUnitId;
+  PrintIt := fNewPageStarted or lUnitBreak;
 end;
 
 procedure TfmReportUnitMembers.rdUnitnameBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
 begin
-  PrintIt := fNewPageStarted or (rdUinitId.Field.AsLargeInt <> fPreviousUnitId);
+  var lUnitBreak := rdUinitId.Field.AsLargeInt <> fPreviousUnitId;
+  PrintIt := fNewPageStarted or lUnitBreak;
+  if (Sender = rdUnitname) and (rdMemberCount.Field.AsInteger > 5) then
+  begin
+    AText := AText + ' (' + IntToStr(rdMemberCount.Field.AsInteger) + ' Pers.)';
+  end;
 end;
 
 procedure TfmReportUnitMembers.RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
@@ -105,8 +113,15 @@ begin
   lbAppTitle.Caption := TVdmGlobals.GetVdmApplicationTitle;
 
   fQuery := fConnection.CreatePreparedQuery(
-    'SELECT u.unit_id, u.unit_name, u.unit_data_confirmed_on, pn.person_name, r.role_name' +
+    'SELECT u.unit_id, u.unit_name, u.unit_data_confirmed_on, mc.MemberCount, pn.person_name, r.role_name' +
     ' FROM unit AS u' +
+    ' INNER JOIN (' +
+          ' SELECT m.unit_id, COUNT(*) AS MemberCount' +
+          ' FROM member AS m' +
+          ' INNER JOIN person AS p ON p.person_id = m.person_id AND p.person_active = 1' +
+          ' WHERE  m.mb_active = 1' +
+          ' GROUP BY m.unit_id' +
+    ') AS mc ON mc.unit_id = u.unit_id' +
     ' LEFT JOIN member AS m ON m.unit_id = u.unit_id AND m.mb_active = 1' +
     ' LEFT JOIN person AS p ON p.person_id = m.person_id AND p.person_active = 1' +
     ' LEFT JOIN vw_person_name AS pn ON pn.person_id = p.person_id' +

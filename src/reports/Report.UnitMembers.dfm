@@ -171,6 +171,16 @@ object fmReportUnitMembers: TfmReportUnitMembers
         DrawKind = dkLine
         BeforePrint = rdUnitDividerBeforePrint
       end
+      object rdMemberCount: TRLDBText
+        Left = 713
+        Top = 2
+        Width = 93
+        Height = 18
+        DataField = 'MemberCount'
+        DataSource = dsDataSource
+        Text = ''
+        Visible = False
+      end
     end
     object bdPageFooter: TRLBand
       Left = 47
