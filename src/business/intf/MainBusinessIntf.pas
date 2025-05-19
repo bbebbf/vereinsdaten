@@ -23,6 +23,7 @@ type
     procedure OpenReportMemberUnits;
     procedure OpenReportPersons;
     procedure OpenReportUnitMembers;
+    procedure OpenReportOneUnitMembers(const aUnitId: UInt32);
     procedure OpenReportUnitRoles;
   end;
 

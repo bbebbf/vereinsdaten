@@ -28,6 +28,7 @@ type
     procedure OpenReportMemberUnits;
     procedure OpenReportPersons;
     procedure OpenReportUnitMembers;
+    procedure OpenReportOneUnitMembers(const aUnitId: UInt32);
     procedure OpenReportUnitRoles;
   public
     constructor Create(const aConnection: ISqlConnection; const aMainUI: IMainUI);
@@ -37,7 +38,8 @@ implementation
 
 uses Vdm.Globals, ConfigReader, TenantReader, RoleMapper, UnitMapper, PersonMapper, PersonBusiness,
   CrudBusiness, CrudConfigUnitAggregated, CrudConfigAddressAggregated, CrudConfigRoleEntry, CrudConfigTenantEntry,
-  Report.ClubMembers, Report.UnitMembers, Report.UnitRoles, Report.MemberUnits, Report.Persons, WorkSection;
+  Report.ClubMembers, Report.UnitMembers, Report.UnitRoles, Report.MemberUnits, Report.Persons, WorkSection,
+  Report.OneUnitMembers;
 
 { TMainBusiness }
 
@@ -145,6 +147,16 @@ end;
 procedure TMainBusiness.OpenReportMemberUnits;
 begin
   var lReport := TfmReportMemberUnits.Create(fConnection);
+  try
+    lReport.Preview;
+  finally
+    lReport.Free;
+  end;
+end;
+
+procedure TMainBusiness.OpenReportOneUnitMembers(const aUnitId: UInt32);
+begin
+  var lReport := TfmReportOneUnitMembers.Create(fConnection, aUnitId);
   try
     lReport.Preview;
   finally

@@ -119,7 +119,8 @@ uses
   MainBusiness in 'business\impl\MainBusiness.pas',
   MainUI in 'view\intf\MainUI.pas',
   ActionlistWrapper in 'view\tools\ActionlistWrapper.pas',
-  WorkSection in 'general\intf\tools\WorkSection.pas';
+  WorkSection in 'general\intf\tools\WorkSection.pas',
+  Report.OneUnitMembers in 'reports\Report.OneUnitMembers.pas' {fmReportOneUnitMembers};
 
 {$R *.res}
 

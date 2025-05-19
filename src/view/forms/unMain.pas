@@ -36,6 +36,8 @@ type
     Personen1: TMenuItem;
     acMasterdataPerson: TAction;
     acMasterdataPerson1: TMenuItem;
+    acReportOneUnitMembers: TAction;
+    acReportOneUnitMembers1: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure acMasterdataUnitExecute(Sender: TObject);
@@ -49,6 +51,8 @@ type
     procedure FormShow(Sender: TObject);
     procedure acReportPersonsExecute(Sender: TObject);
     procedure acMasterdataPersonExecute(Sender: TObject);
+    procedure acReportOneUnitMembersExecute(Sender: TObject);
+    procedure acReportOneUnitMembersUpdate(Sender: TObject);
   strict private
     fBusiness: IMainBusiness;
     fProgressForm: TfmProgressForm;
@@ -62,6 +66,7 @@ type
     function GetPersonAggregatedUI: IPersonAggregatedUI;
     function GetUnitCrudUI: ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32, TEntryFilter>;
     function GetUnitMemberOfsUI: IMemberOfUI;
+    function GetCurrentUnitId: UInt32;
   end;
 
 var
@@ -69,7 +74,8 @@ var
 
 implementation
 
-uses System.UITypes, Vdm.Globals, unRole, unAddress, unTenant, ProgressIndicator;
+uses System.UITypes, Vdm.Globals, unRole, unAddress, unTenant, ProgressIndicator,
+  UnitMapper;
 
 {$R *.dfm}
 
@@ -142,6 +148,27 @@ begin
   fBusiness.OpenReportMemberUnits;
 end;
 
+procedure TfmMain.acReportOneUnitMembersExecute(Sender: TObject);
+begin
+  fBusiness.OpenReportOneUnitMembers(GetCurrentUnitId);
+end;
+
+procedure TfmMain.acReportOneUnitMembersUpdate(Sender: TObject);
+begin
+  var lUnitId := GetCurrentUnitId;
+  if lUnitId > 0 then
+  begin
+    acReportOneUnitMembers.Enabled := True;
+    acReportOneUnitMembers.Caption := 'Personen für "' +
+      TUnitMapper.Instance.Data.Data.GetAllEntries.GetStringById(lUnitId, '???') + '"';
+  end
+  else
+  begin
+    acReportOneUnitMembers.Enabled := False;
+    acReportOneUnitMembers.Caption := 'Personen für ...';
+  end;
+end;
+
 procedure TfmMain.acReportPersonsExecute(Sender: TObject);
 begin
   fBusiness.OpenReportPersons;
@@ -184,6 +211,15 @@ end;
 procedure TfmMain.FormShow(Sender: TObject);
 begin
   fBusiness.UIIsReady;
+end;
+
+function TfmMain.GetCurrentUnitId: UInt32;
+begin
+  Result := 0;
+  if ffraUnit.Visible then
+    Result := ffraUnit.CurrentUnitId;
+  if (Result = 0) or ffraPerson.Visible then
+    Result := ffraPerson.CurrentUnitId;
 end;
 
 function TfmMain.GetPersonAggregatedUI: IPersonAggregatedUI;

@@ -122,9 +122,11 @@ type
     function GetProgressIndicator: IProgressIndicator;
 
     procedure ExtentedListviewEndUpdate(Sender: TObject; const aTotalItemCount, aVisibleItemCount: Integer);
+    function GetCurrentUnitId: UInt32;
   public
     constructor Create(AOwner: TComponent; const aProgressIndicator: IProgressIndicator); reintroduce;
     destructor Destroy; override;
+    property CurrentUnitId: UInt32 read GetCurrentUnitId;
   end;
 
 implementation
@@ -355,6 +357,11 @@ end;
 function TfraPerson.GetProgressIndicator: IProgressIndicator;
 begin
   Result := fProgressIndicator;
+end;
+
+function TfraPerson.GetCurrentUnitId: UInt32;
+begin
+  Result := fPersonMemberOf.CurrentUnitId;
 end;
 
 function TfraPerson.GetEntryFromUI(var aRecord: TDtoPersonAggregated; const aMode: TUIToEntryMode;

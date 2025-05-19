@@ -65,6 +65,7 @@ type
     fActiveUntilHandler: TCheckboxDatetimePickerHandler;
     fDataConfirmedOnHandler: TCheckboxDatetimePickerHandler;
     fProgressIndicator: IProgressIndicator;
+    fCurrentUnitId: UInt32;
 
     procedure CMVisiblechanged(var Message: TMessage); message CM_VISIBLECHANGED;
 
@@ -97,6 +98,7 @@ type
     constructor Create(AOwner: TComponent; const aProgressIndicator: IProgressIndicator); reintroduce;
     destructor Destroy; override;
     property MemberOfUI: IMemberOfUI read GetMemberOfUI;
+    property CurrentUnitId: UInt32 read fCurrentUnitId;
   end;
 
 implementation
@@ -369,6 +371,8 @@ begin
   if Assigned(aListItem) then
   begin
     lRecordFound := fExtendedListview.TryGetListItemData(aListItem, lRecord);
+    if lRecordFound then
+      fCurrentUnitId := lRecord.Id;
   end;
   fDelayedLoadEntry.SetData(TDelayedLoadEntryData.Create(lRecord.Id, lRecordFound, aDoStartEdit));
 end;

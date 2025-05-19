@@ -49,6 +49,8 @@ type
     fAllDetailedItemsStringsData: TKeyIndexStringsData;
     fAllRolesStringsData: TKeyIndexStringsData;
     fActionlistWrapper: TActionlistWrapper;
+    fCurrentPersonId: UInt32;
+    fCurrentUnitId: UInt32;
     procedure SetCommands(const aCommands: IMemberOfBusinessIntf);
     procedure ListEnumBegin;
     procedure ListEnumProcessItem(const aItem: TListEntry<TDtoMemberAggregated>);
@@ -57,7 +59,6 @@ type
     procedure SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry; const aVersionInfoEntryIndex: UInt16);
     procedure ClearVersionInfoEntryFromUI(const aVersionInfoEntryIndex: UInt16);
 
-    function GetStringByIndex(const aStrings: TStrings; const aIndex: Integer): string;
     procedure UpdateEditItemActions(const aEnabled: Boolean);
     procedure UpdateListActions(const aEnabled: Boolean);
 
@@ -67,6 +68,8 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure SetActionsEnabled(const aEnabled: Boolean);
+    property CurrentPersonId: UInt32 read fCurrentPersonId;
+    property CurrentUnitId: UInt32 read fCurrentUnitId;
   end;
 
 implementation
@@ -74,7 +77,7 @@ implementation
 {$R *.dfm}
 
 uses System.Generics.Defaults, System.DateUtils, Vdm.Globals, ListCrudCommands.Types, VclUITools, Vdm.Types,
-  CrudCommands, MessageDialogs;
+  CrudCommands, MessageDialogs, StringTools;
 
 { TfraPersonMemberOf }
 
@@ -185,10 +188,10 @@ begin
       if not Assigned(fAllRolesStringsData) then
         fAllRolesStringsData := aData.Data.AvailableRoles.Data.GetAllEntries;
 
-      aListItem.Caption := GetStringByIndex(fAllDetailedItemsStringsData.Strings,
+      aListItem.Caption := TStringTools.GetStringByIndex(fAllDetailedItemsStringsData.Strings,
         fAllDetailedItemsStringsData.Mapper.GetIndex(aData.Data.DetailItemId));
       aListItem.SubItems.Clear;
-      aListItem.SubItems.Add(GetStringByIndex(fAllRolesStringsData.Strings,
+      aListItem.SubItems.Add(TStringTools.GetStringByIndex(fAllRolesStringsData.Strings,
         fAllRolesStringsData.Mapper.GetIndex(aData.Data.RoleId)));
       aListItem.SubItems.Add(TVdmGlobals.GetDateAsString(aData.Data.Member.ActiveSince));
       aListItem.SubItems.Add(TVdmGlobals.GetActiveStateAsString(aData.Data.Member.Active));
@@ -327,6 +330,15 @@ end;
 procedure TfraMemberOf.lvMemberOfSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
 begin
   UpdateEditItemActions(Assigned(Item) and Selected);
+  if Selected then
+  begin
+    var lEntry: TListEntry<TDtoMemberAggregated>;
+    if fExtentedListviewMemberOfs.TryGetListItemData(Item, lEntry) then
+    begin
+      fCurrentPersonId := lEntry.Data.PersonId;
+      fCurrentUnitId := lEntry.Data.UnitId;
+    end;
+  end;
 end;
 
 procedure TfraMemberOf.UpdateEditItemActions(const aEnabled: Boolean);
@@ -339,14 +351,6 @@ procedure TfraMemberOf.UpdateListActions(const aEnabled: Boolean);
 begin
   fActionlistWrapper.SetActionEnabled(acSaveMemberOfs, aEnabled);
   fActionlistWrapper.SetActionEnabled(acReloadMemberOfs, aEnabled);
-end;
-
-function TfraMemberOf.GetStringByIndex(const aStrings: TStrings; const aIndex: Integer): string;
-begin
-  if (0 <= aIndex) and (aIndex < aStrings.Count) then
-    Result := aStrings[aIndex]
-  else
-    Result := '';
 end;
 
 end.

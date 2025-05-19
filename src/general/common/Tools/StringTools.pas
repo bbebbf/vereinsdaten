@@ -2,11 +2,14 @@ unit StringTools;
 
 interface
 
+uses System.Classes;
+
 type
   TStringTools = class
   public
     class function Combine(const aStrA, aGlue, aStrB: string): string;
     class function IsEmpty(const aString: string): Boolean;
+    class function GetStringByIndex(const aStrings: TStrings; const aIndex: Integer; const aNotFoundStr: string = ''): string;
   end;
 
 implementation
@@ -21,6 +24,15 @@ begin
   if (Length(aStrA) > 0) and (Length(aStrB) > 0) then
     Result := Result + aGlue;
   Result := Result + aStrB;
+end;
+
+class function TStringTools.GetStringByIndex(const aStrings: TStrings; const aIndex: Integer;
+  const aNotFoundStr: string): string;
+begin
+  if (0 <= aIndex) and (aIndex < aStrings.Count) then
+    Result := aStrings[aIndex]
+  else
+    Result := aNotFoundStr;
 end;
 
 class function TStringTools.IsEmpty(const aString: string): Boolean;

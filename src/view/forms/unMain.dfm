@@ -64,6 +64,9 @@ object fmMain: TfmMain
       object EinheitenundPersonen1: TMenuItem
         Action = acReportUnitMembers
       end
+      object acReportOneUnitMembers1: TMenuItem
+        Action = acReportOneUnitMembers
+      end
       object RollenundEinheiten1: TMenuItem
         Action = acReportUnitRoles
       end
@@ -120,6 +123,11 @@ object fmMain: TfmMain
     object acReportPersons: TAction
       Caption = 'Personen'
       OnExecute = acReportPersonsExecute
+    end
+    object acReportOneUnitMembers: TAction
+      Caption = 'acReportOneUnitMembers'
+      OnExecute = acReportOneUnitMembersExecute
+      OnUpdate = acReportOneUnitMembersUpdate
     end
   end
 end

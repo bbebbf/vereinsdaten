@@ -15,6 +15,7 @@ type
     procedure BeginUpdate;
     procedure EndUpdate;
     procedure AddMappedString(const aStringId: UInt32; const aStringValue: string);
+    function GetStringById(const aStringId: UInt32; const aNotFoundStr: string = ''): string;
     property Mapper: TKeyIndexMapper<UInt32> read fMapper;
     property Strings: TStrings read fStrings;
   end;
@@ -43,7 +44,7 @@ type
 
 implementation
 
-uses System.SysUtils;
+uses System.SysUtils, StringTools;
 
 { TKeyIndexStringsData }
 
@@ -74,6 +75,14 @@ end;
 procedure TKeyIndexStringsData.EndUpdate;
 begin
   fStrings.EndUpdate;
+end;
+
+function TKeyIndexStringsData.GetStringById(const aStringId: UInt32; const aNotFoundStr: string): string;
+begin
+  var lIndex: Integer;
+  if not Mapper.TryGetIndex(aStringId, lIndex) then
+    Exit(aNotFoundStr);
+  Result := TStringTools.GetStringByIndex(Strings, lIndex, aNotFoundStr);
 end;
 
 { TActiveKeyIndexStrings }
