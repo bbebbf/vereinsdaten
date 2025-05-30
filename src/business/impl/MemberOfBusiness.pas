@@ -52,11 +52,13 @@ implementation
 uses System.SysUtils, CrudConfigRole, KeyIndexMapper, RoleMapper;
 
 type
-  TDtoMemberConverter = class(TInterfacedBase, IValueConverter<TDtoMember, TDtoMemberAggregated>)
+  TDtoMemberConverter = class(TInterfacedBase, IValueConverter<TDtoMember, TDtoMemberAggregated>,
+    IVersionInfoSetter<TDtoMemberAggregated>)
   strict private
     fMemberOfConfig: IMemberOfConfigIntf;
     procedure Convert(const aValue: TDtoMember; var aTarget: TDtoMemberAggregated);
     procedure ConvertBack(const aValue: TDtoMemberAggregated; var aTarget: TDtoMember);
+    procedure SetVersionInfo(const aVersionInfos: TArray<TEntryVersionInfo>; var aEntry: TDtoMemberAggregated);
   public
     constructor Create(const aMemberOfConfig: IMemberOfConfigIntf);
   end;
@@ -215,6 +217,13 @@ constructor TDtoMemberConverter.Create(const aMemberOfConfig: IMemberOfConfigInt
 begin
   inherited Create;
   fMemberOfConfig := aMemberOfConfig;
+end;
+
+procedure TDtoMemberConverter.SetVersionInfo(const aVersionInfos: TArray<TEntryVersionInfo>;
+  var aEntry: TDtoMemberAggregated);
+begin
+  if Length(aVersionInfos) = 1 then
+    aEntry.VersionInfoPersonMemberOf.UpdateVersionInfo(aVersionInfos[0]);
 end;
 
 procedure TDtoMemberConverter.Convert(const aValue: TDtoMember; var aTarget: TDtoMemberAggregated);

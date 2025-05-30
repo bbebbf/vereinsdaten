@@ -33,7 +33,7 @@ type
     procedure ApplyFilter;
     procedure FilterChanged; virtual;
     procedure ListEnumBegin; virtual;
-    procedure ListEnumProcessItem(const aItem: T); virtual;
+    procedure ListEnumProcessItem(const aItem: T; const aSqlResult: ISqlResult); virtual;
     procedure ListEnumEnd; virtual;
     function ItemMatchesFilter(const aItem: T; const aFilter: FLoop): Boolean;
     property CurrentListEnumTransaction: ITransaction read fCurrentListEnumTransaction;
@@ -95,7 +95,7 @@ begin
         var lRecord := default(T);
         fConfig.GetRecordFromSqlResult(lSqlResult, lRecord);
         if ItemMatchesFilter(lRecord, fFilterLoop) then
-          ListEnumProcessItem(lRecord);
+          ListEnumProcessItem(lRecord, lSqlResult);
       end;
     except
       on Ex: Exception do
@@ -168,7 +168,7 @@ begin
     fEnumerator.ListEnumBegin;
 end;
 
-procedure TFilterSelect<T, FSelect, FLoop>.ListEnumProcessItem(const aItem: T);
+procedure TFilterSelect<T, FSelect, FLoop>.ListEnumProcessItem(const aItem: T; const aSqlResult: ISqlResult);
 begin
   Inc(fItemCount);
   if Assigned(fProgressIndicator) then

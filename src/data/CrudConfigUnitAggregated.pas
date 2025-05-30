@@ -296,8 +296,6 @@ end;
 procedure TUnitMemberOfsVersionInfoAccessor.LoadEntry(const aEntry: TDtoMemberAggregated;
   const aTransaction: ITransaction);
 begin
-  aEntry.VersionInfoPersonMemberOf.UpdateVersionInfo(
-    fVersionInfoAccessor.QueryVersionInfo(fVersionInfoAccessorTransactionScope, aEntry.Member.PersonId));
 end;
 
 procedure TUnitMemberOfsVersionInfoAccessor.SaveEntry(const aEntry: TDtoMemberAggregated;

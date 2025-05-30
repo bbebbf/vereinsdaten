@@ -3,12 +3,13 @@ unit CrudMemberConfigBase;
 interface
 
 uses InterfacedBase, SqlConnection, CrudAccessor, CrudConfig, SelectListFilter, DtoMember, KeyIndexStrings,
-  MemberOfConfigIntf;
+  MemberOfConfigIntf, Vdm.Versioning.Types;
 
 type
   TCrudMemberConfigBase = class abstract(TInterfacedBase,
     IMemberOfConfigIntf,
-    ISelectListFilter<TDtoMember, UInt32>)
+    ISelectListFilter<TDtoMember, UInt32>,
+    ISelectVersionInfo)
   strict private
     function GetTablename: string;
     function GetIdentityColumns: TArray<string>;
@@ -29,6 +30,7 @@ type
     procedure SetMasterItemIdToMember(const aMasterItemId: UInt32; var aMember: TDtoMember); virtual; abstract;
     function GetDetailItemIdFromMember(const aMember: TDtoMember): UInt32; virtual; abstract;
     procedure SetDetailItemIdToMember(const aDetailItemId: UInt32; var aMember: TDtoMember); virtual; abstract;
+    function GetEntryVersionInfoFromResult(const aSqlResult: ISqlResult; out aEntry: TEntryVersionInfo): Boolean; virtual;
   end;
 
 implementation
@@ -36,6 +38,12 @@ implementation
 uses Vdm.Globals;
 
 { TCrudMemberConfigBase }
+
+function TCrudMemberConfigBase.GetEntryVersionInfoFromResult(const aSqlResult: ISqlResult;
+  out aEntry: TEntryVersionInfo): Boolean;
+begin
+  Result := False;
+end;
 
 function TCrudMemberConfigBase.GetIdentityColumns: TArray<string>;
 begin

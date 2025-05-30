@@ -2,7 +2,8 @@ unit CrudMemberConfigMasterUnit;
 
 interface
 
-uses CrudMemberConfigBase, SqlConnection, DtoMember, DtoPerson, KeyIndexStrings, SelectList, Transaction;
+uses CrudMemberConfigBase, SqlConnection, DtoMember, DtoPerson, KeyIndexStrings, SelectList, Transaction,
+  Vdm.Versioning.Types;
 
 type
   TCrudMemberConfigMasterUnit = class(TCrudMemberConfigBase)
@@ -15,11 +16,12 @@ type
     procedure SetMasterItemIdToMember(const aMasterItemId: UInt32; var aMember: TDtoMember); override;
     function GetDetailItemIdFromMember(const aMember: TDtoMember): UInt32; override;
     procedure SetDetailItemIdToMember(const aDetailItemId: UInt32; var aMember: TDtoMember); override;
+    function GetEntryVersionInfoFromResult(const aSqlResult: ISqlResult; out aEntry: TEntryVersionInfo): Boolean; override;
   end;
 
 implementation
 
-uses Vdm.Globals, PersonMapper;
+uses System.SysUtils, Vdm.Globals, PersonMapper;
 
 { TCrudMemberConfigMasterUnit }
 
@@ -33,12 +35,26 @@ begin
   Result := 'Person';
 end;
 
+function TCrudMemberConfigMasterUnit.GetEntryVersionInfoFromResult(const aSqlResult: ISqlResult;
+  out aEntry: TEntryVersionInfo): Boolean;
+begin
+  aEntry.Id := aSqlResult.FieldByName('versioninfo_id').AsLargeInt;
+  Result := aEntry.Id > 0;
+  if Result then
+  begin
+    aEntry.VersionNumber := aSqlResult.FieldByName('versioninfo_number').AsLargeInt;
+    aEntry.LastUpdated := aSqlResult.FieldByName('versioninfo_lastupdated_utc').AsDateTime;
+  end;
+end;
+
 function TCrudMemberConfigMasterUnit.GetSelectListSQL: string;
 begin
-  Result := 'SELECT m.*'
+  Result := 'SELECT m.*, vi.versioninfo_id, vi.versioninfo_number, vi.versioninfo_lastupdated_utc'
     + ' FROM member AS m'
     + ' INNER JOIN vw_person_name AS pn ON pn.person_id = m.person_id'
     + ' LEFT JOIN role AS r ON r.role_id = m.role_id'
+    + ' LEFT JOIN version_info AS vi ON vi.versioninfo_entity = ' + IntToStr(Ord(TEntryVersionInfoEntity.PersonMemberOfs))
+      + ' AND vi.person_id = m.person_id'
     + ' WHERE m.unit_id = :UId'
     + ' ORDER BY ' + TVdmGlobals.GetRoleSortingSqlOrderBy('r') + ', pn.person_name, m.mb_active_since DESC';
 end;

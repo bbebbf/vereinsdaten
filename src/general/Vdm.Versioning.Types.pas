@@ -15,6 +15,16 @@ type
     LastUpdated: TDateTime;
   end;
 
+  ISelectVersionInfo = interface
+    ['{4D04C0C5-39E7-44EB-B311-3231D8DE1F21}']
+    function GetEntryVersionInfoFromResult(const aSqlResult: ISqlResult; out aEntry: TEntryVersionInfo): Boolean;
+  end;
+
+  IVersionInfoSetter<T> = interface
+    ['{2C4F9B2E-56EA-46A0-B573-139D44F6B657}']
+    procedure SetVersionInfo(const aVersionInfos: TArray<TEntryVersionInfo>; var aEntry: T);
+  end;
+
   IVersionInfoConfig<TRecord, TRecordIdentity> = interface
     ['{585E7E27-83C6-41E1-B03C-3EBD49EEAD3D}']
     function GetVersioningEntityId: TEntryVersionInfoEntity;

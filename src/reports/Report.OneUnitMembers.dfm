@@ -73,15 +73,15 @@ object fmReportOneUnitMembers: TfmReportOneUnitMembers
       object rdUnitname: TRLDBText
         Left = 0
         Top = 0
-        Width = 95
-        Height = 23
+        Width = 86
+        Height = 19
         DataField = 'unit_name'
         DataSource = dsDataSource
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
-        Font.Height = -20
+        Font.Height = -17
         Font.Name = 'Arial'
-        Font.Style = []
+        Font.Style = [fsBold]
         ParentFont = False
         Text = ''
       end

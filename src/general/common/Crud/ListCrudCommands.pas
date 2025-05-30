@@ -34,6 +34,7 @@ type
   TListCrudCommands<TS, TSIdent: record; TD; FSelect, FLoop: record> = class(TFilterSelect<TS, FSelect, FLoop>)
   strict private
     fConnection: ISqlConnection;
+    fSelectListFilter: ISelectListFilter<TS, FSelect>;
     fCrudConfig: ICrudConfig<TS, TSIdent>;
     fItems: TList<TListEntry<TD>>;
     fValueConverter: IValueConverter<TS, TD>;
@@ -46,7 +47,7 @@ type
     function CreateListEntry(const aItem: TD): TListEntry<TD>; virtual;
     procedure FilterChanged; override;
     procedure ListEnumBegin; override;
-    procedure ListEnumProcessItem(const aItem: TS); override;
+    procedure ListEnumProcessItem(const aItem: TS; const aSqlResult: ISqlResult); override;
     procedure ListEnumEnd; override;
   public
     constructor Create(const aConnection: ISqlConnection;
@@ -85,6 +86,7 @@ constructor TListCrudCommands<TS, TSIdent, TD, FSelect, FLoop>.Create(const aCon
 begin
   inherited Create(aConnection, aSelectListFilter);
   fConnection := aConnection;
+  fSelectListFilter := aSelectListFilter;
   fCrudConfig := aCrudConfig;
   fValueConverter := aValueConverter;
 end;
@@ -130,13 +132,30 @@ begin
     fTargetEnumerator.ListEnumEnd;
 end;
 
-procedure TListCrudCommands<TS, TSIdent, TD, FSelect, FLoop>.ListEnumProcessItem(const aItem: TS);
+procedure TListCrudCommands<TS, TSIdent, TD, FSelect, FLoop>.ListEnumProcessItem(const aItem: TS;
+  const aSqlResult: ISqlResult);
 begin
   inherited;
   var lTargetItem := default(TD);
   fValueConverter.Convert(aItem, lTargetItem);
+  var lSelectVersionInfo: ISelectVersionInfo;
+  var lVersionInfoSetter: IVersionInfoSetter<TD>;
+  if Supports(fSelectListFilter, ISelectVersionInfo, lSelectVersionInfo) and
+     Supports(fValueConverter, IVersionInfoSetter<TD>, lVersionInfoSetter) then
+  begin
+    var lVersions: TArray<TEntryVersionInfo> := [];
+    var lVersionEntry: TEntryVersionInfo;
+    if lSelectVersionInfo.GetEntryVersionInfoFromResult(aSqlResult, lVersionEntry) then
+    begin
+      SetLength(lVersions, 1);
+      lVersions[0] := lVersionEntry;
+      lVersionInfoSetter.SetVersionInfo(lVersions, lTargetItem);
+    end;
+  end;
   if Assigned(fCrudEvents) then
+  begin
     fCrudEvents.LoadEntry(lTargetItem, CurrentListEnumTransaction);
+  end;
   var lEntry := CreateListEntry(lTargetItem);
   fItems.Add(lEntry);
   if Assigned(fTargetEnumerator) then

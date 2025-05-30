@@ -13,7 +13,7 @@ type
   strict protected
     procedure FilterChanged; override;
     procedure ListEnumBegin; override;
-    procedure ListEnumProcessItem(const aItem: T); override;
+    procedure ListEnumProcessItem(const aItem: T; const aSqlResult: ISqlResult); override;
     procedure Notify(const Item: T; Action: TCollectionNotification); virtual;
   public
     destructor Destroy; override;
@@ -82,7 +82,7 @@ begin
   end;
 end;
 
-procedure TListSelector<T, FSelect, FLoop>.ListEnumProcessItem(const aItem: T);
+procedure TListSelector<T, FSelect, FLoop>.ListEnumProcessItem(const aItem: T; const aSqlResult: ISqlResult);
 begin
   inherited;
   fItems.Add(aItem);
