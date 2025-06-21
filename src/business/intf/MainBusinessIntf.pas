@@ -2,7 +2,8 @@ unit MainBusinessIntf;
 
 interface
 
-uses System.SysUtils, Vdm.Types, CrudUI, DtoAddress, DtoAddressAggregated, DtoRole, DtoTenant;
+uses System.SysUtils, Vdm.Types, CrudUI, DtoAddress, DtoAddressAggregated, DtoRole, DtoTenant,
+  DatespanProvider;
 
 type
   IMainBusiness = interface
@@ -25,6 +26,7 @@ type
     procedure OpenReportUnitMembers;
     procedure OpenReportOneUnitMembers(const aUnitId: UInt32);
     procedure OpenReportUnitRoles;
+    procedure OpenReportBirthdays(const aDatespanProvider: IDatespanProvider);
   end;
 
 implementation

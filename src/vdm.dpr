@@ -120,7 +120,11 @@ uses
   MainUI in 'view\intf\MainUI.pas',
   ActionlistWrapper in 'view\tools\ActionlistWrapper.pas',
   WorkSection in 'general\intf\tools\WorkSection.pas',
-  Report.OneUnitMembers in 'reports\Report.OneUnitMembers.pas' {fmReportOneUnitMembers};
+  Report.OneUnitMembers in 'reports\Report.OneUnitMembers.pas' {fmReportOneUnitMembers},
+  Report.Birthdays in 'reports\Report.Birthdays.pas' {fmReportBirthdays},
+  DatespanProvider in 'general\intf\tools\DatespanProvider.pas',
+  Nullable in 'general\common\Tools\Nullable.pas',
+  unDatespanDlg in 'view\forms\unDatespanDlg.pas' {fmDatespanDlg};
 
 {$R *.res}
 

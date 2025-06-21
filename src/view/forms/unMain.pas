@@ -38,6 +38,8 @@ type
     acMasterdataPerson1: TMenuItem;
     acReportOneUnitMembers: TAction;
     acReportOneUnitMembers1: TMenuItem;
+    acReportBirthdays: TAction;
+    Geburtstagsliste1: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure acMasterdataUnitExecute(Sender: TObject);
@@ -53,6 +55,7 @@ type
     procedure acMasterdataPersonExecute(Sender: TObject);
     procedure acReportOneUnitMembersExecute(Sender: TObject);
     procedure acReportOneUnitMembersUpdate(Sender: TObject);
+    procedure acReportBirthdaysExecute(Sender: TObject);
   strict private
     fBusiness: IMainBusiness;
     fProgressForm: TfmProgressForm;
@@ -75,7 +78,7 @@ var
 implementation
 
 uses System.UITypes, Vdm.Globals, unRole, unAddress, unTenant, ProgressIndicator,
-  UnitMapper;
+  UnitMapper, unDatespanDlg;
 
 {$R *.dfm}
 
@@ -136,6 +139,16 @@ begin
   acMasterdataUnit.Enabled := False;
   acMasterdataPerson.Enabled := True;
   fBusiness.OpenCrudUnit;
+end;
+
+procedure TfmMain.acReportBirthdaysExecute(Sender: TObject);
+begin
+  var lDatespanDlg := TfmDatespanDlg.Create(Self);
+  try
+    fBusiness.OpenReportBirthdays(lDatespanDlg);
+  finally
+    lDatespanDlg.Free;
+  end;
 end;
 
 procedure TfmMain.acReportClubMembersExecute(Sender: TObject);

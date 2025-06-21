@@ -3,7 +3,8 @@ unit MainBusiness;
 interface
 
 uses System.SysUtils, InterfacedBase, MainBusinessIntf, SqlConnection, MainUI, PersonBusinessIntf, EntryCrudConfig,
-  CrudCommands, Vdm.Types, CrudUI, DtoUnit, DtoUnitAggregated, DtoAddress, DtoAddressAggregated, DtoRole, DtoTenant;
+  CrudCommands, Vdm.Types, CrudUI, DtoUnit, DtoUnitAggregated, DtoAddress, DtoAddressAggregated, DtoRole, DtoTenant,
+  DatespanProvider;
 
 type
   TMainBusiness = class(TInterfacedBase, IMainBusiness)
@@ -30,6 +31,7 @@ type
     procedure OpenReportUnitMembers;
     procedure OpenReportOneUnitMembers(const aUnitId: UInt32);
     procedure OpenReportUnitRoles;
+    procedure OpenReportBirthdays(const aDatespanProvider: IDatespanProvider);
   public
     constructor Create(const aConnection: ISqlConnection; const aMainUI: IMainUI);
   end;
@@ -39,7 +41,7 @@ implementation
 uses Vdm.Globals, ConfigReader, TenantReader, RoleMapper, UnitMapper, PersonMapper, PersonBusiness,
   CrudBusiness, CrudConfigUnitAggregated, CrudConfigAddressAggregated, CrudConfigRoleEntry, CrudConfigTenantEntry,
   Report.ClubMembers, Report.UnitMembers, Report.UnitRoles, Report.MemberUnits, Report.Persons, WorkSection,
-  Report.OneUnitMembers;
+  Report.OneUnitMembers, Report.Birthdays;
 
 { TMainBusiness }
 
@@ -132,6 +134,23 @@ begin
   TPersonMapper.Invalidate;
   lWorkSectionUnit.BeginWork;
   fBusinessUnit.LoadList;
+end;
+
+procedure TMainBusiness.OpenReportBirthdays(const aDatespanProvider: IDatespanProvider);
+begin
+  aDatespanProvider.Title := 'Geburtstagsliste';
+  aDatespanProvider.SetFromDate(Now);
+  aDatespanProvider.SetToDate(Now + 20);
+  if not aDatespanProvider.ProvideDatespan then
+    Exit;
+
+  var lReport := TfmReportBirthdays.Create(fConnection,
+    aDatespanProvider.FromDate.Value, aDatespanProvider.ToDate.Value);
+  try
+    lReport.Preview;
+  finally
+    lReport.Free;
+  end;
 end;
 
 procedure TMainBusiness.OpenReportClubMembers;

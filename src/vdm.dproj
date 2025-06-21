@@ -334,6 +334,16 @@ $(PostBuildEvent)]]></PostBuildEvent>
             <Form>fmReportOneUnitMembers</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="reports\Report.Birthdays.pas">
+            <Form>fmReportBirthdays</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="general\intf\tools\DatespanProvider.pas"/>
+        <DCCReference Include="general\common\Tools\Nullable.pas"/>
+        <DCCReference Include="view\forms\unDatespanDlg.pas">
+            <Form>fmDatespanDlg</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <None Include="inc\CompilerDirectives.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>

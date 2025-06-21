@@ -79,6 +79,9 @@ object fmMain: TfmMain
       object miReportClubMembers: TMenuItem
         Action = acReportClubMembers
       end
+      object Geburtstagsliste1: TMenuItem
+        Action = acReportBirthdays
+      end
     end
   end
   object ActionList: TActionList
@@ -128,6 +131,10 @@ object fmMain: TfmMain
       Caption = 'acReportOneUnitMembers'
       OnExecute = acReportOneUnitMembersExecute
       OnUpdate = acReportOneUnitMembersUpdate
+    end
+    object acReportBirthdays: TAction
+      Caption = 'Geburtstagsliste'
+      OnExecute = acReportBirthdaysExecute
     end
   end
 end
