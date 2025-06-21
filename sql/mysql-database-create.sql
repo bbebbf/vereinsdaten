@@ -110,3 +110,11 @@ CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `vw_person_name` AS select 
 CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `vw_select_address` AS select `a`.`adr_id` AS `adr_id`,concat_ws(', ',`a`.`adr_street`,concat_ws(' ',`a`.`adr_postalcode`,`a`.`adr_city`)) AS `address_title` from `address` `a`;
 
 CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `vw_active_person` AS select `pn`.`person_id` AS `person_id`,`pn`.`person_name` AS `person_name` from (`vw_person_name` `pn` join `person` `p` on(`p`.`person_id` = `pn`.`person_id`)) where `p`.`person_active` = 1;
+
+
+
+
+CREATE FUNCTION `IsLeapYear`(IN FromDate DATE) RETURNS int(11)
+BEGIN
+  return if (day(makedate(year(FromDate), 60)) = 1, 0, 1);
+END
