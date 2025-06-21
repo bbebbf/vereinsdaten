@@ -3,17 +3,19 @@
   dbserver:
     container_name: ${DB_HOST}
     hostname: ${DB_HOST}
-    image: biarms/mysql:5.5.62
+    image: mariadb:10.11
     restart: unless-stopped
     environment:
       TZ: ${TZ}
-      MYSQL_RANDOM_ROOT_PASSWORD: 1
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_DATABASE: ${DB_NAME}
+      MARIADB_RANDOM_ROOT_PASSWORD: 1;
+      MARIADB_USER: ${DB_USER}
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+      MARIADB_DATABASE: ${DB_NAME}
     volumes:
-      - "./data/mysql/data:/var/lib/mysql:Z"
-      - "./data/mysql/initdb:/docker-entrypoint-initdb.d:Z"
+      - "./data/mariadb/data:/var/lib/mysql:Z"
+##      - "./data/mysql/initdb:/docker-entrypoint-initdb.d:Z"
+    ports:
+      - "8306:3306"
 
   openssh:
     image: lscr.io/linuxserver/openssh-server:latest
