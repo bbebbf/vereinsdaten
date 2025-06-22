@@ -9,6 +9,7 @@ type
     NameId: TDtoPersonNameId;
     Active: Boolean;
     Birthday: TDate;
+    OnBirthdayList: Boolean;
     function ToString: string;
   end;
 

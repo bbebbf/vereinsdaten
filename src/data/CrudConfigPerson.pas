@@ -32,6 +32,7 @@ begin
   aRecord.NameId.Lastname := aSqlResult.FieldByName('person_lastname').AsString;
   aRecord.Active := aSqlResult.FieldByName('person_active').AsBoolean;
   aRecord.Birthday := aSqlResult.FieldByName('person_birthday').AsDateTime;
+  aRecord.OnBirthdayList := aSqlResult.FieldByName('person_on_birthday_list').AsBoolean;
 end;
 
 function TCrudConfigPerson.GetRecordIdentity(const aRecord: TDtoPerson): UInt32;
@@ -76,7 +77,8 @@ begin
   aAccessor.SetValueEmptyStrAsNull('person_nameaddition', aRecord.NameId.NameAddition);
   aAccessor.SetValueEmptyStrAsNull('person_lastname', aRecord.NameId.Lastname);
   aAccessor.SetValue('person_active', aRecord.Active);
-  aAccessor.SetValueZeroAsNull('person_birthday', aRecord.Birthday)
+  aAccessor.SetValueZeroAsNull('person_birthday', aRecord.Birthday);
+  aAccessor.SetValue('person_on_birthday_list', aRecord.OnBirthdayList);
 end;
 
 procedure TCrudConfigPerson.SetValuesForDelete(const aRecordIdentity: UInt32; const aAccessor: TCrudAccessorDelete);

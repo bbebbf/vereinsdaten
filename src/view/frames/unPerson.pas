@@ -63,6 +63,7 @@ type
     lbFilter: TLabel;
     pnTop: TPanel;
     lbTitle: TLabel;
+    cbPersonOnBirthdaylist: TCheckBox;
     procedure lvPersonListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure lvPersonListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
@@ -77,6 +78,7 @@ type
     procedure lvPersonListviewDblClick(Sender: TObject);
     procedure cbPersonAddressChange(Sender: TObject);
     procedure cbPersonAddressSelect(Sender: TObject);
+    procedure cbPersonBirthdayKnownClick(Sender: TObject);
   strict private
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
@@ -159,6 +161,7 @@ begin
   fComponentValueChangedObserver.RegisterCheckbox(cbPersonBirthdayKnown);
   fComponentValueChangedObserver.RegisterDateTimePicker(dtPersonBirthday);
   fComponentValueChangedObserver.RegisterCheckbox(cbPersonActive);
+  fComponentValueChangedObserver.RegisterCheckbox(cbPersonOnBirthdaylist);
   fComponentValueChangedObserver.RegisterCombobox(cbPersonAddress);
   fComponentValueChangedObserver.RegisterEdit(edNewAddressPostalcode);
   fComponentValueChangedObserver.RegisterEdit(edNewAddressCity);
@@ -287,6 +290,19 @@ begin
   ConfigControlsForNewAddress;
 end;
 
+procedure TfraPerson.cbPersonBirthdayKnownClick(Sender: TObject);
+begin
+  if cbPersonBirthdayKnown.Checked then
+  begin
+    cbPersonOnBirthdaylist.Enabled := True;
+  end
+  else
+  begin
+    cbPersonOnBirthdaylist.Enabled := False;
+    cbPersonOnBirthdaylist.Checked := False;
+  end;
+end;
+
 procedure TfraPerson.cbShowInactivePersonsClick(Sender: TObject);
 begin
   edFilter.Text := '';
@@ -312,6 +328,7 @@ begin
   fPersonBirthdayHandler.Clear;
 
   cbPersonActive.Checked := True;
+  cbPersonOnBirthdaylist.Checked := False;
   edNewAddressPostalcode.Text := '';
   edNewAddressCity.Text := '';
   ConfigControlsForNewAddress;
@@ -389,6 +406,7 @@ begin
   aRecord.Lastname := edPersonLastname.Text;
   aRecord.Birthday := fPersonBirthdayHandler.Datetime;
   aRecord.Active := cbPersonActive.Checked;
+  aRecord.OnBirthdayList := cbPersonOnBirthdaylist.Checked;
 
   var lAddressStringsMapping: TKeyIndexStringsData := nil;
   try
@@ -636,6 +654,7 @@ begin
   fExtendedListview.UpdateData(aRecord.Person);
 
   cbPersonActive.Checked := aRecord.Active;
+  cbPersonOnBirthdaylist.Checked := aRecord.OnBirthdayList;
   edNewAddressPostalcode.Text := '';
   edNewAddressCity.Text := '';
   ConfigControlsForNewAddress;

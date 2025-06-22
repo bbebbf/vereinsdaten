@@ -42,6 +42,7 @@ type
     property Lastname: string read fPerson.NameId.Lastname write fPerson.NameId.Lastname;
     property Active: Boolean read fPerson.Active write fPerson.Active;
     property Birthday: TDate read fPerson.Birthday write fPerson.Birthday;
+    property OnBirthdayList: Boolean read fPerson.OnBirthdayList write fPerson.OnBirthdayList;
 
     property ExistingAddressId: UInt32 read fExistingAddressId;
     property AddressId: UInt32 read fAddressId write fAddressId;

@@ -119,6 +119,7 @@ begin
       ')' +
       ' LEFT JOIN person_address AS pa ON pa.person_id = p.person_id' +
       ' WHERE p.person_active = 1' +
+      ' AND p.person_on_birthday_list = 1' +
       ' AND p.person_birthday is not null' +
       ' ORDER BY bt.birthday, age, pn.person_name';
 
