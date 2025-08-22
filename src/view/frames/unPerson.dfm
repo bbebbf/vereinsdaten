@@ -41,9 +41,9 @@ object fraPerson: TfraPerson
     end
     object lvPersonListview: TListView
       Left = 0
-      Top = 73
+      Top = 89
       Width = 285
-      Height = 463
+      Height = 447
       Align = alClient
       Columns = <
         item
@@ -57,26 +57,27 @@ object fraPerson: TfraPerson
       OnCustomDrawItem = lvPersonListviewCustomDrawItem
       OnDblClick = lvPersonListviewDblClick
       OnSelectItem = lvPersonListviewSelectItem
+      ExplicitTop = 73
+      ExplicitHeight = 463
     end
     object pnFilter: TPanel
       Left = 0
       Top = 0
       Width = 285
-      Height = 73
+      Height = 89
       Align = alTop
       BevelOuter = bvNone
       TabOrder = 0
       DesignSize = (
         285
-        73)
+        89)
       object lbFilter: TLabel
         Left = 16
-        Top = 47
+        Top = 63
         Width = 29
         Height = 15
         Anchors = [akLeft, akBottom]
         Caption = 'Filter:'
-        ExplicitTop = 63
       end
       object cbShowInactivePersons: TCheckBox
         Left = 16
@@ -85,16 +86,26 @@ object fraPerson: TfraPerson
         Height = 17
         Caption = 'Inaktive Personen anzeigen'
         TabOrder = 0
-        OnClick = cbShowInactivePersonsClick
+        OnClick = cbCheckboxFilterPersonsClick
       end
       object edFilter: TEdit
         Left = 53
-        Top = 44
+        Top = 60
         Width = 226
         Height = 23
         Anchors = [akLeft, akRight, akBottom]
-        TabOrder = 1
+        TabOrder = 2
         OnChange = edFilterChange
+        ExplicitTop = 44
+      end
+      object cbShowExternalPersons: TCheckBox
+        Left = 16
+        Top = 36
+        Width = 169
+        Height = 17
+        Caption = 'Externe Personen anzeigen'
+        TabOrder = 1
+        OnClick = cbCheckboxFilterPersonsClick
       end
     end
     object btPersonStartNewRecord: TButton

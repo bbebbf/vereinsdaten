@@ -65,12 +65,13 @@ type
     lbTitle: TLabel;
     cbPersonOnBirthdaylist: TCheckBox;
     cbPersonExternal: TCheckBox;
+    cbShowExternalPersons: TCheckBox;
     procedure lvPersonListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure lvPersonListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
     procedure acPersonSaveCurrentRecordExecute(Sender: TObject);
     procedure acPersonReloadCurrentRecordExecute(Sender: TObject);
-    procedure cbShowInactivePersonsClick(Sender: TObject);
+    procedure cbCheckboxFilterPersonsClick(Sender: TObject);
     procedure cbMembershipEndKnownClick(Sender: TObject);
     procedure acPersonStartNewRecordExecute(Sender: TObject);
     procedure pcPersonDetailsChanging(Sender: TObject; var AllowChange: Boolean);
@@ -305,10 +306,11 @@ begin
   end;
 end;
 
-procedure TfraPerson.cbShowInactivePersonsClick(Sender: TObject);
+procedure TfraPerson.cbCheckboxFilterPersonsClick(Sender: TObject);
 begin
   edFilter.Text := '';
   fBusinessIntf.ShowInactivePersons := cbShowInactivePersons.Checked;
+  fBusinessIntf.ShowExternalPersons := cbShowExternalPersons.Checked;
 end;
 
 procedure TfraPerson.ClearEntryFromUI;

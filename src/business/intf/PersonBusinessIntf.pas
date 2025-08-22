@@ -10,10 +10,13 @@ type
     function GetAvailableAddresses: TActiveKeyIndexStringsLoader;
     function GetShowInactivePersons: Boolean;
     procedure SetShowInactivePersons(const aValue: Boolean);
+    function GetShowExternalPersons: Boolean;
+    procedure SetShowExternalPersons(const aValue: Boolean);
     function LoadPerson(const aPersonId: UInt32; const aLoadMemberOfs: Boolean): TCrudCommandResult;
     procedure LoadPersonsMemberOfs;
     procedure ClearAddressCache;
     property ShowInactivePersons: Boolean read GetShowInactivePersons write SetShowInactivePersons;
+    property ShowExternalPersons: Boolean read GetShowExternalPersons write SetShowExternalPersons;
     property AvailableAddresses: TActiveKeyIndexStringsLoader read GetAvailableAddresses;
   end;
 

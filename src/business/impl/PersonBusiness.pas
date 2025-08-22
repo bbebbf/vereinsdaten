@@ -27,6 +27,7 @@ type
     fNewEntryStarted: Boolean;
     fAddressMapper: TActiveKeyIndexStringsLoader;
     fShowInactivePersons: Boolean;
+    fShowExternalPersons: Boolean;
     fClubMembershipNumberChecker: TClubMembershipNumberChecker;
     fMemberOfConfig: IMemberOfConfigIntf;
     fMemberOfBusiness: IMemberOfBusinessIntf;
@@ -43,6 +44,8 @@ type
     function GetDataChanged: Boolean;
     function GetShowInactivePersons: Boolean;
     procedure SetShowInactivePersons(const aValue: Boolean);
+    function GetShowExternalPersons: Boolean;
+    procedure SetShowExternalPersons(const aValue: Boolean);
     procedure LoadPersonsMemberOfs;
     procedure ClearAddressCache;
     function GetAvailableAddresses: TActiveKeyIndexStringsLoader;
@@ -182,6 +185,11 @@ begin
   raise ENotImplemented.Create('TPersonBusiness.GetListFilter: TVoid');
 end;
 
+function TPersonBusiness.GetShowExternalPersons: Boolean;
+begin
+  Result := fShowExternalPersons;
+end;
+
 function TPersonBusiness.GetShowInactivePersons: Boolean;
 begin
   Result := fShowInactivePersons;
@@ -246,7 +254,7 @@ begin
     begin
       var lRecord := default(TDtoPerson);
       fPersonConfig.GetRecordFromSqlResult(lSqlResult, lRecord);
-      if fShowInactivePersons or lRecord.Active then
+      if (fShowInactivePersons or lRecord.Active) and (fShowExternalPersons or not lRecord.External) then
       begin
         fUI.ListEnumProcessItem(lRecord);
         fNewEntryStarted := False;
@@ -462,6 +470,12 @@ end;
 procedure TPersonBusiness.SetListFilter(const aValue: TVoid);
 begin
   raise ENotImplemented.Create('TPersonBusiness.SetListFilter(const aValue: TVoid)');
+end;
+
+procedure TPersonBusiness.SetShowExternalPersons(const aValue: Boolean);
+begin
+  fShowExternalPersons := aValue;
+  LoadList;
 end;
 
 procedure TPersonBusiness.SetShowInactivePersons(const aValue: Boolean);
