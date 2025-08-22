@@ -31,6 +31,7 @@ begin
   aRecord.NameId.NameAddition := aSqlResult.FieldByName('person_nameaddition').AsString;
   aRecord.NameId.Lastname := aSqlResult.FieldByName('person_lastname').AsString;
   aRecord.Active := aSqlResult.FieldByName('person_active').AsBoolean;
+  aRecord.External := aSqlResult.FieldByName('person_external').AsBoolean;
   aRecord.Birthday := aSqlResult.FieldByName('person_birthday').AsDateTime;
   aRecord.OnBirthdayList := aSqlResult.FieldByName('person_on_birthday_list').AsBoolean;
 end;
@@ -77,6 +78,7 @@ begin
   aAccessor.SetValueEmptyStrAsNull('person_nameaddition', aRecord.NameId.NameAddition);
   aAccessor.SetValueEmptyStrAsNull('person_lastname', aRecord.NameId.Lastname);
   aAccessor.SetValue('person_active', aRecord.Active);
+  aAccessor.SetValue('person_external', aRecord.External);
   aAccessor.SetValueZeroAsNull('person_birthday', aRecord.Birthday);
   aAccessor.SetValue('person_on_birthday_list', aRecord.OnBirthdayList);
 end;

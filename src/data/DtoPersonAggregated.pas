@@ -41,6 +41,7 @@ type
     property NameAddition: string read fPerson.NameId.NameAddition write fPerson.NameId.NameAddition;
     property Lastname: string read fPerson.NameId.Lastname write fPerson.NameId.Lastname;
     property Active: Boolean read fPerson.Active write fPerson.Active;
+    property &External: Boolean read fPerson.External write fPerson.External;
     property Birthday: TDate read fPerson.Birthday write fPerson.Birthday;
     property OnBirthdayList: Boolean read fPerson.OnBirthdayList write fPerson.OnBirthdayList;
 

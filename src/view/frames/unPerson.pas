@@ -64,6 +64,7 @@ type
     pnTop: TPanel;
     lbTitle: TLabel;
     cbPersonOnBirthdaylist: TCheckBox;
+    cbPersonExternal: TCheckBox;
     procedure lvPersonListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure lvPersonListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
@@ -161,6 +162,7 @@ begin
   fComponentValueChangedObserver.RegisterCheckbox(cbPersonBirthdayKnown);
   fComponentValueChangedObserver.RegisterDateTimePicker(dtPersonBirthday);
   fComponentValueChangedObserver.RegisterCheckbox(cbPersonActive);
+  fComponentValueChangedObserver.RegisterCheckbox(cbPersonExternal);
   fComponentValueChangedObserver.RegisterCheckbox(cbPersonOnBirthdaylist);
   fComponentValueChangedObserver.RegisterCombobox(cbPersonAddress);
   fComponentValueChangedObserver.RegisterEdit(edNewAddressPostalcode);
@@ -328,6 +330,7 @@ begin
   fPersonBirthdayHandler.Clear;
 
   cbPersonActive.Checked := True;
+  cbPersonExternal.Checked := False;
   cbPersonOnBirthdaylist.Checked := False;
   edNewAddressPostalcode.Text := '';
   edNewAddressCity.Text := '';
@@ -406,6 +409,7 @@ begin
   aRecord.Lastname := edPersonLastname.Text;
   aRecord.Birthday := fPersonBirthdayHandler.Datetime;
   aRecord.Active := cbPersonActive.Checked;
+  aRecord.External := cbPersonExternal.Checked;
   aRecord.OnBirthdayList := cbPersonOnBirthdaylist.Checked;
 
   var lAddressStringsMapping: TKeyIndexStringsData := nil;
@@ -654,6 +658,7 @@ begin
   fExtendedListview.UpdateData(aRecord.Person);
 
   cbPersonActive.Checked := aRecord.Active;
+  cbPersonExternal.Checked := aRecord.External;
   cbPersonOnBirthdaylist.Checked := aRecord.OnBirthdayList;
   edNewAddressPostalcode.Text := '';
   edNewAddressCity.Text := '';

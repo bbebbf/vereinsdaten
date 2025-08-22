@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS `person` (
   `person_nameaddition` varchar(20) DEFAULT NULL,
   `person_lastname` varchar(100) DEFAULT NULL,
   `person_active` bit(1) NOT NULL,
+  `person_external` bit(1) NOT NULL,
   `person_birthday` date DEFAULT NULL,
   `person_on_birthday_list` bit(1) NOT NULL,
   PRIMARY KEY (`person_id`) USING BTREE

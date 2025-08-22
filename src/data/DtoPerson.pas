@@ -8,6 +8,7 @@ type
   TDtoPerson = record
     NameId: TDtoPersonNameId;
     Active: Boolean;
+    &External: Boolean;
     Birthday: TDate;
     OnBirthdayList: Boolean;
     function ToString: string;
