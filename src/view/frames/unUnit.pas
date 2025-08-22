@@ -45,6 +45,8 @@ type
     pnMemberOf: TPanel;
     lbFilter: TLabel;
     edFilter: TEdit;
+    cbUnitKind: TComboBox;
+    lbUnitKind: TLabel;
     procedure lvListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure lvListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
@@ -94,6 +96,8 @@ type
     procedure ClearVersionInfoEntryFromUI(const aVersionInfoEntryIndex: UInt16);
 
     function GetMemberOfUI: IMemberOfUI;
+
+    procedure LoadUnitKindCombobox;
   public
     constructor Create(AOwner: TComponent; const aProgressIndicator: IProgressIndicator); reintroduce;
     destructor Destroy; override;
@@ -127,6 +131,7 @@ begin
 
   fComponentValueChangedObserver.RegisterEdit(edUnitName);
   fComponentValueChangedObserver.RegisterCheckbox(cbUnitActive);
+  fComponentValueChangedObserver.RegisterCombobox(cbUnitKind);
   fComponentValueChangedObserver.RegisterCheckbox(cbUnitActiveSinceKnown);
   fComponentValueChangedObserver.RegisterDateTimePicker(dtUnitActiveSince);
   fComponentValueChangedObserver.RegisterCheckbox(cbUnitActiveUntilKnown);
@@ -164,6 +169,7 @@ begin
   );
 
   lbVersionInfo.Caption := '';
+  LoadUnitKindCombobox;
 end;
 
 destructor TfraUnit.Destroy;
@@ -242,6 +248,7 @@ begin
 
   edUnitName.Text := '';
   cbUnitActive.Checked := True;
+  cbUnitKind.ItemIndex := 0;
   fActiveSinceHandler.Clear;
   fActiveUntilHandler.Clear;
   fDataConfirmedOnHandler.Clear;
@@ -277,6 +284,8 @@ begin
   Result := True;
   aEntry.Name := edUnitName.Text;
   aEntry.Active := cbUnitActive.Checked;
+  aEntry.Kind := TUnitKind(cbUnitKind.ItemIndex);
+
   aEntry.ActiveSince := fActiveSinceHandler.Datetime;
   aEntry.ActiveUntil := fActiveUntilHandler.Datetime;
   aEntry.DataConfirmedOn := fDataConfirmedOnHandler.Datetime;
@@ -393,6 +402,7 @@ begin
 
   edUnitName.Text := aEntry.Name;
   cbUnitActive.Checked := aEntry.Active;
+  cbUnitKind.ItemIndex := Ord(aEntry.Kind);
   fActiveSinceHandler.Datetime := aEntry.ActiveSince;
   fActiveUntilHandler.Datetime := aEntry.ActiveUntil;
   fDataConfirmedOnHandler.Datetime := aEntry.DataConfirmedOn;
@@ -430,6 +440,19 @@ begin
   else
   begin
     alActionList.State := TActionListState.asSuspended;
+  end;
+end;
+
+procedure TfraUnit.LoadUnitKindCombobox;
+begin
+  try
+    cbUnitKind.Items.BeginUpdate;
+    for var i := Low(TUnitKind) to High(TUnitKind)  do
+    begin
+      cbUnitKind.Items.Add(UnitKindToStr(i));
+    end;
+  finally
+    cbUnitKind.Items.EndUpdate;
   end;
 end;
 

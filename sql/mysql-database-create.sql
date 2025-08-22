@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS `unit` (
   `unit_active` bit(1) NOT NULL,
   `unit_active_since` date DEFAULT NULL,
   `unit_active_until` date DEFAULT NULL,
+  `unit_kind` tinyint(3) unsigned NOT NULL,
   `unit_data_confirmed_on` date DEFAULT NULL,
   PRIMARY KEY (`unit_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

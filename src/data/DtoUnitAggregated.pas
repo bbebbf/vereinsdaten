@@ -21,6 +21,7 @@ type
     property Active: Boolean read fUnit.Active write fUnit.Active;
     property ActiveSince: TDate read fUnit.ActiveSince write fUnit.ActiveSince;
     property ActiveUntil: TDate read fUnit.ActiveUntil write fUnit.ActiveUntil;
+    property Kind: TUnitKind read fUnit.Kind write fUnit.Kind;
     property DataConfirmedOn: TDate read fUnit.DataConfirmedOn write fUnit.DataConfirmedOn;
   end;
 
