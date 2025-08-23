@@ -109,18 +109,19 @@ begin
       lDates.Free;
     end;
 
-    var lSelectStmt := 'SELECT p.person_id, p.person_birthday, pn.person_name' +
-      ', bt.birthday, year(bt.birthday) - year(p.person_birthday) as age' +
+    var lSelectStmt := 'SELECT p.person_id, p.person_date_of_birth, pn.person_name' +
+      ', bt.birthday, year(bt.birthday) - year(p.person_date_of_birth) as age' +
       ' FROM person AS p' +
       ' INNER JOIN vw_person_name AS pn ON pn.person_id = p.person_id' +
       ' INNER JOIN ' + fTempTablename + ' AS bt ON (' +
-        ' (month(bt.birthday) = month(p.person_birthday) and day(bt.birthday) = day(p.person_birthday))' +
-        ' or (2 = month(p.person_birthday) and 29 = day(p.person_birthday) and not IsLeapYear(bt.birthday) = 1 and month(bt.birthday) = 3 and day(bt.birthday) = 1)' +
+        ' (month(bt.birthday) = p.person_month_of_birth and day(bt.birthday) = p.person_day_of_birth)' +
+        ' or (2 = p.person_month_of_birth and 29 = p.person_day_of_birth and not IsLeapYear(bt.birthday) = 1 and month(bt.birthday) = 3 and day(bt.birthday) = 1)' +
       ')' +
       ' LEFT JOIN person_address AS pa ON pa.person_id = p.person_id' +
       ' WHERE p.person_active = 1' +
       ' AND p.person_on_birthday_list = 1' +
-      ' AND p.person_birthday is not null' +
+      ' AND p.person_day_of_birth is not null' +
+      ' AND p.person_month_of_birth is not null' +
       ' ORDER BY bt.birthday, age, pn.person_name';
 
     fQuery := fConnection.CreatePreparedQuery(lSelectStmt);

@@ -22,6 +22,8 @@ type
 
 implementation
 
+uses SimpleDate;
+
 { TCrudConfigPerson }
 
 procedure TCrudConfigPerson.GetRecordFromSqlResult(const aSqlResult: ISqlResult; var aRecord: TDtoPerson);
@@ -32,7 +34,29 @@ begin
   aRecord.NameId.Lastname := aSqlResult.FieldByName('person_lastname').AsString;
   aRecord.Active := aSqlResult.FieldByName('person_active').AsBoolean;
   aRecord.External := aSqlResult.FieldByName('person_external').AsBoolean;
-  aRecord.Birthday := aSqlResult.FieldByName('person_birthday').AsDateTime;
+
+  var lBirthdayField := aSqlResult.FieldByName('person_date_of_birth');
+  if lBirthdayField.IsNull then
+  begin
+    var lBirthdayDayField := aSqlResult.FieldByName('person_day_of_birth');
+    var lBirthdayMonthField := aSqlResult.FieldByName('person_month_of_birth');
+    if lBirthdayDayField.IsNull or lBirthdayMonthField.IsNull then
+    begin
+      aRecord.Birthday.Reset;
+    end
+    else
+    begin
+      var lSimpleDate := default(TSimpleDate);
+      lSimpleDate.Day := lBirthdayDayField.AsLongWord;
+      lSimpleDate.Month := lBirthdayMonthField.AsLongWord;
+      aRecord.Birthday.Value := lSimpleDate;
+    end;
+  end
+  else
+  begin
+    aRecord.Birthday.Value := lBirthdayField.AsDateTime;
+  end;
+
   aRecord.OnBirthdayList := aSqlResult.FieldByName('person_on_birthday_list').AsBoolean;
 end;
 
@@ -79,7 +103,25 @@ begin
   aAccessor.SetValueEmptyStrAsNull('person_lastname', aRecord.NameId.Lastname);
   aAccessor.SetValue('person_active', aRecord.Active);
   aAccessor.SetValue('person_external', aRecord.External);
-  aAccessor.SetValueZeroAsNull('person_birthday', aRecord.Birthday);
+  if aRecord.Birthday.HasValue then
+  begin
+    aAccessor.SetValueZeroAsNull('person_day_of_birth', aRecord.Birthday.Value.Day);
+    aAccessor.SetValueZeroAsNull('person_month_of_birth', aRecord.Birthday.Value.Month);
+    if aRecord.Birthday.Value.IsYearKnown then
+    begin
+      aAccessor.SetValue('person_date_of_birth', aRecord.Birthday.Value.AsDate);
+    end
+    else
+    begin
+      aAccessor.SetValueToNull('person_date_of_birth');
+    end;
+  end
+  else
+  begin
+    aAccessor.SetValueToNull('person_date_of_birth');
+    aAccessor.SetValueToNull('person_day_of_birth');
+    aAccessor.SetValueToNull('person_month_of_birth');
+  end;
   aAccessor.SetValue('person_on_birthday_list', aRecord.OnBirthdayList);
 end;
 

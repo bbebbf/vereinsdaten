@@ -2,23 +2,33 @@ unit DtoPerson;
 
 interface
 
-uses DtoPersonNameId;
+uses DtoPersonNameId, SimpleDate, Nullable;
 
 type
   TDtoPerson = record
     NameId: TDtoPersonNameId;
     Active: Boolean;
     &External: Boolean;
-    Birthday: TDate;
+    Birthday: INullable<TSimpleDate>;
     OnBirthdayList: Boolean;
     function ToString: string;
+    class operator Initialize(out Dest: TDtoPerson);
+    class operator Finalize(var Dest: TDtoPerson);
   end;
 
 implementation
 
-uses System.SysUtils, StringTools;
-
 { TDtoPerson }
+
+class operator TDtoPerson.Initialize(out Dest: TDtoPerson);
+begin
+  Dest.Birthday := TNullable<TSimpleDate>.Create;
+end;
+
+class operator TDtoPerson.Finalize(var Dest: TDtoPerson);
+begin
+  Dest.Birthday := nil;
+end;
 
 function TDtoPerson.ToString: string;
 begin

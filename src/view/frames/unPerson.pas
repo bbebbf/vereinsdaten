@@ -9,7 +9,8 @@ uses
   Vcl.ComCtrls, Vcl.WinXPickers, System.Actions, Vcl.ActnList,
   PersonBusinessIntf, PersonAggregatedUI, DtoPersonAggregated, ComponentValueChangedObserver,
   unMemberOf, MemberOfUI, CheckboxDatetimePickerHandler,
-  Vdm.Types, Vdm.Versioning.Types, CrudUI, VersionInfoEntryUI, DtoPersonNameId, ProgressIndicatorIntf, WorkSection;
+  Vdm.Types, Vdm.Versioning.Types, CrudUI, VersionInfoEntryUI, DtoPersonNameId, ProgressIndicatorIntf, WorkSection,
+  ConstraintControls.ConstraintEdit, ConstraintControls.DateEdit;
 
 type
   TfraPerson = class(TFrame, IPersonAggregatedUI, IVersionInfoEntryUI, IWorkSection)
@@ -24,9 +25,7 @@ type
     edPersonPraeposition: TEdit;
     lbPersonLastname: TLabel;
     edPersonLastname: TEdit;
-    dtPersonBirthday: TDateTimePicker;
     lbPersonBirthday: TLabel;
-    cbPersonBirthdayKnown: TCheckBox;
     alActionList: TActionList;
     acPersonSaveCurrentRecord: TAction;
     acPersonReloadCurrentRecord: TAction;
@@ -66,6 +65,7 @@ type
     cbPersonOnBirthdaylist: TCheckBox;
     cbPersonExternal: TCheckBox;
     cbShowExternalPersons: TCheckBox;
+    sdPersonBirthday: TDateEdit;
     procedure lvPersonListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure lvPersonListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
@@ -80,7 +80,7 @@ type
     procedure lvPersonListviewDblClick(Sender: TObject);
     procedure cbPersonAddressChange(Sender: TObject);
     procedure cbPersonAddressSelect(Sender: TObject);
-    procedure cbPersonBirthdayKnownClick(Sender: TObject);
+    procedure sdPersonBirthdayChange(Sender: TObject);
   strict private
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
@@ -88,7 +88,6 @@ type
     fExtendedListview: TExtendedListview<TDtoPerson>;
     fPersonMemberOf: TfraMemberOf;
     fDelayedLoadEntry: TDelayedLoadEntry;
-    fPersonBirthdayHandler: TCheckboxDatetimePickerHandler;
     fActiveSinceHandler: TCheckboxDatetimePickerHandler;
     fActiveUntilHandler: TCheckboxDatetimePickerHandler;
     fProgressIndicator: IProgressIndicator;
@@ -149,7 +148,6 @@ begin
   fPersonMemberOf.Parent := tsMemberOf;
   fPersonMemberOf.Align := TAlign.alClient;
 
-  fPersonBirthdayHandler := TCheckboxDatetimePickerHandler.Create(cbPersonBirthdayKnown, dtPersonBirthday);
   fActiveSinceHandler := TCheckboxDatetimePickerHandler.Create(cbMembershipBeginKnown, dtMembershipBegin);
   fActiveUntilHandler := TCheckboxDatetimePickerHandler.Create(cbMembershipEndKnown, dtMembershipEnd);
 
@@ -160,8 +158,7 @@ begin
   fComponentValueChangedObserver.RegisterEdit(edPersonFirstname);
   fComponentValueChangedObserver.RegisterEdit(edPersonPraeposition);
   fComponentValueChangedObserver.RegisterEdit(edPersonLastname);
-  fComponentValueChangedObserver.RegisterCheckbox(cbPersonBirthdayKnown);
-  fComponentValueChangedObserver.RegisterDateTimePicker(dtPersonBirthday);
+  fComponentValueChangedObserver.RegisterEdit(sdPersonBirthday);
   fComponentValueChangedObserver.RegisterCheckbox(cbPersonActive);
   fComponentValueChangedObserver.RegisterCheckbox(cbPersonExternal);
   fComponentValueChangedObserver.RegisterCheckbox(cbPersonOnBirthdaylist);
@@ -216,7 +213,6 @@ begin
   fComponentValueChangedObserver.Free;
   fActiveUntilHandler.Free;
   fActiveSinceHandler.Free;
-  fPersonBirthdayHandler.Free;
   inherited;
 end;
 
@@ -293,19 +289,6 @@ begin
   ConfigControlsForNewAddress;
 end;
 
-procedure TfraPerson.cbPersonBirthdayKnownClick(Sender: TObject);
-begin
-  if cbPersonBirthdayKnown.Checked then
-  begin
-    cbPersonOnBirthdaylist.Enabled := True;
-  end
-  else
-  begin
-    cbPersonOnBirthdaylist.Enabled := False;
-    cbPersonOnBirthdaylist.Checked := False;
-  end;
-end;
-
 procedure TfraPerson.cbCheckboxFilterPersonsClick(Sender: TObject);
 begin
   edFilter.Text := '';
@@ -329,7 +312,7 @@ begin
   edPersonFirstname.Text := '';
   edPersonPraeposition.Text := '';
   edPersonLastname.Text := '';
-  fPersonBirthdayHandler.Clear;
+  sdPersonBirthday.Clear;
 
   cbPersonActive.Checked := True;
   cbPersonExternal.Checked := False;
@@ -409,7 +392,10 @@ begin
   aRecord.Firstname := edPersonFirstname.Text;
   aRecord.NameAddition := edPersonPraeposition.Text;
   aRecord.Lastname := edPersonLastname.Text;
-  aRecord.Birthday := fPersonBirthdayHandler.Datetime;
+  if sdPersonBirthday.Value.Null then
+    aRecord.Birthday.Reset
+  else
+    aRecord.Birthday.Value := sdPersonBirthday.Value.Value;
   aRecord.Active := cbPersonActive.Checked;
   aRecord.External := cbPersonExternal.Checked;
   aRecord.OnBirthdayList := cbPersonOnBirthdaylist.Checked;
@@ -629,6 +615,19 @@ begin
   end;
 end;
 
+procedure TfraPerson.sdPersonBirthdayChange(Sender: TObject);
+begin
+  if sdPersonBirthday.Value.Null then
+  begin
+    cbPersonOnBirthdaylist.Enabled := False;
+    cbPersonOnBirthdaylist.Checked := False;
+  end
+  else
+  begin
+    cbPersonOnBirthdaylist.Enabled := True;
+  end;
+end;
+
 procedure TfraPerson.SetEditMode(const aEditMode: Boolean);
 begin
   var lInEditModeBefore := fInEditMode;
@@ -655,7 +654,8 @@ begin
   edPersonFirstname.Text := aRecord.Firstname;
   edPersonPraeposition.Text := aRecord.NameAddition;
   edPersonLastname.Text := aRecord.Lastname;
-  fPersonBirthdayHandler.Datetime := aRecord.Birthday;
+  sdPersonBirthday.Value.Value := aRecord.Birthday.Value;
+  sdPersonBirthday.Value.Null := not aRecord.Birthday.HasValue;
 
   fExtendedListview.UpdateData(aRecord.Person);
 

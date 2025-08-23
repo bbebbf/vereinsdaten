@@ -2,7 +2,7 @@ unit DtoPersonAggregated;
 
 interface
 
-uses DtoPerson, DtoClubmembership, KeyIndexStrings, Vdm.Versioning.Types;
+uses DtoPerson, DtoClubmembership, KeyIndexStrings, Vdm.Versioning.Types, SimpleDate, Nullable;
 
 type
   TDtoPersonAggregated = class
@@ -42,7 +42,7 @@ type
     property Lastname: string read fPerson.NameId.Lastname write fPerson.NameId.Lastname;
     property Active: Boolean read fPerson.Active write fPerson.Active;
     property &External: Boolean read fPerson.External write fPerson.External;
-    property Birthday: TDate read fPerson.Birthday write fPerson.Birthday;
+    property Birthday: INullable<TSimpleDate> read fPerson.Birthday write fPerson.Birthday;
     property OnBirthdayList: Boolean read fPerson.OnBirthdayList write fPerson.OnBirthdayList;
 
     property ExistingAddressId: UInt32 read fExistingAddressId;

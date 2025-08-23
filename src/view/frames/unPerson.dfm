@@ -57,8 +57,6 @@ object fraPerson: TfraPerson
       OnCustomDrawItem = lvPersonListviewCustomDrawItem
       OnDblClick = lvPersonListviewDblClick
       OnSelectItem = lvPersonListviewSelectItem
-      ExplicitTop = 73
-      ExplicitHeight = 463
     end
     object pnFilter: TPanel
       Left = 0
@@ -96,7 +94,6 @@ object fraPerson: TfraPerson
         Anchors = [akLeft, akRight, akBottom]
         TabOrder = 2
         OnChange = edFilterChange
-        ExplicitTop = 44
       end
       object cbShowExternalPersons: TCheckBox
         Left = 16
@@ -246,24 +243,6 @@ object fraPerson: TfraPerson
           MaxLength = 100
           TabOrder = 2
         end
-        object dtPersonBirthday: TDateTimePicker
-          Left = 409
-          Top = 40
-          Width = 176
-          Height = 23
-          Date = 2.000000000000000000
-          Time = 2.000000000000000000
-          MaxDate = 69763.999988425930000000
-          TabOrder = 4
-        end
-        object cbPersonBirthdayKnown: TCheckBox
-          Left = 383
-          Top = 42
-          Width = 26
-          Height = 16
-          TabOrder = 3
-          OnClick = cbPersonBirthdayKnownClick
-        end
         object btPersonSave: TButton
           Left = 22
           Top = 500
@@ -271,7 +250,7 @@ object fraPerson: TfraPerson
           Height = 25
           Action = acPersonSaveCurrentRecord
           Default = True
-          TabOrder = 19
+          TabOrder = 18
         end
         object btPersonReload: TButton
           Left = 182
@@ -280,7 +259,7 @@ object fraPerson: TfraPerson
           Height = 25
           Action = acPersonReloadCurrentRecord
           Cancel = True
-          TabOrder = 20
+          TabOrder = 19
         end
         object cbPersonActive: TCheckBox
           Left = 23
@@ -288,14 +267,14 @@ object fraPerson: TfraPerson
           Width = 145
           Height = 16
           Caption = 'Aktiv'
-          TabOrder = 6
+          TabOrder = 5
         end
         object cbPersonAddress: TComboBox
           Left = 23
           Top = 136
           Width = 440
           Height = 23
-          TabOrder = 8
+          TabOrder = 7
           OnChange = cbPersonAddressChange
           OnSelect = cbPersonAddressSelect
         end
@@ -305,7 +284,7 @@ object fraPerson: TfraPerson
           Width = 50
           Height = 23
           MaxLength = 5
-          TabOrder = 9
+          TabOrder = 8
         end
         object edNewAddressCity: TEdit
           Left = 80
@@ -313,7 +292,7 @@ object fraPerson: TfraPerson
           Width = 280
           Height = 23
           MaxLength = 50
-          TabOrder = 10
+          TabOrder = 9
         end
         object cbMembership: TComboBox
           Left = 23
@@ -321,7 +300,7 @@ object fraPerson: TfraPerson
           Width = 170
           Height = 23
           Style = csDropDownList
-          TabOrder = 11
+          TabOrder = 10
           Items.Strings = (
             'kein Mitglied'
             'Mitglied'
@@ -334,14 +313,14 @@ object fraPerson: TfraPerson
           Height = 23
           MaxLength = 3
           NumbersOnly = True
-          TabOrder = 12
+          TabOrder = 11
         end
         object cbMembershipBeginKnown: TCheckBox
           Left = 23
           Top = 361
           Width = 26
           Height = 16
-          TabOrder = 13
+          TabOrder = 12
         end
         object dtMembershipBegin: TDateTimePicker
           Left = 51
@@ -351,14 +330,14 @@ object fraPerson: TfraPerson
           Date = 2.000000000000000000
           Time = 2.000000000000000000
           MaxDate = 69763.999988425930000000
-          TabOrder = 14
+          TabOrder = 13
         end
         object cbMembershipEndKnown: TCheckBox
           Left = 23
           Top = 409
           Width = 26
           Height = 16
-          TabOrder = 15
+          TabOrder = 14
           OnClick = cbMembershipEndKnownClick
         end
         object dtMembershipEnd: TDateTimePicker
@@ -369,7 +348,7 @@ object fraPerson: TfraPerson
           Date = 2.000000000000000000
           Time = 2.000000000000000000
           MaxDate = 69763.999988425930000000
-          TabOrder = 16
+          TabOrder = 15
         end
         object edMembershipEndText: TEdit
           Left = 247
@@ -377,7 +356,7 @@ object fraPerson: TfraPerson
           Width = 216
           Height = 23
           MaxLength = 100
-          TabOrder = 17
+          TabOrder = 16
         end
         object edMembershipEndReason: TEdit
           Left = 23
@@ -385,7 +364,7 @@ object fraPerson: TfraPerson
           Width = 440
           Height = 23
           MaxLength = 100
-          TabOrder = 18
+          TabOrder = 17
         end
         object cbPersonOnBirthdaylist: TCheckBox
           Left = 383
@@ -393,7 +372,7 @@ object fraPerson: TfraPerson
           Width = 203
           Height = 16
           Caption = 'auf Geburtstagsliste anzeigen'
-          TabOrder = 5
+          TabOrder = 4
         end
         object cbPersonExternal: TCheckBox
           Left = 215
@@ -401,7 +380,16 @@ object fraPerson: TfraPerson
           Width = 145
           Height = 16
           Caption = 'Extern'
-          TabOrder = 7
+          TabOrder = 6
+        end
+        object sdPersonBirthday: TDateEdit
+          Left = 384
+          Top = 40
+          Width = 113
+          Height = 23
+          TabOrder = 3
+          OnChange = sdPersonBirthdayChange
+          OptionalYear = True
         end
       end
       object tsMemberOf: TTabSheet

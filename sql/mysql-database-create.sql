@@ -5,7 +5,9 @@ CREATE TABLE IF NOT EXISTS `person` (
   `person_lastname` varchar(100) DEFAULT NULL,
   `person_active` bit(1) NOT NULL,
   `person_external` bit(1) NOT NULL,
-  `person_birthday` date DEFAULT NULL,
+  `person_date_of_birth` date DEFAULT NULL,
+  `person_day_of_birth` tinyint(3) unsigned DEFAULT NULL,
+  `person_month_of_birth` tinyint(3) unsigned DEFAULT NULL,
   `person_on_birthday_list` bit(1) NOT NULL,
   PRIMARY KEY (`person_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
