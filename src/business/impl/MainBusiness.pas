@@ -143,6 +143,10 @@ begin
   aDatespanProvider.SetToDate(Now + 20);
   if not aDatespanProvider.ProvideDatespan then
     Exit;
+  if not aDatespanProvider.FromDate.HasValue then
+    Exit;
+  if not aDatespanProvider.ToDate.HasValue then
+    Exit;
 
   var lReport := TfmReportBirthdays.Create(fConnection,
     aDatespanProvider.FromDate.Value, aDatespanProvider.ToDate.Value);

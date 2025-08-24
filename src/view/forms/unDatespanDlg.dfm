@@ -3,8 +3,8 @@ object fmDatespanDlg: TfmDatespanDlg
   Top = 0
   BorderStyle = bsDialog
   Caption = 'fmDatespanDlg'
-  ClientHeight = 86
-  ClientWidth = 284
+  ClientHeight = 107
+  ClientWidth = 287
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -12,59 +12,68 @@ object fmDatespanDlg: TfmDatespanDlg
   Font.Name = 'Segoe UI'
   Font.Style = []
   Position = poOwnerFormCenter
+  DesignSize = (
+    287
+    107)
   TextHeight = 15
-  object Label1: TLabel
+  object lbFromDate: TLabel
     Left = 16
-    Top = 20
+    Top = 28
     Width = 20
     Height = 15
     Caption = 'von'
   end
-  object Label2: TLabel
+  object lbToDate: TLabel
     Left = 160
-    Top = 20
+    Top = 28
     Width = 15
     Height = 15
     Caption = 'bis'
   end
-  object dtFromDate: TDateTimePicker
-    Left = 46
-    Top = 16
-    Width = 89
-    Height = 23
-    Date = 45829.000000000000000000
-    Time = 0.722089803239214200
-    TabOrder = 0
-    OnChange = dtFromDateChange
-  end
-  object dtToDate: TDateTimePicker
-    Left = 184
-    Top = 16
-    Width = 89
-    Height = 23
-    Date = 45829.000000000000000000
-    Time = 0.722089803239214200
-    TabOrder = 1
-    OnChange = dtToDateChange
-  end
   object btConfirm: TButton
-    Left = 108
-    Top = 53
+    Left = 111
+    Top = 74
     Width = 75
     Height = 25
+    Anchors = [akRight, akBottom]
     Caption = 'Weiter'
     Default = True
-    ModalResult = 1
     TabOrder = 2
+    OnClick = btConfirmClick
+    ExplicitLeft = 109
+    ExplicitTop = 66
   end
   object btCancel: TButton
-    Left = 198
-    Top = 53
+    Left = 201
+    Top = 74
     Width = 75
     Height = 25
+    Anchors = [akRight, akBottom]
     Cancel = True
     Caption = 'Abbrechen'
     ModalResult = 2
     TabOrder = 3
+    ExplicitLeft = 199
+    ExplicitTop = 66
+  end
+  object sdFromDate: TDateEdit
+    Left = 56
+    Top = 25
+    Width = 81
+    Height = 23
+    TabOrder = 0
+    EmptyValueAllowed = False
+    OnValueChanged = sdFromDateValueChanged
+    OnExitQueryValidation = sdFromDateExitQueryValidation
+  end
+  object sdToDate: TDateEdit
+    Left = 198
+    Top = 25
+    Width = 81
+    Height = 23
+    TabOrder = 1
+    EmptyValueAllowed = False
+    OnValueChanged = sdToDateValueChanged
+    OnExitQueryValidation = sdToDateExitQueryValidation
   end
 end
