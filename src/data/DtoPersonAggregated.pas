@@ -21,8 +21,8 @@ type
     fMembershipId: UInt32;
     fMembershipActive: Boolean;
     fMembershipNumber: UInt16;
-    fMembershipBeginDate: TDate;
-    fMembershipEndDate: TDate;
+    fMembershipBeginDate: INullable<TDate>;
+    fMembershipEndDate: INullable<TDate>;
     fMembershipEndDateText: string;
     fMembershipEndReason: string;
   public
@@ -57,8 +57,8 @@ type
     property MembershipId: UInt32 read fMembershipId write fMembershipId;
     property MembershipActive: Boolean read fMembershipActive write fMembershipActive;
     property MembershipNumber: UInt16 read fMembershipNumber write fMembershipNumber;
-    property MembershipBeginDate: TDate read fMembershipBeginDate write fMembershipBeginDate;
-    property MembershipEndDate: TDate read fMembershipEndDate write fMembershipEndDate;
+    property MembershipBeginDate: INullable<TDate> read fMembershipBeginDate;
+    property MembershipEndDate: INullable<TDate> read fMembershipEndDate;
     property MembershipEndDateText: string read fMembershipEndDateText write fMembershipEndDateText;
     property MembershipEndReason: string read fMembershipEndReason write fMembershipEndReason;
   end;
@@ -76,6 +76,8 @@ begin
   fPerson := aPerson;
   fExistingAddressId := aExistingAddressId;
   fAvailableAddresses := aAvailableAddresses;
+  fMembershipBeginDate := TNullable<TDate>.Create;
+  fMembershipEndDate := TNullable<TDate>.Create;
 end;
 
 destructor TDtoPersonAggregated.Destroy;
@@ -101,8 +103,8 @@ begin
   Result.MembershipId := fMembershipId;
   Result.MembershipActive := fMembershipActive;
   Result.MembershipNumber := fMembershipNumber;
-  Result.MembershipBeginDate := fMembershipBeginDate;
-  Result.MembershipEndDate := fMembershipEndDate;
+  Result.MembershipBeginDate.Assign(fMembershipBeginDate);
+  Result.MembershipEndDate.Assign(fMembershipEndDate);
   Result.MembershipEndDateText := fMembershipEndDateText;
   Result.MembershipEndReason := fMembershipEndReason;
 end;

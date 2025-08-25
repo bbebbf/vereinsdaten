@@ -206,7 +206,7 @@ object fraPerson: TfraPerson
           Caption = 'Austrittsgrund'
         end
         object lbMembershipEndText: TLabel
-          Left = 247
+          Left = 142
           Top = 386
           Width = 111
           Height = 15
@@ -250,7 +250,7 @@ object fraPerson: TfraPerson
           Height = 25
           Action = acPersonSaveCurrentRecord
           Default = True
-          TabOrder = 18
+          TabOrder = 16
         end
         object btPersonReload: TButton
           Left = 182
@@ -259,7 +259,7 @@ object fraPerson: TfraPerson
           Height = 25
           Action = acPersonReloadCurrentRecord
           Cancel = True
-          TabOrder = 19
+          TabOrder = 17
         end
         object cbPersonActive: TCheckBox
           Left = 23
@@ -315,48 +315,13 @@ object fraPerson: TfraPerson
           NumbersOnly = True
           TabOrder = 11
         end
-        object cbMembershipBeginKnown: TCheckBox
-          Left = 23
-          Top = 361
-          Width = 26
-          Height = 16
-          TabOrder = 12
-        end
-        object dtMembershipBegin: TDateTimePicker
-          Left = 51
-          Top = 359
-          Width = 182
-          Height = 23
-          Date = 2.000000000000000000
-          Time = 2.000000000000000000
-          MaxDate = 69763.999988425930000000
-          TabOrder = 13
-        end
-        object cbMembershipEndKnown: TCheckBox
-          Left = 23
-          Top = 409
-          Width = 26
-          Height = 16
-          TabOrder = 14
-          OnClick = cbMembershipEndKnownClick
-        end
-        object dtMembershipEnd: TDateTimePicker
-          Left = 51
-          Top = 407
-          Width = 182
-          Height = 23
-          Date = 2.000000000000000000
-          Time = 2.000000000000000000
-          MaxDate = 69763.999988425930000000
-          TabOrder = 15
-        end
         object edMembershipEndText: TEdit
-          Left = 247
+          Left = 142
           Top = 407
-          Width = 216
+          Width = 321
           Height = 23
           MaxLength = 100
-          TabOrder = 16
+          TabOrder = 14
         end
         object edMembershipEndReason: TEdit
           Left = 23
@@ -364,7 +329,7 @@ object fraPerson: TfraPerson
           Width = 440
           Height = 23
           MaxLength = 100
-          TabOrder = 17
+          TabOrder = 15
         end
         object cbPersonOnBirthdaylist: TCheckBox
           Left = 383
@@ -382,14 +347,29 @@ object fraPerson: TfraPerson
           Caption = 'Extern'
           TabOrder = 6
         end
-        object sdPersonBirthday: TDateEdit
+        object dePersonBirthday: TDateEdit
           Left = 384
           Top = 40
           Width = 113
           Height = 23
           TabOrder = 3
-          OnChange = sdPersonBirthdayChange
+          OnChange = dePersonBirthdayChange
           OptionalYear = True
+        end
+        object deMembershipBegin: TDateEdit
+          Left = 23
+          Top = 359
+          Width = 113
+          Height = 23
+          TabOrder = 12
+        end
+        object deMembershipEnd: TDateEdit
+          Left = 23
+          Top = 407
+          Width = 113
+          Height = 23
+          TabOrder = 13
+          OnValueChanged = deMembershipEndValueChanged
         end
       end
       object tsMemberOf: TTabSheet

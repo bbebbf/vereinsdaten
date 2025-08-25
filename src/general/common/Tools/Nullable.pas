@@ -5,6 +5,7 @@ interface
 type
   INullable<T> = interface
     ['{DFFBD6FF-CDF1-41F5-A601-38315116F623}']
+    procedure Assign(const aValue: INullable<T>);
     procedure Reset;
     function GetValue: T;
     procedure SetValue(const aValue: T);
@@ -17,6 +18,7 @@ type
   strict private
     fHasValue: Boolean;
     fValue: T;
+    procedure Assign(const aValue: INullable<T>);
     procedure Reset;
     function GetValue: T;
     procedure SetValue(const aValue: T);
@@ -39,6 +41,14 @@ end;
 constructor TNullable<T>.Create;
 begin
   inherited Create;
+end;
+
+procedure TNullable<T>.Assign(const aValue: INullable<T>);
+begin
+  if aValue.HasValue then
+    SetValue(aValue.Value)
+  else
+    Reset;
 end;
 
 function TNullable<T>.GetHasValue: Boolean;

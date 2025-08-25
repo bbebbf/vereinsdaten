@@ -13,14 +13,14 @@ type
     btCancel: TButton;
     lbFromDate: TLabel;
     lbToDate: TLabel;
-    sdFromDate: TDateEdit;
-    sdToDate: TDateEdit;
-    procedure sdFromDateValueChanged(Sender: TObject);
-    procedure sdToDateValueChanged(Sender: TObject);
+    deFromDate: TDateEdit;
+    deToDate: TDateEdit;
+    procedure deFromDateValueChanged(Sender: TObject);
+    procedure deToDateValueChanged(Sender: TObject);
     procedure btConfirmClick(Sender: TObject);
-    procedure sdFromDateExitQueryValidation(Sender: TObject;
+    procedure deFromDateExitQueryValidation(Sender: TObject;
       var aValidationResult: TValidationResult<SimpleDate.TSimpleDate>);
-    procedure sdToDateExitQueryValidation(Sender: TObject;
+    procedure deToDateExitQueryValidation(Sender: TObject;
       var aValidationResult: TValidationResult<SimpleDate.TSimpleDate>);
   private
     fFromDate: INullable<TDate>;
@@ -49,10 +49,10 @@ uses System.DateUtils;
 procedure TfmDatespanDlg.btConfirmClick(Sender: TObject);
 begin
   var lDatespanIsValid := True;
-  if ActiveControl = sdFromDate then
-    lDatespanIsValid := sdFromDate.ValidateValue
-  else if ActiveControl = sdToDate then
-    lDatespanIsValid := sdToDate.ValidateValue;
+  if ActiveControl = deFromDate then
+    lDatespanIsValid := deFromDate.ValidateValue
+  else if ActiveControl = deToDate then
+    lDatespanIsValid := deToDate.ValidateValue;
 
   if lDatespanIsValid then
     ModalResult := mrOk;
@@ -69,10 +69,10 @@ begin
     fFromDate := TNullable<TDate>.Create;
   Result := fFromDate;
 
-  if sdFromDate.Value.Null then
+  if deFromDate.Value.Null then
     Result.Reset
   else
-    Result.Value := sdFromDate.Value.Value.AsDate;
+    Result.Value := deFromDate.Value.Value.AsDate;
 end;
 
 function TfmDatespanDlg.GetTitle: string;
@@ -86,10 +86,10 @@ begin
     fToDate := TNullable<TDate>.Create;
   Result := fToDate;
 
-  if sdToDate.Value.Null then
+  if deToDate.Value.Null then
     Result.Reset
   else
-    Result.Value := sdToDate.Value.Value.AsDate;
+    Result.Value := deToDate.Value.Value.AsDate;
 end;
 
 function TfmDatespanDlg.ProvideDatespan: Boolean;
@@ -97,32 +97,32 @@ begin
   Result := ShowModal = mrOk;
 end;
 
-procedure TfmDatespanDlg.sdFromDateExitQueryValidation(Sender: TObject;
+procedure TfmDatespanDlg.deFromDateExitQueryValidation(Sender: TObject;
   var aValidationResult: TValidationResult<SimpleDate.TSimpleDate>);
 begin
   aValidationResult.ValidationRequired := ActiveControl <> btCancel;
 end;
 
-procedure TfmDatespanDlg.sdFromDateValueChanged(Sender: TObject);
+procedure TfmDatespanDlg.deFromDateValueChanged(Sender: TObject);
 begin
-  if sdFromDate.Value.Null or sdToDate.Value.Null then
+  if deFromDate.Value.Null or deToDate.Value.Null then
     Exit;
-  if sdFromDate.Value.Value > sdToDate.Value.Value then
-    sdToDate.Value.Value := sdFromDate.Value.Value;
+  if deFromDate.Value.Value > deToDate.Value.Value then
+    deToDate.Value.Value := deFromDate.Value.Value;
 end;
 
-procedure TfmDatespanDlg.sdToDateExitQueryValidation(Sender: TObject;
+procedure TfmDatespanDlg.deToDateExitQueryValidation(Sender: TObject;
   var aValidationResult: TValidationResult<SimpleDate.TSimpleDate>);
 begin
   aValidationResult.ValidationRequired := ActiveControl <> btCancel;
 end;
 
-procedure TfmDatespanDlg.sdToDateValueChanged(Sender: TObject);
+procedure TfmDatespanDlg.deToDateValueChanged(Sender: TObject);
 begin
-  if sdFromDate.Value.Null or sdToDate.Value.Null then
+  if deFromDate.Value.Null or deToDate.Value.Null then
     Exit;
-  if sdToDate.Value.Value < sdFromDate.Value.Value then
-    sdFromDate.Value.Value := sdToDate.Value.Value;
+  if deToDate.Value.Value < deFromDate.Value.Value then
+    deFromDate.Value.Value := deToDate.Value.Value;
 end;
 
 procedure TfmDatespanDlg.SetAllowedKinds(const aKinds: TDatespanKinds);
@@ -132,7 +132,7 @@ end;
 
 procedure TfmDatespanDlg.SetFromDate(const aFromDate: TDate);
 begin
-  sdFromDate.Value.Value := aFromDate;
+  deFromDate.Value.Value := aFromDate;
 end;
 
 procedure TfmDatespanDlg.SetTitle(const aTitle: string);
@@ -142,7 +142,7 @@ end;
 
 procedure TfmDatespanDlg.SetToDate(const aToDate: TDate);
 begin
-  sdToDate.Value.Value := aToDate;
+  deToDate.Value.Value := aToDate;
 end;
 
 end.

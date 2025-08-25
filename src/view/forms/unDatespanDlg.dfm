@@ -56,24 +56,24 @@ object fmDatespanDlg: TfmDatespanDlg
     ExplicitLeft = 199
     ExplicitTop = 66
   end
-  object sdFromDate: TDateEdit
+  object deFromDate: TDateEdit
     Left = 56
     Top = 25
     Width = 81
     Height = 23
     TabOrder = 0
     EmptyValueAllowed = False
-    OnValueChanged = sdFromDateValueChanged
-    OnExitQueryValidation = sdFromDateExitQueryValidation
+    OnValueChanged = deFromDateValueChanged
+    OnExitQueryValidation = deFromDateExitQueryValidation
   end
-  object sdToDate: TDateEdit
+  object deToDate: TDateEdit
     Left = 198
     Top = 25
     Width = 81
     Height = 23
     TabOrder = 1
     EmptyValueAllowed = False
-    OnValueChanged = sdToDateValueChanged
-    OnExitQueryValidation = sdToDateExitQueryValidation
+    OnValueChanged = deToDateValueChanged
+    OnExitQueryValidation = deToDateExitQueryValidation
   end
 end

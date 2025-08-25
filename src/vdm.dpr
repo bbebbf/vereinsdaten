@@ -124,7 +124,8 @@ uses
   Report.Birthdays in 'reports\Report.Birthdays.pas' {fmReportBirthdays},
   DatespanProvider in 'general\intf\tools\DatespanProvider.pas',
   Nullable in 'general\common\Tools\Nullable.pas',
-  unDatespanDlg in 'view\forms\unDatespanDlg.pas' {fmDatespanDlg};
+  unDatespanDlg in 'view\forms\unDatespanDlg.pas' {fmDatespanDlg},
+  Helper.DateEditValue in 'general\common\Tools\Helper.DateEditValue.pas';
 
 {$R *.res}
 

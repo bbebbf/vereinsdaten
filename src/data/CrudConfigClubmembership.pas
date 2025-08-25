@@ -58,8 +58,8 @@ begin
   aRecord.PersonId := aSqlResult.FieldByName('person_id').AsLongWord;
   aRecord.Number := aSqlResult.FieldByName('clmb_number').AsLongWord;
   aRecord.Active := aSqlResult.FieldByName('clmb_active').AsBoolean;
-  aRecord.Startdate := aSqlResult.FieldByName('clmb_startdate').AsDateTime;
-  aRecord.Enddate := aSqlResult.FieldByName('clmb_enddate').AsDateTime;
+  aRecord.Startdate.Value := aSqlResult.FieldByName('clmb_startdate').AsDateTime;
+  aRecord.Enddate.Value := aSqlResult.FieldByName('clmb_enddate').AsDateTime;
   aRecord.EnddateStr := aSqlResult.FieldByName('clmb_enddate_str').AsString;
   aRecord.Endreason := aSqlResult.FieldByName('clmb_endreason').AsString;
 end;
@@ -77,8 +77,8 @@ begin
   aAccessor.SetValue('person_id', aRecord.PersonId);
   aAccessor.SetValueZeroAsNull('clmb_number', aRecord.Number);
   aAccessor.SetValue('clmb_active', aRecord.Active);
-  aAccessor.SetValueZeroAsNull('clmb_startdate', aRecord.Startdate);
-  aAccessor.SetValueZeroAsNull('clmb_enddate', aRecord.Enddate);
+  aAccessor.SetValueZeroAsNull('clmb_startdate', aRecord.Startdate.Value);
+  aAccessor.SetValueZeroAsNull('clmb_enddate', aRecord.Enddate.Value);
   aAccessor.SetValueEmptyStrAsNull('clmb_enddate_str', aRecord.EnddateStr);
   aAccessor.SetValueEmptyStrAsNull('clmb_endreason', aRecord.Endreason);
 end;

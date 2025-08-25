@@ -8,7 +8,7 @@ uses
   System.Generics.Collections, CrudCommands, DtoPerson, ExtendedListview, Vcl.Menus, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.WinXPickers, System.Actions, Vcl.ActnList,
   PersonBusinessIntf, PersonAggregatedUI, DtoPersonAggregated, ComponentValueChangedObserver,
-  unMemberOf, MemberOfUI, CheckboxDatetimePickerHandler,
+  unMemberOf, MemberOfUI,
   Vdm.Types, Vdm.Versioning.Types, CrudUI, VersionInfoEntryUI, DtoPersonNameId, ProgressIndicatorIntf, WorkSection,
   ConstraintControls.ConstraintEdit, ConstraintControls.DateEdit;
 
@@ -43,12 +43,8 @@ type
     lbMembership: TLabel;
     edMembershipNumber: TEdit;
     lbMembershipnumber: TLabel;
-    cbMembershipBeginKnown: TCheckBox;
-    dtMembershipBegin: TDateTimePicker;
     lbMembershipBegin: TLabel;
     lbMembershipEnd: TLabel;
-    cbMembershipEndKnown: TCheckBox;
-    dtMembershipEnd: TDateTimePicker;
     edMembershipEndText: TEdit;
     lbMembershipEndReason: TLabel;
     edMembershipEndReason: TEdit;
@@ -65,14 +61,15 @@ type
     cbPersonOnBirthdaylist: TCheckBox;
     cbPersonExternal: TCheckBox;
     cbShowExternalPersons: TCheckBox;
-    sdPersonBirthday: TDateEdit;
+    dePersonBirthday: TDateEdit;
+    deMembershipBegin: TDateEdit;
+    deMembershipEnd: TDateEdit;
     procedure lvPersonListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure lvPersonListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
     procedure acPersonSaveCurrentRecordExecute(Sender: TObject);
     procedure acPersonReloadCurrentRecordExecute(Sender: TObject);
     procedure cbCheckboxFilterPersonsClick(Sender: TObject);
-    procedure cbMembershipEndKnownClick(Sender: TObject);
     procedure acPersonStartNewRecordExecute(Sender: TObject);
     procedure pcPersonDetailsChanging(Sender: TObject; var AllowChange: Boolean);
     procedure pcPersonDetailsChange(Sender: TObject);
@@ -80,7 +77,8 @@ type
     procedure lvPersonListviewDblClick(Sender: TObject);
     procedure cbPersonAddressChange(Sender: TObject);
     procedure cbPersonAddressSelect(Sender: TObject);
-    procedure sdPersonBirthdayChange(Sender: TObject);
+    procedure dePersonBirthdayChange(Sender: TObject);
+    procedure deMembershipEndValueChanged(Sender: TObject);
   strict private
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
@@ -88,8 +86,6 @@ type
     fExtendedListview: TExtendedListview<TDtoPerson>;
     fPersonMemberOf: TfraMemberOf;
     fDelayedLoadEntry: TDelayedLoadEntry;
-    fActiveSinceHandler: TCheckboxDatetimePickerHandler;
-    fActiveUntilHandler: TCheckboxDatetimePickerHandler;
     fProgressIndicator: IProgressIndicator;
 
     procedure CMVisiblechanged(var Message: TMessage); message CM_VISIBLECHANGED;
@@ -136,7 +132,8 @@ implementation
 
 {$R *.dfm}
 
-uses System.Generics.Defaults, KeyIndexStrings, StringTools, MessageDialogs, Vdm.Globals, VclUITools;
+uses System.Generics.Defaults, KeyIndexStrings, StringTools, MessageDialogs, Vdm.Globals, VclUITools,
+  Helper.DateEditValue;
 
 { TfraPerson }
 
@@ -148,9 +145,6 @@ begin
   fPersonMemberOf.Parent := tsMemberOf;
   fPersonMemberOf.Align := TAlign.alClient;
 
-  fActiveSinceHandler := TCheckboxDatetimePickerHandler.Create(cbMembershipBeginKnown, dtMembershipBegin);
-  fActiveUntilHandler := TCheckboxDatetimePickerHandler.Create(cbMembershipEndKnown, dtMembershipEnd);
-
   fComponentValueChangedObserver := TComponentValueChangedObserver.Create;
   fComponentValueChangedObserver.OnValuesChanged := ControlValuesChanged;
   fComponentValueChangedObserver.OnValuesUnchanged := ControlValuesUnchanged;
@@ -158,7 +152,7 @@ begin
   fComponentValueChangedObserver.RegisterEdit(edPersonFirstname);
   fComponentValueChangedObserver.RegisterEdit(edPersonPraeposition);
   fComponentValueChangedObserver.RegisterEdit(edPersonLastname);
-  fComponentValueChangedObserver.RegisterEdit(sdPersonBirthday);
+  fComponentValueChangedObserver.RegisterEdit(dePersonBirthday);
   fComponentValueChangedObserver.RegisterCheckbox(cbPersonActive);
   fComponentValueChangedObserver.RegisterCheckbox(cbPersonExternal);
   fComponentValueChangedObserver.RegisterCheckbox(cbPersonOnBirthdaylist);
@@ -167,10 +161,8 @@ begin
   fComponentValueChangedObserver.RegisterEdit(edNewAddressCity);
   fComponentValueChangedObserver.RegisterCombobox(cbMembership);
   fComponentValueChangedObserver.RegisterEdit(edMembershipNumber);
-  fComponentValueChangedObserver.RegisterCheckbox(cbMembershipBeginKnown);
-  fComponentValueChangedObserver.RegisterDateTimePicker(dtMembershipBegin);
-  fComponentValueChangedObserver.RegisterCheckbox(cbMembershipEndKnown);
-  fComponentValueChangedObserver.RegisterDateTimePicker(dtMembershipEnd);
+  fComponentValueChangedObserver.RegisterEdit(deMembershipBegin);
+  fComponentValueChangedObserver.RegisterEdit(deMembershipEnd);
   fComponentValueChangedObserver.RegisterEdit(edMembershipEndText);
   fComponentValueChangedObserver.RegisterEdit(edMembershipEndReason);
 
@@ -211,8 +203,6 @@ begin
   fDelayedLoadEntry.Free;
   fExtendedListview.Free;
   fComponentValueChangedObserver.Free;
-  fActiveUntilHandler.Free;
-  fActiveSinceHandler.Free;
   inherited;
 end;
 
@@ -273,12 +263,6 @@ begin
   lWorkSection.BeginWork;
 end;
 
-procedure TfraPerson.cbMembershipEndKnownClick(Sender: TObject);
-begin
-  lbMembershipEndText.Enabled := not dtMembershipEnd.Enabled;
-  edMembershipEndText.Enabled := not dtMembershipEnd.Enabled;
-end;
-
 procedure TfraPerson.cbPersonAddressChange(Sender: TObject);
 begin
   ConfigControlsForNewAddress;
@@ -312,7 +296,7 @@ begin
   edPersonFirstname.Text := '';
   edPersonPraeposition.Text := '';
   edPersonLastname.Text := '';
-  sdPersonBirthday.Clear;
+  dePersonBirthday.Clear;
 
   cbPersonActive.Checked := True;
   cbPersonExternal.Checked := False;
@@ -324,8 +308,8 @@ begin
   cbMembership.ItemIndex := 0;
   edMembershipNumber.Text := '';
 
-  fActiveSinceHandler.Clear;
-  fActiveUntilHandler.Clear;
+  deMembershipBegin.Clear;
+  deMembershipEnd.Clear;
   edMembershipEndText.Text := '';
 
   fComponentValueChangedObserver.EndUpdate;
@@ -392,10 +376,7 @@ begin
   aRecord.Firstname := edPersonFirstname.Text;
   aRecord.NameAddition := edPersonPraeposition.Text;
   aRecord.Lastname := edPersonLastname.Text;
-  if sdPersonBirthday.Value.Null then
-    aRecord.Birthday.Reset
-  else
-    aRecord.Birthday.Value := sdPersonBirthday.Value.Value;
+  dePersonBirthday.Value.ToNullableSimpleDate(aRecord.Birthday);
   aRecord.Active := cbPersonActive.Checked;
   aRecord.External := cbPersonExternal.Checked;
   aRecord.OnBirthdayList := cbPersonOnBirthdaylist.Checked;
@@ -441,9 +422,9 @@ begin
   aRecord.MembershipNoMembership := cbMembership.ItemIndex <= 0;
   aRecord.MembershipActive := cbMembership.ItemIndex = 1;
   aRecord.MembershipNumber := StrToIntDef(edMembershipNumber.Text, 0);
-  aRecord.MembershipBeginDate := fActiveSinceHandler.Datetime;
-  aRecord.MembershipEndDate := fActiveUntilHandler.Datetime;
-  if cbMembershipEndKnown.Checked then
+  deMembershipBegin.Value.ToNullableDate(aRecord.MembershipBeginDate);
+  deMembershipEnd.Value.ToNullableDate(aRecord.MembershipEndDate);
+  if not deMembershipEnd.Value.Null then
   begin
     aRecord.MembershipEndDateText := '';
   end
@@ -615,9 +596,15 @@ begin
   end;
 end;
 
-procedure TfraPerson.sdPersonBirthdayChange(Sender: TObject);
+procedure TfraPerson.deMembershipEndValueChanged(Sender: TObject);
 begin
-  if sdPersonBirthday.Value.Null then
+  lbMembershipEndText.Enabled := not deMembershipEnd.Value.Null;
+  edMembershipEndText.Enabled := lbMembershipEndText.Enabled;
+end;
+
+procedure TfraPerson.dePersonBirthdayChange(Sender: TObject);
+begin
+  if dePersonBirthday.Value.Null then
   begin
     cbPersonOnBirthdaylist.Enabled := False;
     cbPersonOnBirthdaylist.Checked := False;
@@ -654,8 +641,7 @@ begin
   edPersonFirstname.Text := aRecord.Firstname;
   edPersonPraeposition.Text := aRecord.NameAddition;
   edPersonLastname.Text := aRecord.Lastname;
-  sdPersonBirthday.Value.Value := aRecord.Birthday.Value;
-  sdPersonBirthday.Value.Null := not aRecord.Birthday.HasValue;
+  dePersonBirthday.Value.FromNullableSimpleDate(aRecord.Birthday);
 
   fExtendedListview.UpdateData(aRecord.Person);
 
@@ -677,8 +663,8 @@ begin
     else
       edMembershipNumber.Text := '';
 
-    fActiveSinceHandler.Datetime := aRecord.MembershipBeginDate;
-    fActiveUntilHandler.Datetime := aRecord.MembershipEndDate;
+    deMembershipBegin.Value.FromNullableDate(aRecord.MembershipBeginDate);
+    deMembershipEnd.Value.FromNullableDate(aRecord.MembershipEndDate);
 
     edMembershipEndText.Text := aRecord.MembershipEndDateText;
     edMembershipEndReason.Text := aRecord.MembershipEndReason;
@@ -687,8 +673,8 @@ begin
   begin
     cbMembership.ItemIndex := 0;
     edMembershipNumber.Text := '';
-    fActiveSinceHandler.Clear;
-    fActiveUntilHandler.Clear;
+    deMembershipBegin.Clear;
+    deMembershipEnd.Clear;
     edMembershipEndText.Text := '';
     edMembershipEndReason.Text := '';
   end;
