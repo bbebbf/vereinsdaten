@@ -57,8 +57,8 @@ begin
   aData.UnitId := aSqlResult.FieldByName('unit_id').AsLargeInt;
   aData.RoleId := aSqlResult.FieldByName('role_id').AsLargeInt;
   aData.Active := aSqlResult.FieldByName('mb_active').AsBoolean;
-  aData.ActiveSince := aSqlResult.FieldByName('mb_active_since').AsDateTime;
-  aData.ActiveUntil := aSqlResult.FieldByName('mb_active_until').AsDateTime;
+  aData.ActiveSince.Value := aSqlResult.FieldByName('mb_active_since').AsDateTime;
+  aData.ActiveUntil.Value := aSqlResult.FieldByName('mb_active_until').AsDateTime;
 end;
 
 function TCrudMemberConfigBase.GetRecordIdentity(const aRecord: TDtoMember): UInt32;
@@ -103,8 +103,8 @@ begin
   aAccessor.SetValueZeroAsNull('unit_id', aRecord.UnitId);
   aAccessor.SetValueZeroAsNull('role_id', aRecord.RoleId);
   aAccessor.SetValue('mb_active', aRecord.Active);
-  aAccessor.SetValueZeroAsNull('mb_active_since', aRecord.ActiveSince);
-  aAccessor.SetValueZeroAsNull('mb_active_until', aRecord.ActiveUntil);
+  aAccessor.SetValueZeroAsNull('mb_active_since', aRecord.ActiveSince.Value);
+  aAccessor.SetValueZeroAsNull('mb_active_until', aRecord.ActiveUntil.Value);
 end;
 
 procedure TCrudMemberConfigBase.SetValuesForDelete(const aRecordIdentity: UInt32;

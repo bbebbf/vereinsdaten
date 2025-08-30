@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, DatespanProvider, Nullable, Vcl.ComCtrls, Vcl.StdCtrls,
-  ConstraintControls.ConstraintEdit, ConstraintControls.DateEdit, SimpleDate;
+  ConstraintControls.ConstraintEdit, ConstraintControls.DateEdit, ValidatableValueControlsRegistry;
 
 type
   TfmDatespanDlg = class(TForm, IDatespanProvider)
@@ -18,13 +18,12 @@ type
     procedure deFromDateValueChanged(Sender: TObject);
     procedure deToDateValueChanged(Sender: TObject);
     procedure btConfirmClick(Sender: TObject);
-    procedure deFromDateExitQueryValidation(Sender: TObject;
-      var aValidationResult: TValidationResult<SimpleDate.TSimpleDate>);
-    procedure deToDateExitQueryValidation(Sender: TObject;
-      var aValidationResult: TValidationResult<SimpleDate.TSimpleDate>);
+    procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     fFromDate: INullable<TDate>;
     fToDate: INullable<TDate>;
+    fValidatableValueControlsRegistry: TValidatableValueControlsRegistry;
 
     function ProvideDatespan: Boolean;
     function GetTitle: string;
@@ -48,14 +47,10 @@ uses System.DateUtils;
 
 procedure TfmDatespanDlg.btConfirmClick(Sender: TObject);
 begin
-  var lDatespanIsValid := True;
-  if ActiveControl = deFromDate then
-    lDatespanIsValid := deFromDate.ValidateValue
-  else if ActiveControl = deToDate then
-    lDatespanIsValid := deToDate.ValidateValue;
+  if not fValidatableValueControlsRegistry.ValidateValues then
+    Exit;
 
-  if lDatespanIsValid then
-    ModalResult := mrOk;
+  ModalResult := mrOk;
 end;
 
 function TfmDatespanDlg.GetAllowedKinds: TDatespanKinds;
@@ -97,12 +92,6 @@ begin
   Result := ShowModal = mrOk;
 end;
 
-procedure TfmDatespanDlg.deFromDateExitQueryValidation(Sender: TObject;
-  var aValidationResult: TValidationResult<SimpleDate.TSimpleDate>);
-begin
-  aValidationResult.ValidationRequired := ActiveControl <> btCancel;
-end;
-
 procedure TfmDatespanDlg.deFromDateValueChanged(Sender: TObject);
 begin
   if deFromDate.Value.Null or deToDate.Value.Null then
@@ -111,18 +100,27 @@ begin
     deToDate.Value.Value := deFromDate.Value.Value;
 end;
 
-procedure TfmDatespanDlg.deToDateExitQueryValidation(Sender: TObject;
-  var aValidationResult: TValidationResult<SimpleDate.TSimpleDate>);
-begin
-  aValidationResult.ValidationRequired := ActiveControl <> btCancel;
-end;
-
 procedure TfmDatespanDlg.deToDateValueChanged(Sender: TObject);
 begin
   if deFromDate.Value.Null or deToDate.Value.Null then
     Exit;
   if deToDate.Value.Value < deFromDate.Value.Value then
     deFromDate.Value.Value := deToDate.Value.Value;
+end;
+
+procedure TfmDatespanDlg.FormCreate(Sender: TObject);
+begin
+  fValidatableValueControlsRegistry := TValidatableValueControlsRegistry.Create;
+  fValidatableValueControlsRegistry.Form := Self;
+  fValidatableValueControlsRegistry.CancelControl := btCancel;
+
+  fValidatableValueControlsRegistry.RegisterControl(deFromDate);
+  fValidatableValueControlsRegistry.RegisterControl(deToDate);
+end;
+
+procedure TfmDatespanDlg.FormDestroy(Sender: TObject);
+begin
+  fValidatableValueControlsRegistry.Free;
 end;
 
 procedure TfmDatespanDlg.SetAllowedKinds(const aKinds: TDatespanKinds);

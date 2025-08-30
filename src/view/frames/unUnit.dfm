@@ -139,7 +139,7 @@ object fraUnit: TfraUnit
         Caption = 'Aktiv seit'
       end
       object lbUnitActiveUntil: TLabel
-        Left = 263
+        Left = 149
         Top = 118
         Width = 45
         Height = 15
@@ -174,23 +174,6 @@ object fraUnit: TfraUnit
         MaxLength = 100
         TabOrder = 0
       end
-      object cbUnitActiveSinceKnown: TCheckBox
-        Left = 23
-        Top = 141
-        Width = 26
-        Height = 16
-        TabOrder = 3
-      end
-      object dtUnitActiveSince: TDateTimePicker
-        Left = 49
-        Top = 139
-        Width = 176
-        Height = 23
-        Date = 2.000000000000000000
-        Time = 2.000000000000000000
-        MaxDate = 69763.999988425930000000
-        TabOrder = 4
-      end
       object cbUnitActive: TCheckBox
         Left = 23
         Top = 82
@@ -199,23 +182,6 @@ object fraUnit: TfraUnit
         Caption = 'Aktiv'
         TabOrder = 1
       end
-      object dtUnitActiveUntil: TDateTimePicker
-        Left = 289
-        Top = 139
-        Width = 176
-        Height = 23
-        Date = 2.000000000000000000
-        Time = 2.000000000000000000
-        MaxDate = 69763.999988425930000000
-        TabOrder = 6
-      end
-      object cbUnitActiveUntilKnown: TCheckBox
-        Left = 263
-        Top = 141
-        Width = 26
-        Height = 16
-        TabOrder = 5
-      end
       object btSave: TButton
         Left = 23
         Top = 252
@@ -223,7 +189,7 @@ object fraUnit: TfraUnit
         Height = 25
         Action = acSaveCurrentEntry
         Default = True
-        TabOrder = 9
+        TabOrder = 3
       end
       object btReload: TButton
         Left = 190
@@ -232,24 +198,7 @@ object fraUnit: TfraUnit
         Height = 25
         Action = acReloadCurrentEntry
         Cancel = True
-        TabOrder = 10
-      end
-      object cbDataConfirmedOnKnown: TCheckBox
-        Left = 23
-        Top = 205
-        Width = 26
-        Height = 16
-        TabOrder = 7
-      end
-      object dtDataConfirmedOn: TDateTimePicker
-        Left = 49
-        Top = 203
-        Width = 176
-        Height = 23
-        Date = 2.000000000000000000
-        Time = 2.000000000000000000
-        MaxDate = 69763.999988425930000000
-        TabOrder = 8
+        TabOrder = 4
       end
       object cbUnitKind: TComboBox
         Left = 289
@@ -258,6 +207,27 @@ object fraUnit: TfraUnit
         Height = 23
         Style = csDropDownList
         TabOrder = 2
+      end
+      object deUnitActiveSince: TDateEdit
+        Left = 23
+        Top = 139
+        Width = 114
+        Height = 23
+        TabOrder = 5
+      end
+      object deUnitActiveUntil: TDateEdit
+        Left = 149
+        Top = 139
+        Width = 114
+        Height = 23
+        TabOrder = 6
+      end
+      object deDataConfirmedOn: TDateEdit
+        Left = 23
+        Top = 203
+        Width = 114
+        Height = 23
+        TabOrder = 7
       end
     end
     object pnMemberOf: TPanel

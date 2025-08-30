@@ -219,7 +219,7 @@ end;
 
 procedure TMainBusiness.UIIsReady;
 begin
-  fPersonBusinessIntf.LoadList;
+  OpenCrudPerson;
 end;
 
 end.

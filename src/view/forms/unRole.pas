@@ -7,7 +7,8 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
   System.Generics.Collections, CrudCommands, DtoRole, ExtendedListview, Vcl.Menus, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.WinXPickers, System.Actions, Vcl.ActnList,
-  ComponentValueChangedObserver, CrudUI, Vdm.Types, ProgressIndicatorIntf;
+  ComponentValueChangedObserver, CrudUI, Vdm.Types, ProgressIndicatorIntf, ConstraintControls.ConstraintEdit,
+  ConstraintControls.IntegerEdit, ValidatableValueControlsRegistry;
 
 type
   TfmRole = class(TForm, ICrudUI<TDtoRole, TDtoRole, UInt32, TEntryFilter>)
@@ -25,11 +26,11 @@ type
     edRoleName: TEdit;
     btSave: TButton;
     btReload: TButton;
-    edRoleSorting: TEdit;
     lbSorting: TLabel;
     lbListviewItemCount: TLabel;
     cbRoleActive: TCheckBox;
     cbShowInactiveEntries: TCheckBox;
+    ieRoleSorting: TIntegerEdit;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure lvListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
@@ -49,6 +50,7 @@ type
     fExtendedListview: TExtendedListview<TDtoRole>;
     fDelayedLoadEntry: TDelayedLoadEntry;
     fProgressIndicator: IProgressIndicator;
+    fValidatableValueControlsRegistry: TValidatableValueControlsRegistry;
 
     procedure SetEditMode(const aEditMode: Boolean);
     procedure StartEdit;
@@ -85,6 +87,9 @@ end;
 
 procedure TfmRole.acSaveCurrentEntryExecute(Sender: TObject);
 begin
+  if not fValidatableValueControlsRegistry.ValidateValues then
+    Exit;
+
   var lResponse := fBusinessIntf.SaveCurrentEntry;
   if lResponse.Status = TCrudSaveStatus.Successful then
   begin
@@ -115,7 +120,7 @@ begin
 
   edRoleName.Text := '';
   cbRoleActive.Checked := True;
-  edRoleSorting.Text := '';
+  ieRoleSorting.Clear;
   fComponentValueChangedObserver.EndUpdate;
 end;
 
@@ -142,7 +147,10 @@ begin
 
   fComponentValueChangedObserver.RegisterEdit(edRoleName);
   fComponentValueChangedObserver.RegisterCheckbox(cbRoleActive);
-  fComponentValueChangedObserver.RegisterEdit(edRoleSorting);
+  fComponentValueChangedObserver.RegisterChangeableText(ieRoleSorting);
+
+  fValidatableValueControlsRegistry := TValidatableValueControlsRegistry.Create;
+  fValidatableValueControlsRegistry.RegisterControl(ieRoleSorting);
 
   fExtendedListview := TExtendedListview<TDtoRole>.Create(lvListview,
     procedure(const aData: TDtoRole; const aListItem: TListItem)
@@ -179,6 +187,7 @@ begin
   fDelayedLoadEntry.Free;
   fExtendedListview.Free;
   fComponentValueChangedObserver.Free;
+  fValidatableValueControlsRegistry.Free;
 end;
 
 procedure TfmRole.FormKeyPress(Sender: TObject; var Key: Char);
@@ -192,6 +201,8 @@ end;
 
 procedure TfmRole.FormShow(Sender: TObject);
 begin
+  fValidatableValueControlsRegistry.Form := Self;
+  fValidatableValueControlsRegistry.CancelControl := btReload;
   SetEditMode(False);
   fBusinessIntf.LoadList;
 end;
@@ -207,23 +218,10 @@ begin
     Exit(False);
   end;
 
-  var lSortingInteger := 0;
-  if Length(edRoleSorting.Text) > 0 then
-  begin
-    lSortingInteger := StrToIntDef(edRoleSorting.Text, 0);
-    if (lSortingInteger < 0) or (lSortingInteger > 255) then
-    begin
-      edRoleName.SetFocus;
-      aProgressUISuspendScope.Suspend;
-      TMessageDialogs.Ok('Die Sorting muss ein Wert zwischen 0 und 255 sein.', TMsgDlgType.mtInformation);
-      Exit(False);
-    end;
-  end;
-
   Result := True;
   aEntry.Name := edRoleName.Text;
   aEntry.Active := cbRoleActive.Checked;
-  aEntry.Sorting := lSortingInteger;
+  aEntry.Sorting := ieRoleSorting.Value.Value;
 end;
 
 function TfmRole.GetProgressIndicator: IProgressIndicator;
@@ -320,7 +318,7 @@ begin
 
   edRoleName.Text := aEntry.Name;
   cbRoleActive.Checked := aEntry.Active;
-  edRoleSorting.Text := IntToStr(aEntry.Sorting);
+  ieRoleSorting.Value.Value := aEntry.Sorting;
 
   fExtendedListview.UpdateData(aEntry);
   fComponentValueChangedObserver.EndUpdate;

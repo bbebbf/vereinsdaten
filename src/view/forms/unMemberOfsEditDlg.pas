@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls, DtoMemberAggregated,
-  CheckboxDatetimePickerHandler, Vdm.Types;
+  Vdm.Types, ConstraintControls.ConstraintEdit, ConstraintControls.DateEdit, ValidatableValueControlsRegistry;
 
 type
   TfmMemberOfsEditDlg = class(TForm)
@@ -17,18 +17,16 @@ type
     cbRole: TComboBox;
     lbRole: TLabel;
     lbMembershipBegin: TLabel;
-    cbMembershipBeginKnown: TCheckBox;
-    dtMembershipBegin: TDateTimePicker;
-    dtMembershipEnd: TDateTimePicker;
-    cbMembershipEndKnown: TCheckBox;
     lbMembershipEnd: TLabel;
+    deMembershipBegin: TDateEdit;
+    deMembershipEnd: TDateEdit;
+    procedure btSaveClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure btSaveClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
   strict private
-    fActiveSinceHandler: TCheckboxDatetimePickerHandler;
-    fActiveUntilHandler: TCheckboxDatetimePickerHandler;
     fDetailItemTitle: string;
+    fValidatableValueControlsRegistry: TValidatableValueControlsRegistry;
   public
     function Execute(const aDetailItemTitle: string; const aMemberRecord: TDtoMemberAggregated;
       const aNewRecord: Boolean): Boolean;
@@ -36,7 +34,7 @@ type
 
 implementation
 
-uses KeyIndexStrings, MessageDialogs, VclUITools;
+uses KeyIndexStrings, MessageDialogs, VclUITools, Helper.ConstraintControls;
 
 {$R *.dfm}
 
@@ -44,6 +42,9 @@ uses KeyIndexStrings, MessageDialogs, VclUITools;
 
 procedure TfmMemberOfsEditDlg.btSaveClick(Sender: TObject);
 begin
+  if not fValidatableValueControlsRegistry.ValidateValues then
+    Exit;
+
   if cbDetailItem.ItemIndex < 0 then
   begin
     TMessageDialogs.Ok('Bitte die ' + fDetailItemTitle + ' auswählen.', TMsgDlgType.mtInformation);
@@ -82,16 +83,16 @@ begin
     TVclUITools.SetComboboxItemIndex(cbDetailItem, lDetailStringsMapping.Mapper.GetIndex(aMemberRecord.DetailItemId));
     TVclUITools.SetComboboxItemIndex(cbRole, lRoleStringsMapping.Mapper.GetIndex(aMemberRecord.RoleId));
     cbActive.Checked := aMemberRecord.Member.Active;
-    fActiveSinceHandler.Datetime := aMemberRecord.Member.ActiveSince;
-    fActiveUntilHandler.Datetime := aMemberRecord.Member.ActiveUntil;
+    deMembershipBegin.Value.FromNullableDate(aMemberRecord.Member.ActiveSince);
+    deMembershipEnd.Value.FromNullableDate(aMemberRecord.Member.ActiveUntil);
     if ShowModal = mrOk then
     begin
       Result := True;
       aMemberRecord.DetailItemId := lDetailStringsMapping.Mapper.GetKey(cbDetailItem.ItemIndex);
       aMemberRecord.RoleId := lRoleStringsMapping.Mapper.GetKey(cbRole.ItemIndex);
       aMemberRecord.Active := cbActive.Checked;
-      aMemberRecord.ActiveSince := fActiveSinceHandler.Datetime;
-      aMemberRecord.ActiveUntil := fActiveUntilHandler.Datetime;
+      deMembershipBegin.Value.ToNullableDate(aMemberRecord.Member.ActiveSince);
+      deMembershipEnd.Value.ToNullableDate(aMemberRecord.Member.ActiveUntil);
     end;
   finally
     lRoleStringsMapping.Free;
@@ -101,14 +102,20 @@ end;
 
 procedure TfmMemberOfsEditDlg.FormCreate(Sender: TObject);
 begin
-  fActiveSinceHandler := TCheckboxDatetimePickerHandler.Create(cbMembershipBeginKnown, dtMembershipBegin);
-  fActiveUntilHandler := TCheckboxDatetimePickerHandler.Create(cbMembershipEndKnown, dtMembershipEnd);
+  fValidatableValueControlsRegistry := TValidatableValueControlsRegistry.Create;
+  fValidatableValueControlsRegistry.RegisterControl(deMembershipBegin);
+  fValidatableValueControlsRegistry.RegisterControl(deMembershipEnd);
 end;
 
 procedure TfmMemberOfsEditDlg.FormDestroy(Sender: TObject);
 begin
-  fActiveSinceHandler.Free;
-  fActiveUntilHandler.Free;
+  fValidatableValueControlsRegistry.Free;
+end;
+
+procedure TfmMemberOfsEditDlg.FormShow(Sender: TObject);
+begin
+  fValidatableValueControlsRegistry.Form := Self;
+  fValidatableValueControlsRegistry.CancelControl := btReload;
 end;
 
 end.

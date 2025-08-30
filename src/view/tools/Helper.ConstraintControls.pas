@@ -1,11 +1,12 @@
-unit Helper.DateEditValue;
+unit Helper.ConstraintControls;
 
 interface
 
-uses ConstraintControls.DateEdit, SimpleDate, Nullable;
+uses ConstraintControls.DateEdit, ConstraintControls.IntegerEdit, SimpleDate, Nullable;
 
 type
   TDateEditValueHelper = class helper for TDateEditValue
+  public
     procedure ToNullableDate(const aDate: INullable<TDate>);
     procedure FromNullableDate(const aDate: INullable<TDate>);
     procedure ToNullableSimpleDate(const aSimpleDate: INullable<TSimpleDate>);
@@ -47,3 +48,4 @@ begin
 end;
 
 end.
+

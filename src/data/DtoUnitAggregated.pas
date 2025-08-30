@@ -2,7 +2,7 @@ unit DtoUnitAggregated;
 
 interface
 
-uses System.Generics.Collections, DtoPersonNameId, DtoUnit, Vdm.Versioning.Types;
+uses System.Generics.Collections, DtoPersonNameId, DtoUnit, Vdm.Versioning.Types, Nullable;
 
 type
   TDtoUnitAggregated = class
@@ -19,10 +19,10 @@ type
     property Id: UInt32 read fUnit.Id write fUnit.Id;
     property Name: string read fUnit.Name write fUnit.Name;
     property Active: Boolean read fUnit.Active write fUnit.Active;
-    property ActiveSince: TDate read fUnit.ActiveSince write fUnit.ActiveSince;
-    property ActiveUntil: TDate read fUnit.ActiveUntil write fUnit.ActiveUntil;
+    property ActiveSince: INullable<TDate> read fUnit.ActiveSince write fUnit.ActiveSince;
+    property ActiveUntil: INullable<TDate> read fUnit.ActiveUntil write fUnit.ActiveUntil;
     property Kind: TUnitKind read fUnit.Kind write fUnit.Kind;
-    property DataConfirmedOn: TDate read fUnit.DataConfirmedOn write fUnit.DataConfirmedOn;
+    property DataConfirmedOn: INullable<TDate> read fUnit.DataConfirmedOn write fUnit.DataConfirmedOn;
   end;
 
 implementation

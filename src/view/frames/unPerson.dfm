@@ -306,15 +306,6 @@ object fraPerson: TfraPerson
             'Mitglied'
             'ehemaliges Mitglied')
         end
-        object edMembershipNumber: TEdit
-          Left = 23
-          Top = 306
-          Width = 34
-          Height = 23
-          MaxLength = 3
-          NumbersOnly = True
-          TabOrder = 11
-        end
         object edMembershipEndText: TEdit
           Left = 142
           Top = 407
@@ -370,6 +361,17 @@ object fraPerson: TfraPerson
           Height = 23
           TabOrder = 13
           OnValueChanged = deMembershipEndValueChanged
+        end
+        object ieMembershipNumber: TIntegerEdit
+          Left = 23
+          Top = 306
+          Width = 50
+          Height = 23
+          TabOrder = 11
+          BoundsLower.Null = False
+          BoundsLower.Value = 1
+          BoundsUpper.Null = False
+          BoundsUpper.Value = 9999
         end
       end
       object tsMemberOf: TTabSheet

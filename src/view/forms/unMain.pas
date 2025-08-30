@@ -205,7 +205,7 @@ begin
   ffraPerson := TfraPerson.Create(Self, fProgressIndicator);
   ffraPerson.Parent := Self;
   ffraPerson.Align := TAlign.alClient;
-  ffraPerson.Show;
+  ffraPerson.Hide;
   acMasterdataPerson.Enabled := False;
 
   ffraUnit := TfraUnit.Create(Self, fProgressIndicator);

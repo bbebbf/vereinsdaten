@@ -7,8 +7,9 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
   System.Generics.Collections, CrudCommands, DtoUnit, DtoUnitAggregated, ExtendedListview, Vcl.Menus, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.WinXPickers, System.Actions, Vcl.ActnList,
-  ComponentValueChangedObserver, CrudUI, CheckboxDatetimePickerHandler, Vdm.Types,
-  Vdm.Versioning.Types, VersionInfoEntryUI, MemberOfUI, unMemberOf, ProgressIndicatorIntf, WorkSection;
+  ComponentValueChangedObserver, CrudUI, Vdm.Types,
+  Vdm.Versioning.Types, VersionInfoEntryUI, MemberOfUI, unMemberOf, ProgressIndicatorIntf, WorkSection,
+  ConstraintControls.ConstraintEdit, ConstraintControls.DateEdit, ValidatableValueControlsRegistry;
 
 type
   TfraUnit = class(TFrame, ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32, TEntryFilter>, IVersionInfoEntryUI, IWorkSection)
@@ -33,20 +34,17 @@ type
     lbVersionInfo: TLabel;
     lbDataConfirmedOn: TLabel;
     edUnitName: TEdit;
-    cbUnitActiveSinceKnown: TCheckBox;
-    dtUnitActiveSince: TDateTimePicker;
     cbUnitActive: TCheckBox;
-    dtUnitActiveUntil: TDateTimePicker;
-    cbUnitActiveUntilKnown: TCheckBox;
     btSave: TButton;
     btReload: TButton;
-    cbDataConfirmedOnKnown: TCheckBox;
-    dtDataConfirmedOn: TDateTimePicker;
     pnMemberOf: TPanel;
     lbFilter: TLabel;
     edFilter: TEdit;
     cbUnitKind: TComboBox;
     lbUnitKind: TLabel;
+    deUnitActiveSince: TDateEdit;
+    deUnitActiveUntil: TDateEdit;
+    deDataConfirmedOn: TDateEdit;
     procedure lvListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure lvListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
@@ -63,11 +61,9 @@ type
     fBusinessIntf: ICrudCommands<UInt32, TEntryFilter>;
     fExtendedListview: TExtendedListview<TDtoUnit>;
     fDelayedLoadEntry: TDelayedLoadEntry;
-    fActiveSinceHandler: TCheckboxDatetimePickerHandler;
-    fActiveUntilHandler: TCheckboxDatetimePickerHandler;
-    fDataConfirmedOnHandler: TCheckboxDatetimePickerHandler;
     fProgressIndicator: IProgressIndicator;
     fCurrentUnitId: UInt32;
+    fValidatableValueControlsRegistry: TValidatableValueControlsRegistry;
 
     procedure CMVisiblechanged(var Message: TMessage); message CM_VISIBLECHANGED;
 
@@ -109,7 +105,8 @@ implementation
 
 {$R *.dfm}
 
-uses System.Generics.Defaults, StringTools, MessageDialogs, Vdm.Globals, VclUITools;
+uses System.Generics.Defaults, StringTools, MessageDialogs, Vdm.Globals, VclUITools, Helper.ConstraintControls,
+  Helper.Frame;
 
 { TfraUnit }
 
@@ -121,10 +118,6 @@ begin
   fUnitMemberOf.Parent := pnMemberOf;
   fUnitMemberOf.Align := TAlign.alClient;
 
-  fActiveSinceHandler := TCheckboxDatetimePickerHandler.Create(cbUnitActiveSinceKnown, dtUnitActiveSince);
-  fActiveUntilHandler := TCheckboxDatetimePickerHandler.Create(cbUnitActiveUntilKnown, dtUnitActiveUntil);
-  fDataConfirmedOnHandler := TCheckboxDatetimePickerHandler.Create(cbDataConfirmedOnKnown, dtDataConfirmedOn);
-
   fComponentValueChangedObserver := TComponentValueChangedObserver.Create;
   fComponentValueChangedObserver.OnValuesChanged := ControlValuesChanged;
   fComponentValueChangedObserver.OnValuesUnchanged := ControlValuesUnchanged;
@@ -132,12 +125,14 @@ begin
   fComponentValueChangedObserver.RegisterEdit(edUnitName);
   fComponentValueChangedObserver.RegisterCheckbox(cbUnitActive);
   fComponentValueChangedObserver.RegisterCombobox(cbUnitKind);
-  fComponentValueChangedObserver.RegisterCheckbox(cbUnitActiveSinceKnown);
-  fComponentValueChangedObserver.RegisterDateTimePicker(dtUnitActiveSince);
-  fComponentValueChangedObserver.RegisterCheckbox(cbUnitActiveUntilKnown);
-  fComponentValueChangedObserver.RegisterDateTimePicker(dtUnitActiveUntil);
-  fComponentValueChangedObserver.RegisterCheckbox(cbDataConfirmedOnKnown);
-  fComponentValueChangedObserver.RegisterDateTimePicker(dtDataConfirmedOn);
+  fComponentValueChangedObserver.RegisterChangeableText(deUnitActiveSince);
+  fComponentValueChangedObserver.RegisterChangeableText(deUnitActiveUntil);
+  fComponentValueChangedObserver.RegisterChangeableText(deDataConfirmedOn);
+
+  fValidatableValueControlsRegistry := TValidatableValueControlsRegistry.Create;
+  fValidatableValueControlsRegistry.RegisterControl(deUnitActiveSince);
+  fValidatableValueControlsRegistry.RegisterControl(deUnitActiveUntil);
+  fValidatableValueControlsRegistry.RegisterControl(deDataConfirmedOn);
 
   fExtendedListview := TExtendedListview<TDtoUnit>.Create(lvListview,
     procedure(const aData: TDtoUnit; const aListItem: TListItem)
@@ -177,9 +172,7 @@ begin
   fDelayedLoadEntry.Free;
   fExtendedListview.Free;
   fComponentValueChangedObserver.Free;
-  fDataConfirmedOnHandler.Free;
-  fActiveSinceHandler.Free;
-  fActiveUntilHandler.Free;
+  fValidatableValueControlsRegistry.Free;
   inherited;
 end;
 
@@ -203,6 +196,9 @@ end;
 
 procedure TfraUnit.acSaveCurrentEntryExecute(Sender: TObject);
 begin
+  if not fValidatableValueControlsRegistry.ValidateValues then
+    Exit;
+
   var lResponse := fBusinessIntf.SaveCurrentEntry;
   if lResponse.Status = TCrudSaveStatus.Successful then
   begin
@@ -229,6 +225,8 @@ end;
 
 procedure TfraUnit.BeginWork;
 begin
+  fValidatableValueControlsRegistry.Form := Self.GetForm;
+  fValidatableValueControlsRegistry.CancelControl := btReload;
   Show;
   var lWorkSection: IWorkSection;
   Supports(fUnitMemberOf, IWorkSection, lWorkSection);
@@ -249,9 +247,9 @@ begin
   edUnitName.Text := '';
   cbUnitActive.Checked := True;
   cbUnitKind.ItemIndex := 0;
-  fActiveSinceHandler.Clear;
-  fActiveUntilHandler.Clear;
-  fDataConfirmedOnHandler.Clear;
+  deUnitActiveSince.Clear;
+  deUnitActiveUntil.Clear;
+  deDataConfirmedOn.Clear;
   fComponentValueChangedObserver.EndUpdate;
 end;
 
@@ -286,9 +284,9 @@ begin
   aEntry.Active := cbUnitActive.Checked;
   aEntry.Kind := TUnitKind(cbUnitKind.ItemIndex);
 
-  aEntry.ActiveSince := fActiveSinceHandler.Datetime;
-  aEntry.ActiveUntil := fActiveUntilHandler.Datetime;
-  aEntry.DataConfirmedOn := fDataConfirmedOnHandler.Datetime;
+  deUnitActiveSince.Value.ToNullableDate(aEntry.ActiveSince);
+  deUnitActiveUntil.Value.ToNullableDate(aEntry.ActiveUntil);
+  deDataConfirmedOn.Value.ToNullableDate(aEntry.DataConfirmedOn);
 end;
 
 function TfraUnit.GetMemberOfUI: IMemberOfUI;
@@ -403,9 +401,9 @@ begin
   edUnitName.Text := aEntry.Name;
   cbUnitActive.Checked := aEntry.Active;
   cbUnitKind.ItemIndex := Ord(aEntry.Kind);
-  fActiveSinceHandler.Datetime := aEntry.ActiveSince;
-  fActiveUntilHandler.Datetime := aEntry.ActiveUntil;
-  fDataConfirmedOnHandler.Datetime := aEntry.DataConfirmedOn;
+  deUnitActiveSince.Value.FromNullableDate(aEntry.ActiveSince);
+  deUnitActiveUntil.Value.FromNullableDate(aEntry.ActiveUntil);
+  deDataConfirmedOn.Value.FromNullableDate(aEntry.DataConfirmedOn);
 
   fExtendedListview.UpdateData(aEntry.&Unit);
 

@@ -193,9 +193,9 @@ begin
       aListItem.SubItems.Clear;
       aListItem.SubItems.Add(TStringTools.GetStringByIndex(fAllRolesStringsData.Strings,
         fAllRolesStringsData.Mapper.GetIndex(aData.Data.RoleId)));
-      aListItem.SubItems.Add(TVdmGlobals.GetDateAsString(aData.Data.Member.ActiveSince));
+      aListItem.SubItems.Add(TVdmGlobals.GetDateAsString(aData.Data.Member.ActiveSince.Value));
       aListItem.SubItems.Add(TVdmGlobals.GetActiveStateAsString(aData.Data.Member.Active));
-      aListItem.SubItems.Add(TVdmGlobals.GetDateAsString(aData.Data.Member.ActiveUntil));
+      aListItem.SubItems.Add(TVdmGlobals.GetDateAsString(aData.Data.Member.ActiveUntil.Value));
       if fBusinessIntf.GetShowVersionInfoInMemberListview then
       begin
         aListItem.SubItems.Add(aData.Data.VersionInfoPersonMemberOf.ToString);

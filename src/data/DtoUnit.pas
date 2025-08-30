@@ -2,6 +2,8 @@ unit DtoUnit;
 
 interface
 
+uses Nullable;
+
 type
   TUnitKind = (DefaultKind, OneTimeKind, ExternalKind);
 
@@ -9,11 +11,13 @@ type
     Id: UInt32;
     Name: string;
     Active: Boolean;
-    ActiveSince: TDate;
-    ActiveUntil: TDate;
+    ActiveSince: INullable<TDate>;
+    ActiveUntil: INullable<TDate>;
     Kind: TUnitKind;
-    DataConfirmedOn: TDate;
+    DataConfirmedOn: INullable<TDate>;
     function ToString: string;
+    class operator Initialize(out Dest: TDtoUnit);
+    class operator Finalize(var Dest: TDtoUnit);
   end;
 
 function UnitKindToStr(const aKind: TUnitKind): string;
@@ -23,6 +27,20 @@ implementation
 uses System.SysUtils;
 
 { TDtoUnit }
+
+class operator TDtoUnit.Initialize(out Dest: TDtoUnit);
+begin
+  Dest.ActiveSince := TNullable<TDate>.Create;
+  Dest.ActiveUntil := TNullable<TDate>.Create;
+  Dest.DataConfirmedOn := TNullable<TDate>.Create;
+end;
+
+class operator TDtoUnit.Finalize(var Dest: TDtoUnit);
+begin
+  Dest.ActiveSince := nil;
+  Dest.ActiveUntil := nil;
+  Dest.DataConfirmedOn := nil;
+end;
 
 function TDtoUnit.ToString: string;
 begin

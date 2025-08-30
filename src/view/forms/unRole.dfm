@@ -35,6 +35,7 @@ object fmRole: TfmRole
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 0
+    ExplicitHeight = 400
     object lbListviewItemCount: TLabel
       Left = 0
       Top = 358
@@ -91,6 +92,7 @@ object fmRole: TfmRole
       Action = acStartNewEntry
       Align = alBottom
       TabOrder = 2
+      ExplicitTop = 375
     end
   end
   object pnDetails: TPanel
@@ -101,6 +103,8 @@ object fmRole: TfmRole
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
+    ExplicitWidth = 541
+    ExplicitHeight = 400
     object lbRoleName: TLabel
       Left = 23
       Top = 19
@@ -141,14 +145,6 @@ object fmRole: TfmRole
       Cancel = True
       TabOrder = 4
     end
-    object edRoleSorting: TEdit
-      Left = 23
-      Top = 138
-      Width = 55
-      Height = 23
-      NumbersOnly = True
-      TabOrder = 2
-    end
     object cbRoleActive: TCheckBox
       Left = 23
       Top = 82
@@ -156,6 +152,16 @@ object fmRole: TfmRole
       Height = 16
       Caption = 'Aktiv'
       TabOrder = 1
+    end
+    object ieRoleSorting: TIntegerEdit
+      Left = 23
+      Top = 138
+      Width = 55
+      Height = 23
+      TabOrder = 2
+      BoundsLower.Null = False
+      BoundsUpper.Null = False
+      BoundsUpper.Value = 255
     end
   end
   object alActionList: TActionList

@@ -10,7 +10,8 @@ uses
   PersonBusinessIntf, PersonAggregatedUI, DtoPersonAggregated, ComponentValueChangedObserver,
   unMemberOf, MemberOfUI,
   Vdm.Types, Vdm.Versioning.Types, CrudUI, VersionInfoEntryUI, DtoPersonNameId, ProgressIndicatorIntf, WorkSection,
-  ConstraintControls.ConstraintEdit, ConstraintControls.DateEdit;
+  ConstraintControls.ConstraintEdit, ConstraintControls.DateEdit, ConstraintControls.IntegerEdit,
+  ValidatableValueControlsRegistry;
 
 type
   TfraPerson = class(TFrame, IPersonAggregatedUI, IVersionInfoEntryUI, IWorkSection)
@@ -41,7 +42,6 @@ type
     cbShowInactivePersons: TCheckBox;
     cbMembership: TComboBox;
     lbMembership: TLabel;
-    edMembershipNumber: TEdit;
     lbMembershipnumber: TLabel;
     lbMembershipBegin: TLabel;
     lbMembershipEnd: TLabel;
@@ -64,6 +64,7 @@ type
     dePersonBirthday: TDateEdit;
     deMembershipBegin: TDateEdit;
     deMembershipEnd: TDateEdit;
+    ieMembershipNumber: TIntegerEdit;
     procedure lvPersonListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure lvPersonListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
@@ -87,6 +88,7 @@ type
     fPersonMemberOf: TfraMemberOf;
     fDelayedLoadEntry: TDelayedLoadEntry;
     fProgressIndicator: IProgressIndicator;
+    fValidatableValueControlsRegistry: TValidatableValueControlsRegistry;
 
     procedure CMVisiblechanged(var Message: TMessage); message CM_VISIBLECHANGED;
     function NewAddressRequested: Boolean;
@@ -133,7 +135,7 @@ implementation
 {$R *.dfm}
 
 uses System.Generics.Defaults, KeyIndexStrings, StringTools, MessageDialogs, Vdm.Globals, VclUITools,
-  Helper.DateEditValue;
+  Helper.ConstraintControls, Helper.Frame;
 
 { TfraPerson }
 
@@ -152,7 +154,7 @@ begin
   fComponentValueChangedObserver.RegisterEdit(edPersonFirstname);
   fComponentValueChangedObserver.RegisterEdit(edPersonPraeposition);
   fComponentValueChangedObserver.RegisterEdit(edPersonLastname);
-  fComponentValueChangedObserver.RegisterEdit(dePersonBirthday);
+  fComponentValueChangedObserver.RegisterChangeableText(dePersonBirthday);
   fComponentValueChangedObserver.RegisterCheckbox(cbPersonActive);
   fComponentValueChangedObserver.RegisterCheckbox(cbPersonExternal);
   fComponentValueChangedObserver.RegisterCheckbox(cbPersonOnBirthdaylist);
@@ -160,11 +162,17 @@ begin
   fComponentValueChangedObserver.RegisterEdit(edNewAddressPostalcode);
   fComponentValueChangedObserver.RegisterEdit(edNewAddressCity);
   fComponentValueChangedObserver.RegisterCombobox(cbMembership);
-  fComponentValueChangedObserver.RegisterEdit(edMembershipNumber);
-  fComponentValueChangedObserver.RegisterEdit(deMembershipBegin);
-  fComponentValueChangedObserver.RegisterEdit(deMembershipEnd);
+  fComponentValueChangedObserver.RegisterChangeableText(ieMembershipNumber);
+  fComponentValueChangedObserver.RegisterChangeableText(deMembershipBegin);
+  fComponentValueChangedObserver.RegisterChangeableText(deMembershipEnd);
   fComponentValueChangedObserver.RegisterEdit(edMembershipEndText);
   fComponentValueChangedObserver.RegisterEdit(edMembershipEndReason);
+
+  fValidatableValueControlsRegistry := TValidatableValueControlsRegistry.Create;
+  fValidatableValueControlsRegistry.RegisterControl(dePersonBirthday);
+  fValidatableValueControlsRegistry.RegisterControl(ieMembershipNumber);
+  fValidatableValueControlsRegistry.RegisterControl(deMembershipBegin);
+  fValidatableValueControlsRegistry.RegisterControl(deMembershipEnd);
 
   fExtendedListview := TExtendedListview<TDtoPerson>.Create(lvPersonListview,
     procedure(const aData: TDtoPerson; const aListItem: TListItem)
@@ -202,6 +210,7 @@ destructor TfraPerson.Destroy;
 begin
   fDelayedLoadEntry.Free;
   fExtendedListview.Free;
+  fValidatableValueControlsRegistry.Free;
   fComponentValueChangedObserver.Free;
   inherited;
 end;
@@ -233,6 +242,9 @@ end;
 
 procedure TfraPerson.acPersonSaveCurrentRecordExecute(Sender: TObject);
 begin
+  if not fValidatableValueControlsRegistry.ValidateValues then
+    Exit;
+
   var lResponse := fBusinessIntf.SaveCurrentEntry;
   if lResponse.Status = TCrudSaveStatus.Successful then
   begin
@@ -257,6 +269,8 @@ end;
 
 procedure TfraPerson.BeginWork;
 begin
+  fValidatableValueControlsRegistry.Form := Self.GetForm;
+  fValidatableValueControlsRegistry.CancelControl := btPersonReload;
   Show;
   var lWorkSection: IWorkSection;
   Supports(fPersonMemberOf, IWorkSection, lWorkSection);
@@ -306,7 +320,7 @@ begin
   ConfigControlsForNewAddress;
 
   cbMembership.ItemIndex := 0;
-  edMembershipNumber.Text := '';
+  ieMembershipNumber.Clear;
 
   deMembershipBegin.Clear;
   deMembershipEnd.Clear;
@@ -363,9 +377,9 @@ begin
     TMessageDialogs.Ok('Vorname oder Nachname müssen angegeben sein.', TMsgDlgType.mtInformation);
     Exit(False);
   end;
-  if (cbMembership.ItemIndex > 0) and TStringTools.IsEmpty(edMembershipNumber.Text) then
+  if (cbMembership.ItemIndex > 0) and TStringTools.IsEmpty(ieMembershipNumber.Text) then
   begin
-    edMembershipNumber.SetFocus;
+    ieMembershipNumber.SetFocus;
     aProgressUISuspendScope.Suspend;
     TMessageDialogs.Ok('Die Mitgliedsnummer muss angegeben sein.', TMsgDlgType.mtInformation);
     Exit(False);
@@ -421,7 +435,7 @@ begin
 
   aRecord.MembershipNoMembership := cbMembership.ItemIndex <= 0;
   aRecord.MembershipActive := cbMembership.ItemIndex = 1;
-  aRecord.MembershipNumber := StrToIntDef(edMembershipNumber.Text, 0);
+  aRecord.MembershipNumber := ieMembershipNumber.Value.Value;
   deMembershipBegin.Value.ToNullableDate(aRecord.MembershipBeginDate);
   deMembershipEnd.Value.ToNullableDate(aRecord.MembershipEndDate);
   if not deMembershipEnd.Value.Null then
@@ -658,10 +672,7 @@ begin
       cbMembership.ItemIndex := 1
     else
       cbMembership.ItemIndex := 2;
-    if aRecord.MembershipNumber > 0 then
-      edMembershipNumber.Text := IntToStr(aRecord.MembershipNumber)
-    else
-      edMembershipNumber.Text := '';
+    ieMembershipNumber.Value.Value := aRecord.MembershipNumber;
 
     deMembershipBegin.Value.FromNullableDate(aRecord.MembershipBeginDate);
     deMembershipEnd.Value.FromNullableDate(aRecord.MembershipEndDate);
@@ -672,7 +683,7 @@ begin
   else
   begin
     cbMembership.ItemIndex := 0;
-    edMembershipNumber.Text := '';
+    ieMembershipNumber.Clear;
     deMembershipBegin.Clear;
     deMembershipEnd.Clear;
     edMembershipEndText.Text := '';

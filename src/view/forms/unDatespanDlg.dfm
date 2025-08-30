@@ -12,6 +12,8 @@ object fmDatespanDlg: TfmDatespanDlg
   Font.Name = 'Segoe UI'
   Font.Style = []
   Position = poOwnerFormCenter
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
   DesignSize = (
     287
     107)
@@ -62,9 +64,8 @@ object fmDatespanDlg: TfmDatespanDlg
     Width = 81
     Height = 23
     TabOrder = 0
-    EmptyValueAllowed = False
+    ValueMandatory = True
     OnValueChanged = deFromDateValueChanged
-    OnExitQueryValidation = deFromDateExitQueryValidation
   end
   object deToDate: TDateEdit
     Left = 198
@@ -72,8 +73,7 @@ object fmDatespanDlg: TfmDatespanDlg
     Width = 81
     Height = 23
     TabOrder = 1
-    EmptyValueAllowed = False
+    ValueMandatory = True
     OnValueChanged = deToDateValueChanged
-    OnExitQueryValidation = deToDateExitQueryValidation
   end
 end

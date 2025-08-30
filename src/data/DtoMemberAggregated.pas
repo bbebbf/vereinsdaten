@@ -2,7 +2,7 @@ unit DtoMemberAggregated;
 
 interface
 
-uses System.Classes, DtoMember, MemberOfConfigIntf, KeyIndexStrings, Vdm.Versioning.Types;
+uses System.Classes, DtoMember, MemberOfConfigIntf, KeyIndexStrings, Vdm.Versioning.Types, Nullable;
 
 type
   TDtoMemberAggregated = class
@@ -27,8 +27,8 @@ type
     property UnitId: UInt32 read fMember.UnitId write fMember.UnitId;
     property RoleId: UInt32 read fMember.RoleId write fMember.RoleId;
     property Active: Boolean read fMember.Active write fMember.Active;
-    property ActiveSince: TDate read fMember.ActiveSince write fMember.ActiveSince;
-    property ActiveUntil: TDate read fMember.ActiveUntil write fMember.ActiveUntil;
+    property ActiveSince: INullable<TDate> read fMember.ActiveSince write fMember.ActiveSince;
+    property ActiveUntil: INullable<TDate> read fMember.ActiveUntil write fMember.ActiveUntil;
     property DetailItemId: UInt32 read GetDetailItemId write SetDetailItemId;
     property AvailableDetailItems: TActiveKeyIndexStringsLoader read GetAvailableDetailItems;
     property AvailableRoles: TActiveKeyIndexStringsLoader read fAvailableRoles;

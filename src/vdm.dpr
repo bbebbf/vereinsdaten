@@ -67,7 +67,6 @@ uses
   CrudConfigRole in 'data\CrudConfigRole.pas',
   unMemberOfsEditDlg in 'view\forms\unMemberOfsEditDlg.pas' {fmMemberOfsEditDlg},
   DelayedExecute in 'general\common\Tools\DelayedExecute.pas',
-  CheckboxDatetimePickerHandler in 'view\tools\CheckboxDatetimePickerHandler.pas',
   KeyIndexStrings in 'general\common\Tools\KeyIndexStrings.pas',
   LazyLoader in 'general\common\Tools\LazyLoader.pas',
   ValueConverter in 'general\intf\tools\ValueConverter.pas',
@@ -125,7 +124,9 @@ uses
   DatespanProvider in 'general\intf\tools\DatespanProvider.pas',
   Nullable in 'general\common\Tools\Nullable.pas',
   unDatespanDlg in 'view\forms\unDatespanDlg.pas' {fmDatespanDlg},
-  Helper.DateEditValue in 'general\common\Tools\Helper.DateEditValue.pas';
+  Helper.ConstraintControls in 'view\tools\Helper.ConstraintControls.pas',
+  ValidatableValueControlsRegistry in 'view\tools\ValidatableValueControlsRegistry.pas',
+  Helper.Frame in 'view\tools\Helper.Frame.pas';
 
 {$R *.res}
 
