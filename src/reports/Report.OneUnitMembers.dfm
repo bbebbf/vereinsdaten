@@ -201,7 +201,7 @@ object fmReportOneUnitMembers: TfmReportOneUnitMembers
         Top = 2
         Width = 105
         Height = 18
-        DataField = 'person_birthday'
+        DataField = 'person_date_of_birth'
         DataSource = dsDataSource
         Text = ''
       end

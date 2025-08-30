@@ -79,7 +79,7 @@ begin
   lbAppTitle.Caption := TVdmGlobals.GetVdmApplicationTitle;
 
   fQuery := fConnection.CreatePreparedQuery(
-    'SELECT cm.*, pn.person_name, p.person_birthday, sa.address_title' +
+    'SELECT cm.*, pn.person_name, p.person_date_of_birth, sa.address_title' +
     ', IFNULL(DATE_FORMAT(cm.clmb_enddate, ''%d.%m.%Y''), cm.clmb_enddate_str) AS clmb_enddate_calculated' +
     ', IF(cm.clmb_active, null, "X") AS clmb_inactive' +
     ' FROM clubmembership AS cm' +

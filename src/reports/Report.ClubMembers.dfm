@@ -66,7 +66,7 @@ object fmReportClubMembers: TfmReportClubMembers
         Width = 85
         Height = 24
         AutoSize = False
-        DataField = 'person_birthday'
+        DataField = 'person_date_of_birth'
         DataSource = dsDataSource
         Text = ''
       end

@@ -71,7 +71,7 @@ begin
     rtInactive.Visible := False;
   end;
 
-  var lSelectStmt := 'SELECT p.person_id, p.person_active, p.person_birthday, pn.person_name, a.address_title' +
+  var lSelectStmt := 'SELECT p.person_id, p.person_active, p.person_date_of_birth, pn.person_name, a.address_title' +
     ',IF(p.person_active, null, "X") AS person_inactive' +
     ' FROM person AS p' +
     ' INNER JOIN vw_person_name AS pn ON pn.person_id = p.person_id' +

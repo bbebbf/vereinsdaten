@@ -77,7 +77,7 @@ begin
   lbAppTitle.Caption := TVdmGlobals.GetVdmApplicationTitle;
 
   fQuery := fConnection.CreatePreparedQuery(
-    'SELECT u.unit_id, u.unit_name, u.unit_data_confirmed_on, mc.MemberCount, pn.person_name, p.person_birthday, a.address_title, r.role_name' +
+    'SELECT u.unit_id, u.unit_name, u.unit_data_confirmed_on, mc.MemberCount, pn.person_name, p.person_date_of_birth, a.address_title, r.role_name' +
     ' FROM unit AS u' +
     ' INNER JOIN (' +
           ' SELECT m.unit_id, COUNT(*) AS MemberCount' +
