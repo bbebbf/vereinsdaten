@@ -84,7 +84,7 @@ type
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
     fBusinessIntf: IPersonBusinessIntf;
-    fExtendedListview: TExtendedListview<TDtoPerson>;
+    fExtendedListview: TExtendedListview<TDtoPerson, UInt32>;
     fPersonMemberOf: TfraMemberOf;
     fDelayedLoadEntry: TDelayedLoadEntry;
     fProgressIndicator: IProgressIndicator;
@@ -174,15 +174,19 @@ begin
   fValidatableValueControlsRegistry.RegisterControl(deMembershipBegin);
   fValidatableValueControlsRegistry.RegisterControl(deMembershipEnd);
 
-  fExtendedListview := TExtendedListview<TDtoPerson>.Create(lvPersonListview,
+  fExtendedListview := TExtendedListview<TDtoPerson, UInt32>.Create(lvPersonListview,
     procedure(const aData: TDtoPerson; const aListItem: TListItem)
     begin
       aListItem.Caption := aData.ToString;
     end,
-    TComparer<TDtoPerson>.Construct(
-      function(const aLeft, aRight: TDtoPerson): Integer
+    function(const aData: TDtoPerson): UInt32
+    begin
+      Result := aData.NameId.Id;
+    end,
+    TComparer<UInt32>.Construct(
+      function(const aLeft, aRight: UInt32): Integer
       begin
-        Result := TVdmGlobals.CompareId(aLeft.NameId.Id, aRight.NameId.Id);
+        Result := TVdmGlobals.CompareId(aLeft, aRight);
       end
     )
   );

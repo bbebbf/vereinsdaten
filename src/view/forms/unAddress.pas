@@ -52,8 +52,8 @@ type
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
     fBusinessIntf: ICrudCommands<UInt32, TEntryFilter>;
-    fExtendedListview: TExtendedListview<TDtoAddress>;
-    fExtendedListviewMemberOfs: TExtendedListview<TDtoAddressAggregatedPersonMemberOf>;
+    fExtendedListview: TExtendedListview<TDtoAddress, UInt32>;
+    fExtendedListviewMemberOfs: TExtendedListview<TDtoAddressAggregatedPersonMemberOf, UInt32>;
     fDelayedLoadEntry: TDelayedLoadEntry;
     fProgressIndicator: IProgressIndicator;
 
@@ -175,7 +175,7 @@ begin
   fComponentValueChangedObserver.RegisterEdit(edAddressCity);
   fComponentValueChangedObserver.RegisterCheckbox(cbAddressActive);
 
-  fExtendedListview := TExtendedListview<TDtoAddress>.Create(lvListview,
+  fExtendedListview := TExtendedListview<TDtoAddress, UInt32>.Create(lvListview,
     procedure(const aData: TDtoAddress; const aListItem: TListItem)
     begin
       {$ifdef INTERNAL_DB_ID_VISIBLE}
@@ -187,22 +187,30 @@ begin
       aListItem.SubItems.Add(aData.Street);
       aListItem.SubItems.Add(aData.Postalcode);
     end,
-    TComparer<TDtoAddress>.Construct(
-      function(const aLeft, aRight: TDtoAddress): Integer
+    function(const aData: TDtoAddress): UInt32
+    begin
+      Result := aData.Id;
+    end,
+    TComparer<UInt32>.Construct(
+      function(const aLeft, aRight: UInt32): Integer
       begin
-        Result := TVdmGlobals.CompareId(aLeft.Id, aRight.Id);
+        Result := TVdmGlobals.CompareId(aLeft, aRight);
       end
     )
   );
-  fExtendedListviewMemberOfs := TExtendedListview<TDtoAddressAggregatedPersonMemberOf>.Create(lvMemberOf,
+  fExtendedListviewMemberOfs := TExtendedListview<TDtoAddressAggregatedPersonMemberOf, UInt32>.Create(lvMemberOf,
     procedure(const aData: TDtoAddressAggregatedPersonMemberOf; const aListItem: TListItem)
     begin
       aListItem.Caption := aData.PersonNameId.ToString;
     end,
-    TComparer<TDtoAddressAggregatedPersonMemberOf>.Construct(
-      function(const aLeft, aRight: TDtoAddressAggregatedPersonMemberOf): Integer
+    function(const aData: TDtoAddressAggregatedPersonMemberOf): UInt32
+    begin
+      Result := aData.PersonNameId.Id;
+    end,
+    TComparer<UInt32>.Construct(
+      function(const aLeft, aRight: UInt32): Integer
       begin
-        Result := TVdmGlobals.CompareId(aLeft.PersonNameId.Id, aRight.PersonNameId.Id);
+        Result := TVdmGlobals.CompareId(aLeft, aRight);
       end
     )
   );

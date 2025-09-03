@@ -44,7 +44,7 @@ object fraUnit: TfraUnit
       Left = 0
       Top = 73
       Width = 350
-      Height = 531
+      Height = 498
       Align = alClient
       Columns = <
         item
@@ -105,7 +105,24 @@ object fraUnit: TfraUnit
       Height = 25
       Action = acStartNewEntry
       Align = alBottom
+      TabOrder = 3
+    end
+    object pnBelowList: TPanel
+      Left = 0
+      Top = 571
+      Width = 350
+      Height = 33
+      Align = alBottom
       TabOrder = 2
+      object cbEnableCheckboxes: TCheckBox
+        Left = 4
+        Top = 6
+        Width = 169
+        Height = 17
+        Caption = 'Auswahlmodus aktivieren'
+        TabOrder = 0
+        OnClick = cbEnableCheckboxesClick
+      end
     end
   end
   object pnDetails: TPanel

@@ -44,7 +44,7 @@ type
     procedure acSaveMemberOfsExecute(Sender: TObject);
   private
     fBusinessIntf: IMemberOfBusinessIntf;
-    fExtentedListviewMemberOfs: TExtendedListview<TListEntry<TDtoMemberAggregated>>;
+    fExtentedListviewMemberOfs: TExtendedListview<TListEntry<TDtoMemberAggregated>, UInt32>;
     fDialog: TfmMemberOfsEditDlg;
     fAllDetailedItemsStringsData: TKeyIndexStringsData;
     fAllRolesStringsData: TKeyIndexStringsData;
@@ -180,7 +180,7 @@ end;
 constructor TfraMemberOf.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  fExtentedListviewMemberOfs := TExtendedListview<TListEntry<TDtoMemberAggregated>>.Create(lvMemberOf,
+  fExtentedListviewMemberOfs := TExtendedListview<TListEntry<TDtoMemberAggregated>, UInt32>.Create(lvMemberOf,
     procedure(const aData: TListEntry<TDtoMemberAggregated>; const aListItem: TListItem)
     begin
       if not Assigned(fAllDetailedItemsStringsData) then
@@ -201,10 +201,14 @@ begin
         aListItem.SubItems.Add(aData.Data.VersionInfoPersonMemberOf.ToString);
       end;
     end,
-    TComparer<TListEntry<TDtoMemberAggregated>>.Construct(
-      function(const aLeft, aRight: TListEntry<TDtoMemberAggregated>): Integer
+    function(const aData: TListEntry<TDtoMemberAggregated>): UInt32
+    begin
+      Result := aData.Data.Id;
+    end,
+    TComparer<UInt32>.Construct(
+      function(const aLeft, aRight: UInt32): Integer
       begin
-        Result := TVdmGlobals.CompareId(aLeft.Data.Id, aRight.Data.Id);
+        Result := TVdmGlobals.CompareId(aLeft, aRight);
       end
     )
   );

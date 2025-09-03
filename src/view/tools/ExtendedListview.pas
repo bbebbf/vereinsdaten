@@ -6,6 +6,7 @@ uses System.Generics.Collections, System.Generics.Defaults, Vcl.ComCtrls, Interf
 
 type
   TExtendedListviewDataToListItem<T> = reference to procedure(const aData: T; const aListItem: TListItem);
+  TExtendedListviewDataToId<T, K> = reference to function(const aData: T): K;
   TExtendedListviewDataPredicate<F, T> = reference to function(const aFilterExpression: F; const aData: T): Boolean;
   TExtendedListviewCompareColumn<T> = reference to procedure(const aData1, aData2: T;
     const aColumnIndex: Integer; var aCompareResult: Integer; var aHandled: Boolean);
@@ -15,22 +16,25 @@ type
   TExtendedListviewEntry<T> = class
   strict private
     fData: T;
+    fChecked: Boolean;
     fListItem: TListItem;
   strict protected
     procedure SetData(const aValue: T); virtual;
   public
     property Data: T read fData write SetData;
+    property Checked: Boolean read fChecked write fChecked;
     property ListItem: TListItem read fListItem write fListItem;
   end;
 
-  TExtendedListview<T> = class
+  TExtendedListview<T; K: record> = class
   strict private
     fListview: TListView;
     fDataItemsOwner: TObjectList<TExtendedListviewEntry<T>>;
     fDataItemsSortedList: TList<TExtendedListviewEntry<T>>;
     fDataItemsAreSorted: Boolean;
-    fDataToListItemProc: TExtendedListviewDataToListItem<T>;
-    fDataIdComparer: IComparer<T>;
+    fDataToListItemFunc: TExtendedListviewDataToListItem<T>;
+    fDataToIdFunc: TExtendedListviewDataToId<T, K>;
+    fDataIdComparer: IComparer<K>;
     fListItemToEntryDict: TDictionary<TListItem, TExtendedListviewEntry<T>>;
     fOnEndUpdate: TExtendedListviewOnEndUpdateEvent;
     fColumnClickedColumn: TListColumn;
@@ -38,22 +42,27 @@ type
     fOnCompareColumn: TExtendedListviewCompareColumn<T>;
     fImageIndexSortUp: Integer;
     fImageIndexSortDown: Integer;
+    fCheckedIds: THashSet<K>;
+    fCheckedIdsDirty: Boolean;
     procedure ClearListItems;
     function AddListItem(const aEntry: TExtendedListviewEntry<T>): TListItem;
     procedure SortDataItems;
     procedure UpdateListItem(const aEntry: TExtendedListviewEntry<T>);
     procedure OnListviewColumnClick(Sender: TObject; Column: TListColumn);
     procedure LVCompareEvent(Sender: TObject; Item1, Item2: TListItem; Data: Integer; var Compare: Integer);
+    procedure LVItemCheckedEvent(Sender: TObject; Item: TListItem);
   strict protected
     function CreateEntry: TExtendedListviewEntry<T>; virtual;
   public
     constructor Create(const aListview: TListView;
-      const aDataToListItemProc: TExtendedListviewDataToListItem<T>;
-      const aDataIdComparer: IComparer<T>);
+      const aDataToListItemFunc: TExtendedListviewDataToListItem<T>;
+      const aDataToIdFunc: TExtendedListviewDataToId<T, K>;
+      const aDataIdComparer: IComparer<K>);
     destructor Destroy; override;
     procedure BeginUpdate;
     procedure EndUpdate;
     procedure Clear;
+    procedure ClearCheckedIds;
     function Add(const aData: T): TListItem;
     function Delete(const aData: T): Boolean;
     procedure InvalidateListItems;
@@ -74,7 +83,7 @@ type
     destructor Destroy; override;
   end;
 
-  TObjectExtendedListview<T: class> = class(TExtendedListview<T>)
+  TObjectExtendedListview<T: class; K: record> = class(TExtendedListview<T, K>)
   strict protected
     function CreateEntry: TExtendedListviewEntry<T>; override;
   end;
@@ -83,26 +92,30 @@ implementation
 
 uses System.SysUtils, Winapi.Windows;
 
-{ TExtendedListview<T> }
+{ TExtendedListview<T, K> }
 
-constructor TExtendedListview<T>.Create(const aListview: TListView;
-  const aDataToListItemProc: TExtendedListviewDataToListItem<T>; const aDataIdComparer: IComparer<T>);
+constructor TExtendedListview<T, K>.Create(const aListview: TListView;
+  const aDataToListItemFunc: TExtendedListviewDataToListItem<T>;
+  const aDataToIdFunc: TExtendedListviewDataToId<T, K>;
+  const aDataIdComparer: IComparer<K>);
 begin
   inherited Create;
   fListview := aListview;
   fListview.OnColumnClick := OnListviewColumnClick;
   fListview.OnCompare := LVCompareEvent;
-  fDataToListItemProc := aDataToListItemProc;
+  fListview.OnItemChecked := LVItemCheckedEvent;
+  fDataToListItemFunc := aDataToListItemFunc;
+  fDataToIdFunc := aDataToIdFunc;
   fDataItemsOwner := TObjectList<TExtendedListviewEntry<T>>.Create;
 
   fDataIdComparer := aDataIdComparer;
   if not Assigned(fDataIdComparer) then
-    fDataIdComparer := TComparer<T>.Default;
+    fDataIdComparer := TComparer<K>.Default;
 
   var lEntryComparer: IComparer<TExtendedListviewEntry<T>> := TComparer<TExtendedListviewEntry<T>>.Construct(
       function(const aLeft, aRight: TExtendedListviewEntry<T>): Integer
       begin
-        Result := fDataIdComparer.Compare(aLeft.Data, aRight.Data);
+        Result := fDataIdComparer.Compare(fDataToIdFunc(aLeft.Data), fDataToIdFunc(aRight.Data));
       end
     );
   fDataItemsSortedList := TList<TExtendedListviewEntry<T>>.Create(lEntryComparer);
@@ -111,27 +124,31 @@ begin
   fDataItemsAreSorted := True;
   fImageIndexSortUp := -1;
   fImageIndexSortDown := -1;
+
+  fCheckedIds := THashSet<K>.Create;
 end;
 
-destructor TExtendedListview<T>.Destroy;
+destructor TExtendedListview<T, K>.Destroy;
 begin
+  fCheckedIds.Free;
   fListItemToEntryDict.Free;
   fDataItemsSortedList.Free;
   fDataItemsOwner.Free;
   inherited;
 end;
 
-function TExtendedListview<T>.Add(const aData: T): TListItem;
+function TExtendedListview<T, K>.Add(const aData: T): TListItem;
 begin
   var lEntry := CreateEntry;
   lEntry.Data := aData;
+  lEntry.Checked := fCheckedIds.Contains(fDataToIdFunc(aData));
   fDataItemsOwner.Add(lEntry);
   fDataItemsSortedList.Add(lEntry);
   Result := AddListItem(lEntry);
   fDataItemsAreSorted := False;
 end;
 
-procedure TExtendedListview<T>.Clear;
+procedure TExtendedListview<T, K>.Clear;
 begin
   ClearListItems;
   fDataItemsSortedList.Clear;
@@ -139,16 +156,30 @@ begin
   fDataItemsAreSorted := True;
 end;
 
-function TExtendedListview<T>.AddListItem(const aEntry: TExtendedListviewEntry<T>): TListItem;
+procedure TExtendedListview<T, K>.ClearCheckedIds;
+begin
+  if fCheckedIdsDirty then
+  begin
+    for var lEntry in fDataItemsOwner do
+      lEntry.Checked := False;
+    for var lItem in fListview.Items do
+      lItem.Checked := False;
+    fCheckedIdsDirty := False;
+  end;
+  fCheckedIds.Clear;
+end;
+
+function TExtendedListview<T, K>.AddListItem(const aEntry: TExtendedListviewEntry<T>): TListItem;
 begin
   Result := fListview.Items.Add;
   Result.ImageIndex := -1;
+  Result.Checked := fListview.Checkboxes and aEntry.Checked;
   aEntry.ListItem := Result;
   fListItemToEntryDict.Add(Result, aEntry);
   UpdateListItem(aEntry);
 end;
 
-procedure TExtendedListview<T>.ClearListItems;
+procedure TExtendedListview<T, K>.ClearListItems;
 begin
   fListItemToEntryDict.Clear;
   fListview.Items.Clear;
@@ -156,19 +187,19 @@ begin
     fListview.Columns[i].ImageIndex := -1;
 end;
 
-procedure TExtendedListview<T>.BeginUpdate;
+procedure TExtendedListview<T, K>.BeginUpdate;
 begin
   fListview.Items.BeginUpdate;
 end;
 
-procedure TExtendedListview<T>.EndUpdate;
+procedure TExtendedListview<T, K>.EndUpdate;
 begin
   if Assigned(fOnEndUpdate) then
     fOnEndUpdate(Self, fDataItemsOwner.Count, fListview.Items.Count);
   fListview.Items.EndUpdate;
 end;
 
-procedure TExtendedListview<T>.Filter<F>(const aFilterExpression: F;
+procedure TExtendedListview<T, K>.Filter<F>(const aFilterExpression: F;
   const aPredicate: TExtendedListviewDataPredicate<F, T>);
 begin
   BeginUpdate;
@@ -186,7 +217,7 @@ begin
   end;
 end;
 
-procedure TExtendedListview<T>.InvalidateListItems;
+procedure TExtendedListview<T, K>.InvalidateListItems;
 begin
   BeginUpdate;
   try
@@ -199,7 +230,7 @@ begin
   end;
 end;
 
-procedure TExtendedListview<T>.LVCompareEvent(Sender: TObject; Item1, Item2: TListItem; Data: Integer;
+procedure TExtendedListview<T, K>.LVCompareEvent(Sender: TObject; Item1, Item2: TListItem; Data: Integer;
   var Compare: Integer);
 begin
   Compare := 0;
@@ -233,7 +264,24 @@ begin
     Compare := -Compare;
 end;
 
-procedure TExtendedListview<T>.OnListviewColumnClick(Sender: TObject; Column: TListColumn);
+procedure TExtendedListview<T, K>.LVItemCheckedEvent(Sender: TObject; Item: TListItem);
+begin
+  fCheckedIdsDirty := True;
+  if not fListview.Checkboxes then
+    Exit;
+
+  var lEntry: TExtendedListviewEntry<T>;
+  if not fListItemToEntryDict.TryGetValue(Item, lEntry) then
+    Exit;
+
+  lEntry.Checked := Item.Checked;
+  if lEntry.Checked then
+    fCheckedIds.Add(fDataToIdFunc(lEntry.Data))
+  else
+    fCheckedIds.Remove(fDataToIdFunc(lEntry.Data));
+end;
+
+procedure TExtendedListview<T, K>.OnListviewColumnClick(Sender: TObject; Column: TListColumn);
 begin
   if fColumnClickedColumn = Column then
   begin
@@ -259,7 +307,7 @@ begin
   fListview.CustomSort(nil, fColumnClickedColumn.Index);
 end;
 
-procedure TExtendedListview<T>.SortDataItems;
+procedure TExtendedListview<T, K>.SortDataItems;
 begin
   if fDataItemsAreSorted then
     Exit;
@@ -267,7 +315,7 @@ begin
   fDataItemsAreSorted := True;
 end;
 
-function TExtendedListview<T>.TryGetListItemData(const aListItem: TListItem; out aData: T): Boolean;
+function TExtendedListview<T, K>.TryGetListItemData(const aListItem: TListItem; out aData: T): Boolean;
 begin
   aData := default(T);
   var lEntry: TExtendedListviewEntry<T>;
@@ -278,7 +326,7 @@ begin
   Result := True;
 end;
 
-function TExtendedListview<T>.TryGetListItem(const aData: T; out aListItem: TListItem): Boolean;
+function TExtendedListview<T, K>.TryGetListItem(const aData: T; out aListItem: TListItem): Boolean;
 begin
   SortDataItems;
   var lSearchEntry := CreateEntry;
@@ -299,7 +347,7 @@ begin
   end;
 end;
 
-function TExtendedListview<T>.Delete(const aData: T): Boolean;
+function TExtendedListview<T, K>.Delete(const aData: T): Boolean;
 begin
   SortDataItems;
   var lSearchEntry := CreateEntry;
@@ -321,7 +369,7 @@ begin
   end;
 end;
 
-function TExtendedListview<T>.UpdateData(const aData: T; const aCreateEntryIfNotExists: Boolean): Boolean;
+function TExtendedListview<T, K>.UpdateData(const aData: T; const aCreateEntryIfNotExists: Boolean): Boolean;
 begin
   SortDataItems;
   var lSearchEntry := CreateEntry;
@@ -344,7 +392,7 @@ begin
     end;
 
     var lFoundEntry := fDataItemsSortedList[lFoundIndex];
-    fDataItemsAreSorted := fDataIdComparer.Compare(lFoundEntry.Data, aData) = 0;
+    fDataItemsAreSorted := fDataIdComparer.Compare(fDataToIdFunc(lFoundEntry.Data), fDataToIdFunc(aData)) = 0;
     lFoundEntry.Data := aData;
 
     UpdateListItem(lFoundEntry);
@@ -354,13 +402,16 @@ begin
   end;
 end;
 
-procedure TExtendedListview<T>.UpdateListItem(const aEntry: TExtendedListviewEntry<T>);
+procedure TExtendedListview<T, K>.UpdateListItem(const aEntry: TExtendedListviewEntry<T>);
 begin
-  if Assigned(aEntry.ListItem) then
-    fDataToListItemProc(aEntry.Data, aEntry.ListItem);
+  if not Assigned(aEntry.ListItem) then
+    Exit;
+
+  aEntry.ListItem.Checked := aEntry.Checked;
+  fDataToListItemFunc(aEntry.Data, aEntry.ListItem);
 end;
 
-function TExtendedListview<T>.CreateEntry: TExtendedListviewEntry<T>;
+function TExtendedListview<T, K>.CreateEntry: TExtendedListviewEntry<T>;
 begin
   Result := TExtendedListviewEntry<T>.Create;
 end;
@@ -390,9 +441,9 @@ begin
   inherited SetData(aValue);
 end;
 
-{ TObjectExtendedListview<T> }
+{ TObjectExtendedListview<T, K> }
 
-function TObjectExtendedListview<T>.CreateEntry: TExtendedListviewEntry<T>;
+function TObjecTExtendedListview<T, K>.CreateEntry: TExtendedListviewEntry<T>;
 begin
   Result := TExtendedListviewObjectEntry<T>.Create;
 end;

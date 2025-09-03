@@ -45,6 +45,8 @@ type
     deUnitActiveSince: TDateEdit;
     deUnitActiveUntil: TDateEdit;
     deDataConfirmedOn: TDateEdit;
+    pnBelowList: TPanel;
+    cbEnableCheckboxes: TCheckBox;
     procedure lvListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure lvListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
@@ -54,12 +56,13 @@ type
     procedure cbShowInactiveUnitsClick(Sender: TObject);
     procedure lvListviewDblClick(Sender: TObject);
     procedure edFilterChange(Sender: TObject);
+    procedure cbEnableCheckboxesClick(Sender: TObject);
   strict private
     fUnitMemberOf: TfraMemberOf;
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
     fBusinessIntf: ICrudCommands<UInt32, TEntryFilter>;
-    fExtendedListview: TExtendedListview<TDtoUnit>;
+    fExtendedListview: TExtendedListview<TDtoUnit, UInt32>;
     fDelayedLoadEntry: TDelayedLoadEntry;
     fProgressIndicator: IProgressIndicator;
     fCurrentUnitId: UInt32;
@@ -94,6 +97,7 @@ type
     function GetMemberOfUI: IMemberOfUI;
 
     procedure LoadUnitKindCombobox;
+    procedure SetEnableCheckboxesCaption;
   public
     constructor Create(AOwner: TComponent; const aProgressIndicator: IProgressIndicator); reintroduce;
     destructor Destroy; override;
@@ -134,15 +138,19 @@ begin
   fValidatableValueControlsRegistry.RegisterControl(deUnitActiveUntil);
   fValidatableValueControlsRegistry.RegisterControl(deDataConfirmedOn);
 
-  fExtendedListview := TExtendedListview<TDtoUnit>.Create(lvListview,
+  fExtendedListview := TExtendedListview<TDtoUnit, UInt32>.Create(lvListview,
     procedure(const aData: TDtoUnit; const aListItem: TListItem)
     begin
       aListItem.Caption := aData.ToString;
     end,
-    TComparer<TDtoUnit>.Construct(
-      function(const aLeft, aRight: TDtoUnit): Integer
+    function(const aData: TDtoUnit): UInt32
+    begin
+      Result := aData.Id;
+    end,
+    TComparer<UInt32>.Construct(
+      function(const aLeft, aRight: UInt32): Integer
       begin
-        Result := TVdmGlobals.CompareId(aLeft.Id, aRight.Id);
+        Result := TVdmGlobals.CompareId(aLeft, aRight);
       end
     )
   );
@@ -165,6 +173,7 @@ begin
 
   lbVersionInfo.Caption := '';
   LoadUnitKindCombobox;
+  SetEnableCheckboxesCaption;
 end;
 
 destructor TfraUnit.Destroy;
@@ -231,6 +240,21 @@ begin
   var lWorkSection: IWorkSection;
   Supports(fUnitMemberOf, IWorkSection, lWorkSection);
   lWorkSection.BeginWork;
+end;
+
+procedure TfraUnit.cbEnableCheckboxesClick(Sender: TObject);
+begin
+  fExtendedListview.ClearCheckedIds;
+  lvListview.Checkboxes := not lvListview.Checkboxes;
+  SetEnableCheckboxesCaption;
+end;
+
+procedure TfraUnit.SetEnableCheckboxesCaption;
+begin
+  if lvListview.Checkboxes then
+    cbEnableCheckboxes.Caption := 'Auswahlmodus deaktivieren'
+  else
+    cbEnableCheckboxes.Caption := 'Auswahlmodus aktivieren';
 end;
 
 procedure TfraUnit.cbShowInactiveUnitsClick(Sender: TObject);
