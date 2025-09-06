@@ -4,10 +4,11 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, RLReport, SqlConnection, Data.DB, Vcl.StdCtrls;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, RLReport, SqlConnection, Data.DB, Vcl.StdCtrls,
+  Exporter.TargetIntf;
 
 type
-  TfmReportMemberUnits = class(TForm)
+  TfmReportMemberUnits = class(TForm, IExporterTarget<TObject>)
     RLReport: TRLReport;
     dsDataSource: TDataSource;
     bdReportHeader: TRLBand;
@@ -34,15 +35,14 @@ type
     procedure rdPersonnameBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
     procedure RLReportPageStarting(Sender: TObject);
     procedure bdDetailBeforePrint(Sender: TObject; var PrintIt: Boolean);
-  private
-    fConnection: ISqlConnection;
-    fQuery: ISqlPreparedQuery;
+  strict private
     fPreviousPersonId: UInt32;
     fNewPageStarted: Boolean;
     fOneUnitPerPage: Boolean;
+    procedure SetParams(const aParams: TObject);
+    procedure DoExport(const aDataSet: ISqlDataSet);
   public
-    constructor Create(const aConnection: ISqlConnection); reintroduce;
-    procedure Preview;
+    constructor Create; reintroduce;
   end;
 
 implementation
@@ -53,10 +53,15 @@ uses TenantReader, Vdm.Globals;
 
 { TfmReportMemberUnits }
 
-constructor TfmReportMemberUnits.Create(const aConnection: ISqlConnection);
+constructor TfmReportMemberUnits.Create;
 begin
   inherited Create(nil);
-  fConnection := aConnection;
+end;
+
+procedure TfmReportMemberUnits.DoExport(const aDataSet: ISqlDataSet);
+begin
+  dsDataSource.DataSet := aDataSet.DataSet;
+  RLReport.Preview;
 end;
 
 procedure TfmReportMemberUnits.bdDetailBeforePrint(Sender: TObject; var PrintIt: Boolean);
@@ -81,11 +86,6 @@ begin
   fNewPageStarted := False;
 end;
 
-procedure TfmReportMemberUnits.Preview;
-begin
-  RLReport.Preview;
-end;
-
 procedure TfmReportMemberUnits.rdUnitDividerBeforePrint(Sender: TObject; var PrintIt: Boolean);
 begin
   PrintIt := fNewPageStarted or (rdPersonid.Field.AsLargeInt <> fPreviousPersonId);
@@ -101,26 +101,16 @@ begin
   lbTenantTitle.Caption := TTenantReader.Instance.Tenant.Title;
   fPreviousPersonId := 0;
   lbAppTitle.Caption := TVdmGlobals.GetVdmApplicationTitle;
-
-  fQuery := fConnection.CreatePreparedQuery(
-    'SELECT u.unit_id, u.unit_name, u.unit_data_confirmed_on, pn.person_id, pn.person_name, r.role_name' +
-    ' FROM unit AS u' +
-    ' INNER JOIN member AS m ON m.unit_id = u.unit_id' +
-    ' INNER JOIN person AS p ON p.person_id = m.person_id' +
-    ' INNER JOIN vw_person_name AS pn ON pn.person_id = m.person_id' +
-    ' LEFT JOIN role AS r ON r.role_id = m.role_id' +
-    ' WHERE u.unit_active = 1' +
-    ' AND m.mb_active = 1' +
-    ' AND p.person_active = 1' +
-    ' ORDER BY pn.person_name, ' + TVdmGlobals.GetRoleSortingSqlOrderBy('r') + ', u.unit_name'
-  );
-  fQuery.ConfigureDatasource(dsDataSource);
-  fQuery.Open;
 end;
 
 procedure TfmReportMemberUnits.RLReportPageStarting(Sender: TObject);
 begin
   fNewPageStarted := True;
+end;
+
+procedure TfmReportMemberUnits.SetParams(const aParams: TObject);
+begin
+
 end;
 
 end.

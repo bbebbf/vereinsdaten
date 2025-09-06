@@ -126,7 +126,16 @@ uses
   unDatespanDlg in 'view\forms\unDatespanDlg.pas' {fmDatespanDlg},
   Helper.ConstraintControls in 'view\tools\Helper.ConstraintControls.pas',
   ValidatableValueControlsRegistry in 'view\tools\ValidatableValueControlsRegistry.pas',
-  Helper.Frame in 'view\tools\Helper.Frame.pas';
+  Helper.Frame in 'view\tools\Helper.Frame.pas',
+  Exporter.Base in 'export\Exporter.Base.pas',
+  Exporter.UnitMembers in 'export\Exporter.UnitMembers.pas',
+  Exporter.Birthdays in 'export\Exporter.Birthdays.pas',
+  Exporter.TargetIntf in 'export\Exporter.TargetIntf.pas',
+  Exporter.ClubMembers in 'export\Exporter.ClubMembers.pas',
+  Exporter.MemberUnits in 'export\Exporter.MemberUnits.pas',
+  Exporter.OneUnitMembers in 'export\Exporter.OneUnitMembers.pas',
+  Exporter.UnitRoles in 'export\Exporter.UnitRoles.pas',
+  Exporter.Persons in 'export\Exporter.Persons.pas';
 
 {$R *.res}
 

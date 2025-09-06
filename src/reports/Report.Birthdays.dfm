@@ -23,7 +23,6 @@ object fmReportBirthdays: TfmReportBirthdays
     Font.Name = 'Arial'
     Font.Style = []
     JobTitle = 'Geburtstagsliste'
-    BeforePrint = RLReportBeforePrint
     object bdReportHeader: TRLBand
       Left = 47
       Top = 47

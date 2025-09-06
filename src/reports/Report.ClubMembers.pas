@@ -4,10 +4,11 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, RLReport, Data.DB, SqlConnection, Vcl.StdCtrls, Vcl.ExtCtrls;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, RLReport, Data.DB, SqlConnection, Vcl.StdCtrls, Vcl.ExtCtrls,
+  Exporter.TargetIntf;
 
 type
-  TfmReportClubMembers = class(TForm)
+  TfmReportClubMembers = class(TForm, IExporterTarget<TObject>)
     RLReport: TRLReport;
     dsDataSource: TDataSource;
     bdDetail: TRLBand;
@@ -41,15 +42,14 @@ type
     procedure RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure rdInactiveAfterPrint(Sender: TObject);
     procedure bdSummaryBeforePrint(Sender: TObject; var PrintIt: Boolean);
-  private
-    fConnection: ISqlConnection;
-    fQuery: ISqlPreparedQuery;
+  strict private
     fActiveCounter: Integer;
     fInactiveCounter: Integer;
+    procedure SetParams(const aParams: TObject);
+    procedure DoExport(const aDataSet: ISqlDataSet);
   public
     { Public-Deklarationen }
-    constructor Create(const aConnection: ISqlConnection); reintroduce;
-    procedure Preview;
+    constructor Create; reintroduce;
   end;
 
 implementation
@@ -60,14 +60,14 @@ uses TenantReader, Vdm.Globals;
 
 { TfmReportClubMembers }
 
-constructor TfmReportClubMembers.Create(const aConnection: ISqlConnection);
+constructor TfmReportClubMembers.Create;
 begin
   inherited Create(nil);
-  fConnection := aConnection;
 end;
 
-procedure TfmReportClubMembers.Preview;
+procedure TfmReportClubMembers.DoExport(const aDataSet: ISqlDataSet);
 begin
+  dsDataSource.DataSet := aDataSet.DataSet;
   RLReport.Preview;
 end;
 
@@ -77,20 +77,11 @@ begin
   fActiveCounter := 0;
   fInactiveCounter := 0;
   lbAppTitle.Caption := TVdmGlobals.GetVdmApplicationTitle;
+end;
 
-  fQuery := fConnection.CreatePreparedQuery(
-    'SELECT cm.*, pn.person_name, p.person_date_of_birth, sa.address_title' +
-    ', IFNULL(DATE_FORMAT(cm.clmb_enddate, ''%d.%m.%Y''), cm.clmb_enddate_str) AS clmb_enddate_calculated' +
-    ', IF(cm.clmb_active, null, "X") AS clmb_inactive' +
-    ' FROM clubmembership AS cm' +
-    ' INNER JOIN person AS p ON p.person_id = cm.person_id' +
-    ' INNER JOIN vw_person_name AS pn ON pn.person_id = cm.person_id' +
-    ' LEFT JOIN person_address AS pa ON pa.person_id = cm.person_id' +
-    ' LEFT JOIN vw_select_address AS sa ON sa.adr_id = pa.adr_id' +
-    ' ORDER BY cm.clmb_number, pn.person_name'
-  );
-  fQuery.ConfigureDatasource(dsDataSource);
-  fQuery.Open;
+procedure TfmReportClubMembers.SetParams(const aParams: TObject);
+begin
+
 end;
 
 procedure TfmReportClubMembers.bdSummaryBeforePrint(Sender: TObject; var PrintIt: Boolean);

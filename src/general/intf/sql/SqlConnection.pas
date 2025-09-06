@@ -7,7 +7,13 @@ interface
 uses Data.DB, Transaction;
 
 type
-  ISqlResult = interface
+  ISqlDataSet = interface
+    ['{5D4ABAAC-A0E6-4566-800C-1BA21E8DDFC8}']
+    function GetDataSet: TDataSet;
+    property DataSet: TDataSet read GetDataSet;
+  end;
+
+  ISqlResult = interface(ISqlDataSet)
     ['{FB4B44B9-6188-4F3A-A542-70453B7A1286}']
     function Next: Boolean;
     function GetFieldCount: Integer;
@@ -64,8 +70,8 @@ type
 
   ISqlPreparedQuery = interface(ISqlPreparedBase)
     ['{2086F60E-B0CB-475D-9D3F-572BCF390D9B}']
-    procedure ConfigureDatasource(const aDataSource: TDataSource);
     function Open(const aTransaction: ITransaction = nil): ISqlResult;
+    function AsSqlDataSet: ISqlDataSet;
   end;
 
   ISqlConnection = interface

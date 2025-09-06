@@ -90,7 +90,7 @@ type
 
 implementation
 
-uses System.SysUtils, Winapi.Windows;
+uses System.Classes, System.SysUtils, Winapi.Windows;
 
 { TExtendedListview<T, K> }
 

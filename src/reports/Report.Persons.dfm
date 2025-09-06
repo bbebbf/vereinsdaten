@@ -23,7 +23,6 @@ object fmReportPersons: TfmReportPersons
     Font.Name = 'Arial'
     Font.Style = []
     JobTitle = 'Einheiten und Personen'
-    BeforePrint = RLReportBeforePrint
     object bdReportHeader: TRLBand
       Left = 47
       Top = 47

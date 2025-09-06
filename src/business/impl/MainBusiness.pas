@@ -38,10 +38,16 @@ type
 
 implementation
 
-uses Vdm.Globals, ConfigReader, TenantReader, RoleMapper, UnitMapper, PersonMapper, PersonBusiness,
-  CrudBusiness, CrudConfigUnitAggregated, CrudConfigAddressAggregated, CrudConfigRoleEntry, CrudConfigTenantEntry,
-  Report.ClubMembers, Report.UnitMembers, Report.UnitRoles, Report.MemberUnits, Report.Persons, WorkSection,
-  Report.OneUnitMembers, Report.Birthdays;
+uses Vdm.Globals, ConfigReader, TenantReader, RoleMapper, UnitMapper, PersonMapper, PersonBusiness, WorkSection,
+  CrudBusiness, CrudConfigUnitAggregated, CrudConfigAddressAggregated, CrudConfigRoleEntry, CrudConfigTenantEntry
+  , Exporter.Persons, Report.Persons
+  , Exporter.UnitMembers, Report.UnitMembers
+  , Exporter.UnitRoles, Report.UnitRoles
+  , Exporter.OneUnitMembers, Report.OneUnitMembers
+  , Exporter.Birthdays, Report.Birthdays
+  , Exporter.ClubMembers, Report.ClubMembers
+  , Exporter.MemberUnits, Report.MemberUnits
+  ;
 
 { TMainBusiness }
 
@@ -148,10 +154,16 @@ begin
   if not aDatespanProvider.ToDate.HasValue then
     Exit;
 
-  var lReport := TfmReportBirthdays.Create(fConnection,
-    aDatespanProvider.FromDate.Value, aDatespanProvider.ToDate.Value);
+  var lReport := TfmReportBirthdays.Create;
   try
-    lReport.Preview;
+    var lExporter := TExporterBirthdays.Create(fConnection, lReport);
+    try
+      lExporter.Params.FromDate := aDatespanProvider.FromDate.Value;
+      lExporter.Params.ToDate := aDatespanProvider.ToDate.Value;
+      lExporter.DoExport;
+    finally
+      lExporter.Free;
+    end;
   finally
     lReport.Free;
   end;
@@ -159,9 +171,14 @@ end;
 
 procedure TMainBusiness.OpenReportClubMembers;
 begin
-  var lReport := TfmReportClubMembers.Create(fConnection);
+  var lReport := TfmReportClubMembers.Create;
   try
-    lReport.Preview;
+    var lExporter := TExporterClubMembers.Create(fConnection, lReport);
+    try
+      lExporter.DoExport;
+    finally
+      lExporter.Free;
+    end;
   finally
     lReport.Free;
   end;
@@ -169,9 +186,14 @@ end;
 
 procedure TMainBusiness.OpenReportMemberUnits;
 begin
-  var lReport := TfmReportMemberUnits.Create(fConnection);
+  var lReport := TfmReportMemberUnits.Create;
   try
-    lReport.Preview;
+    var lExporter := TExporterMemberUnits.Create(fConnection, lReport);
+    try
+      lExporter.DoExport;
+    finally
+      lExporter.Free;
+    end;
   finally
     lReport.Free;
   end;
@@ -179,9 +201,15 @@ end;
 
 procedure TMainBusiness.OpenReportOneUnitMembers(const aUnitId: UInt32);
 begin
-  var lReport := TfmReportOneUnitMembers.Create(fConnection, aUnitId);
+  var lReport := TfmReportOneUnitMembers.Create;
   try
-    lReport.Preview;
+    var lExporter := TExporterOneUnitMembers.Create(fConnection, lReport);
+    try
+      lExporter.Params.UnitId := aUnitId;
+      lExporter.DoExport;
+    finally
+      lExporter.Free;
+    end;
   finally
     lReport.Free;
   end;
@@ -189,9 +217,14 @@ end;
 
 procedure TMainBusiness.OpenReportPersons;
 begin
-  var lReport := TfmReportPersons.Create(fConnection);
+  var lReport := TfmReportPersons.Create;
   try
-    lReport.Preview;
+    var lExporter := TExporterPersons.Create(fConnection, lReport);
+    try
+      lExporter.DoExport;
+    finally
+      lExporter.Free;
+    end;
   finally
     lReport.Free;
   end;
@@ -199,9 +232,14 @@ end;
 
 procedure TMainBusiness.OpenReportUnitMembers;
 begin
-  var lReport := TfmReportUnitMembers.Create(fConnection);
+  var lReport := TfmReportUnitMembers.Create;
   try
-    lReport.Preview;
+    var lExporter := TExporterUnitMembers.Create(fConnection, lReport);
+    try
+      lExporter.DoExport;
+    finally
+      lExporter.Free;
+    end;
   finally
     lReport.Free;
   end;
@@ -209,9 +247,14 @@ end;
 
 procedure TMainBusiness.OpenReportUnitRoles;
 begin
-  var lReport := TfmReportUnitRoles.Create(fConnection);
+  var lReport := TfmReportUnitRoles.Create;
   try
-    lReport.Preview;
+    var lExporter := TExporterUnitRoles.Create(fConnection, lReport);
+    try
+      lExporter.DoExport;
+    finally
+      lExporter.Free;
+    end;
   finally
     lReport.Free;
   end;

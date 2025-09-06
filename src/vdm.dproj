@@ -347,6 +347,15 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="view\tools\Helper.ConstraintControls.pas"/>
         <DCCReference Include="view\tools\ValidatableValueControlsRegistry.pas"/>
         <DCCReference Include="view\tools\Helper.Frame.pas"/>
+        <DCCReference Include="export\Exporter.Base.pas"/>
+        <DCCReference Include="export\Exporter.UnitMembers.pas"/>
+        <DCCReference Include="export\Exporter.Birthdays.pas"/>
+        <DCCReference Include="export\Exporter.TargetIntf.pas"/>
+        <DCCReference Include="export\Exporter.ClubMembers.pas"/>
+        <DCCReference Include="export\Exporter.MemberUnits.pas"/>
+        <DCCReference Include="export\Exporter.OneUnitMembers.pas"/>
+        <DCCReference Include="export\Exporter.UnitRoles.pas"/>
+        <DCCReference Include="export\Exporter.Persons.pas"/>
         <None Include="inc\CompilerDirectives.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>

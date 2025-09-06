@@ -14,6 +14,7 @@ type
     fQuery: TFDCustomQuery;
     fOwnsQuery: Boolean;
     fCursorStarted: Boolean;
+    function GetDataSet: TDataSet;
     function GetFieldCount: Integer;
     function Next: Boolean;
     function FieldByName(const aName: string): TField;
@@ -66,10 +67,11 @@ type
     destructor Destroy; override;
   end;
 
-  TMySqlPreparedQuery = class(TInterfacedBase, ISqlPreparedQuery)
+  TMySqlPreparedQuery = class(TInterfacedBase, ISqlPreparedQuery, ISqlDataSet)
   strict private
     fQuery: TFDCustomQuery;
-    procedure ConfigureDatasource(const aDataSource: TDataSource);
+    function GetDataSet: TDataSet;
+    function AsSqlDataSet: ISqlDataSet;
     procedure Prepare;
     function GetParamCount: Integer;
     function ParamByName(const aName: string): ISqlParameter;
@@ -240,6 +242,11 @@ begin
   Result := fQuery.FieldDefs[aIndex];
 end;
 
+function TMySqlResult.GetDataSet: TDataSet;
+begin
+  Result := fQuery;
+end;
+
 function TMySqlResult.GetFieldCount: Integer;
 begin
   Result := fQuery.Fields.Count;
@@ -374,11 +381,6 @@ end;
 
 { TMySqlPreparedQuery }
 
-procedure TMySqlPreparedQuery.ConfigureDatasource(const aDataSource: TDataSource);
-begin
-  aDataSource.DataSet := fQuery;
-end;
-
 constructor TMySqlPreparedQuery.Create(const aQuery: TFDCustomQuery);
 begin
   inherited Create;
@@ -389,6 +391,16 @@ destructor TMySqlPreparedQuery.Destroy;
 begin
   fQuery.Free;
   inherited;
+end;
+
+function TMySqlPreparedQuery.GetDataSet: TDataSet;
+begin
+  Result := fQuery;
+end;
+
+function TMySqlPreparedQuery.AsSqlDataSet: ISqlDataSet;
+begin
+  Result := Self;
 end;
 
 function TMySqlPreparedQuery.GetParamCount: Integer;

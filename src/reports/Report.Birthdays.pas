@@ -4,10 +4,11 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, RLReport, SqlConnection, Data.DB, Vcl.StdCtrls;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, RLReport, Data.DB, Vcl.StdCtrls,
+  Exporter.TargetIntf, SqlConnection, Exporter.Birthdays;
 
 type
-  TfmReportBirthdays = class(TForm)
+  TfmReportBirthdays = class(TForm, IExporterTarget<TExporterBirthdaysParams>)
     RLReport: TRLReport;
     dsDataSource: TDataSource;
     bdReportHeader: TRLBand;
@@ -34,19 +35,13 @@ type
     lbFromDate: TLabel;
     lbToDate: TLabel;
     rdBirthday: TRLDBText;
-    procedure RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure rdBirthdayWeekdayBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
     procedure rdBirthdayBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
-  private
-    fConnection: ISqlConnection;
-    fFromDate: TDate;
-    fToDate: TDate;
-    fQuery: ISqlPreparedQuery;
-    fTempTablename: string;
-    procedure InsertDates(const aDates: TArray<TDate>);
+  strict private
+    procedure SetParams(const aParams: TExporterBirthdaysParams);
+    procedure DoExport(const aDataSet: ISqlDataSet);
   public
-    constructor Create(const aConnection: ISqlConnection; const aFromDate, aToDate: TDate); reintroduce;
-    procedure Preview;
+    constructor Create; reintroduce;
   end;
 
 implementation
@@ -57,17 +52,14 @@ uses System.IOUtils, System.Generics.Collections, System.DateUtils, TenantReader
 
 { TfmReportBirthdays }
 
-constructor TfmReportBirthdays.Create(const aConnection: ISqlConnection; const aFromDate, aToDate: TDate);
+constructor TfmReportBirthdays.Create;
 begin
   inherited Create(nil);
-  fConnection := aConnection;
-  fFromDate := aFromDate;
-  fToDate := aToDate;
-  fTempTablename := 'Birthday_Persons_' + TPath.GetGUIDFileName;
 end;
 
-procedure TfmReportBirthdays.Preview;
+procedure TfmReportBirthdays.DoExport(const aDataSet: ISqlDataSet);
 begin
+  dsDataSource.DataSet := aDataSet.DataSet;
   RLReport.Preview;
 end;
 
@@ -81,67 +73,12 @@ begin
   AText := FormatDateTime('dddd', rdBirthday.Field.AsDateTime);
 end;
 
-procedure TfmReportBirthdays.RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
+procedure TfmReportBirthdays.SetParams(const aParams: TExporterBirthdaysParams);
 begin
   lbTenantTitle.Caption := TTenantReader.Instance.Tenant.Title;
   lbAppTitle.Caption := TVdmGlobals.GetVdmApplicationTitle;
-  lbFromDate.Caption := FormatDatetime('dd.mm.yyyy', fFromDate);
-  lbToDate.Caption := FormatDatetime('dd.mm.yyyy', fToDate);
-
-  try
-    fConnection.ExecuteCommand('create temporary table ' + fTempTablename + '(birthday date not null primary key)');
-
-    var lDates := TList<TDate>.Create;
-    try
-      var lBirthday: TDate := fFromDate;
-      while CompareDate(lBirthday, fToDate) <= 0 do
-      begin
-        if lDates.Count = 50 then
-        begin
-          InsertDates(lDates.ToArray);
-          lDates.Clear;
-        end;
-        lDates.Add(lBirthday);
-        lBirthday := IncDay(lBirthday);
-      end;
-      InsertDates(lDates.ToArray);
-    finally
-      lDates.Free;
-    end;
-
-    var lSelectStmt := 'SELECT p.person_id, p.person_date_of_birth, pn.person_name' +
-      ', bt.birthday, year(bt.birthday) - year(p.person_date_of_birth) as age' +
-      ' FROM person AS p' +
-      ' INNER JOIN vw_person_name AS pn ON pn.person_id = p.person_id' +
-      ' INNER JOIN ' + fTempTablename + ' AS bt ON (' +
-        ' (month(bt.birthday) = p.person_month_of_birth and day(bt.birthday) = p.person_day_of_birth)' +
-        ' or (2 = p.person_month_of_birth and 29 = p.person_day_of_birth and not IsLeapYear(bt.birthday) = 1 and month(bt.birthday) = 3 and day(bt.birthday) = 1)' +
-      ')' +
-      ' LEFT JOIN person_address AS pa ON pa.person_id = p.person_id' +
-      ' WHERE p.person_active = 1' +
-      ' AND p.person_on_birthday_list = 1' +
-      ' AND p.person_day_of_birth is not null' +
-      ' AND p.person_month_of_birth is not null' +
-      ' ORDER BY bt.birthday, age, pn.person_name';
-
-    fQuery := fConnection.CreatePreparedQuery(lSelectStmt);
-    fQuery.ConfigureDatasource(dsDataSource);
-    fQuery.Open;
-  finally
-    fConnection.ExecuteCommand('drop temporary table if exists ' + fTempTablename);
-  end;
-end;
-
-procedure TfmReportBirthdays.InsertDates(const aDates: TArray<TDate>);
-begin
-  if Length(aDates) = 0 then
-    Exit;
-
-  var lInsertStm := 'insert into ' + fTempTablename + ' values ("' + FormatDateTime('yyyy-mm-dd', aDates[0]) + '")';
-  for var i := 1 to High(aDates) do
-    lInsertStm := lInsertStm + ', ("' + FormatDateTime('yyyy-mm-dd', aDates[i]) + '")';
-
-  fConnection.ExecuteCommand(lInsertStm);
+  lbFromDate.Caption := FormatDatetime('dd.mm.yyyy', aParams.FromDate);
+  lbToDate.Caption := FormatDatetime('dd.mm.yyyy', aParams.ToDate);
 end;
 
 end.

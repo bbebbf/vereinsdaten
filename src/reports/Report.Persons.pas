@@ -4,10 +4,11 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, RLReport, SqlConnection, Data.DB, Vcl.StdCtrls;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, RLReport, SqlConnection, Data.DB, Vcl.StdCtrls,
+  Exporter.TargetIntf, Exporter.Persons;
 
 type
-  TfmReportPersons = class(TForm)
+  TfmReportPersons = class(TForm, IExporterTarget<TExporterPersonsParams>)
     RLReport: TRLReport;
     dsDataSource: TDataSource;
     bdReportHeader: TRLBand;
@@ -31,14 +32,11 @@ type
     rdColumnHeaderHLine: TRLDraw;
     Label2: TLabel;
     RLDBText4: TRLDBText;
-    procedure RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
-  private
-    fConnection: ISqlConnection;
-    fQuery: ISqlPreparedQuery;
-    fShowInactivePersons: Boolean;
+  strict private
+    procedure SetParams(const aParams: TExporterPersonsParams);
+    procedure DoExport(const aDataSet: ISqlDataSet);
   public
-    constructor Create(const aConnection: ISqlConnection); reintroduce;
-    procedure Preview;
+    constructor Create; reintroduce;
   end;
 
 implementation
@@ -49,41 +47,27 @@ uses TenantReader, Vdm.Globals, VclUITools;
 
 { TfmReportPersons }
 
-constructor TfmReportPersons.Create(const aConnection: ISqlConnection);
+constructor TfmReportPersons.Create;
 begin
   inherited Create(nil);
-  fConnection := aConnection;
 end;
 
-procedure TfmReportPersons.Preview;
+procedure TfmReportPersons.DoExport(const aDataSet: ISqlDataSet);
 begin
+  dsDataSource.DataSet := aDataSet.DataSet;
   RLReport.Preview;
 end;
 
-procedure TfmReportPersons.RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
+procedure TfmReportPersons.SetParams(const aParams: TExporterPersonsParams);
 begin
   lbTenantTitle.Caption := TTenantReader.Instance.Tenant.Title;
   lbAppTitle.Caption := TVdmGlobals.GetVdmApplicationTitle;
 
-  if not fShowInactivePersons then
+  if not aParams.ShowInactivePersons then
   begin
     TVclUITools.HideAndMoveHorizontal(lbInactive, [lbBirthday, lbAddress, rtBirthday, rtAddress]);
     rtInactive.Visible := False;
   end;
-
-  var lSelectStmt := 'SELECT p.person_id, p.person_active, p.person_date_of_birth, pn.person_name, a.address_title' +
-    ',IF(p.person_active, null, "X") AS person_inactive' +
-    ' FROM person AS p' +
-    ' INNER JOIN vw_person_name AS pn ON pn.person_id = p.person_id' +
-    ' LEFT JOIN person_address AS pa ON pa.person_id = p.person_id' +
-    ' LEFT JOIN vw_select_address AS a ON a.adr_id = pa.adr_id';
-  if not fShowInactivePersons then
-    lSelectStmt := lSelectStmt + ' WHERE p.person_active = 1';
-  lSelectStmt := lSelectStmt + ' ORDER BY pn.person_name';
-
-  fQuery := fConnection.CreatePreparedQuery(lSelectStmt);
-  fQuery.ConfigureDatasource(dsDataSource);
-  fQuery.Open;
 end;
 
 end.
