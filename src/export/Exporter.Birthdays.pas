@@ -14,45 +14,44 @@ type
 
   TExporterBirthdays = class(TExporterBase<TExporterBirthdaysParams>)
   strict private
-    fTempTablename: string;
-    procedure InsertDates(const aDates: TArray<TDate>);
+    procedure DateToDbStr(Sender: TObject; const aElement: TDate; var aElementStr: string);
   strict protected
-    procedure PrepareExport; override;
     function CreatePreparedQuery(out aQuery: ISqlPreparedQuery): Boolean; override;
-    procedure CleanupAfterExport; override;
   end;
 
 implementation
 
-uses System.Generics.Collections, System.SysUtils, System.DateUtils, System.IOUtils, Vdm.Globals;
+uses System.Generics.Collections, System.SysUtils, System.DateUtils, Vdm.Globals, Joiner;
 
 { TExporterBirthdays }
 
 function TExporterBirthdays.CreatePreparedQuery(out aQuery: ISqlPreparedQuery): Boolean;
 begin
-  var lDates := TList<TDate>.Create;
+  var lTempTablename := CreateTemporaryTable('birthday date not null primary key');
+
+  var lDatesJoiner := TJoiner<TDate>.Create;
   try
+    lDatesJoiner.LineLeading := 'insert into ' + lTempTablename + ' values ';
+    lDatesJoiner.LineElementLimit := 50;
+    lDatesJoiner.ElementSeparator := ',';
+    lDatesJoiner.OnElementToStr := DateToDbStr;
     var lBirthday: TDate := Params.FromDate;
     while CompareDate(lBirthday, Params.ToDate) <= 0 do
     begin
-      if lDates.Count = 50 then
-      begin
-        InsertDates(lDates.ToArray);
-        lDates.Clear;
-      end;
-      lDates.Add(lBirthday);
+      lDatesJoiner.Add(lBirthday);
       lBirthday := IncDay(lBirthday);
     end;
-    InsertDates(lDates.ToArray);
+    for var i in lDatesJoiner.Strings do
+      Connection.ExecuteCommand(i);
   finally
-    lDates.Free;
+    lDatesJoiner.Free;
   end;
 
   var lSelectStmt := 'SELECT p.person_id, p.person_date_of_birth, pn.person_name' +
     ', bt.birthday, year(bt.birthday) - year(p.person_date_of_birth) as age' +
     ' FROM person AS p' +
     ' INNER JOIN vw_person_name AS pn ON pn.person_id = p.person_id' +
-    ' INNER JOIN ' + fTempTablename + ' AS bt ON (' +
+    ' INNER JOIN ' + lTempTablename + ' AS bt ON (' +
       ' (month(bt.birthday) = p.person_month_of_birth and day(bt.birthday) = p.person_day_of_birth)' +
       ' or (2 = p.person_month_of_birth and 29 = p.person_day_of_birth and not IsLeapYear(bt.birthday) = 1 and month(bt.birthday) = 3 and day(bt.birthday) = 1)' +
     ')' +
@@ -67,27 +66,9 @@ begin
   Result := True;
 end;
 
-procedure TExporterBirthdays.InsertDates(const aDates: TArray<TDate>);
+procedure TExporterBirthdays.DateToDbStr(Sender: TObject; const aElement: TDate; var aElementStr: string);
 begin
-  if Length(aDates) = 0 then
-    Exit;
-
-  var lInsertStm := 'insert into ' + fTempTablename + ' values ("' + FormatDateTime('yyyy-mm-dd', aDates[0]) + '")';
-  for var i := 1 to High(aDates) do
-    lInsertStm := lInsertStm + ', ("' + FormatDateTime('yyyy-mm-dd', aDates[i]) + '")';
-
-  Connection.ExecuteCommand(lInsertStm);
-end;
-
-procedure TExporterBirthdays.PrepareExport;
-begin
-  fTempTablename := 'Birthday_Persons_' + TPath.GetGUIDFileName;
-  Connection.ExecuteCommand('create temporary table ' + fTempTablename + '(birthday date not null primary key)');
-end;
-
-procedure TExporterBirthdays.CleanupAfterExport;
-begin
-  Connection.ExecuteCommand('drop temporary table if exists ' + fTempTablename);
+  aElementStr := '(''' + FormatDateTime('yyyy-mm-dd', aElement) + ''')';
 end;
 
 end.

@@ -51,6 +51,8 @@ type
     procedure OnListviewColumnClick(Sender: TObject; Column: TListColumn);
     procedure LVCompareEvent(Sender: TObject; Item1, Item2: TListItem; Data: Integer; var Compare: Integer);
     procedure LVItemCheckedEvent(Sender: TObject; Item: TListItem);
+  private
+    function GetCheckedIds: TArray<K>;
   strict protected
     function CreateEntry: TExtendedListviewEntry<T>; virtual;
   public
@@ -74,6 +76,7 @@ type
     property OnCompareColumn: TExtendedListviewCompareColumn<T> read fOnCompareColumn write fOnCompareColumn;
     property ImageIndexSortUp: Integer read fImageIndexSortUp write fImageIndexSortUp;
     property ImageIndexSortDown: Integer read fImageIndexSortDown write fImageIndexSortDown;
+    property CheckedIds: TArray<K> read GetCheckedIds;
   end;
 
   TExtendedListviewObjectEntry<T: class> = class(TExtendedListviewEntry<T>)
@@ -215,6 +218,11 @@ begin
   finally
     EndUpdate;
   end;
+end;
+
+function TExtendedListview<T, K>.GetCheckedIds: TArray<K>;
+begin
+  Result := fCheckedIds.ToArray;
 end;
 
 procedure TExtendedListview<T, K>.InvalidateListItems;

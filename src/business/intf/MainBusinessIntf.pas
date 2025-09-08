@@ -23,7 +23,7 @@ type
     procedure OpenReportClubMembers;
     procedure OpenReportMemberUnits;
     procedure OpenReportPersons;
-    procedure OpenReportUnitMembers;
+    procedure OpenReportUnitMembers(const aUnitIds: TArray<UInt32>);
     procedure OpenReportOneUnitMembers(const aUnitId: UInt32);
     procedure OpenReportUnitRoles;
     procedure OpenReportBirthdays(const aDatespanProvider: IDatespanProvider);

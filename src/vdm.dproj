@@ -356,6 +356,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="export\Exporter.OneUnitMembers.pas"/>
         <DCCReference Include="export\Exporter.UnitRoles.pas"/>
         <DCCReference Include="export\Exporter.Persons.pas"/>
+        <DCCReference Include="general\common\Tools\Joiner.pas"/>
         <None Include="inc\CompilerDirectives.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>

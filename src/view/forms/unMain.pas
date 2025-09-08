@@ -56,6 +56,7 @@ type
     procedure acReportOneUnitMembersExecute(Sender: TObject);
     procedure acReportOneUnitMembersUpdate(Sender: TObject);
     procedure acReportBirthdaysExecute(Sender: TObject);
+    procedure acReportUnitMembersUpdate(Sender: TObject);
   strict private
     fBusiness: IMainBusiness;
     fProgressForm: TfmProgressForm;
@@ -189,7 +190,26 @@ end;
 
 procedure TfmMain.acReportUnitMembersExecute(Sender: TObject);
 begin
-  fBusiness.OpenReportUnitMembers;
+  var lUnitIds: TArray<UInt32> := [];
+  if ffraUnit.Visible then
+    lUnitIds := ffraUnit.SelectedUnitIds;
+  fBusiness.OpenReportUnitMembers(lUnitIds);
+end;
+
+procedure TfmMain.acReportUnitMembersUpdate(Sender: TObject);
+begin
+  var lUnitIds: TArray<UInt32> := [];
+  if ffraUnit.Visible then
+    lUnitIds := ffraUnit.SelectedUnitIds;
+  var lUnitIdsLen := Length(lUnitIds);
+  if lUnitIdsLen > 0 then
+  begin
+    acReportUnitMembers.Caption := 'Einheiten und Personen (' + IntToStr(lUnitIdsLen) + ' ausgewählt)';
+  end
+  else
+  begin
+    acReportUnitMembers.Caption := 'Einheiten und Personen';
+  end;
 end;
 
 procedure TfmMain.acReportUnitRolesExecute(Sender: TObject);

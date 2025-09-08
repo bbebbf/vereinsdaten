@@ -12,7 +12,9 @@ uses
   DUnitX.Loggers.Console,
   DUnitX.Loggers.Xml.NUnit,
   {$ENDIF }
-  DUnitX.TestFramework;
+  DUnitX.TestFramework,
+  Joiner.Tests in 'tests\Joiner.Tests.pas',
+  Joiner in 'general\common\Tools\Joiner.pas';
 
 { keep comment here to protect the following conditional from being removed by the IDE when adding a unit }
 {$IFNDEF TESTINSIGHT}

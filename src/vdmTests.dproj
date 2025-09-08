@@ -96,6 +96,8 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
+        <DCCReference Include="tests\Joiner.Tests.pas"/>
+        <DCCReference Include="general\common\Tools\Joiner.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -1109,7 +1111,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
-        <PostBuildEvent>powershell.exe -executionPolicy bypass -File ..\build\post-build-release.ps1 $(OUTPUTDIR) ..</PostBuildEvent>
+        <PostBuildEvent>powershell.exe -executionPolicy bypass -File ..\build\post-build-release.ps1 $(OUTPUTDIR) ..</PostBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Debug' And '$(Platform)'=='Win64'">
@@ -1117,7 +1119,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
-        <PostBuildEvent>powershell.exe -executionPolicy bypass -File ..\build\post-build-release.ps1 $(OUTPUTDIR) ..</PostBuildEvent>
+        <PostBuildEvent>powershell.exe -executionPolicy bypass -File ..\build\post-build-release.ps1 $(OUTPUTDIR) ..</PostBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Release' And '$(Platform)'=='Win32'">
@@ -1125,7 +1127,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
-        <PostBuildEvent>powershell.exe -executionPolicy bypass -File ..\build\post-build-release.ps1 $(OUTPUTDIR) ..</PostBuildEvent>
+        <PostBuildEvent>powershell.exe -executionPolicy bypass -File ..\build\post-build-release.ps1 $(OUTPUTDIR) ..</PostBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Release' And '$(Platform)'=='Win64'">
@@ -1133,7 +1135,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
-        <PostBuildEvent>powershell.exe -executionPolicy bypass -File ..\build\post-build-release.ps1 $(OUTPUTDIR) ..</PostBuildEvent>
+        <PostBuildEvent>powershell.exe -executionPolicy bypass -File ..\build\post-build-release.ps1 $(OUTPUTDIR) ..</PostBuildEvent>
         <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
     </PropertyGroup>
 </Project>

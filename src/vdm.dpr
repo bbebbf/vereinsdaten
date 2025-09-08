@@ -135,7 +135,8 @@ uses
   Exporter.MemberUnits in 'export\Exporter.MemberUnits.pas',
   Exporter.OneUnitMembers in 'export\Exporter.OneUnitMembers.pas',
   Exporter.UnitRoles in 'export\Exporter.UnitRoles.pas',
-  Exporter.Persons in 'export\Exporter.Persons.pas';
+  Exporter.Persons in 'export\Exporter.Persons.pas',
+  Joiner in 'general\common\Tools\Joiner.pas';
 
 {$R *.res}
 

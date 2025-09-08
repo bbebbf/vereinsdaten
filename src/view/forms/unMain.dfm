@@ -110,6 +110,7 @@ object fmMain: TfmMain
     object acReportUnitMembers: TAction
       Caption = 'Einheiten und Personen'
       OnExecute = acReportUnitMembersExecute
+      OnUpdate = acReportUnitMembersUpdate
     end
     object acMasterdataTenant: TAction
       Caption = 'Vereinsdaten bearbeiten'

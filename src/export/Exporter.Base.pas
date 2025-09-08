@@ -2,7 +2,7 @@ unit Exporter.Base;
 
 interface
 
-uses SqlConnection, Exporter.TargetIntf;
+uses System.Generics.Collections, SqlConnection, Exporter.TargetIntf;
 
 type
   TExporterBase<T: class, constructor> = class
@@ -11,11 +11,15 @@ type
     fParams: T;
     fTarget: IExporterTarget<T>;
     fQuery: ISqlPreparedQuery;
+    fTemporaryTableNames: TStack<string>;
     function GetSqlDataSet(out aSqlDataSet: ISqlDataSet): Boolean;
   strict protected
     procedure PrepareExport; virtual;
     function CreatePreparedQuery(out aQuery: ISqlPreparedQuery): Boolean; virtual;
     procedure CleanupAfterExport; virtual;
+    function CreateTemporaryTable(const aColumnsDDLs: string): string;
+    procedure DropAllTemporaryTables;
+
     property Connection: ISqlConnection read fConnection;
   public
     constructor Create(const aConnection: ISqlConnection; const aTarget: IExporterTarget<T>);
@@ -26,11 +30,14 @@ type
 
 implementation
 
+uses System.IOUtils;
+
 { TExporterBase<T> }
 
 constructor TExporterBase<T>.Create(const aConnection: ISqlConnection; const aTarget: IExporterTarget<T>);
 begin
   inherited Create;
+  fTemporaryTableNames := TStack<string>.Create;
   fConnection := aConnection;
   fTarget := aTarget;
   fParams := T.Create;
@@ -39,6 +46,7 @@ end;
 destructor TExporterBase<T>.Destroy;
 begin
   fParams.Free;
+  fTemporaryTableNames.Free;
   inherited;
 end;
 
@@ -52,6 +60,7 @@ begin
       fTarget.DoExport(lDataSet);
   finally
     CleanupAfterExport;
+    DropAllTemporaryTables;
   end;
 end;
 
@@ -68,6 +77,19 @@ end;
 function TExporterBase<T>.CreatePreparedQuery(out aQuery: ISqlPreparedQuery): Boolean;
 begin
   Result := False;
+end;
+
+function TExporterBase<T>.CreateTemporaryTable(const aColumnsDDLs: string): string;
+begin
+  Result := ClassName + '_' + TPath.GetGUIDFileName;
+  Connection.ExecuteCommand('create temporary table ' + Result + '(' + aColumnsDDLs + ')');
+  fTemporaryTableNames.Push(Result);
+end;
+
+procedure TExporterBase<T>.DropAllTemporaryTables;
+begin
+  while fTemporaryTableNames.Count > 0 do
+    Connection.ExecuteCommand('drop temporary table if exists ' + fTemporaryTableNames.Pop);
 end;
 
 function TExporterBase<T>.GetSqlDataSet(out aSqlDataSet: ISqlDataSet): Boolean;

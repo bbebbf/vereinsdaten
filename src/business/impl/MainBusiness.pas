@@ -28,7 +28,7 @@ type
     procedure OpenReportClubMembers;
     procedure OpenReportMemberUnits;
     procedure OpenReportPersons;
-    procedure OpenReportUnitMembers;
+    procedure OpenReportUnitMembers(const aUnitIds: TArray<UInt32>);
     procedure OpenReportOneUnitMembers(const aUnitId: UInt32);
     procedure OpenReportUnitRoles;
     procedure OpenReportBirthdays(const aDatespanProvider: IDatespanProvider);
@@ -230,12 +230,13 @@ begin
   end;
 end;
 
-procedure TMainBusiness.OpenReportUnitMembers;
+procedure TMainBusiness.OpenReportUnitMembers(const aUnitIds: TArray<UInt32>);
 begin
   var lReport := TfmReportUnitMembers.Create;
   try
     var lExporter := TExporterUnitMembers.Create(fConnection, lReport);
     try
+      lExporter.Params.UnitIds := aUnitIds;
       lExporter.DoExport;
     finally
       lExporter.Free;
