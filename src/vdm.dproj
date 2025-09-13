@@ -338,12 +338,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
             <Form>fmReportBirthdays</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="general\intf\tools\DatespanProvider.pas"/>
         <DCCReference Include="general\common\Tools\Nullable.pas"/>
-        <DCCReference Include="view\forms\unDatespanDlg.pas">
-            <Form>fmDatespanDlg</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
         <DCCReference Include="view\tools\Helper.ConstraintControls.pas"/>
         <DCCReference Include="view\tools\ValidatableValueControlsRegistry.pas"/>
         <DCCReference Include="view\tools\Helper.Frame.pas"/>
@@ -357,6 +352,26 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="export\Exporter.UnitRoles.pas"/>
         <DCCReference Include="export\Exporter.Persons.pas"/>
         <DCCReference Include="general\common\Tools\Joiner.pas"/>
+        <DCCReference Include="general\intf\tools\ParamsProvider.pas"/>
+        <DCCReference Include="view\forms\unParamsDlg.pas">
+            <Form>fmParamsDlg</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="view\forms\export\unExporter.Params.UnitMember.pas">
+            <Form>fmExporterParamsUnitMember</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="view\forms\export\unExporter.Params.Birthdays.pas">
+            <Form>fmExporterParamsBirthdays</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="export\Exporter.Birthdays.Types.pas"/>
+        <DCCReference Include="export\Exporter.UnitMembers.Types.pas"/>
+        <DCCReference Include="export\Exporter.Persons.Types.pas"/>
+        <DCCReference Include="view\forms\export\unExporter.Params.Persons.pas">
+            <Form>fmExporterParamsPersons</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <None Include="inc\CompilerDirectives.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>

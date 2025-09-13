@@ -29,7 +29,7 @@ object fmReportMemberUnits: TfmReportMemberUnits
       Left = 47
       Top = 47
       Width = 898
-      Height = 35
+      Height = 50
       BandType = btHeader
       object lbReportTitle: TLabel
         Left = 0
@@ -58,10 +58,23 @@ object fmReportMemberUnits: TfmReportMemberUnits
         Font.Style = []
         ParentFont = False
       end
+      object lbSpecialPersonsInfo: TRLLabel
+        Left = 0
+        Top = 28
+        Width = 186
+        Height = 17
+        Caption = 'Inaktive Personen enthalten.'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Height = -15
+        Font.Name = 'Arial'
+        Font.Style = []
+        ParentFont = False
+      end
     end
     object bdColumnHeader: TRLBand
       Left = 47
-      Top = 82
+      Top = 97
       Width = 898
       Height = 30
       BandType = btColumnHeader
@@ -95,7 +108,7 @@ object fmReportMemberUnits: TfmReportMemberUnits
     end
     object bdDetail: TRLBand
       Left = 47
-      Top = 112
+      Top = 127
       Width = 898
       Height = 23
       GreenBarPrint = True
@@ -157,7 +170,7 @@ object fmReportMemberUnits: TfmReportMemberUnits
     end
     object bdPageFooter: TRLBand
       Left = 47
-      Top = 135
+      Top = 150
       Width = 898
       Height = 27
       BandType = btFooter

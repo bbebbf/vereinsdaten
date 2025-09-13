@@ -3,15 +3,9 @@ unit Exporter.Birthdays;
 
 interface
 
-uses SqlConnection, Exporter.TargetIntf, Exporter.Base;
+uses SqlConnection, Exporter.TargetIntf, Exporter.Base, Exporter.Birthdays.Types;
 
 type
-  TExporterBirthdaysParams = class
-  public
-    FromDate: TDate;
-    ToDate: TDate;
-  end;
-
   TExporterBirthdays = class(TExporterBase<TExporterBirthdaysParams>)
   strict private
     procedure DateToDbStr(Sender: TObject; const aElement: TDate; var aElementStr: string);
@@ -57,10 +51,23 @@ begin
     ')' +
     ' LEFT JOIN person_address AS pa ON pa.person_id = p.person_id' +
     ' WHERE p.person_active = 1' +
-    ' AND p.person_on_birthday_list = 1' +
+    ' AND p.person_external = 0' +
     ' AND p.person_day_of_birth is not null' +
-    ' AND p.person_month_of_birth is not null' +
-    ' ORDER BY bt.birthday, age, pn.person_name';
+    ' AND p.person_month_of_birth is not null';
+
+  if Params.ConsiderBirthdaylistFlag then
+  begin
+    lSelectStmt := lSelectStmt + ' AND p.person_on_birthday_list = 1';
+  end;
+
+  if Params.SortedByName then
+  begin
+    lSelectStmt := lSelectStmt + ' ORDER BY pn.person_name, bt.birthday, age';
+  end
+  else
+  begin
+    lSelectStmt := lSelectStmt + ' ORDER BY bt.birthday, age, pn.person_name';
+  end;
 
   aQuery := Connection.CreatePreparedQuery(lSelectStmt);
   Result := True;

@@ -2,8 +2,8 @@ object fmMain: TfmMain
   Left = 0
   Top = 0
   Caption = 'fmMain'
-  ClientHeight = 441
-  ClientWidth = 624
+  ClientHeight = 433
+  ClientWidth = 622
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -18,8 +18,8 @@ object fmMain: TfmMain
   TextHeight = 15
   object shaTestConnectionWarning: TShape
     Left = 0
-    Top = 397
-    Width = 624
+    Top = 389
+    Width = 622
     Height = 25
     Align = alBottom
     Brush.Color = clHighlight
@@ -30,13 +30,13 @@ object fmMain: TfmMain
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 422
-    Width = 624
+    Top = 414
+    Width = 622
     Height = 19
     Panels = <>
     SimplePanel = True
-    ExplicitTop = 414
-    ExplicitWidth = 622
+    ExplicitTop = 406
+    ExplicitWidth = 620
   end
   object MainMenu: TMainMenu
     Left = 40
@@ -61,20 +61,23 @@ object fmMain: TfmMain
     end
     object Berichte1: TMenuItem
       Caption = 'Berichte'
-      object EinheitenundPersonen1: TMenuItem
-        Action = acReportUnitMembers
-      end
-      object acReportOneUnitMembers1: TMenuItem
-        Action = acReportOneUnitMembers
-      end
-      object RollenundEinheiten1: TMenuItem
-        Action = acReportUnitRoles
+      object Personen1: TMenuItem
+        Action = acReportPersons
       end
       object acReportMemberUnits1: TMenuItem
         Action = acReportMemberUnits
       end
-      object Personen1: TMenuItem
-        Action = acReportPersons
+      object N1: TMenuItem
+        Caption = '-'
+      end
+      object EinheitenundPersonen1: TMenuItem
+        Action = acReportUnitMembers
+      end
+      object RollenundEinheiten1: TMenuItem
+        Action = acReportUnitRoles
+      end
+      object N2: TMenuItem
+        Caption = '-'
       end
       object miReportClubMembers: TMenuItem
         Action = acReportClubMembers
@@ -110,7 +113,6 @@ object fmMain: TfmMain
     object acReportUnitMembers: TAction
       Caption = 'Einheiten und Personen'
       OnExecute = acReportUnitMembersExecute
-      OnUpdate = acReportUnitMembersUpdate
     end
     object acMasterdataTenant: TAction
       Caption = 'Vereinsdaten bearbeiten'
@@ -127,11 +129,6 @@ object fmMain: TfmMain
     object acReportPersons: TAction
       Caption = 'Personen'
       OnExecute = acReportPersonsExecute
-    end
-    object acReportOneUnitMembers: TAction
-      Caption = 'acReportOneUnitMembers'
-      OnExecute = acReportOneUnitMembersExecute
-      OnUpdate = acReportOneUnitMembersUpdate
     end
     object acReportBirthdays: TAction
       Caption = 'Geburtstagsliste'

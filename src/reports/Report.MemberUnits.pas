@@ -5,10 +5,10 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, RLReport, SqlConnection, Data.DB, Vcl.StdCtrls,
-  Exporter.TargetIntf;
+  Exporter.TargetIntf, Exporter.Persons.Types;
 
 type
-  TfmReportMemberUnits = class(TForm, IExporterTarget<TObject>)
+  TfmReportMemberUnits = class(TForm, IExporterTarget<TExporterPersonsParams>)
     RLReport: TRLReport;
     dsDataSource: TDataSource;
     bdReportHeader: TRLBand;
@@ -29,6 +29,7 @@ type
     RLSystemInfo3: TRLSystemInfo;
     RLSystemInfo4: TRLSystemInfo;
     lbAppTitle: TLabel;
+    lbSpecialPersonsInfo: TRLLabel;
     procedure RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure bdDetailAfterPrint(Sender: TObject);
     procedure rdUnitDividerBeforePrint(Sender: TObject; var PrintIt: Boolean);
@@ -39,7 +40,7 @@ type
     fPreviousPersonId: UInt32;
     fNewPageStarted: Boolean;
     fOneUnitPerPage: Boolean;
-    procedure SetParams(const aParams: TObject);
+    procedure SetParams(const aParams: TExporterPersonsParams);
     procedure DoExport(const aDataSet: ISqlDataSet);
   public
     constructor Create; reintroduce;
@@ -108,9 +109,21 @@ begin
   fNewPageStarted := True;
 end;
 
-procedure TfmReportMemberUnits.SetParams(const aParams: TObject);
+procedure TfmReportMemberUnits.SetParams(const aParams: TExporterPersonsParams);
 begin
-
+  lbSpecialPersonsInfo.Visible := aParams.ShowInactivePersons or aParams.ShowExternalPersons;
+  if aParams.ShowInactivePersons and aParams.ShowExternalPersons then
+  begin
+    lbSpecialPersonsInfo.Caption := 'Externe und inaktive Personen enthalten.';
+  end
+  else if aParams.ShowInactivePersons then
+  begin
+    lbSpecialPersonsInfo.Caption := 'Inaktive Personen enthalten.';
+  end
+  else if aParams.ShowExternalPersons then
+  begin
+    lbSpecialPersonsInfo.Caption := 'Externe Personen enthalten.';
+  end;
 end;
 
 end.

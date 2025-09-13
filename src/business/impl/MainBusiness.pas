@@ -4,7 +4,7 @@ interface
 
 uses System.SysUtils, InterfacedBase, MainBusinessIntf, SqlConnection, MainUI, PersonBusinessIntf, EntryCrudConfig,
   CrudCommands, Vdm.Types, CrudUI, DtoUnit, DtoUnitAggregated, DtoAddress, DtoAddressAggregated, DtoRole, DtoTenant,
-  DatespanProvider;
+  ParamsProvider, Exporter.Persons.Types, Exporter.UnitMembers.Types, Exporter.Birthdays.Types;
 
 type
   TMainBusiness = class(TInterfacedBase, IMainBusiness)
@@ -26,12 +26,14 @@ type
     procedure OpenCrudTenant(const aTenantUI: ICrudUI<TDtoTenant, TDtoTenant, UInt8, TVoid>;
       const aModalProc: TFunc<Integer>);
     procedure OpenReportClubMembers;
-    procedure OpenReportMemberUnits;
-    procedure OpenReportPersons;
-    procedure OpenReportUnitMembers(const aUnitIds: TArray<UInt32>);
-    procedure OpenReportOneUnitMembers(const aUnitId: UInt32);
+    procedure OpenReportMemberUnits(const aParams: TExporterPersonsParams;
+      const aParamsProvider: IParamsProvider<TExporterPersonsParams>);
+    procedure OpenReportPersons(const aParams: TExporterPersonsParams;
+      const aParamsProvider: IParamsProvider<TExporterPersonsParams>);
+    procedure OpenReportUnitMembers(const aParams: TExporterUnitMembersParams;
+      const aParamsProvider: IParamsProvider<TExporterUnitMembersParams>);
     procedure OpenReportUnitRoles;
-    procedure OpenReportBirthdays(const aDatespanProvider: IDatespanProvider);
+    procedure OpenReportBirthdays(const aParamsProvider: IParamsProvider<TExporterBirthdaysParams>);
   public
     constructor Create(const aConnection: ISqlConnection; const aMainUI: IMainUI);
   end;
@@ -142,29 +144,24 @@ begin
   fBusinessUnit.LoadList;
 end;
 
-procedure TMainBusiness.OpenReportBirthdays(const aDatespanProvider: IDatespanProvider);
+procedure TMainBusiness.OpenReportBirthdays(const aParamsProvider: IParamsProvider<TExporterBirthdaysParams>);
 begin
-  aDatespanProvider.Title := 'Geburtstagsliste';
-  aDatespanProvider.SetFromDate(Now);
-  aDatespanProvider.SetToDate(Now + 20);
-  if not aDatespanProvider.ProvideDatespan then
-    Exit;
-  if not aDatespanProvider.FromDate.HasValue then
-    Exit;
-  if not aDatespanProvider.ToDate.HasValue then
-    Exit;
-
+  var lExporter: TExporterBirthdays := nil;
+  var lParams: TExporterBirthdaysParams := nil;
   var lReport := TfmReportBirthdays.Create;
   try
-    var lExporter := TExporterBirthdays.Create(fConnection, lReport);
-    try
-      lExporter.Params.FromDate := aDatespanProvider.FromDate.Value;
-      lExporter.Params.ToDate := aDatespanProvider.ToDate.Value;
-      lExporter.DoExport;
-    finally
-      lExporter.Free;
-    end;
+    lParams := TExporterBirthdaysParams.Create;
+    lParams.FromDate := Now;
+    lParams.ToDate := Now + 21;
+    lParams.ConsiderBirthdaylistFlag := True;
+
+    lExporter := TExporterBirthdays.Create(fConnection, lReport);
+    lExporter.Params := lParams;
+    lExporter.ParamsProvider := aParamsProvider;
+    lExporter.DoExport;
   finally
+    lExporter.Free;
+    lParams.Free;
     lReport.Free;
   end;
 end;
@@ -184,12 +181,15 @@ begin
   end;
 end;
 
-procedure TMainBusiness.OpenReportMemberUnits;
+procedure TMainBusiness.OpenReportMemberUnits(const aParams: TExporterPersonsParams;
+      const aParamsProvider: IParamsProvider<TExporterPersonsParams>);
 begin
   var lReport := TfmReportMemberUnits.Create;
   try
     var lExporter := TExporterMemberUnits.Create(fConnection, lReport);
     try
+      lExporter.Params := aParams;
+      lExporter.ParamsProvider := aParamsProvider;
       lExporter.DoExport;
     finally
       lExporter.Free;
@@ -199,28 +199,15 @@ begin
   end;
 end;
 
-procedure TMainBusiness.OpenReportOneUnitMembers(const aUnitId: UInt32);
-begin
-  var lReport := TfmReportOneUnitMembers.Create;
-  try
-    var lExporter := TExporterOneUnitMembers.Create(fConnection, lReport);
-    try
-      lExporter.Params.UnitId := aUnitId;
-      lExporter.DoExport;
-    finally
-      lExporter.Free;
-    end;
-  finally
-    lReport.Free;
-  end;
-end;
-
-procedure TMainBusiness.OpenReportPersons;
+procedure TMainBusiness.OpenReportPersons(const aParams: TExporterPersonsParams;
+  const aParamsProvider: IParamsProvider<TExporterPersonsParams>);
 begin
   var lReport := TfmReportPersons.Create;
   try
     var lExporter := TExporterPersons.Create(fConnection, lReport);
     try
+      lExporter.Params := aParams;
+      lExporter.ParamsProvider := aParamsProvider;
       lExporter.DoExport;
     finally
       lExporter.Free;
@@ -230,16 +217,34 @@ begin
   end;
 end;
 
-procedure TMainBusiness.OpenReportUnitMembers(const aUnitIds: TArray<UInt32>);
+procedure TMainBusiness.OpenReportUnitMembers(const aParams: TExporterUnitMembersParams;
+  const aParamsProvider: IParamsProvider<TExporterUnitMembersParams>);
 begin
   var lReport := TfmReportUnitMembers.Create;
   try
+    var lExported: Boolean;
     var lExporter := TExporterUnitMembers.Create(fConnection, lReport);
     try
-      lExporter.Params.UnitIds := aUnitIds;
-      lExporter.DoExport;
+      lExporter.Params := aParams;
+      lExporter.ParamsProvider := aParamsProvider;
+      lExported := lExporter.DoExport;
     finally
       lExporter.Free;
+    end;
+    if not lExported and (aParams.ExportOneUnitDetails > 0) then
+    begin
+      var lDetailedReport := TfmReportOneUnitMembers.Create;
+      try
+        var lDetailedExporter := TExporterOneUnitMembers.Create(fConnection, lDetailedReport);
+        try
+          lDetailedExporter.Params.UnitId := aParams.ExportOneUnitDetails;
+          lDetailedExporter.DoExport;
+        finally
+          lDetailedExporter.Free;
+        end;
+      finally
+        lDetailedReport.Free;
+      end;
     end;
   finally
     lReport.Free;

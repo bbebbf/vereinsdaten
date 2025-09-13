@@ -36,10 +36,10 @@ type
     Personen1: TMenuItem;
     acMasterdataPerson: TAction;
     acMasterdataPerson1: TMenuItem;
-    acReportOneUnitMembers: TAction;
-    acReportOneUnitMembers1: TMenuItem;
     acReportBirthdays: TAction;
     Geburtstagsliste1: TMenuItem;
+    N1: TMenuItem;
+    N2: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure acMasterdataUnitExecute(Sender: TObject);
@@ -53,10 +53,7 @@ type
     procedure FormShow(Sender: TObject);
     procedure acReportPersonsExecute(Sender: TObject);
     procedure acMasterdataPersonExecute(Sender: TObject);
-    procedure acReportOneUnitMembersExecute(Sender: TObject);
-    procedure acReportOneUnitMembersUpdate(Sender: TObject);
     procedure acReportBirthdaysExecute(Sender: TObject);
-    procedure acReportUnitMembersUpdate(Sender: TObject);
   strict private
     fBusiness: IMainBusiness;
     fProgressForm: TfmProgressForm;
@@ -79,7 +76,11 @@ var
 implementation
 
 uses System.UITypes, Vdm.Globals, unRole, unAddress, unTenant, ProgressIndicator,
-  UnitMapper, unDatespanDlg;
+  UnitMapper,
+
+  Exporter.UnitMembers.Types, unExporter.Params.UnitMember,
+  Exporter.Persons.Types, unExporter.Params.Persons,
+  unExporter.Params.Birthdays;
 
 {$R *.dfm}
 
@@ -144,11 +145,11 @@ end;
 
 procedure TfmMain.acReportBirthdaysExecute(Sender: TObject);
 begin
-  var lDatespanDlg := TfmDatespanDlg.Create(Self);
+  var lParamsProvider := TfmExporterParamsBirthdays.Create(Self);
   try
-    fBusiness.OpenReportBirthdays(lDatespanDlg);
+    fBusiness.OpenReportBirthdays(lParamsProvider);
   finally
-    lDatespanDlg.Free;
+    lParamsProvider.Free;
   end;
 end;
 
@@ -159,56 +160,58 @@ end;
 
 procedure TfmMain.acReportMemberUnitsExecute(Sender: TObject);
 begin
-  fBusiness.OpenReportMemberUnits;
-end;
+  var lParams: TExporterPersonsParams := nil;
+  var lParamsProvider: TfmExporterParamsPersons := nil;
+  try
+    lParams := TExporterPersonsParams.Create;
+    lParams.ParamProviderTitle := 'Personen und Einheiten exportieren';
+    lParams.ShowInactivePersons := ffraPerson.cbShowInactivePersons.Checked;
+    lParams.ShowExternalPersons := ffraPerson.cbShowExternalPersons.Checked;
 
-procedure TfmMain.acReportOneUnitMembersExecute(Sender: TObject);
-begin
-  fBusiness.OpenReportOneUnitMembers(GetCurrentUnitId);
-end;
-
-procedure TfmMain.acReportOneUnitMembersUpdate(Sender: TObject);
-begin
-  var lUnitId := GetCurrentUnitId;
-  if lUnitId > 0 then
-  begin
-    acReportOneUnitMembers.Enabled := True;
-    acReportOneUnitMembers.Caption := 'Personen für "' +
-      TUnitMapper.Instance.Data.Data.GetAllEntries.GetStringById(lUnitId, '???') + '"';
-  end
-  else
-  begin
-    acReportOneUnitMembers.Enabled := False;
-    acReportOneUnitMembers.Caption := 'Personen für ...';
+    lParamsProvider := TfmExporterParamsPersons.Create(Self);
+    fBusiness.OpenReportMemberUnits(lParams, lParamsProvider);
+  finally
+    lParamsProvider.Free;
+    lParams.Free;
   end;
 end;
 
 procedure TfmMain.acReportPersonsExecute(Sender: TObject);
 begin
-  fBusiness.OpenReportPersons;
+  var lParams: TExporterPersonsParams := nil;
+  var lParamsProvider: TfmExporterParamsPersons := nil;
+  try
+    lParams := TExporterPersonsParams.Create;
+    lParams.ParamProviderTitle := 'Personen exportieren';
+    lParams.ShowInactivePersons := ffraPerson.cbShowInactivePersons.Checked;
+    lParams.ShowExternalPersons := ffraPerson.cbShowExternalPersons.Checked;
+
+    lParamsProvider := TfmExporterParamsPersons.Create(Self);
+    fBusiness.OpenReportPersons(lParams, lParamsProvider);
+  finally
+    lParamsProvider.Free;
+    lParams.Free;
+  end;
 end;
 
 procedure TfmMain.acReportUnitMembersExecute(Sender: TObject);
 begin
   var lUnitIds: TArray<UInt32> := [];
   if ffraUnit.Visible then
-    lUnitIds := ffraUnit.SelectedUnitIds;
-  fBusiness.OpenReportUnitMembers(lUnitIds);
-end;
+    lUnitIds := ffraUnit.CheckedUnitIds;
 
-procedure TfmMain.acReportUnitMembersUpdate(Sender: TObject);
-begin
-  var lUnitIds: TArray<UInt32> := [];
-  if ffraUnit.Visible then
-    lUnitIds := ffraUnit.SelectedUnitIds;
-  var lUnitIdsLen := Length(lUnitIds);
-  if lUnitIdsLen > 0 then
-  begin
-    acReportUnitMembers.Caption := 'Einheiten und Personen (' + IntToStr(lUnitIdsLen) + ' ausgewählt)';
-  end
-  else
-  begin
-    acReportUnitMembers.Caption := 'Einheiten und Personen';
+  var lParams: TExporterUnitMembersParams := nil;
+  var lParamsProvider: TfmExporterParamsUnitMember := nil;
+  try
+    lParams := TExporterUnitMembersParams.Create;
+    lParams.CheckedUnitIds := lUnitIds;
+    lParams.SelectedUnitId := GetCurrentUnitId;
+
+    lParamsProvider := TfmExporterParamsUnitMember.Create(Self);
+    fBusiness.OpenReportUnitMembers(lParams, lParamsProvider);
+  finally
+    lParamsProvider.Free;
+    lParams.Free;
   end;
 end;
 

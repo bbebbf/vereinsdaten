@@ -27,7 +27,7 @@ object fmReportPersons: TfmReportPersons
       Left = 47
       Top = 47
       Width = 898
-      Height = 35
+      Height = 50
       BandType = btHeader
       object lbReportTitle: TLabel
         Left = 0
@@ -56,10 +56,23 @@ object fmReportPersons: TfmReportPersons
         Font.Style = []
         ParentFont = False
       end
+      object lbSpecialPersonsInfo: TRLLabel
+        Left = 0
+        Top = 28
+        Width = 186
+        Height = 17
+        Caption = 'Inaktive Personen enthalten.'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Height = -15
+        Font.Name = 'Arial'
+        Font.Style = []
+        ParentFont = False
+      end
     end
     object bdColumnHeader: TRLBand
       Left = 47
-      Top = 82
+      Top = 97
       Width = 898
       Height = 26
       BandType = btColumnHeader
@@ -77,9 +90,9 @@ object fmReportPersons: TfmReportPersons
         Caption = 'Name'
       end
       object lbInactive: TLabel
-        Left = 260
+        Left = 258
         Top = 3
-        Width = 50
+        Width = 42
         Height = 18
         Alignment = taCenter
         Caption = 'Inaktiv'
@@ -98,13 +111,13 @@ object fmReportPersons: TfmReportPersons
         Height = 18
         Caption = 'Geb.-Datum'
       end
-      object Label2: TLabel
-        Left = 238
+      object lbExternal: TLabel
+        Left = 195
         Top = 3
-        Width = 12
+        Width = 40
         Height = 18
-        Alignment = taRightJustify
-        Caption = 'Id'
+        Alignment = taCenter
+        Caption = 'Extern'
       end
       object rdColumnHeaderHLine: TRLDraw
         Left = 0
@@ -117,7 +130,7 @@ object fmReportPersons: TfmReportPersons
     end
     object bdDetail: TRLBand
       Left = 47
-      Top = 108
+      Top = 123
       Width = 898
       Height = 23
       GreenBarPrint = True
@@ -137,9 +150,9 @@ object fmReportPersons: TfmReportPersons
         Text = ''
       end
       object rtInactive: TRLDBText
-        Left = 234
+        Left = 258
         Top = 2
-        Width = 102
+        Width = 58
         Height = 18
         Alignment = taCenter
         DataField = 'person_inactive'
@@ -163,21 +176,23 @@ object fmReportPersons: TfmReportPersons
         DataField = 'person_date_of_birth'
         DataSource = dsDataSource
         Text = ''
+        BeforePrint = rtBirthdayBeforePrint
       end
-      object RLDBText4: TRLDBText
-        Left = 190
+      object rtExternal: TRLDBText
+        Left = 195
         Top = 2
-        Width = 60
+        Width = 58
         Height = 18
-        Alignment = taRightJustify
-        DataField = 'person_id'
+        Alignment = taCenter
+        AutoSize = False
+        DataField = 'person_external_x'
         DataSource = dsDataSource
         Text = ''
       end
     end
     object bdPageFooter: TRLBand
       Left = 47
-      Top = 131
+      Top = 146
       Width = 898
       Height = 27
       BandType = btFooter

@@ -121,9 +121,7 @@ uses
   WorkSection in 'general\intf\tools\WorkSection.pas',
   Report.OneUnitMembers in 'reports\Report.OneUnitMembers.pas' {fmReportOneUnitMembers},
   Report.Birthdays in 'reports\Report.Birthdays.pas' {fmReportBirthdays},
-  DatespanProvider in 'general\intf\tools\DatespanProvider.pas',
   Nullable in 'general\common\Tools\Nullable.pas',
-  unDatespanDlg in 'view\forms\unDatespanDlg.pas' {fmDatespanDlg},
   Helper.ConstraintControls in 'view\tools\Helper.ConstraintControls.pas',
   ValidatableValueControlsRegistry in 'view\tools\ValidatableValueControlsRegistry.pas',
   Helper.Frame in 'view\tools\Helper.Frame.pas',
@@ -136,7 +134,15 @@ uses
   Exporter.OneUnitMembers in 'export\Exporter.OneUnitMembers.pas',
   Exporter.UnitRoles in 'export\Exporter.UnitRoles.pas',
   Exporter.Persons in 'export\Exporter.Persons.pas',
-  Joiner in 'general\common\Tools\Joiner.pas';
+  Joiner in 'general\common\Tools\Joiner.pas',
+  ParamsProvider in 'general\intf\tools\ParamsProvider.pas',
+  unParamsDlg in 'view\forms\unParamsDlg.pas' {fmParamsDlg},
+  unExporter.Params.UnitMember in 'view\forms\export\unExporter.Params.UnitMember.pas' {fmExporterParamsUnitMember},
+  unExporter.Params.Birthdays in 'view\forms\export\unExporter.Params.Birthdays.pas' {fmExporterParamsBirthdays},
+  Exporter.Birthdays.Types in 'export\Exporter.Birthdays.Types.pas',
+  Exporter.UnitMembers.Types in 'export\Exporter.UnitMembers.Types.pas',
+  Exporter.Persons.Types in 'export\Exporter.Persons.Types.pas',
+  unExporter.Params.Persons in 'view\forms\export\unExporter.Params.Persons.pas' {fmExporterParamsPersons};
 
 {$R *.res}
 

@@ -101,7 +101,7 @@ type
   public
     constructor Create(AOwner: TComponent; const aProgressIndicator: IProgressIndicator); reintroduce;
     destructor Destroy; override;
-    function SelectedUnitIds: TArray<UInt32>;
+    function CheckedUnitIds: TArray<UInt32>;
     property MemberOfUI: IMemberOfUI read GetMemberOfUI;
     property CurrentUnitId: UInt32 read fCurrentUnitId;
   end;
@@ -324,7 +324,7 @@ begin
   Result := fProgressIndicator;
 end;
 
-function TfraUnit.SelectedUnitIds: TArray<UInt32>;
+function TfraUnit.CheckedUnitIds: TArray<UInt32>;
 begin
   Result := [];
   if lvListview.Checkboxes then

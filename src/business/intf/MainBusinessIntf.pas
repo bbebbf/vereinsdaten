@@ -3,7 +3,7 @@ unit MainBusinessIntf;
 interface
 
 uses System.SysUtils, Vdm.Types, CrudUI, DtoAddress, DtoAddressAggregated, DtoRole, DtoTenant,
-  DatespanProvider;
+  ParamsProvider, Exporter.Persons.Types, Exporter.UnitMembers.Types, Exporter.Birthdays.Types;
 
 type
   IMainBusiness = interface
@@ -21,12 +21,14 @@ type
       const aModalProc: TFunc<Integer>);
 
     procedure OpenReportClubMembers;
-    procedure OpenReportMemberUnits;
-    procedure OpenReportPersons;
-    procedure OpenReportUnitMembers(const aUnitIds: TArray<UInt32>);
-    procedure OpenReportOneUnitMembers(const aUnitId: UInt32);
+    procedure OpenReportMemberUnits(const aParams: TExporterPersonsParams;
+      const aParamsProvider: IParamsProvider<TExporterPersonsParams>);
+    procedure OpenReportPersons(const aParams: TExporterPersonsParams;
+      const aParamsProvider: IParamsProvider<TExporterPersonsParams>);
+    procedure OpenReportUnitMembers(const aParams: TExporterUnitMembersParams;
+      const aParamsProvider: IParamsProvider<TExporterUnitMembersParams>);
     procedure OpenReportUnitRoles;
-    procedure OpenReportBirthdays(const aDatespanProvider: IDatespanProvider);
+    procedure OpenReportBirthdays(const aParamsProvider: IParamsProvider<TExporterBirthdaysParams>);
   end;
 
 implementation

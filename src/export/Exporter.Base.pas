@@ -2,17 +2,20 @@ unit Exporter.Base;
 
 interface
 
-uses System.Generics.Collections, SqlConnection, Exporter.TargetIntf;
+uses System.Generics.Collections, SqlConnection, Exporter.TargetIntf, ParamsProvider;
 
 type
   TExporterBase<T: class, constructor> = class
   strict private
     fConnection: ISqlConnection;
     fParams: T;
+    fOwnsParams: Boolean;
+    fParamsProvider: IParamsProvider<T>;
     fTarget: IExporterTarget<T>;
     fQuery: ISqlPreparedQuery;
     fTemporaryTableNames: TStack<string>;
     function GetSqlDataSet(out aSqlDataSet: ISqlDataSet): Boolean;
+    procedure SetParams(const aValue: T);
   strict protected
     procedure PrepareExport; virtual;
     function CreatePreparedQuery(out aQuery: ISqlPreparedQuery): Boolean; virtual;
@@ -24,8 +27,9 @@ type
   public
     constructor Create(const aConnection: ISqlConnection; const aTarget: IExporterTarget<T>);
     destructor Destroy; override;
-    procedure DoExport;
-    property Params: T read fParams;
+    function DoExport: Boolean;
+    property Params: T read fParams write SetParams;
+    property ParamsProvider: IParamsProvider<T> read fParamsProvider write fParamsProvider;
   end;
 
 implementation
@@ -41,23 +45,43 @@ begin
   fConnection := aConnection;
   fTarget := aTarget;
   fParams := T.Create;
+  fOwnsParams := True;
 end;
 
 destructor TExporterBase<T>.Destroy;
 begin
-  fParams.Free;
+  if fOwnsParams then
+    fParams.Free;
   fTemporaryTableNames.Free;
   inherited;
 end;
 
-procedure TExporterBase<T>.DoExport;
+function TExporterBase<T>.DoExport: Boolean;
 begin
+  Result := False;
+  if Assigned(fParamsProvider) then
+  begin
+    fParamsProvider.SetParams(fParams);
+    if fParamsProvider.ProvideParams then
+    begin
+      fParamsProvider.GetParams(fParams);
+      if not fParamsProvider.ShouldBeExported(fParams) then
+        Exit;
+    end
+    else
+    begin
+      Exit;
+    end;
+  end;
   try
     fTarget.SetParams(fParams);
     PrepareExport;
     var lDataSet: ISqlDataSet;
     if GetSqlDataSet(lDataSet) then
+    begin
       fTarget.DoExport(lDataSet);
+      Result := True;
+    end;
   finally
     CleanupAfterExport;
     DropAllTemporaryTables;
@@ -72,6 +96,15 @@ end;
 procedure TExporterBase<T>.PrepareExport;
 begin
 
+end;
+
+procedure TExporterBase<T>.SetParams(const aValue: T);
+begin
+  if (fParams = aValue) or not Assigned(aValue) then
+    Exit;
+  fParams.Free;
+  fParams := aValue;
+  fOwnsParams := False;
 end;
 
 function TExporterBase<T>.CreatePreparedQuery(out aQuery: ISqlPreparedQuery): Boolean;
