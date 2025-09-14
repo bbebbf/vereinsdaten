@@ -1,11 +1,13 @@
 inherited fmExporterParamsBirthdays: TfmExporterParamsBirthdays
   Caption = 'Geburtstage exportieren'
-  ClientHeight = 239
-  ClientWidth = 442
+  ClientHeight = 276
+  ClientWidth = 449
   StyleElements = [seFont, seClient, seBorder]
   OnDestroy = nil
-  ExplicitWidth = 458
-  ExplicitHeight = 278
+  ExplicitLeft = 3
+  ExplicitTop = 3
+  ExplicitWidth = 465
+  ExplicitHeight = 315
   TextHeight = 15
   object lbFrom: TLabel [0]
     Left = 16
@@ -22,15 +24,31 @@ inherited fmExporterParamsBirthdays: TfmExporterParamsBirthdays
     Caption = 'bis:'
   end
   inherited pnBottom: TPanel
-    Top = 183
-    Width = 442
+    Top = 220
+    Width = 449
     TabOrder = 4
     StyleElements = [seFont, seClient, seBorder]
     ExplicitTop = 175
     ExplicitWidth = 440
     inherited btCancel: TButton
-      Left = 308
-      ExplicitLeft = 306
+      Left = 313
+      ExplicitLeft = 304
+    end
+  end
+  inherited pnTarget: TPanel
+    Top = 192
+    Width = 449
+    TabOrder = 5
+    StyleElements = [seFont, seClient, seBorder]
+    ExplicitTop = 147
+    ExplicitWidth = 440
+    inherited lbTargets: TLabel
+      StyleElements = [seFont, seClient, seBorder]
+    end
+    inherited cbTargets: TComboBox
+      Width = 362
+      StyleElements = [seFont, seClient, seBorder]
+      ExplicitWidth = 353
     end
   end
   object deFromDate: TDateEdit

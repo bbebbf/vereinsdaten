@@ -22,8 +22,6 @@ object fmParamsDlg: TfmParamsDlg
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitTop = 214
-    ExplicitWidth = 468
     DesignSize = (
       470
       56)
@@ -38,7 +36,7 @@ object fmParamsDlg: TfmParamsDlg
       OnClick = btOkClick
     end
     object btCancel: TButton
-      Left = 342
+      Left = 340
       Top = 8
       Width = 105
       Height = 33
@@ -47,7 +45,6 @@ object fmParamsDlg: TfmParamsDlg
       Caption = 'Abbrechen'
       TabOrder = 1
       OnClick = btCancelClick
-      ExplicitLeft = 340
     end
   end
 end

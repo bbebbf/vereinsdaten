@@ -372,6 +372,14 @@ $(PostBuildEvent)]]></PostBuildEvent>
             <Form>fmExporterParamsPersons</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="reports\Report.Base.pas">
+            <Form>fmReportBase</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="view\forms\export\unExporter.Params.Base.pas">
+            <Form>fmExporterParamsBase</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <None Include="inc\CompilerDirectives.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>

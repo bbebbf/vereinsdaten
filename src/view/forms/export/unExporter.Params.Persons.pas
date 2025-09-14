@@ -4,11 +4,11 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, unParamsDlg, Vcl.StdCtrls, Vcl.ExtCtrls,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, unExporter.Params.Base, Vcl.StdCtrls, Vcl.ExtCtrls,
   ParamsProvider, Exporter.Persons.Types;
 
 type
-  TfmExporterParamsPersons = class(TfmParamsDlg, IParamsProvider<TExporterPersonsParams>)
+  TfmExporterParamsPersons = class(TfmExporterParamsBase, IParamsProvider<TExporterPersonsParams>)
     cbShowInactivePersons: TCheckBox;
     cbShowExternalPersons: TCheckBox;
   strict private

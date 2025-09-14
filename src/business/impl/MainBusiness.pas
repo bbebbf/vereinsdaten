@@ -155,7 +155,8 @@ begin
     lParams.ToDate := Now + 21;
     lParams.ConsiderBirthdaylistFlag := True;
 
-    lExporter := TExporterBirthdays.Create(fConnection, lReport);
+    lExporter := TExporterBirthdays.Create(fConnection);
+    lExporter.Targets.Add(lReport);
     lExporter.Params := lParams;
     lExporter.ParamsProvider := aParamsProvider;
     lExporter.DoExport;
@@ -170,8 +171,9 @@ procedure TMainBusiness.OpenReportClubMembers;
 begin
   var lReport := TfmReportClubMembers.Create;
   try
-    var lExporter := TExporterClubMembers.Create(fConnection, lReport);
+    var lExporter := TExporterClubMembers.Create(fConnection);
     try
+      lExporter.Targets.Add(lReport);
       lExporter.DoExport;
     finally
       lExporter.Free;
@@ -186,8 +188,9 @@ procedure TMainBusiness.OpenReportMemberUnits(const aParams: TExporterPersonsPar
 begin
   var lReport := TfmReportMemberUnits.Create;
   try
-    var lExporter := TExporterMemberUnits.Create(fConnection, lReport);
+    var lExporter := TExporterMemberUnits.Create(fConnection);
     try
+      lExporter.Targets.Add(lReport);
       lExporter.Params := aParams;
       lExporter.ParamsProvider := aParamsProvider;
       lExporter.DoExport;
@@ -204,8 +207,9 @@ procedure TMainBusiness.OpenReportPersons(const aParams: TExporterPersonsParams;
 begin
   var lReport := TfmReportPersons.Create;
   try
-    var lExporter := TExporterPersons.Create(fConnection, lReport);
+    var lExporter := TExporterPersons.Create(fConnection);
     try
+      lExporter.Targets.Add(lReport);
       lExporter.Params := aParams;
       lExporter.ParamsProvider := aParamsProvider;
       lExporter.DoExport;
@@ -223,8 +227,9 @@ begin
   var lReport := TfmReportUnitMembers.Create;
   try
     var lExported: Boolean;
-    var lExporter := TExporterUnitMembers.Create(fConnection, lReport);
+    var lExporter := TExporterUnitMembers.Create(fConnection);
     try
+      lExporter.Targets.Add(lReport);
       lExporter.Params := aParams;
       lExporter.ParamsProvider := aParamsProvider;
       lExported := lExporter.DoExport;
@@ -235,8 +240,9 @@ begin
     begin
       var lDetailedReport := TfmReportOneUnitMembers.Create;
       try
-        var lDetailedExporter := TExporterOneUnitMembers.Create(fConnection, lDetailedReport);
+        var lDetailedExporter := TExporterOneUnitMembers.Create(fConnection);
         try
+          lDetailedExporter.Targets.Add(lDetailedReport);
           lDetailedExporter.Params.UnitId := aParams.ExportOneUnitDetails;
           lDetailedExporter.DoExport;
         finally
@@ -255,8 +261,9 @@ procedure TMainBusiness.OpenReportUnitRoles;
 begin
   var lReport := TfmReportUnitRoles.Create;
   try
-    var lExporter := TExporterUnitRoles.Create(fConnection, lReport);
+    var lExporter := TExporterUnitRoles.Create(fConnection);
     try
+      lExporter.Targets.Add(lReport);
       lExporter.DoExport;
     finally
       lExporter.Free;

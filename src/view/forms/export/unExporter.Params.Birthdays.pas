@@ -4,10 +4,10 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, unParamsDlg, Vcl.StdCtrls, Vcl.ExtCtrls,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, unExporter.Params.Base, Vcl.StdCtrls, Vcl.ExtCtrls,
   ParamsProvider, Exporter.Birthdays.Types, ConstraintControls.ConstraintEdit, ConstraintControls.DateEdit;
 type
-  TfmExporterParamsBirthdays = class(TfmParamsDlg, IParamsProvider<TExporterBirthdaysParams>)
+  TfmExporterParamsBirthdays = class(TfmExporterParamsBase, IParamsProvider<TExporterBirthdaysParams>)
     deFromDate: TDateEdit;
     deToDate: TDateEdit;
     lbFrom: TLabel;

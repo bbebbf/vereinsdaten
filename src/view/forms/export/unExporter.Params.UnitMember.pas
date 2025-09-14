@@ -4,11 +4,11 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, unParamsDlg, Vcl.StdCtrls, Vcl.ExtCtrls, ParamsProvider,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, unExporter.Params.Base, Vcl.StdCtrls, Vcl.ExtCtrls, ParamsProvider,
   Exporter.UnitMembers.Types;
 
 type
-  TfmExporterParamsUnitMember = class(TfmParamsDlg, IParamsProvider<TExporterUnitMembersParams>)
+  TfmExporterParamsUnitMember = class(TfmExporterParamsBase, IParamsProvider<TExporterUnitMembersParams>)
     rbAllUnits: TRadioButton;
     rbAllCheckedUnits: TRadioButton;
     rbSelectedUnitDetails: TRadioButton;

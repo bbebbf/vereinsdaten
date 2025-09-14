@@ -1,20 +1,38 @@
 inherited fmExporterParamsPersons: TfmExporterParamsPersons
   Caption = 'Personen exportieren'
-  ClientHeight = 127
-  ClientWidth = 272
+  ClientHeight = 152
+  ClientWidth = 324
   StyleElements = [seFont, seClient, seBorder]
-  ExplicitWidth = 288
-  ExplicitHeight = 166
+  ExplicitLeft = 3
+  ExplicitTop = 3
+  ExplicitWidth = 340
+  ExplicitHeight = 191
   TextHeight = 15
   inherited pnBottom: TPanel
-    Top = 71
-    Width = 272
+    Top = 96
+    Width = 324
     StyleElements = [seFont, seClient, seBorder]
-    ExplicitTop = 63
-    ExplicitWidth = 270
+    ExplicitTop = 127
+    ExplicitWidth = 340
     inherited btCancel: TButton
-      Left = 142
-      ExplicitLeft = 140
+      Left = 190
+      ExplicitLeft = 204
+    end
+  end
+  inherited pnTarget: TPanel
+    Top = 68
+    Width = 324
+    TabOrder = 3
+    StyleElements = [seFont, seClient, seBorder]
+    ExplicitTop = 116
+    ExplicitWidth = 338
+    inherited lbTargets: TLabel
+      StyleElements = [seFont, seClient, seBorder]
+    end
+    inherited cbTargets: TComboBox
+      Width = 239
+      StyleElements = [seFont, seClient, seBorder]
+      ExplicitWidth = 454
     end
   end
   object cbShowInactivePersons: TCheckBox

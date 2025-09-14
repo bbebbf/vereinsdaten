@@ -142,7 +142,9 @@ uses
   Exporter.Birthdays.Types in 'export\Exporter.Birthdays.Types.pas',
   Exporter.UnitMembers.Types in 'export\Exporter.UnitMembers.Types.pas',
   Exporter.Persons.Types in 'export\Exporter.Persons.Types.pas',
-  unExporter.Params.Persons in 'view\forms\export\unExporter.Params.Persons.pas' {fmExporterParamsPersons};
+  unExporter.Params.Persons in 'view\forms\export\unExporter.Params.Persons.pas' {fmExporterParamsPersons},
+  Report.Base in 'reports\Report.Base.pas' {fmReportBase},
+  unExporter.Params.Base in 'view\forms\export\unExporter.Params.Base.pas' {fmExporterParamsBase};
 
 {$R *.res}
 

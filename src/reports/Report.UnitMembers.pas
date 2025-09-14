@@ -5,10 +5,10 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, RLReport, Data.DB, Vcl.StdCtrls,
-  SqlConnection, Exporter.TargetIntf, Exporter.UnitMembers.Types;
+  SqlConnection, Report.Base, Exporter.TargetIntf, Exporter.UnitMembers.Types;
 
 type
-  TfmReportUnitMembers = class(TForm, IExporterTarget<TExporterUnitMembersParams>)
+  TfmReportUnitMembers = class(TfmReportBase, IExporterTarget<TExporterUnitMembersParams>)
     RLReport: TRLReport;
     dsDataSource: TDataSource;
     bdReportHeader: TRLBand;
