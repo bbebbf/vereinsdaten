@@ -44,8 +44,6 @@ type
     fOneUnitPerPage: Boolean;
     procedure SetParams(const aParams: TExporterUnitMembersParams);
     procedure DoExport(const aDataSet: ISqlDataSet);
-  public
-    constructor Create; reintroduce;
   end;
 
 implementation
@@ -55,11 +53,6 @@ uses TenantReader, Vdm.Globals;
 {$R *.dfm}
 
 { TfmReportUnitMembers }
-
-constructor TfmReportUnitMembers.Create;
-begin
-  inherited Create(nil);
-end;
 
 procedure TfmReportUnitMembers.DoExport(const aDataSet: ISqlDataSet);
 begin

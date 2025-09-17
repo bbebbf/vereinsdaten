@@ -11,6 +11,7 @@ type
   strict protected
     function GetTitle: string;
   public
+    constructor Create; reintroduce;
   end;
 
 implementation
@@ -18,6 +19,11 @@ implementation
 {$R *.dfm}
 
 { TfmReportBase }
+
+constructor TfmReportBase.Create;
+begin
+  inherited Create(nil);
+end;
 
 function TfmReportBase.GetTitle: string;
 begin

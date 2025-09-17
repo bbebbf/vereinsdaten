@@ -40,8 +40,6 @@ type
   strict private
     procedure SetParams(const aParams: TExporterBirthdaysParams);
     procedure DoExport(const aDataSet: ISqlDataSet);
-  public
-    constructor Create; reintroduce;
   end;
 
 implementation
@@ -51,11 +49,6 @@ uses System.IOUtils, System.Generics.Collections, System.DateUtils, TenantReader
 {$R *.dfm}
 
 { TfmReportBirthdays }
-
-constructor TfmReportBirthdays.Create;
-begin
-  inherited Create(nil);
-end;
 
 procedure TfmReportBirthdays.DoExport(const aDataSet: ISqlDataSet);
 begin

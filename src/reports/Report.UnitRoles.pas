@@ -41,8 +41,6 @@ type
     fNewPageStarted: Boolean;
     procedure SetParams(const aParams: TObject);
     procedure DoExport(const aDataSet: ISqlDataSet);
-  public
-    constructor Create; reintroduce;
   end;
 
 implementation
@@ -52,11 +50,6 @@ uses TenantReader, Vdm.Globals;
 {$R *.dfm}
 
 { TfmReportUnitRoles }
-
-constructor TfmReportUnitRoles.Create;
-begin
-  inherited Create(nil);
-end;
 
 procedure TfmReportUnitRoles.DoExport(const aDataSet: ISqlDataSet);
 begin

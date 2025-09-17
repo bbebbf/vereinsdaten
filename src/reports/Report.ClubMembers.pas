@@ -47,9 +47,6 @@ type
     fInactiveCounter: Integer;
     procedure SetParams(const aParams: TObject);
     procedure DoExport(const aDataSet: ISqlDataSet);
-  public
-    { Public-Deklarationen }
-    constructor Create; reintroduce;
   end;
 
 implementation
@@ -59,11 +56,6 @@ uses TenantReader, Vdm.Globals;
 {$R *.dfm}
 
 { TfmReportClubMembers }
-
-constructor TfmReportClubMembers.Create;
-begin
-  inherited Create(nil);
-end;
 
 procedure TfmReportClubMembers.DoExport(const aDataSet: ISqlDataSet);
 begin

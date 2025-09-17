@@ -37,8 +37,6 @@ type
   strict private
     procedure SetParams(const aParams: TExporterPersonsParams);
     procedure DoExport(const aDataSet: ISqlDataSet);
-  public
-    constructor Create; reintroduce;
   end;
 
 implementation
@@ -48,11 +46,6 @@ uses TenantReader, Vdm.Globals, VclUITools;
 {$R *.dfm}
 
 { TfmReportPersons }
-
-constructor TfmReportPersons.Create;
-begin
-  inherited Create(nil);
-end;
 
 procedure TfmReportPersons.DoExport(const aDataSet: ISqlDataSet);
 begin
