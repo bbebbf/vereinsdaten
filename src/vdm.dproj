@@ -380,6 +380,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
             <Form>fmExporterParamsBase</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="general\common\Tools\PatternValidation.pas"/>
         <None Include="inc\CompilerDirectives.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>

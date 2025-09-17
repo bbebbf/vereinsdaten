@@ -11,6 +11,9 @@ type
     &External: Boolean;
     Birthday: INullable<TSimpleDate>;
     OnBirthdayList: Boolean;
+    Emailaddress: string;
+    Phonenumber: string;
+    PhonePriority: Boolean;
     function ToString: string;
     class operator Initialize(out Dest: TDtoPerson);
     class operator Finalize(var Dest: TDtoPerson);

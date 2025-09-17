@@ -58,6 +58,9 @@ begin
   end;
 
   aRecord.OnBirthdayList := aSqlResult.FieldByName('person_on_birthday_list').AsBoolean;
+  aRecord.Emailaddress := aSqlResult.FieldByName('person_email').AsString;
+  aRecord.Phonenumber := aSqlResult.FieldByName('person_phone').AsString;
+  aRecord.PhonePriority := aSqlResult.FieldByName('person_phone_priority').AsBoolean;
 end;
 
 function TCrudConfigPerson.GetRecordIdentity(const aRecord: TDtoPerson): UInt32;
@@ -123,6 +126,9 @@ begin
     aAccessor.SetValueToNull('person_month_of_birth');
   end;
   aAccessor.SetValue('person_on_birthday_list', aRecord.OnBirthdayList);
+  aAccessor.SetValueEmptyStrAsNull('person_email', aRecord.Emailaddress);
+  aAccessor.SetValueEmptyStrAsNull('person_phone', aRecord.Phonenumber);
+  aAccessor.SetValue('person_phone_priority', aRecord.PhonePriority);
 end;
 
 procedure TCrudConfigPerson.SetValuesForDelete(const aRecordIdentity: UInt32; const aAccessor: TCrudAccessorDelete);

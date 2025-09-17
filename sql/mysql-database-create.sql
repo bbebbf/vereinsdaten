@@ -9,6 +9,9 @@ CREATE TABLE IF NOT EXISTS `person` (
   `person_day_of_birth` tinyint(3) unsigned DEFAULT NULL,
   `person_month_of_birth` tinyint(3) unsigned DEFAULT NULL,
   `person_on_birthday_list` bit(1) NOT NULL,
+  `person_email` varchar(100) DEFAULT NULL,
+  `person_phone` varchar(50) DEFAULT NULL,
+  `person_phone_priority` bit(1) NOT NULL,
   PRIMARY KEY (`person_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 

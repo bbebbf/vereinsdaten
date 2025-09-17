@@ -44,6 +44,9 @@ type
     property &External: Boolean read fPerson.External write fPerson.External;
     property Birthday: INullable<TSimpleDate> read fPerson.Birthday write fPerson.Birthday;
     property OnBirthdayList: Boolean read fPerson.OnBirthdayList write fPerson.OnBirthdayList;
+    property Emailaddress: string read fPerson.Emailaddress write fPerson.Emailaddress;
+    property Phonenumber: string read fPerson.Phonenumber write fPerson.Phonenumber;
+    property PhonePriority: Boolean read fPerson.PhonePriority write fPerson.PhonePriority;
 
     property ExistingAddressId: UInt32 read fExistingAddressId;
     property AddressId: UInt32 read fAddressId write fAddressId;

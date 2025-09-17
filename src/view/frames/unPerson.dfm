@@ -1,8 +1,8 @@
 object fraPerson: TfraPerson
   Left = 0
   Top = 0
-  Width = 889
-  Height = 626
+  Width = 907
+  Height = 727
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -12
@@ -14,7 +14,7 @@ object fraPerson: TfraPerson
     Left = 285
     Top = 40
     Width = 7
-    Height = 586
+    Height = 687
     Beveled = True
     ExplicitLeft = 185
     ExplicitTop = 0
@@ -24,13 +24,13 @@ object fraPerson: TfraPerson
     Left = 0
     Top = 40
     Width = 285
-    Height = 586
+    Height = 687
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 0
     object lbListviewItemCount: TLabel
       Left = 0
-      Top = 536
+      Top = 637
       Width = 285
       Height = 25
       Align = alBottom
@@ -43,7 +43,7 @@ object fraPerson: TfraPerson
       Left = 0
       Top = 89
       Width = 285
-      Height = 447
+      Height = 548
       Align = alClient
       Columns = <
         item
@@ -107,7 +107,7 @@ object fraPerson: TfraPerson
     end
     object btPersonStartNewRecord: TButton
       Left = 0
-      Top = 561
+      Top = 662
       Width = 285
       Height = 25
       Action = acPersonStartNewRecord
@@ -118,16 +118,16 @@ object fraPerson: TfraPerson
   object pnPersonDetails: TPanel
     Left = 292
     Top = 40
-    Width = 597
-    Height = 586
+    Width = 615
+    Height = 687
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
     object pcPersonDetails: TPageControl
       Left = 0
       Top = 0
-      Width = 597
-      Height = 586
+      Width = 615
+      Height = 687
       ActivePage = tsPersonaldata
       Align = alClient
       TabOrder = 0
@@ -172,52 +172,66 @@ object fraPerson: TfraPerson
         end
         object lbMembership: TLabel
           Left = 23
-          Top = 232
+          Top = 319
           Width = 76
           Height = 15
           Caption = 'Mitgliedschaft'
         end
         object lbMembershipnumber: TLabel
-          Left = 23
-          Top = 285
+          Left = 215
+          Top = 319
           Width = 95
           Height = 15
           Caption = 'Mitgliedsnummer'
         end
         object lbMembershipBegin: TLabel
           Left = 23
-          Top = 338
+          Top = 367
           Width = 75
           Height = 15
           Caption = 'Eintrittsdatum'
         end
         object lbMembershipEnd: TLabel
           Left = 23
-          Top = 386
+          Top = 415
           Width = 79
           Height = 15
           Caption = 'Austrittsdatum'
         end
         object lbMembershipEndReason: TLabel
           Left = 23
-          Top = 436
+          Top = 465
           Width = 76
           Height = 15
           Caption = 'Austrittsgrund'
         end
         object lbMembershipEndText: TLabel
           Left = 142
-          Top = 386
+          Top = 415
           Width = 111
           Height = 15
           Caption = 'Austrittsdatum (Text)'
         end
         object lbBasedataVersionInfo: TLabel
           Left = 22
-          Top = 535
+          Top = 564
           Width = 116
           Height = 15
           Caption = 'lbBasedataVersionInfo'
+        end
+        object lbEMailaddress: TLabel
+          Left = 23
+          Top = 219
+          Width = 76
+          Height = 15
+          Caption = 'E-Mailadresse:'
+        end
+        object lbPhonenumber: TLabel
+          Left = 383
+          Top = 219
+          Width = 88
+          Height = 15
+          Caption = 'Telefonnummer:'
         end
         object edPersonFirstname: TEdit
           Left = 23
@@ -245,21 +259,21 @@ object fraPerson: TfraPerson
         end
         object btPersonSave: TButton
           Left = 22
-          Top = 500
+          Top = 529
           Width = 154
           Height = 25
           Action = acPersonSaveCurrentRecord
           Default = True
-          TabOrder = 16
+          TabOrder = 19
         end
         object btPersonReload: TButton
           Left = 182
-          Top = 500
+          Top = 529
           Width = 154
           Height = 25
           Action = acPersonReloadCurrentRecord
           Cancel = True
-          TabOrder = 17
+          TabOrder = 20
         end
         object cbPersonActive: TCheckBox
           Left = 23
@@ -296,11 +310,11 @@ object fraPerson: TfraPerson
         end
         object cbMembership: TComboBox
           Left = 23
-          Top = 253
+          Top = 340
           Width = 170
           Height = 23
           Style = csDropDownList
-          TabOrder = 10
+          TabOrder = 13
           Items.Strings = (
             'kein Mitglied'
             'Mitglied'
@@ -308,19 +322,19 @@ object fraPerson: TfraPerson
         end
         object edMembershipEndText: TEdit
           Left = 142
-          Top = 407
+          Top = 436
           Width = 321
           Height = 23
           MaxLength = 100
-          TabOrder = 14
+          TabOrder = 17
         end
         object edMembershipEndReason: TEdit
           Left = 23
-          Top = 458
+          Top = 487
           Width = 440
           Height = 23
           MaxLength = 100
-          TabOrder = 15
+          TabOrder = 18
         end
         object cbPersonOnBirthdaylist: TCheckBox
           Left = 383
@@ -349,29 +363,55 @@ object fraPerson: TfraPerson
         end
         object deMembershipBegin: TDateEdit
           Left = 23
-          Top = 359
+          Top = 388
           Width = 113
           Height = 23
-          TabOrder = 12
+          TabOrder = 15
         end
         object deMembershipEnd: TDateEdit
           Left = 23
-          Top = 407
+          Top = 436
           Width = 113
           Height = 23
-          TabOrder = 13
+          TabOrder = 16
           OnValueChanged = deMembershipEndValueChanged
         end
         object ieMembershipNumber: TIntegerEdit
-          Left = 23
-          Top = 306
+          Left = 215
+          Top = 340
           Width = 50
           Height = 23
-          TabOrder = 11
+          TabOrder = 14
           BoundsLower.Null = False
           BoundsLower.Value = 1
           BoundsUpper.Null = False
           BoundsUpper.Value = 9999
+        end
+        object edEMailaddress: TEdit
+          Left = 23
+          Top = 240
+          Width = 337
+          Height = 23
+          MaxLength = 100
+          TabOrder = 10
+          OnExit = edEMailaddressExit
+        end
+        object edPhonenumber: TEdit
+          Left = 383
+          Top = 240
+          Width = 193
+          Height = 23
+          MaxLength = 50
+          TabOrder = 11
+          OnExit = edPhonenumberExit
+        end
+        object cbPhonePriority: TCheckBox
+          Left = 23
+          Top = 273
+          Width = 337
+          Height = 16
+          Caption = 'Telefonnummer hat Vorrang gegen'#252'ber der E-Mailadresse'
+          TabOrder = 12
         end
       end
       object tsMemberOf: TTabSheet
@@ -383,7 +423,7 @@ object fraPerson: TfraPerson
   object pnTop: TPanel
     Left = 0
     Top = 0
-    Width = 889
+    Width = 907
     Height = 40
     Align = alTop
     TabOrder = 2

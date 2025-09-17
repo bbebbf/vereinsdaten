@@ -144,7 +144,8 @@ uses
   Exporter.Persons.Types in 'export\Exporter.Persons.Types.pas',
   unExporter.Params.Persons in 'view\forms\export\unExporter.Params.Persons.pas' {fmExporterParamsPersons},
   Report.Base in 'reports\Report.Base.pas' {fmReportBase},
-  unExporter.Params.Base in 'view\forms\export\unExporter.Params.Base.pas' {fmExporterParamsBase};
+  unExporter.Params.Base in 'view\forms\export\unExporter.Params.Base.pas' {fmExporterParamsBase},
+  PatternValidation in 'general\common\Tools\PatternValidation.pas';
 
 {$R *.res}
 

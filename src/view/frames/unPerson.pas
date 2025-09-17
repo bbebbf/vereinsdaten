@@ -65,6 +65,11 @@ type
     deMembershipBegin: TDateEdit;
     deMembershipEnd: TDateEdit;
     ieMembershipNumber: TIntegerEdit;
+    edEMailaddress: TEdit;
+    lbEMailaddress: TLabel;
+    edPhonenumber: TEdit;
+    lbPhonenumber: TLabel;
+    cbPhonePriority: TCheckBox;
     procedure lvPersonListviewCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure lvPersonListviewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
@@ -80,6 +85,8 @@ type
     procedure cbPersonAddressSelect(Sender: TObject);
     procedure dePersonBirthdayChange(Sender: TObject);
     procedure deMembershipEndValueChanged(Sender: TObject);
+    procedure edEMailaddressExit(Sender: TObject);
+    procedure edPhonenumberExit(Sender: TObject);
   strict private
     fComponentValueChangedObserver: TComponentValueChangedObserver;
     fInEditMode: Boolean;
@@ -135,7 +142,7 @@ implementation
 {$R *.dfm}
 
 uses System.Generics.Defaults, KeyIndexStrings, StringTools, MessageDialogs, Vdm.Globals, VclUITools,
-  Helper.ConstraintControls, Helper.Frame;
+  Helper.ConstraintControls, Helper.Frame, PatternValidation;
 
 { TfraPerson }
 
@@ -161,6 +168,9 @@ begin
   fComponentValueChangedObserver.RegisterCombobox(cbPersonAddress);
   fComponentValueChangedObserver.RegisterEdit(edNewAddressPostalcode);
   fComponentValueChangedObserver.RegisterEdit(edNewAddressCity);
+  fComponentValueChangedObserver.RegisterEdit(edEMailaddress);
+  fComponentValueChangedObserver.RegisterEdit(edPhonenumber);
+  fComponentValueChangedObserver.RegisterCheckbox(cbPhonePriority);
   fComponentValueChangedObserver.RegisterCombobox(cbMembership);
   fComponentValueChangedObserver.RegisterChangeableText(ieMembershipNumber);
   fComponentValueChangedObserver.RegisterChangeableText(deMembershipBegin);
@@ -219,6 +229,13 @@ begin
   inherited;
 end;
 
+procedure TfraPerson.edEMailaddressExit(Sender: TObject);
+begin
+  var lEmailAddr := edEMailaddress.Text;
+  if (Length(lEmailAddr) > 0) and not TPatternValidation.IsEmailAddressValid(lEmailAddr) then
+    edEMailaddress.Text := '';
+end;
+
 procedure TfraPerson.edFilterChange(Sender: TObject);
 begin
   const lEmptyFilter = Length(edFilter.Text) = 0;
@@ -228,6 +245,13 @@ begin
       Result := lEmptyFilter or (Pos(aFilterExpression, LowerCase(aData.ToString)) > 0);
     end
   );
+end;
+
+procedure TfraPerson.edPhonenumberExit(Sender: TObject);
+begin
+  var lPhoneNmbr := edPhonenumber.Text;
+  if (Length(lPhoneNmbr) > 0) and not TPatternValidation.IsPhoneNumberValid(lPhoneNmbr) then
+    edPhonenumber.Text := '';
 end;
 
 procedure TfraPerson.ExtentedListviewEndUpdate(Sender: TObject; const aTotalItemCount, aVisibleItemCount: Integer);
@@ -323,6 +347,10 @@ begin
   edNewAddressCity.Text := '';
   ConfigControlsForNewAddress;
 
+  edEMailaddress.Text := '';
+  edPhonenumber.Text := '';
+  cbPhonePriority.Checked := False;
+
   cbMembership.ItemIndex := 0;
   ieMembershipNumber.Clear;
 
@@ -398,6 +426,10 @@ begin
   aRecord.Active := cbPersonActive.Checked;
   aRecord.External := cbPersonExternal.Checked;
   aRecord.OnBirthdayList := cbPersonOnBirthdaylist.Checked;
+
+  aRecord.Emailaddress := edEMailaddress.Text;
+  aRecord.Phonenumber := edPhonenumber.Text;
+  aRecord.PhonePriority := cbPhonePriority.Checked;
 
   var lAddressStringsMapping: TKeyIndexStringsData := nil;
   try
@@ -669,6 +701,10 @@ begin
   edNewAddressPostalcode.Text := '';
   edNewAddressCity.Text := '';
   ConfigControlsForNewAddress;
+
+  edEMailaddress.Text := aRecord.Emailaddress;
+  edPhonenumber.Text := aRecord.Phonenumber;
+  cbPhonePriority.Checked := aRecord.PhonePriority;
 
   if aRecord.MembershipId > 0 then
   begin
