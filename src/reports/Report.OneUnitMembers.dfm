@@ -114,6 +114,7 @@ object fmReportOneUnitMembers: TfmReportOneUnitMembers
         Font.Style = []
         ParentFont = False
         Text = ''
+        BeforePrint = rdMemberCountBeforePrint
       end
     end
     object bdColumnHeader: TRLBand

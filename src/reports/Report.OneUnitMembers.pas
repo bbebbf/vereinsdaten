@@ -37,6 +37,7 @@ type
     procedure RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure bdDetailAfterPrint(Sender: TObject);
     procedure RLReportPageStarting(Sender: TObject);
+    procedure rdMemberCountBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
   strict private
     fNewPageStarted: Boolean;
     procedure SetParams(const aParams: TExporterOneUnitMembersParams);
@@ -55,6 +56,13 @@ procedure TfmReportOneUnitMembers.DoExport(const aDataSet: ISqlDataSet);
 begin
   dsDataSource.DataSet := aDataSet.DataSet;
   RLReport.Preview;
+end;
+
+procedure TfmReportOneUnitMembers.rdMemberCountBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
+begin
+  inherited;
+  if rdMemberCount.Field.IsNull then
+    AText := '0';
 end;
 
 procedure TfmReportOneUnitMembers.bdDetailAfterPrint(Sender: TObject);

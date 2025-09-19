@@ -26,15 +26,13 @@ begin
   aQuery := Connection.CreatePreparedQuery(
     'SELECT u.unit_id, u.unit_name, u.unit_data_confirmed_on, mc.MemberCount, pn.person_name, p.person_date_of_birth, a.address_title, r.role_name' +
     ' FROM unit AS u' +
-    ' INNER JOIN (' +
-          ' SELECT m.unit_id, COUNT(*) AS MemberCount' +
-          ' FROM member AS m' +
-          ' INNER JOIN person AS p ON p.person_id = m.person_id AND p.person_active = 1' +
-          ' WHERE  m.mb_active = 1' +
-          ' GROUP BY m.unit_id' +
+    ' LEFT JOIN (' +
+          ' SELECT unit_id, COUNT(*) AS MemberCount' +
+          ' FROM vw_active_person_active_member' +
+          ' GROUP BY unit_id' +
     ') AS mc ON mc.unit_id = u.unit_id' +
-    ' LEFT JOIN member AS m ON m.unit_id = u.unit_id AND m.mb_active = 1' +
-    ' LEFT JOIN person AS p ON p.person_id = m.person_id AND p.person_active = 1' +
+    ' LEFT JOIN vw_active_person_active_member AS m ON m.unit_id = u.unit_id' +
+    ' LEFT JOIN person AS p ON p.person_id = m.person_id' +
     ' LEFT JOIN vw_person_name AS pn ON pn.person_id = p.person_id' +
     ' LEFT JOIN person_address AS pa ON pa.person_id = p.person_id' +
     ' LEFT JOIN vw_select_address AS a ON a.adr_id = pa.adr_id' +
