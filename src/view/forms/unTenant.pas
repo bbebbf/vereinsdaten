@@ -39,7 +39,8 @@ type
     procedure ListEnumBegin;
     procedure ListEnumProcessItem(const aEntry: TDtoTenant);
     procedure ListEnumEnd;
-    procedure DeleteEntryFromUI(const aUnitId: UInt8);
+    procedure DeleteEntryFromUI(const aTenantId: UInt8);
+    function SetSelectedEntry(const aTenantId: UInt8): Boolean;
     procedure ClearEntryFromUI;
     procedure SetEntryToUI(const aEntry: TDtoTenant; const aMode: TEntryToUIMode);
     function GetEntryFromUI(var aEntry: TDtoTenant; const aMode: TUIToEntryMode;
@@ -100,7 +101,7 @@ begin
   SetEditMode(False);
 end;
 
-procedure TfmTenant.DeleteEntryFromUI(const aUnitId: UInt8);
+procedure TfmTenant.DeleteEntryFromUI(const aTenantId: UInt8);
 begin
 
 end;
@@ -195,6 +196,11 @@ begin
   fComponentValueChangedObserver.BeginUpdate;
   edTenantTitle.Text := aEntry.Title;
   fComponentValueChangedObserver.EndUpdate;
+end;
+
+function TfmTenant.SetSelectedEntry(const aTenantId: UInt8): Boolean;
+begin
+  Result := False;
 end;
 
 end.

@@ -2,7 +2,7 @@ unit CrudMemberConfigBase;
 
 interface
 
-uses InterfacedBase, SqlConnection, CrudAccessor, CrudConfig, SelectListFilter, DtoMember, KeyIndexStrings,
+uses System.SysUtils, InterfacedBase, SqlConnection, CrudAccessor, CrudConfig, SelectListFilter, DtoMember, KeyIndexStrings,
   MemberOfConfigIntf, Vdm.Versioning.Types;
 
 type
@@ -22,6 +22,7 @@ type
     procedure GetRecordFromSqlResult(const aSqlResult: ISqlResult; var aData: TDtoMember);
     function GetRecordIdentity(const aRecord: TDtoMember): UInt32;
   strict protected
+    fGotoDetailItemProc: TProc<UInt32>;
     function GetSelectListSQL: string; virtual; abstract;
     procedure SetSelectListSQLParameter(const aFilter: UInt32; const aQuery: ISqlPreparedQuery); virtual; abstract;
     function GetDetailItemTitle: string; virtual; abstract;
@@ -30,7 +31,10 @@ type
     procedure SetMasterItemIdToMember(const aMasterItemId: UInt32; var aMember: TDtoMember); virtual; abstract;
     function GetDetailItemIdFromMember(const aMember: TDtoMember): UInt32; virtual; abstract;
     procedure SetDetailItemIdToMember(const aDetailItemId: UInt32; var aMember: TDtoMember); virtual; abstract;
+    procedure GotoDetailItem(const aMember: TDtoMember); virtual; abstract;
     function GetEntryVersionInfoFromResult(const aSqlResult: ISqlResult; out aEntry: TEntryVersionInfo): Boolean; virtual;
+  public
+    constructor Create(const aGotoDetailItemProc: TProc<UInt32>);
   end;
 
 implementation
@@ -38,6 +42,12 @@ implementation
 uses Vdm.Globals;
 
 { TCrudMemberConfigBase }
+
+constructor TCrudMemberConfigBase.Create(const aGotoDetailItemProc: TProc<UInt32>);
+begin
+  inherited Create;
+  fGotoDetailItemProc := aGotoDetailItemProc;
+end;
 
 function TCrudMemberConfigBase.GetEntryVersionInfoFromResult(const aSqlResult: ISqlResult;
   out aEntry: TEntryVersionInfo): Boolean;

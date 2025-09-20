@@ -17,6 +17,7 @@ type
     function GetDetailItemIdFromMember(const aMember: TDtoMember): UInt32; override;
     procedure SetDetailItemIdToMember(const aDetailItemId: UInt32; var aMember: TDtoMember); override;
     function GetEntryVersionInfoFromResult(const aSqlResult: ISqlResult; out aEntry: TEntryVersionInfo): Boolean; override;
+    procedure GotoDetailItem(const aMember: TDtoMember); override;
   end;
 
 implementation
@@ -62,6 +63,11 @@ end;
 function TCrudMemberConfigMasterUnit.GetShowVersionInfoInMemberListview: Boolean;
 begin
   Result := True;
+end;
+
+procedure TCrudMemberConfigMasterUnit.GotoDetailItem(const aMember: TDtoMember);
+begin
+  fGotoDetailItemProc(aMember.PersonId);
 end;
 
 procedure TCrudMemberConfigMasterUnit.SetSelectListSQLParameter(const aFilter: UInt32;

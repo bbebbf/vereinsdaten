@@ -19,6 +19,7 @@ type
     function SaveCurrentEntry: TCrudSaveResult;
     function ReloadCurrentEntry: TCrudCommandResult;
     procedure StartNewEntry;
+    function SetSelectedEntry(const aId: TId): TCrudCommandResult;
     function DeleteEntry(const aId: TId): TCrudCommandResult;
     function GetDataChanged: Boolean;
     function GetListFilter: TListFilter;
@@ -197,6 +198,12 @@ begin
     Exit;
   fListFilter := aValue;
   LoadList;
+end;
+
+function TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.SetSelectedEntry(const aId: TId): TCrudCommandResult;
+begin
+  Result := default(TCrudCommandResult);
+  Result.Sucessful := fUI.SetSelectedEntry(aId);
 end;
 
 procedure TCrudBusiness<TEntry, TListEntry, TId, TListFilter>.StartNewEntry;

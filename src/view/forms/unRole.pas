@@ -62,8 +62,9 @@ type
     procedure ListEnumBegin;
     procedure ListEnumProcessItem(const aEntry: TDtoRole);
     procedure ListEnumEnd;
-    procedure DeleteEntryFromUI(const aUnitId: UInt32);
+    procedure DeleteEntryFromUI(const aRoleId: UInt32);
     procedure ClearEntryFromUI;
+    function SetSelectedEntry(const aRoleId: UInt32): Boolean;
     procedure SetEntryToUI(const aEntry: TDtoRole; const aMode: TEntryToUIMode);
     function GetEntryFromUI(var aEntry: TDtoRole; const aMode: TUIToEntryMode;
       const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
@@ -134,7 +135,7 @@ begin
   SetEditMode(False);
 end;
 
-procedure TfmRole.DeleteEntryFromUI(const aUnitId: UInt32);
+procedure TfmRole.DeleteEntryFromUI(const aRoleId: UInt32);
 begin
 
 end;
@@ -326,6 +327,11 @@ begin
 
   fExtendedListview.UpdateData(aEntry);
   fComponentValueChangedObserver.EndUpdate;
+end;
+
+function TfmRole.SetSelectedEntry(const aRoleId: UInt32): Boolean;
+begin
+  Result := False;
 end;
 
 procedure TfmRole.StartEdit;

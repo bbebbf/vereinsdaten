@@ -68,6 +68,7 @@ type
     function GetUnitCrudUI: ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32, TEntryFilter>;
     function GetUnitMemberOfsUI: IMemberOfUI;
     function GetCurrentUnitId: UInt32;
+    procedure UpdateMainActions;
   end;
 
 var
@@ -101,8 +102,6 @@ end;
 
 procedure TfmMain.acMasterdataPersonExecute(Sender: TObject);
 begin
-  acMasterdataPerson.Enabled := False;
-  acMasterdataUnit.Enabled := True;
   fBusiness.OpenCrudPerson;
 end;
 
@@ -138,8 +137,6 @@ end;
 
 procedure TfmMain.acMasterdataUnitExecute(Sender: TObject);
 begin
-  acMasterdataUnit.Enabled := False;
-  acMasterdataPerson.Enabled := True;
   fBusiness.OpenCrudUnit;
 end;
 
@@ -229,13 +226,11 @@ begin
   ffraPerson.Parent := Self;
   ffraPerson.Align := TAlign.alClient;
   ffraPerson.Hide;
-  acMasterdataPerson.Enabled := False;
 
   ffraUnit := TfraUnit.Create(Self, fProgressIndicator);
   ffraUnit.Parent := Self;
   ffraUnit.Align := TAlign.alClient;
   ffraUnit.Hide;
-  acMasterdataUnit.Enabled := True;
 end;
 
 procedure TfmMain.FormDestroy(Sender: TObject);
@@ -303,6 +298,12 @@ begin
   if Length(aConfig.SshServerHost) > 0 then
     lConnectionInfo := 'Ssh Server: ' + aConfig.SshServerHost + ' / ' + lConnectionInfo;
   StatusBar.SimpleText := lConnectionInfo;
+end;
+
+procedure TfmMain.UpdateMainActions;
+begin
+  acMasterdataPerson.Enabled := not fBusiness.IsCrudPersonActivated;
+  acMasterdataUnit.Enabled := not fBusiness.IsCrudUnitActivated;
 end;
 
 end.

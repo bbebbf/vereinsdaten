@@ -17,6 +17,7 @@ type
     procedure SetEntryToUI(const aEntry: TEntry; const aMode: TEntryToUIMode);
     function GetEntryFromUI(var aEntry: TEntry; const aMode: TUIToEntryMode;
       const aProgressUISuspendScope: IProgressUISuspendScope = nil): Boolean;
+    function SetSelectedEntry(const aRecordIdentity: TRecordIdentity): Boolean;
     function GetProgressIndicator: IProgressIndicator;
   end;
 

@@ -11,6 +11,7 @@ type
     procedure SetBusiness(const aMainBusiness: IMainBusiness);
     procedure SetApplicationTitle(const aTitle: string);
     procedure SetConfiguration(const aConfig: TConfigConnection);
+    procedure UpdateMainActions;
 
     function GetProgressIndicator: IProgressIndicator;
     function GetPersonAggregatedUI: IPersonAggregatedUI;

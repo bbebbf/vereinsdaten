@@ -14,17 +14,21 @@ type
     fPersonBusinessIntf: IPersonBusinessIntf;
     fCrudConfigUnit: IEntryCrudConfig<TDtoUnitAggregated, TDtoUnit, UInt32, TEntryFilter>;
     fBusinessUnit: ICrudCommands<UInt32, TEntryFilter>;
+    fCrudPersonActivated: Boolean;
+    fCrudUnitActivated: Boolean;
 
     procedure Initialize;
     procedure UIIsReady;
-    procedure OpenCrudPerson;
-    procedure OpenCrudUnit;
+    procedure OpenCrudPerson(const aPersonId: UInt32 = 0);
+    procedure OpenCrudUnit(const aUnitId: UInt32 = 0);
     procedure OpenCrudAddress(const aAdressUI: ICrudUI<TDtoAddressAggregated, TDtoAddress, UInt32, TEntryFilter>;
       const aModalProc: TFunc<Integer>);
     procedure OpenCrudRole(const aRoleUI: ICrudUI<TDtoRole, TDtoRole, UInt32, TEntryFilter>;
       const aModalProc: TFunc<Integer>);
     procedure OpenCrudTenant(const aTenantUI: ICrudUI<TDtoTenant, TDtoTenant, UInt8, TVoid>;
       const aModalProc: TFunc<Integer>);
+    function IsCrudPersonActivated: Boolean;
+    function IsCrudUnitActivated: Boolean;
     procedure OpenReportClubMembers;
     procedure OpenReportMemberUnits(const aParams: TExporterPersonsParams;
       const aParamsProvider: IParamsProvider<TExporterPersonsParams>);
@@ -59,10 +63,20 @@ begin
   fConnection := aConnection;
   fUI := aMainUI;
 
-  fPersonBusinessIntf := TPersonBusiness.Create(fConnection, fUI.GetPersonAggregatedUI, fUI.GetProgressIndicator);
+  fPersonBusinessIntf := TPersonBusiness.Create(fConnection, fUI.GetPersonAggregatedUI, fUI.GetProgressIndicator,
+    procedure(Id: UInt32)
+    begin
+      OpenCrudUnit(Id);
+    end
+  );
   fPersonBusinessIntf.Initialize;
 
-  fCrudConfigUnit := TCrudConfigUnitAggregated.Create(fConnection, fUI.GetUnitMemberOfsUI, fUi.GetProgressIndicator);
+  fCrudConfigUnit := TCrudConfigUnitAggregated.Create(fConnection, fUI.GetUnitMemberOfsUI, fUi.GetProgressIndicator,
+    procedure(Id: UInt32)
+    begin
+      OpenCrudPerson(Id);
+    end
+  );
   fBusinessUnit := TCrudBusiness<TDtoUnitAggregated, TDtoUnit, UInt32, TEntryFilter>.Create(fUI.GetUnitCrudUI, fCrudConfigUnit);
   fBusinessUnit.Initialize;
 end;
@@ -78,6 +92,16 @@ begin
   fUI.SetConfiguration(TConfigReader.Instance.Connection);
 end;
 
+function TMainBusiness.IsCrudPersonActivated: Boolean;
+begin
+  Result := fCrudPersonActivated;
+end;
+
+function TMainBusiness.IsCrudUnitActivated: Boolean;
+begin
+  Result := fCrudUnitActivated;
+end;
+
 procedure TMainBusiness.OpenCrudAddress(const aAdressUI: ICrudUI<TDtoAddressAggregated, TDtoAddress, UInt32, TEntryFilter>;
   const aModalProc: TFunc<Integer>);
 begin
@@ -91,7 +115,7 @@ begin
   end;
 end;
 
-procedure TMainBusiness.OpenCrudPerson;
+procedure TMainBusiness.OpenCrudPerson(const aPersonId: UInt32);
 begin
   var lWorkSectionPerson: IWorkSection;
   Supports(fUI.GetPersonAggregatedUI, IWorkSection, lWorkSectionPerson);
@@ -102,6 +126,12 @@ begin
   TUnitMapper.Invalidate;
   lWorkSectionPerson.BeginWork;
   fPersonBusinessIntf.LoadList;
+  if aPersonId > 0 then
+    fPersonBusinessIntf.SetSelectedEntry(aPersonId);
+
+  fCrudPersonActivated := True;
+  fCrudUnitActivated := False;
+  fUI.UpdateMainActions;
 end;
 
 procedure TMainBusiness.OpenCrudRole(const aRoleUI: ICrudUI<TDtoRole, TDtoRole, UInt32, TEntryFilter>;
@@ -131,7 +161,7 @@ begin
   end;
 end;
 
-procedure TMainBusiness.OpenCrudUnit;
+procedure TMainBusiness.OpenCrudUnit(const aUnitId: UInt32);
 begin
   var lWorkSectionPerson: IWorkSection;
   Supports(fUI.GetPersonAggregatedUI, IWorkSection, lWorkSectionPerson);
@@ -142,6 +172,12 @@ begin
   TPersonMapper.Invalidate;
   lWorkSectionUnit.BeginWork;
   fBusinessUnit.LoadList;
+  if aUnitId > 0 then
+    fBusinessUnit.SetSelectedEntry(aUnitId);
+
+  fCrudUnitActivated := True;
+  fCrudPersonActivated := False;
+  fUI.UpdateMainActions;
 end;
 
 procedure TMainBusiness.OpenReportBirthdays(const aParamsProvider: IParamsProvider<TExporterBirthdaysParams>);

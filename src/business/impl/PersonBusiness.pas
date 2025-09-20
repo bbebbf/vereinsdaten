@@ -2,7 +2,7 @@
 
 interface
 
-uses System.Classes, InterfacedBase, CrudCommands, CrudConfig, Transaction, PersonBusinessIntf,
+uses System.Classes, System.SysUtils, InterfacedBase, CrudCommands, CrudConfig, Transaction, PersonBusinessIntf,
   DtoPersonAggregated, SqlConnection, PersonAggregatedUI, DtoPerson, RecordActions, RecordActionsVersioning,
   KeyIndexStrings, DtoPersonAddress, DtoAddress, DtoClubmembership, DtoMember, ClubmembershipTools,
   MemberOfBusinessIntf, MemberOfConfigIntf, ProgressIndicatorIntf, Vdm.Types, Vdm.Versioning.Types, CrudUI,
@@ -40,6 +40,7 @@ type
     function SaveCurrentEntry: TCrudSaveResult;
     function ReloadCurrentEntry: TCrudCommandResult;
     procedure StartNewEntry;
+    function SetSelectedEntry(const aPersonId: UInt32): TCrudCommandResult;
     function DeleteEntry(const aPersonId: UInt32): TCrudCommandResult;
     function GetDataChanged: Boolean;
     function GetShowInactivePersons: Boolean;
@@ -59,13 +60,13 @@ type
     procedure ClearVersionInfoEntryFromUI;
   public
     constructor Create(const aConnection: ISqlConnection; const aUI: IPersonAggregatedUI;
-      const aProgressIndicator: IProgressIndicator);
+      const aProgressIndicator: IProgressIndicator; const aGotoUnitId: TProc<UInt32>);
     destructor Destroy; override;
   end;
 
 implementation
 
-uses System.SysUtils, System.Generics.Collections, SelectList, KeyIndexMapper,
+uses System.Generics.Collections, SelectList, KeyIndexMapper,
   CrudConfigPerson, CrudConfigAddress, CrudConfigPersonAddress, CrudConfigClubmembership,
   MemberOfBusiness, EntryCrudConfig, CrudConfigUnitAggregated, CrudBusiness, CrudMemberConfigMasterPerson,
   VersionInfoEntryUI, VersionInfoAccessor, MemberOfVersionInfoConfig, PersonMapper;
@@ -107,7 +108,7 @@ type
 { TPersonBusiness }
 
 constructor TPersonBusiness.Create(const aConnection: ISqlConnection; const aUI: IPersonAggregatedUI;
-  const aProgressIndicator: IProgressIndicator);
+  const aProgressIndicator: IProgressIndicator; const aGotoUnitId: TProc<UInt32>);
 begin
   inherited Create;
   fConnection := aConnection;
@@ -140,7 +141,7 @@ begin
   fClubmembershipConfig := TCrudConfigClubmembership.Create;
   fClubmembershipRecordActions := TRecordActions<TDtoClubmembership, UInt32>.Create(fConnection, fClubmembershipConfig);
   fClubMembershipNumberChecker := TClubMembershipNumberChecker.Create(fConnection);
-  fMemberOfConfig := TCrudMemberConfigMasterPerson.Create;
+  fMemberOfConfig := TCrudMemberConfigMasterPerson.Create(aGotoUnitId);
 
   var lVersionInfoEntryUI: IVersionInfoEntryUI;
   Supports(fUI.GetMemberOfUI, IVersionInfoEntryUI, lVersionInfoEntryUI);
@@ -470,6 +471,12 @@ end;
 procedure TPersonBusiness.SetListFilter(const aValue: TVoid);
 begin
   raise ENotImplemented.Create('TPersonBusiness.SetListFilter(const aValue: TVoid)');
+end;
+
+function TPersonBusiness.SetSelectedEntry(const aPersonId: UInt32): TCrudCommandResult;
+begin
+  Result := default(TCrudCommandResult);
+  Result.Sucessful := fUI.SetSelectedEntry(aPersonId);
 end;
 
 procedure TPersonBusiness.SetShowExternalPersons(const aValue: Boolean);

@@ -32,6 +32,9 @@ type
     Verbindungbearbeiten1: TMenuItem;
     Verbindungentfernen1: TMenuItem;
     lbMemberOfsVersionInfo: TLabel;
+    N2: TMenuItem;
+    acGotoDetailItem: TAction;
+    GotoDetailItem1: TMenuItem;
     procedure lvMemberOfCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure acShowInactiveMemberOfsExecute(Sender: TObject);
@@ -42,6 +45,8 @@ type
     procedure acDeleteMemberOfExecute(Sender: TObject);
     procedure acReloadMemberOfsExecute(Sender: TObject);
     procedure acSaveMemberOfsExecute(Sender: TObject);
+    procedure acGotoDetailItemExecute(Sender: TObject);
+    procedure acGotoDetailItemUpdate(Sender: TObject);
   private
     fBusinessIntf: IMemberOfBusinessIntf;
     fExtentedListviewMemberOfs: TExtendedListview<TListEntry<TDtoMemberAggregated>, UInt32>;
@@ -113,6 +118,30 @@ begin
     lEntry.Updated;
     fExtentedListviewMemberOfs.UpdateData(lEntry);
     UpdateListActions(True);
+  end;
+end;
+
+procedure TfraMemberOf.acGotoDetailItemExecute(Sender: TObject);
+begin
+  var lSelectedItem := lvMemberOf.Selected;
+  if not Assigned(lSelectedItem) then
+    Exit;
+  var lEntry: TListEntry<TDtoMemberAggregated>;
+  if not fExtentedListviewMemberOfs.TryGetListItemData(lSelectedItem, lEntry) then
+    Exit;
+
+  fBusinessIntf.GotoDetailItem(lEntry.Data);
+end;
+
+procedure TfraMemberOf.acGotoDetailItemUpdate(Sender: TObject);
+begin
+  if Assigned(lvMemberOf.Selected) then
+  begin
+    acGotoDetailItem.Caption := '"' + lvMemberOf.Selected.Caption + '" aufrufen';
+  end
+  else
+  begin
+    acGotoDetailItem.Caption := fBusinessIntf.GetDetailItemTitle + ' aufrufen';
   end;
 end;
 
@@ -349,6 +378,7 @@ procedure TfraMemberOf.UpdateEditItemActions(const aEnabled: Boolean);
 begin
   fActionlistWrapper.SetActionEnabled(acEditMemberOf, aEnabled);
   fActionlistWrapper.SetActionEnabled(acDeleteMemberOf, aEnabled);
+  fActionlistWrapper.SetActionEnabled(acGotoDetailItem, aEnabled);
 end;
 
 procedure TfraMemberOf.UpdateListActions(const aEnabled: Boolean);

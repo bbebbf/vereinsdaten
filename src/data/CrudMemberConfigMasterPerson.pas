@@ -14,6 +14,7 @@ type
     procedure SetMasterItemIdToMember(const aMasterItemId: UInt32; var aMember: TDtoMember); override;
     function GetDetailItemIdFromMember(const aMember: TDtoMember): UInt32; override;
     procedure SetDetailItemIdToMember(const aDetailItemId: UInt32; var aMember: TDtoMember); override;
+    procedure GotoDetailItem(const aMember: TDtoMember); override;
   end;
 
 implementation
@@ -40,6 +41,11 @@ begin
     + ' LEFT JOIN role AS r ON r.role_id = m.role_id'
     + ' WHERE m.person_id = :PId'
     + ' ORDER BY ' + TVdmGlobals.GetRoleSortingSqlOrderBy('r') + ', u.unit_name, m.mb_active_since DESC';
+end;
+
+procedure TCrudMemberConfigMasterPerson.GotoDetailItem(const aMember: TDtoMember);
+begin
+  fGotoDetailItemProc(aMember.UnitId);
 end;
 
 procedure TCrudMemberConfigMasterPerson.SetSelectListSQLParameter(const aFilter: UInt32;

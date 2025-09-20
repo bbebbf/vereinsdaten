@@ -136,6 +136,11 @@ object fraMemberOf: TfraMemberOf
       Caption = 'Inaktive Verbindungen anzeigen'
       OnExecute = acShowInactiveMemberOfsExecute
     end
+    object acGotoDetailItem: TAction
+      Caption = 'GotoDetailItem'
+      OnExecute = acGotoDetailItemExecute
+      OnUpdate = acGotoDetailItemUpdate
+    end
   end
   object PopupMenu: TPopupMenu
     Left = 56
@@ -143,7 +148,7 @@ object fraMemberOf: TfraMemberOf
     object Verbindunghinzufgen1: TMenuItem
       Action = acNewMemberOf
     end
-    object N1: TMenuItem
+    object N2: TMenuItem
       Caption = '-'
     end
     object Verbindungbearbeiten1: TMenuItem
@@ -151,6 +156,12 @@ object fraMemberOf: TfraMemberOf
     end
     object Verbindungentfernen1: TMenuItem
       Action = acDeleteMemberOf
+    end
+    object N1: TMenuItem
+      Caption = '-'
+    end
+    object GotoDetailItem1: TMenuItem
+      Action = acGotoDetailItem
     end
   end
 end

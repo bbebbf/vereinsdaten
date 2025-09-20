@@ -11,14 +11,17 @@ type
     procedure Initialize;
     procedure UIIsReady;
 
-    procedure OpenCrudPerson;
-    procedure OpenCrudUnit;
+    procedure OpenCrudPerson(const aPersonId: UInt32 = 0);
+    procedure OpenCrudUnit(const aUnitId: UInt32 = 0);
     procedure OpenCrudAddress(const aAdressUI: ICrudUI<TDtoAddressAggregated, TDtoAddress, UInt32, TEntryFilter>;
       const aModalProc: TFunc<Integer>);
     procedure OpenCrudRole(const aRoleUI: ICrudUI<TDtoRole, TDtoRole, UInt32, TEntryFilter>;
       const aModalProc: TFunc<Integer>);
     procedure OpenCrudTenant(const aTenantUI: ICrudUI<TDtoTenant, TDtoTenant, UInt8, TVoid>;
       const aModalProc: TFunc<Integer>);
+
+    function IsCrudPersonActivated: Boolean;
+    function IsCrudUnitActivated: Boolean;
 
     procedure OpenReportClubMembers;
     procedure OpenReportMemberUnits(const aParams: TExporterPersonsParams;

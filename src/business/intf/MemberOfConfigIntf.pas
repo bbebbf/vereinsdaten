@@ -13,6 +13,7 @@ type
     procedure SetMasterItemIdToMember(const aMasterItemId: UInt32; var aMember: TDtoMember);
     function GetDetailItemIdFromMember(const aMember: TDtoMember): UInt32;
     procedure SetDetailItemIdToMember(const aDetailItemId: UInt32; var aMember: TDtoMember);
+    procedure GotoDetailItem(const aMember: TDtoMember);
   end;
 
 implementation

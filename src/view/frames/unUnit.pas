@@ -85,6 +85,7 @@ type
     procedure ListEnumEnd;
     procedure DeleteEntryFromUI(const aUnitId: UInt32);
     procedure ClearEntryFromUI;
+    function SetSelectedEntry(const aUnitId: UInt32): Boolean;
     procedure SetEntryToUI(const aEntry: TDtoUnitAggregated; const aMode: TEntryToUIMode);
     function GetEntryFromUI(var aEntry: TDtoUnitAggregated; const aMode: TUIToEntryMode;
       const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
@@ -440,6 +441,20 @@ begin
   fExtendedListview.UpdateData(aEntry.&Unit);
 
   fComponentValueChangedObserver.EndUpdate;
+end;
+
+function TfraUnit.SetSelectedEntry(const aUnitId: UInt32): Boolean;
+begin
+  Result := False;
+  var lUnit := default(TDtoUnit);
+  lUnit.Id := aUnitId;
+  var lListItem: TListItem;
+  if fExtendedListview.TryGetListItem(lUnit, lListItem) then
+  begin
+    lListItem.Selected := True;
+    lListItem.MakeVisible(False);
+    Result := True;
+  end;
 end;
 
 procedure TfraUnit.SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry;

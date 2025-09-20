@@ -32,6 +32,7 @@ type
       TCrudSaveResult;
     function GetDetailItemTitle: string;
     function GetShowVersionInfoInMemberListview: Boolean;
+    procedure GotoDetailItem(const aMemberOf: TDtoMemberAggregated);
     property ShowInactiveMemberOfs: Boolean read GetShowInactiveMemberOfs write SetShowInactiveMemberOfs;
   end;
 

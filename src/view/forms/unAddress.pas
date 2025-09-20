@@ -67,8 +67,9 @@ type
     procedure ListEnumBegin;
     procedure ListEnumProcessItem(const aEntry: TDtoAddress);
     procedure ListEnumEnd;
-    procedure DeleteEntryFromUI(const aUnitId: UInt32);
+    procedure DeleteEntryFromUI(const aAddressId: UInt32);
     procedure ClearEntryFromUI;
+    function SetSelectedEntry(const aAddressId: UInt32): Boolean;
     procedure SetEntryToUI(const aEntry: TDtoAddressAggregated; const aMode: TEntryToUIMode);
     function GetEntryFromUI(var aEntry: TDtoAddressAggregated; const aMode: TUIToEntryMode;
       const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
@@ -148,7 +149,7 @@ begin
   SetEditMode(False);
 end;
 
-procedure TfmAddress.DeleteEntryFromUI(const aUnitId: UInt32);
+procedure TfmAddress.DeleteEntryFromUI(const aAddressId: UInt32);
 begin
 
 end;
@@ -387,6 +388,11 @@ begin
   finally
     fExtendedListviewMemberOfs.EndUpdate;
   end;
+end;
+
+function TfmAddress.SetSelectedEntry(const aAddressId: UInt32): Boolean;
+begin
+  Result := False;
 end;
 
 procedure TfmAddress.SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry;

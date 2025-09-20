@@ -27,6 +27,7 @@ type
     function LoadCurrentEntry(const aEntryId: T): TCrudCommandResult;
     function SaveCurrentEntry: TCrudSaveResult;
     function ReloadCurrentEntry: TCrudCommandResult;
+    function SetSelectedEntry(const aEntryId: T): TCrudCommandResult;
     function DeleteEntry(const aEntryId: T): TCrudCommandResult;
     procedure StartNewEntry;
     function GetDataChanged: Boolean;

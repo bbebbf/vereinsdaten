@@ -2,7 +2,7 @@ unit CrudConfigUnitAggregated;
 
 interface
 
-uses InterfacedBase, EntryCrudConfig, DtoUnitAggregated, SqlConnection, CrudConfigUnit, CrudConfig, DtoUnit,
+uses System.SysUtils, InterfacedBase, EntryCrudConfig, DtoUnitAggregated, SqlConnection, CrudConfigUnit, CrudConfig, DtoUnit,
   RecordActionsVersioning, Vdm.Types, Vdm.Versioning.Types, VersionInfoEntryAccessor, CrudCommands,
   MemberOfConfigIntf, MemberOfBusinessIntf, MemberOfUI, ProgressIndicatorIntf;
 
@@ -40,13 +40,13 @@ type
     procedure AssignVersionInfoEntry(const aSourceEntry, aTargetEntry: TDtoUnitAggregated);
   public
     constructor Create(const aConnection: ISqlConnection; const aMemberOfUI: IMemberOfUI;
-      const aProgressIndicator: IProgressIndicator);
+      const aProgressIndicator: IProgressIndicator; const aGotoPersonId: TProc<UInt32>);
     destructor Destroy; override;
   end;
 
 implementation
 
-uses System.SysUtils, SelectList, Vdm.Globals, MemberOfBusiness, CrudMemberConfigMasterUnit,
+uses SelectList, Vdm.Globals, MemberOfBusiness, CrudMemberConfigMasterUnit,
   VersionInfoAccessor, Transaction, DtoMemberAggregated, MemberOfVersionInfoConfig;
 
 type
@@ -83,14 +83,14 @@ type
 { TCrudConfigUnitAggregated }
 
 constructor TCrudConfigUnitAggregated.Create(const aConnection: ISqlConnection; const aMemberOfUI: IMemberOfUI;
-  const aProgressIndicator: IProgressIndicator);
+  const aProgressIndicator: IProgressIndicator; const aGotoPersonId: TProc<UInt32>);
 begin
   inherited Create;
   fConnection := aConnection;
   fCrudConfigUnit := TCrudConfigUnit.Create;
   fVersionInfoConfig := TVersionInfoConfig.Create;
   fUnitRecordActions := TRecordActionsVersioning<TDtoUnit, UInt32>.Create(fConnection, fCrudConfigUnit, fVersionInfoConfig);
-  fMemberOfConfig := TCrudMemberConfigMasterUnit.Create;
+  fMemberOfConfig := TCrudMemberConfigMasterUnit.Create(aGotoPersonId);
 
   fUnitMemberOfsVersionInfoAccessor := TUnitMemberOfsVersionInfoAccessor.Create(aConnection);
   fMemberOfBusiness := TMemberOfBusiness.Create(fConnection, fMemberOfConfig, fUnitMemberOfsVersionInfoAccessor,

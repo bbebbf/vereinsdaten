@@ -127,6 +127,7 @@ type
     function GetEntryFromUI(var aRecord: TDtoPersonAggregated; const aMode: TUIToEntryMode;
       const aProgressUISuspendScope: IProgressUISuspendScope): Boolean;
     procedure LoadCurrentEntry(const aPersonId: UInt32);
+    function SetSelectedEntry(const aPersonId: UInt32): Boolean;
     function GetProgressIndicator: IProgressIndicator;
 
     procedure ExtentedListviewEndUpdate(Sender: TObject; const aTotalItemCount, aVisibleItemCount: Integer);
@@ -495,6 +496,20 @@ begin
   pcPersonDetails.ActivePage := tsPersonaldata;
   fPersonMemberOf.SetActionsEnabled(False);
   fBusinessIntf := aCommands;
+end;
+
+function TfraPerson.SetSelectedEntry(const aPersonId: UInt32): Boolean;
+begin
+  Result := False;
+  var lPerson := default(TDtoPerson);
+  lPerson.NameId.Id := aPersonId;
+  var lListItem: TListItem;
+  if fExtendedListview.TryGetListItem(lPerson, lListItem) then
+  begin
+    lListItem.Selected := True;
+    lListItem.MakeVisible(False);
+    Result := True;
+  end;
 end;
 
 procedure TfraPerson.SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry;

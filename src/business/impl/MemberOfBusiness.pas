@@ -40,6 +40,7 @@ type
       const aItem: TDtoMember; const aFilter: TMemberOfBusinessRecordFilter; var aItemMatches: Boolean);
     function GetDetailItemTitle: string;
     function GetShowVersionInfoInMemberListview: Boolean;
+    procedure GotoDetailItem(const aMemberOf: TDtoMemberAggregated);
   public
     constructor Create(const aConnection: ISqlConnection; const aMemberOfConfig: IMemberOfConfigIntf;
       const aMemberOfsVersioningCrudEvents: IMemberOfsVersioningCrudEvents; const aUI: IMemberOfUI;
@@ -113,6 +114,11 @@ end;
 function TMemberOfBusiness.GetShowVersionInfoInMemberListview: Boolean;
 begin
   Result := fMemberOfConfig.GetShowVersionInfoInMemberListview;
+end;
+
+procedure TMemberOfBusiness.GotoDetailItem(const aMemberOf: TDtoMemberAggregated);
+begin
+  fMemberOfConfig.GotoDetailItem(aMemberOf.Member);
 end;
 
 function TMemberOfBusiness.CreateNewEntry: TListEntry<TDtoMemberAggregated>;
