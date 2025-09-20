@@ -119,7 +119,7 @@ CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `vw_select_address` AS sele
 
 CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `vw_active_person` AS select `pn`.`person_id` AS `person_id`,`pn`.`person_name` AS `person_name` from (`vw_person_name` `pn` join `person` `p` on(`p`.`person_id` = `pn`.`person_id`)) where `p`.`person_active` = 1;
 
-CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `vw_active_person_active_member` AS select `m`.* from `member` `m` inner join `person` `p` on `p`.`person_id` = `m`.`person_id` where `m`.`mb_active` = 1 and `p`.`person_active` = 1;
+CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `vw_active_person_member` AS select `m`.* from `member` `m` inner join `person` `p` on `p`.`person_id` = `m`.`person_id` where `p`.`person_active` = 1;
 
 
 CREATE FUNCTION `IsLeapYear`(IN FromDate DATE) RETURNS int(11)

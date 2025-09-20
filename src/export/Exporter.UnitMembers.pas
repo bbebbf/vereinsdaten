@@ -41,14 +41,15 @@ begin
     ' FROM unit AS u' +
     ' LEFT JOIN (' +
           ' SELECT unit_id, COUNT(*) AS MemberCount' +
-          ' FROM vw_active_person_active_member' +
+          ' FROM vw_active_person_member' +
+          ' WHERE mb_active = 1' +
           ' GROUP BY unit_id' +
     ') AS mc ON mc.unit_id = u.unit_id';
   if Length(lTempTablename) > 0 then
   begin
     lSelectStm := lSelectStm + ' INNER JOIN ' + lTempTablename + ' AS tt ON tt.unit_id = u.unit_id';
   end;
-  lSelectStm := lSelectStm + ' LEFT JOIN vw_active_person_active_member AS m ON m.unit_id = u.unit_id' +
+  lSelectStm := lSelectStm + ' LEFT JOIN vw_active_person_member AS m ON m.unit_id = u.unit_id and m.mb_active = 1' +
     ' LEFT JOIN vw_person_name AS pn ON pn.person_id = m.person_id' +
     ' LEFT JOIN role AS r ON r.role_id = m.role_id' +
     ' ORDER BY u.unit_name, ' + TVdmGlobals.GetRoleSortingSqlOrderBy('r') + ', pn.person_name';

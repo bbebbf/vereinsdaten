@@ -50,7 +50,7 @@ end;
 function TCrudMemberConfigMasterUnit.GetSelectListSQL: string;
 begin
   Result := 'SELECT m.*, vi.versioninfo_id, vi.versioninfo_number, vi.versioninfo_lastupdated_utc'
-    + ' FROM member AS m'
+    + ' FROM vw_active_person_member AS m'
     + ' INNER JOIN vw_person_name AS pn ON pn.person_id = m.person_id'
     + ' LEFT JOIN role AS r ON r.role_id = m.role_id'
     + ' LEFT JOIN version_info AS vi ON vi.versioninfo_entity = ' + IntToStr(Ord(TEntryVersionInfoEntity.PersonMemberOfs))
