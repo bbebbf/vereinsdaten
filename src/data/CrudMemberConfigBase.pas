@@ -3,12 +3,13 @@ unit CrudMemberConfigBase;
 interface
 
 uses System.SysUtils, InterfacedBase, SqlConnection, CrudAccessor, CrudConfig, SelectListFilter, DtoMember, KeyIndexStrings,
-  MemberOfConfigIntf, Vdm.Versioning.Types;
+  MemberOfConfigIntf, Vdm.Versioning.Types, SqlResultPopulator, DtoMemberAggregated;
 
 type
   TCrudMemberConfigBase = class abstract(TInterfacedBase,
     IMemberOfConfigIntf,
     ISelectListFilter<TDtoMember, UInt32>,
+    ISqlResultPopulator<TDtoMemberAggregated>,
     ISelectVersionInfo)
   strict private
     function GetTablename: string;
@@ -32,7 +33,9 @@ type
     function GetDetailItemIdFromMember(const aMember: TDtoMember): UInt32; virtual; abstract;
     procedure SetDetailItemIdToMember(const aDetailItemId: UInt32; var aMember: TDtoMember); virtual; abstract;
     procedure GotoDetailItem(const aMember: TDtoMember); virtual; abstract;
+    function IsDetailItemActive(const aMember: TDtoMember): Boolean; virtual;
     function GetEntryVersionInfoFromResult(const aSqlResult: ISqlResult; out aEntry: TEntryVersionInfo): Boolean; virtual;
+    procedure PopulateEntry(const aSqlResult: ISqlResult; var aEntry: TDtoMemberAggregated); virtual; abstract;
   public
     constructor Create(const aGotoDetailItemProc: TProc<UInt32>);
   end;
@@ -89,6 +92,11 @@ end;
 function TCrudMemberConfigBase.GetTablename: string;
 begin
   Result := 'member';
+end;
+
+function TCrudMemberConfigBase.IsDetailItemActive(const aMember: TDtoMember): Boolean;
+begin
+  Result := True;
 end;
 
 function TCrudMemberConfigBase.IsNewRecord(const aRecordIdentity: UInt32): TCrudConfigNewRecordResponse;

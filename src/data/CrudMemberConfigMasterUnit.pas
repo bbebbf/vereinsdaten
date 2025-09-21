@@ -3,7 +3,7 @@ unit CrudMemberConfigMasterUnit;
 interface
 
 uses CrudMemberConfigBase, SqlConnection, DtoMember, DtoPerson, KeyIndexStrings, SelectList, Transaction,
-  Vdm.Versioning.Types;
+  Vdm.Versioning.Types, DtoMemberAggregated;
 
 type
   TCrudMemberConfigMasterUnit = class(TCrudMemberConfigBase)
@@ -18,6 +18,7 @@ type
     procedure SetDetailItemIdToMember(const aDetailItemId: UInt32; var aMember: TDtoMember); override;
     function GetEntryVersionInfoFromResult(const aSqlResult: ISqlResult; out aEntry: TEntryVersionInfo): Boolean; override;
     procedure GotoDetailItem(const aMember: TDtoMember); override;
+    procedure PopulateEntry(const aSqlResult: ISqlResult; var aEntry: TDtoMemberAggregated); override;
   end;
 
 implementation
@@ -68,6 +69,11 @@ end;
 procedure TCrudMemberConfigMasterUnit.GotoDetailItem(const aMember: TDtoMember);
 begin
   fGotoDetailItemProc(aMember.PersonId);
+end;
+
+procedure TCrudMemberConfigMasterUnit.PopulateEntry(const aSqlResult: ISqlResult; var aEntry: TDtoMemberAggregated);
+begin
+  aEntry.DetailItemIsActive := True;
 end;
 
 procedure TCrudMemberConfigMasterUnit.SetSelectListSQLParameter(const aFilter: UInt32;

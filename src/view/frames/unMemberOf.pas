@@ -64,7 +64,7 @@ type
     procedure SetVersionInfoEntryToUI(const aVersionInfoEntry: TVersionInfoEntry; const aVersionInfoEntryIndex: UInt16);
     procedure ClearVersionInfoEntryFromUI(const aVersionInfoEntryIndex: UInt16);
 
-    procedure UpdateEditItemActions(const aEnabled: Boolean);
+    procedure UpdateEditItemActions(const aEnabled: Boolean; const aEntry: TDtoMemberAggregated = nil);
     procedure UpdateListActions(const aEnabled: Boolean);
 
     procedure BeginWork;
@@ -362,23 +362,26 @@ end;
 
 procedure TfraMemberOf.lvMemberOfSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
 begin
-  UpdateEditItemActions(Assigned(Item) and Selected);
+  var lEntryData := default(TDtoMemberAggregated);
   if Selected then
   begin
     var lEntry: TListEntry<TDtoMemberAggregated>;
     if fExtentedListviewMemberOfs.TryGetListItemData(Item, lEntry) then
     begin
+      lEntryData := lEntry.Data;
       fCurrentPersonId := lEntry.Data.PersonId;
       fCurrentUnitId := lEntry.Data.UnitId;
     end;
   end;
+  UpdateEditItemActions(Assigned(lEntryData) and Selected, lEntryData);
 end;
 
-procedure TfraMemberOf.UpdateEditItemActions(const aEnabled: Boolean);
+procedure TfraMemberOf.UpdateEditItemActions(const aEnabled: Boolean; const aEntry: TDtoMemberAggregated);
 begin
   fActionlistWrapper.SetActionEnabled(acEditMemberOf, aEnabled);
   fActionlistWrapper.SetActionEnabled(acDeleteMemberOf, aEnabled);
-  fActionlistWrapper.SetActionEnabled(acGotoDetailItem, aEnabled);
+  fActionlistWrapper.SetActionEnabled(acGotoDetailItem, aEnabled and aEntry.DetailItemIsActive);
+  acGotoDetailItem.Visible := aEnabled and aEntry.DetailItemIsActive;
 end;
 
 procedure TfraMemberOf.UpdateListActions(const aEnabled: Boolean);

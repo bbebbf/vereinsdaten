@@ -2,7 +2,7 @@ unit CrudMemberConfigMasterPerson;
 
 interface
 
-uses CrudMemberConfigBase, SqlConnection, DtoMember, DtoUnit, KeyIndexStrings, SelectList;
+uses CrudMemberConfigBase, SqlConnection, DtoMember, DtoUnit, KeyIndexStrings, SelectList, DtoMemberAggregated;
 
 type
   TCrudMemberConfigMasterPerson = class(TCrudMemberConfigBase)
@@ -15,6 +15,7 @@ type
     function GetDetailItemIdFromMember(const aMember: TDtoMember): UInt32; override;
     procedure SetDetailItemIdToMember(const aDetailItemId: UInt32; var aMember: TDtoMember); override;
     procedure GotoDetailItem(const aMember: TDtoMember); override;
+    procedure PopulateEntry(const aSqlResult: ISqlResult; var aEntry: TDtoMemberAggregated); override;
   end;
 
 implementation
@@ -35,7 +36,7 @@ end;
 
 function TCrudMemberConfigMasterPerson.GetSelectListSQL: string;
 begin
-  Result := 'SELECT m.*'
+  Result := 'SELECT m.*, u.unit_active'
     + ' FROM member AS m'
     + ' INNER JOIN unit AS u ON u.unit_id = m.unit_id'
     + ' LEFT JOIN role AS r ON r.role_id = m.role_id'
@@ -46,6 +47,11 @@ end;
 procedure TCrudMemberConfigMasterPerson.GotoDetailItem(const aMember: TDtoMember);
 begin
   fGotoDetailItemProc(aMember.UnitId);
+end;
+
+procedure TCrudMemberConfigMasterPerson.PopulateEntry(const aSqlResult: ISqlResult; var aEntry: TDtoMemberAggregated);
+begin
+  aEntry.DetailItemIsActive := aSqlResult.FieldByName('unit_active').AsBoolean;
 end;
 
 procedure TCrudMemberConfigMasterPerson.SetSelectListSQLParameter(const aFilter: UInt32;

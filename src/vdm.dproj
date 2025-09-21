@@ -381,6 +381,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="general\common\Tools\PatternValidation.pas"/>
+        <DCCReference Include="general\intf\sql\SqlResultPopulator.pas"/>
         <None Include="inc\CompilerDirectives.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>

@@ -11,6 +11,7 @@ type
     fMemberOfConfigIntf: IMemberOfConfigIntf;
     fAvailableRoles: TActiveKeyIndexStringsLoader;
     fVersionInfoPersonMemberOf: TVersionInfoEntry;
+    fDetailItemIsActive: Boolean;
     function GetAvailableDetailItems: TActiveKeyIndexStringsLoader;
     function GetDetailItemId: UInt32;
     procedure SetDetailItemId(const aValue: UInt32);
@@ -30,6 +31,7 @@ type
     property ActiveSince: INullable<TDate> read fMember.ActiveSince write fMember.ActiveSince;
     property ActiveUntil: INullable<TDate> read fMember.ActiveUntil write fMember.ActiveUntil;
     property DetailItemId: UInt32 read GetDetailItemId write SetDetailItemId;
+    property DetailItemIsActive: Boolean read fDetailItemIsActive write fDetailItemIsActive;
     property AvailableDetailItems: TActiveKeyIndexStringsLoader read GetAvailableDetailItems;
     property AvailableRoles: TActiveKeyIndexStringsLoader read fAvailableRoles;
     property VersionInfoPersonMemberOf: TVersionInfoEntry read GetVersionInfoPersonMemberOf;

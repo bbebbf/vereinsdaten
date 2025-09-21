@@ -74,7 +74,7 @@ type
 
 implementation
 
-uses RecordActionsVersioning;
+uses RecordActionsVersioning, SqlResultPopulator;
 
 { TListCrudCommands<TS, TSIdent, TD, FSelect, FLoop> }
 
@@ -138,6 +138,13 @@ begin
   inherited;
   var lTargetItem := default(TD);
   fValueConverter.Convert(aItem, lTargetItem);
+
+  var lSqlResultPopulator: ISqlResultPopulator<TD>;
+  if Supports(fSelectListFilter, ISqlResultPopulator<TD>, lSqlResultPopulator) then
+  begin
+    lSqlResultPopulator.PopulateEntry(aSqlResult, lTargetItem);
+  end;
+
   var lSelectVersionInfo: ISelectVersionInfo;
   var lVersionInfoSetter: IVersionInfoSetter<TD>;
   if Supports(fSelectListFilter, ISelectVersionInfo, lSelectVersionInfo) and
