@@ -1,14 +1,14 @@
-unit Report.ClubMembers;
+unit Report.ClubMembers.Printout;
 
 interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, RLReport, Data.DB, SqlConnection, Vcl.StdCtrls, Vcl.ExtCtrls,
-  Exporter.TargetIntf, Report.Base;
+  Exporter.TargetIntf, Report.Base.Printout;
 
 type
-  TfmReportClubMembers = class(TfmReportBase, IExporterTarget<TObject>)
+  TfmReportClubMembersPrintout = class(TfmReportBasePrintout, IExporterTarget<TObject>)
     RLReport: TRLReport;
     dsDataSource: TDataSource;
     bdDetail: TRLBand;
@@ -57,13 +57,13 @@ uses TenantReader, Vdm.Globals;
 
 { TfmReportClubMembers }
 
-procedure TfmReportClubMembers.DoExport(const aDataSet: ISqlDataSet);
+procedure TfmReportClubMembersPrintout.DoExport(const aDataSet: ISqlDataSet);
 begin
   dsDataSource.DataSet := aDataSet.DataSet;
   RLReport.Preview;
 end;
 
-procedure TfmReportClubMembers.RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
+procedure TfmReportClubMembersPrintout.RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
 begin
   lbTenantTitle.Caption := TTenantReader.Instance.Tenant.Title;
   fActiveCounter := 0;
@@ -71,17 +71,17 @@ begin
   lbAppTitle.Caption := TVdmGlobals.GetVdmApplicationTitle;
 end;
 
-procedure TfmReportClubMembers.SetParams(const aParams: TObject);
+procedure TfmReportClubMembersPrintout.SetParams(const aParams: TObject);
 begin
 
 end;
 
-procedure TfmReportClubMembers.bdSummaryBeforePrint(Sender: TObject; var PrintIt: Boolean);
+procedure TfmReportClubMembersPrintout.bdSummaryBeforePrint(Sender: TObject; var PrintIt: Boolean);
 begin
   lbActiveInactive.Caption := 'Aktive: ' + IntToStr(fActiveCounter) + ' / Inaktive: ' + IntToStr(fInactiveCounter);
 end;
 
-procedure TfmReportClubMembers.rdInactiveAfterPrint(Sender: TObject);
+procedure TfmReportClubMembersPrintout.rdInactiveAfterPrint(Sender: TObject);
 begin
   if Length(rdInactive.Field.AsString) = 0 then
     Inc(fActiveCounter)

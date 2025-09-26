@@ -1,14 +1,14 @@
-unit Report.OneUnitMembers;
+unit Report.OneUnitMembers.Printout;
 
 interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, RLReport, SqlConnection, Data.DB, Vcl.StdCtrls,
-  Report.Base, Exporter.TargetIntf, Exporter.OneUnitMembers;
+  Exporter.TargetIntf, Exporter.OneUnitMembers, Report.Base.Printout;
 
 type
-  TfmReportOneUnitMembers = class(TfmReportBase, IExporterTarget<TExporterOneUnitMembersParams>)
+  TfmReportOneUnitMembersPrintout = class(TfmReportBasePrintout, IExporterTarget<TExporterOneUnitMembersParams>)
     RLReport: TRLReport;
     dsDataSource: TDataSource;
     bdReportHeader: TRLBand;
@@ -52,25 +52,25 @@ uses TenantReader, Vdm.Globals;
 
 { TfmReportOneUnitMembers }
 
-procedure TfmReportOneUnitMembers.DoExport(const aDataSet: ISqlDataSet);
+procedure TfmReportOneUnitMembersPrintout.DoExport(const aDataSet: ISqlDataSet);
 begin
   dsDataSource.DataSet := aDataSet.DataSet;
   RLReport.Preview;
 end;
 
-procedure TfmReportOneUnitMembers.rdMemberCountBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
+procedure TfmReportOneUnitMembersPrintout.rdMemberCountBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
 begin
   inherited;
   if rdMemberCount.Field.IsNull then
     AText := '0';
 end;
 
-procedure TfmReportOneUnitMembers.bdDetailAfterPrint(Sender: TObject);
+procedure TfmReportOneUnitMembersPrintout.bdDetailAfterPrint(Sender: TObject);
 begin
   fNewPageStarted := False;
 end;
 
-procedure TfmReportOneUnitMembers.RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
+procedure TfmReportOneUnitMembersPrintout.RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
 begin
   lbTenantTitle.Caption := TTenantReader.Instance.Tenant.Title;
   lbAppTitle.Caption := TVdmGlobals.GetVdmApplicationTitle;
@@ -84,12 +84,12 @@ begin
   end;
 end;
 
-procedure TfmReportOneUnitMembers.RLReportPageStarting(Sender: TObject);
+procedure TfmReportOneUnitMembersPrintout.RLReportPageStarting(Sender: TObject);
 begin
   fNewPageStarted := True;
 end;
 
-procedure TfmReportOneUnitMembers.SetParams(const aParams: TExporterOneUnitMembersParams);
+procedure TfmReportOneUnitMembersPrintout.SetParams(const aParams: TExporterOneUnitMembersParams);
 begin
 
 end;

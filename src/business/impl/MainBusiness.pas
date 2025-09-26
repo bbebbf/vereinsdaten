@@ -46,13 +46,13 @@ implementation
 
 uses Vdm.Globals, ConfigReader, TenantReader, RoleMapper, UnitMapper, PersonMapper, PersonBusiness, WorkSection,
   CrudBusiness, CrudConfigUnitAggregated, CrudConfigAddressAggregated, CrudConfigRoleEntry, CrudConfigTenantEntry
-  , Exporter.Persons, Report.Persons
-  , Exporter.UnitMembers, Report.UnitMembers
-  , Exporter.UnitRoles, Report.UnitRoles
-  , Exporter.OneUnitMembers, Report.OneUnitMembers
-  , Exporter.Birthdays, Report.Birthdays
-  , Exporter.ClubMembers, Report.ClubMembers
-  , Exporter.MemberUnits, Report.MemberUnits
+  , Exporter.Persons, Report.Persons.Printout
+  , Exporter.UnitMembers, Report.UnitMembers.Printout
+  , Exporter.UnitRoles, Report.UnitRoles.Printout
+  , Exporter.OneUnitMembers, Report.OneUnitMembers.Printout
+  , Exporter.Birthdays, Report.Birthdays.Printout
+  , Exporter.ClubMembers, Report.ClubMembers.Printout
+  , Exporter.MemberUnits, Report.MemberUnits.Printout
   ;
 
 { TMainBusiness }
@@ -184,7 +184,7 @@ procedure TMainBusiness.OpenReportBirthdays(const aParamsProvider: IParamsProvid
 begin
   var lExporter: TExporterBirthdays := nil;
   var lParams: TExporterBirthdaysParams := nil;
-  var lReport := TfmReportBirthdays.Create;
+  var lReport := TfmReportBirthdaysPrintout.Create;
   try
     lParams := TExporterBirthdaysParams.Create;
     lParams.FromDate := Now;
@@ -205,7 +205,7 @@ end;
 
 procedure TMainBusiness.OpenReportClubMembers;
 begin
-  var lReport := TfmReportClubMembers.Create;
+  var lReport := TfmReportClubMembersPrintout.Create;
   try
     var lExporter := TExporterClubMembers.Create(fConnection);
     try
@@ -222,7 +222,7 @@ end;
 procedure TMainBusiness.OpenReportMemberUnits(const aParams: TExporterPersonsParams;
       const aParamsProvider: IParamsProvider<TExporterPersonsParams>);
 begin
-  var lReport := TfmReportMemberUnits.Create;
+  var lReport := TfmReportMemberUnitsPrintout.Create;
   try
     var lExporter := TExporterMemberUnits.Create(fConnection);
     try
@@ -241,7 +241,7 @@ end;
 procedure TMainBusiness.OpenReportPersons(const aParams: TExporterPersonsParams;
   const aParamsProvider: IParamsProvider<TExporterPersonsParams>);
 begin
-  var lReport := TfmReportPersons.Create;
+  var lReport := TfmReportPersonsPrintout.Create;
   try
     var lExporter := TExporterPersons.Create(fConnection);
     try
@@ -260,7 +260,7 @@ end;
 procedure TMainBusiness.OpenReportUnitMembers(const aParams: TExporterUnitMembersParams;
   const aParamsProvider: IParamsProvider<TExporterUnitMembersParams>);
 begin
-  var lReport := TfmReportUnitMembers.Create;
+  var lReport := TfmReportUnitMembersPrintout.Create;
   try
     var lExported: Boolean;
     var lExporter := TExporterUnitMembers.Create(fConnection);
@@ -274,7 +274,7 @@ begin
     end;
     if not lExported and (aParams.ExportOneUnitDetails > 0) then
     begin
-      var lDetailedReport := TfmReportOneUnitMembers.Create;
+      var lDetailedReport := TfmReportOneUnitMembersPrintout.Create;
       try
         var lDetailedExporter := TExporterOneUnitMembers.Create(fConnection);
         try
@@ -295,7 +295,7 @@ end;
 
 procedure TMainBusiness.OpenReportUnitRoles;
 begin
-  var lReport := TfmReportUnitRoles.Create;
+  var lReport := TfmReportUnitRolesPrintout.Create;
   try
     var lExporter := TExporterUnitRoles.Create(fConnection);
     try

@@ -1,7 +1,7 @@
-object fmReportBase: TfmReportBase
+object fmReportBasePrintout: TfmReportBasePrintout
   Left = 0
   Top = 0
-  Caption = 'fmReportBase'
+  Caption = 'fmReportBasePrintout'
   ClientHeight = 237
   ClientWidth = 390
   Color = clBtnFace

@@ -1,14 +1,14 @@
-unit Report.UnitMembers;
+unit Report.UnitMembers.Printout;
 
 interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, RLReport, Data.DB, Vcl.StdCtrls,
-  SqlConnection, Report.Base, Exporter.TargetIntf, Exporter.UnitMembers.Types;
+  SqlConnection, Exporter.TargetIntf, Exporter.UnitMembers.Types, Report.Base.Printout;
 
 type
-  TfmReportUnitMembers = class(TfmReportBase, IExporterTarget<TExporterUnitMembersParams>)
+  TfmReportUnitMembersPrintout = class(TfmReportBasePrintout, IExporterTarget<TExporterUnitMembersParams>)
     RLReport: TRLReport;
     dsDataSource: TDataSource;
     bdReportHeader: TRLBand;
@@ -54,13 +54,13 @@ uses TenantReader, Vdm.Globals;
 
 { TfmReportUnitMembers }
 
-procedure TfmReportUnitMembers.DoExport(const aDataSet: ISqlDataSet);
+procedure TfmReportUnitMembersPrintout.DoExport(const aDataSet: ISqlDataSet);
 begin
   dsDataSource.DataSet := aDataSet.DataSet;
   RLReport.Preview;
 end;
 
-procedure TfmReportUnitMembers.bdDetailBeforePrint(Sender: TObject; var PrintIt: Boolean);
+procedure TfmReportUnitMembersPrintout.bdDetailBeforePrint(Sender: TObject; var PrintIt: Boolean);
 begin
   var lUnitBreak := rdUinitId.Field.AsLargeInt <> fPreviousUnitId;
   if fOneUnitPerPage then
@@ -77,19 +77,19 @@ begin
   end;
 end;
 
-procedure TfmReportUnitMembers.bdDetailAfterPrint(Sender: TObject);
+procedure TfmReportUnitMembersPrintout.bdDetailAfterPrint(Sender: TObject);
 begin
   fPreviousUnitId := rdUinitId.Field.AsLargeInt;
   fNewPageStarted := False;
 end;
 
-procedure TfmReportUnitMembers.rdUnitDividerBeforePrint(Sender: TObject; var PrintIt: Boolean);
+procedure TfmReportUnitMembersPrintout.rdUnitDividerBeforePrint(Sender: TObject; var PrintIt: Boolean);
 begin
   var lUnitBreak := rdUinitId.Field.AsLargeInt <> fPreviousUnitId;
   PrintIt := fNewPageStarted or lUnitBreak;
 end;
 
-procedure TfmReportUnitMembers.rdUnitnameBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
+procedure TfmReportUnitMembersPrintout.rdUnitnameBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
 begin
   var lUnitBreak := rdUinitId.Field.AsLargeInt <> fPreviousUnitId;
   PrintIt := fNewPageStarted or lUnitBreak;
@@ -99,19 +99,19 @@ begin
   end;
 end;
 
-procedure TfmReportUnitMembers.RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
+procedure TfmReportUnitMembersPrintout.RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
 begin
   lbTenantTitle.Caption := TTenantReader.Instance.Tenant.Title;
   fPreviousUnitId := 0;
   lbAppTitle.Caption := TVdmGlobals.GetVdmApplicationTitle;
 end;
 
-procedure TfmReportUnitMembers.RLReportPageStarting(Sender: TObject);
+procedure TfmReportUnitMembersPrintout.RLReportPageStarting(Sender: TObject);
 begin
   fNewPageStarted := True;
 end;
 
-procedure TfmReportUnitMembers.SetParams(const aParams: TExporterUnitMembersParams);
+procedure TfmReportUnitMembersPrintout.SetParams(const aParams: TExporterUnitMembersParams);
 begin
 
 end;

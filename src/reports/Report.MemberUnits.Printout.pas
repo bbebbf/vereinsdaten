@@ -1,14 +1,14 @@
-unit Report.MemberUnits;
+unit Report.MemberUnits.Printout;
 
 interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, RLReport, SqlConnection, Data.DB, Vcl.StdCtrls,
-  Report.Base, Exporter.TargetIntf, Exporter.Persons.Types;
+  Exporter.TargetIntf, Exporter.Persons.Types, Report.Base.Printout;
 
 type
-  TfmReportMemberUnits = class(TfmReportBase, IExporterTarget<TExporterPersonsParams>)
+  TfmReportMemberUnitsPrintout = class(TfmReportBasePrintout, IExporterTarget<TExporterPersonsParams>)
     RLReport: TRLReport;
     dsDataSource: TDataSource;
     bdReportHeader: TRLBand;
@@ -52,13 +52,13 @@ uses TenantReader, Vdm.Globals;
 
 { TfmReportMemberUnits }
 
-procedure TfmReportMemberUnits.DoExport(const aDataSet: ISqlDataSet);
+procedure TfmReportMemberUnitsPrintout.DoExport(const aDataSet: ISqlDataSet);
 begin
   dsDataSource.DataSet := aDataSet.DataSet;
   RLReport.Preview;
 end;
 
-procedure TfmReportMemberUnits.bdDetailBeforePrint(Sender: TObject; var PrintIt: Boolean);
+procedure TfmReportMemberUnitsPrintout.bdDetailBeforePrint(Sender: TObject; var PrintIt: Boolean);
 begin
   if fOneUnitPerPage then
   begin
@@ -74,35 +74,35 @@ begin
   end;
 end;
 
-procedure TfmReportMemberUnits.bdDetailAfterPrint(Sender: TObject);
+procedure TfmReportMemberUnitsPrintout.bdDetailAfterPrint(Sender: TObject);
 begin
   fPreviousPersonId := rdPersonid.Field.AsLargeInt;
   fNewPageStarted := False;
 end;
 
-procedure TfmReportMemberUnits.rdUnitDividerBeforePrint(Sender: TObject; var PrintIt: Boolean);
+procedure TfmReportMemberUnitsPrintout.rdUnitDividerBeforePrint(Sender: TObject; var PrintIt: Boolean);
 begin
   PrintIt := fNewPageStarted or (rdPersonid.Field.AsLargeInt <> fPreviousPersonId);
 end;
 
-procedure TfmReportMemberUnits.rdPersonnameBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
+procedure TfmReportMemberUnitsPrintout.rdPersonnameBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
 begin
   PrintIt := fNewPageStarted or (rdPersonid.Field.AsLargeInt <> fPreviousPersonId);
 end;
 
-procedure TfmReportMemberUnits.RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
+procedure TfmReportMemberUnitsPrintout.RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
 begin
   lbTenantTitle.Caption := TTenantReader.Instance.Tenant.Title;
   fPreviousPersonId := 0;
   lbAppTitle.Caption := TVdmGlobals.GetVdmApplicationTitle;
 end;
 
-procedure TfmReportMemberUnits.RLReportPageStarting(Sender: TObject);
+procedure TfmReportMemberUnitsPrintout.RLReportPageStarting(Sender: TObject);
 begin
   fNewPageStarted := True;
 end;
 
-procedure TfmReportMemberUnits.SetParams(const aParams: TExporterPersonsParams);
+procedure TfmReportMemberUnitsPrintout.SetParams(const aParams: TExporterPersonsParams);
 begin
   lbSpecialPersonsInfo.Visible := aParams.ShowInactivePersons or aParams.ShowExternalPersons;
   if aParams.ShowInactivePersons and aParams.ShowExternalPersons then

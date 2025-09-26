@@ -1,4 +1,4 @@
-unit Report.Base;
+unit Report.Base.Printout;
 
 interface
 
@@ -7,7 +7,7 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs;
 
 type
-  TfmReportBase = class(TForm)
+  TfmReportBasePrintout = class(TForm)
   strict protected
     function GetTitle: string;
   public
@@ -20,12 +20,12 @@ implementation
 
 { TfmReportBase }
 
-constructor TfmReportBase.Create;
+constructor TfmReportBasePrintout.Create;
 begin
   inherited Create(nil);
 end;
 
-function TfmReportBase.GetTitle: string;
+function TfmReportBasePrintout.GetTitle: string;
 begin
   Result := 'Ausdruck';
 end;

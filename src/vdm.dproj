@@ -276,13 +276,13 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="general\intf\tools\VersionInfoEntryUI.pas"/>
         <DCCReference Include="view\tools\VclUITools.pas"/>
         <DCCReference Include="general\intf\tools\VersionInfoEntryAccessor.pas"/>
-        <DCCReference Include="reports\Report.ClubMembers.pas">
-            <Form>fmReportClubMembers</Form>
+        <DCCReference Include="reports\Report.ClubMembers.Printout.pas">
+            <Form>fmReportClubMembersPrintout</Form>
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="general\common\Tools\TenantReader.pas"/>
         <DCCReference Include="data\DtoTenant.pas"/>
-        <DCCReference Include="reports\Report.UnitMembers.pas">
+        <DCCReference Include="reports\Report.UnitMembers.Printout.pas">
             <Form>fmReportUnitMembers</Form>
             <FormType>dfm</FormType>
         </DCCReference>
@@ -292,7 +292,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         </DCCReference>
         <DCCReference Include="data\CrudConfigTenant.pas"/>
         <DCCReference Include="data\CrudConfigTenantEntry.pas"/>
-        <DCCReference Include="reports\Report.UnitRoles.pas">
+        <DCCReference Include="reports\Report.UnitRoles.Printout.pas">
             <Form>fmReportUnitRoles</Form>
             <FormType>dfm</FormType>
         </DCCReference>
@@ -302,16 +302,16 @@ $(PostBuildEvent)]]></PostBuildEvent>
             <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
-        <DCCReference Include="reports\Report.MemberUnits.pas">
-            <Form>fmReportMemberUnits</Form>
+        <DCCReference Include="reports\Report.MemberUnits.Printout.pas">
+            <Form>fmReportMemberUnitsPrintout</Form>
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="view\forms\unSelectConnection.pas">
             <Form>fmSelectConnection</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="reports\Report.Persons.pas">
-            <Form>fmReportPersons</Form>
+        <DCCReference Include="reports\Report.Persons.Printout.pas">
+            <Form>fmReportPersonsPrintout</Form>
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="data\CrudMemberConfigMasterPerson.pas"/>
@@ -330,12 +330,12 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="view\intf\MainUI.pas"/>
         <DCCReference Include="view\tools\ActionlistWrapper.pas"/>
         <DCCReference Include="general\intf\tools\WorkSection.pas"/>
-        <DCCReference Include="reports\Report.OneUnitMembers.pas">
-            <Form>fmReportOneUnitMembers</Form>
+        <DCCReference Include="reports\Report.OneUnitMembers.Printout.pas">
+            <Form>fmReportOneUnitMembersPrintout</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="reports\Report.Birthdays.pas">
-            <Form>fmReportBirthdays</Form>
+        <DCCReference Include="reports\Report.Birthdays.Printout.pas">
+            <Form>fmReportBirthdaysPrintout</Form>
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="general\common\Tools\Nullable.pas"/>
@@ -372,8 +372,8 @@ $(PostBuildEvent)]]></PostBuildEvent>
             <Form>fmExporterParamsPersons</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="reports\Report.Base.pas">
-            <Form>fmReportBase</Form>
+        <DCCReference Include="reports\Report.Base.Printout.pas">
+            <Form>fmReportBasePrintout</Form>
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="view\forms\export\unExporter.Params.Base.pas">
@@ -382,6 +382,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         </DCCReference>
         <DCCReference Include="general\common\Tools\PatternValidation.pas"/>
         <DCCReference Include="general\intf\sql\SqlResultPopulator.pas"/>
+        <DCCReference Include="general\common\Tools\CsvWriter.pas"/>
         <None Include="inc\CompilerDirectives.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>

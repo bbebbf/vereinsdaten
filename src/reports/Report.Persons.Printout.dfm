@@ -1,9 +1,9 @@
-object fmReportBirthdays: TfmReportBirthdays
+object fmReportPersonsPrintout: TfmReportPersonsPrintout
   Left = 0
   Top = 0
-  Caption = 'fmReportBirthdays'
-  ClientHeight = 934
-  ClientWidth = 996
+  Caption = 'fmReportPersonsPrintout'
+  ClientHeight = 942
+  ClientWidth = 998
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -22,19 +22,19 @@ object fmReportBirthdays: TfmReportBirthdays
     Font.Height = -17
     Font.Name = 'Arial'
     Font.Style = []
-    JobTitle = 'Geburtstagsliste'
+    JobTitle = 'Einheiten und Personen'
     object bdReportHeader: TRLBand
       Left = 47
       Top = 47
       Width = 898
-      Height = 66
+      Height = 50
       BandType = btHeader
       object lbReportTitle: TLabel
         Left = 0
         Top = 0
-        Width = 144
+        Width = 83
         Height = 23
-        Caption = 'Geburtstagsliste'
+        Caption = 'Personen'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
         Font.Height = -20
@@ -56,51 +56,12 @@ object fmReportBirthdays: TfmReportBirthdays
         Font.Style = []
         ParentFont = False
       end
-      object Label2: TLabel
+      object lbSpecialPersonsInfo: TRLLabel
         Left = 0
-        Top = 40
-        Width = 27
+        Top = 28
+        Width = 186
         Height = 17
-        Caption = 'von:'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -15
-        Font.Name = 'Arial'
-        Font.Style = []
-        ParentFont = False
-      end
-      object Label1: TLabel
-        Left = 120
-        Top = 40
-        Width = 23
-        Height = 17
-        Caption = 'bis:'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -15
-        Font.Name = 'Arial'
-        Font.Style = []
-        ParentFont = False
-      end
-      object lbFromDate: TLabel
-        Left = 32
-        Top = 40
-        Width = 27
-        Height = 17
-        Caption = 'von:'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -15
-        Font.Name = 'Arial'
-        Font.Style = []
-        ParentFont = False
-      end
-      object lbToDate: TLabel
-        Left = 152
-        Top = 40
-        Width = 23
-        Height = 17
-        Caption = 'bis:'
+        Caption = 'Inaktive Personen enthalten.'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
         Font.Height = -15
@@ -111,7 +72,7 @@ object fmReportBirthdays: TfmReportBirthdays
     end
     object bdColumnHeader: TRLBand
       Left = 47
-      Top = 113
+      Top = 97
       Width = 898
       Height = 26
       BandType = btColumnHeader
@@ -121,35 +82,42 @@ object fmReportBirthdays: TfmReportBirthdays
       Font.Name = 'Calibri'
       Font.Style = [fsBold]
       ParentFont = False
-      object lbName: TLabel
+      object Label3: TLabel
         Left = 0
         Top = 3
         Width = 37
         Height = 18
         Caption = 'Name'
       end
+      object lbInactive: TLabel
+        Left = 258
+        Top = 3
+        Width = 42
+        Height = 18
+        Alignment = taCenter
+        Caption = 'Inaktiv'
+      end
       object lbAddress: TLabel
-        Left = 458
-        Top = 3
-        Width = 90
-        Height = 18
-        Caption = 'Geburtsdatum'
-      end
-      object lbBirthday: TLabel
-        Left = 220
-        Top = 3
-        Width = 69
-        Height = 18
-        Caption = 'Geburtstag'
-      end
-      object lbAge: TLabel
-        Left = 368
+        Left = 410
         Top = 3
         Width = 50
         Height = 18
-        Alignment = taRightJustify
-        AutoSize = False
-        Caption = 'Alter'
+        Caption = 'Adresse'
+      end
+      object lbBirthday: TLabel
+        Left = 320
+        Top = 3
+        Width = 75
+        Height = 18
+        Caption = 'Geb.-Datum'
+      end
+      object lbExternal: TLabel
+        Left = 195
+        Top = 3
+        Width = 40
+        Height = 18
+        Alignment = taCenter
+        Caption = 'Extern'
       end
       object rdColumnHeaderHLine: TRLDraw
         Left = 0
@@ -162,7 +130,7 @@ object fmReportBirthdays: TfmReportBirthdays
     end
     object bdDetail: TRLBand
       Left = 47
-      Top = 139
+      Top = 123
       Width = 898
       Height = 23
       GreenBarPrint = True
@@ -181,49 +149,50 @@ object fmReportBirthdays: TfmReportBirthdays
         DataSource = dsDataSource
         Text = ''
       end
+      object rtInactive: TRLDBText
+        Left = 258
+        Top = 2
+        Width = 58
+        Height = 18
+        Alignment = taCenter
+        DataField = 'person_inactive'
+        DataSource = dsDataSource
+        Text = ''
+      end
       object rtAddress: TRLDBText
-        Left = 458
+        Left = 410
+        Top = 2
+        Width = 84
+        Height = 18
+        DataField = 'address_title'
+        DataSource = dsDataSource
+        Text = ''
+      end
+      object rtBirthday: TRLDBText
+        Left = 320
         Top = 2
         Width = 105
         Height = 18
         DataField = 'person_date_of_birth'
         DataSource = dsDataSource
         Text = ''
+        BeforePrint = rtBirthdayBeforePrint
       end
-      object rdBirthdayWeekday: TRLDBText
-        Left = 220
+      object rtExternal: TRLDBText
+        Left = 195
         Top = 2
-        Width = 72
+        Width = 58
         Height = 18
-        DataField = 'birthday'
+        Alignment = taCenter
+        AutoSize = False
+        DataField = 'person_external_x'
         DataSource = dsDataSource
         Text = ''
-        BeforePrint = rdBirthdayWeekdayBeforePrint
-      end
-      object RLDBText1: TRLDBText
-        Left = 368
-        Top = 2
-        Width = 50
-        Height = 18
-        Alignment = taRightJustify
-        DataField = 'age'
-        DataSource = dsDataSource
-        Text = ''
-      end
-      object rdBirthday: TRLDBText
-        Left = 298
-        Top = 2
-        Width = 55
-        Height = 18
-        DataField = 'birthday'
-        DataSource = dsDataSource
-        Text = ''
-        BeforePrint = rdBirthdayBeforePrint
       end
     end
     object bdPageFooter: TRLBand
       Left = 47
-      Top = 162
+      Top = 146
       Width = 898
       Height = 27
       BandType = btFooter

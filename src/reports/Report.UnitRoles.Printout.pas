@@ -1,14 +1,14 @@
-unit Report.UnitRoles;
+unit Report.UnitRoles.Printout;
 
 interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, RLReport, SqlConnection, Data.DB, Vcl.StdCtrls,
-  Report.Base, Exporter.TargetIntf;
+  Exporter.TargetIntf, Report.Base.Printout;
 
 type
-  TfmReportUnitRoles = class(TfmReportBase, IExporterTarget<TObject>)
+  TfmReportUnitRolesPrintout = class(TfmReportBasePrintout, IExporterTarget<TObject>)
     RLReport: TRLReport;
     dsDataSource: TDataSource;
     bdReportHeader: TRLBand;
@@ -51,41 +51,41 @@ uses TenantReader, Vdm.Globals;
 
 { TfmReportUnitRoles }
 
-procedure TfmReportUnitRoles.DoExport(const aDataSet: ISqlDataSet);
+procedure TfmReportUnitRolesPrintout.DoExport(const aDataSet: ISqlDataSet);
 begin
   dsDataSource.DataSet := aDataSet.DataSet;
   RLReport.Preview;
 end;
 
-procedure TfmReportUnitRoles.bdDetailAfterPrint(Sender: TObject);
+procedure TfmReportUnitRolesPrintout.bdDetailAfterPrint(Sender: TObject);
 begin
   fPreviousRoleId := rdRoleId.Field.AsLargeInt;
   fNewPageStarted := False;
 end;
 
-procedure TfmReportUnitRoles.rdDividerBeforePrint(Sender: TObject; var PrintIt: Boolean);
+procedure TfmReportUnitRolesPrintout.rdDividerBeforePrint(Sender: TObject; var PrintIt: Boolean);
 begin
   PrintIt := fNewPageStarted or (rdRoleId.Field.AsLargeInt <> fPreviousRoleId);
 end;
 
-procedure TfmReportUnitRoles.rdRoleNameBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
+procedure TfmReportUnitRolesPrintout.rdRoleNameBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
 begin
   PrintIt := fNewPageStarted or (rdRoleId.Field.AsLargeInt <> fPreviousRoleId);
 end;
 
-procedure TfmReportUnitRoles.RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
+procedure TfmReportUnitRolesPrintout.RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
 begin
   lbTenantTitle.Caption := TTenantReader.Instance.Tenant.Title;
   fPreviousRoleId := 0;
   lbAppTitle.Caption := TVdmGlobals.GetVdmApplicationTitle;
 end;
 
-procedure TfmReportUnitRoles.RLReportPageStarting(Sender: TObject);
+procedure TfmReportUnitRolesPrintout.RLReportPageStarting(Sender: TObject);
 begin
   fNewPageStarted := True;
 end;
 
-procedure TfmReportUnitRoles.SetParams(const aParams: TObject);
+procedure TfmReportUnitRolesPrintout.SetParams(const aParams: TObject);
 begin
 
 end;

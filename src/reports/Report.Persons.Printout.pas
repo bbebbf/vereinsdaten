@@ -1,14 +1,14 @@
-unit Report.Persons;
+unit Report.Persons.Printout;
 
 interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, RLReport, SqlConnection, Data.DB, Vcl.StdCtrls,
-  Report.Base, Exporter.TargetIntf, Exporter.Persons.Types;
+  Exporter.TargetIntf, Exporter.Persons.Types, Report.Base.Printout;
 
 type
-  TfmReportPersons = class(TfmReportBase, IExporterTarget<TExporterPersonsParams>)
+  TfmReportPersonsPrintout = class(TfmReportBasePrintout, IExporterTarget<TExporterPersonsParams>)
     RLReport: TRLReport;
     dsDataSource: TDataSource;
     bdReportHeader: TRLBand;
@@ -47,13 +47,13 @@ uses TenantReader, Vdm.Globals, VclUITools;
 
 { TfmReportPersons }
 
-procedure TfmReportPersons.DoExport(const aDataSet: ISqlDataSet);
+procedure TfmReportPersonsPrintout.DoExport(const aDataSet: ISqlDataSet);
 begin
   dsDataSource.DataSet := aDataSet.DataSet;
   RLReport.Preview;
 end;
 
-procedure TfmReportPersons.rtBirthdayBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
+procedure TfmReportPersonsPrintout.rtBirthdayBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
 begin
   var lFieldDayOfBirth := RLReport.DataSource.DataSet.FieldByName('person_day_of_birth');
   var lFieldMonthOfBirth := RLReport.DataSource.DataSet.FieldByName('person_month_of_birth');
@@ -63,7 +63,7 @@ begin
   end;
 end;
 
-procedure TfmReportPersons.SetParams(const aParams: TExporterPersonsParams);
+procedure TfmReportPersonsPrintout.SetParams(const aParams: TExporterPersonsParams);
 begin
   lbTenantTitle.Caption := TTenantReader.Instance.Tenant.Title;
   lbAppTitle.Caption := TVdmGlobals.GetVdmApplicationTitle;

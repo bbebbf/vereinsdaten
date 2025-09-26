@@ -1,14 +1,14 @@
-unit Report.Birthdays;
+unit Report.Birthdays.Printout;
 
 interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, RLReport, Data.DB, Vcl.StdCtrls,
-  Report.Base, Exporter.TargetIntf, SqlConnection, Exporter.Birthdays.Types;
+  Exporter.TargetIntf, SqlConnection, Exporter.Birthdays.Types, Report.Base.Printout;
 
 type
-  TfmReportBirthdays = class(TfmReportBase, IExporterTarget<TExporterBirthdaysParams>)
+  TfmReportBirthdaysPrintout = class(TfmReportBasePrintout, IExporterTarget<TExporterBirthdaysParams>)
     RLReport: TRLReport;
     dsDataSource: TDataSource;
     bdReportHeader: TRLBand;
@@ -50,23 +50,23 @@ uses System.IOUtils, System.Generics.Collections, System.DateUtils, TenantReader
 
 { TfmReportBirthdays }
 
-procedure TfmReportBirthdays.DoExport(const aDataSet: ISqlDataSet);
+procedure TfmReportBirthdaysPrintout.DoExport(const aDataSet: ISqlDataSet);
 begin
   dsDataSource.DataSet := aDataSet.DataSet;
   RLReport.Preview;
 end;
 
-procedure TfmReportBirthdays.rdBirthdayBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
+procedure TfmReportBirthdaysPrintout.rdBirthdayBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
 begin
   AText := FormatDateTime('dd.mm.yy', rdBirthday.Field.AsDateTime);
 end;
 
-procedure TfmReportBirthdays.rdBirthdayWeekdayBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
+procedure TfmReportBirthdaysPrintout.rdBirthdayWeekdayBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
 begin
   AText := FormatDateTime('dddd', rdBirthday.Field.AsDateTime);
 end;
 
-procedure TfmReportBirthdays.SetParams(const aParams: TExporterBirthdaysParams);
+procedure TfmReportBirthdaysPrintout.SetParams(const aParams: TExporterBirthdaysParams);
 begin
   lbTenantTitle.Caption := TTenantReader.Instance.Tenant.Title;
   lbAppTitle.Caption := TVdmGlobals.GetVdmApplicationTitle;
