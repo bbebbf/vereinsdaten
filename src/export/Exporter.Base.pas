@@ -2,7 +2,7 @@ unit Exporter.Base;
 
 interface
 
-uses System.Generics.Collections, SqlConnection, Exporter.TargetIntf, ParamsProvider;
+uses System.Generics.Collections, SqlConnection, Exporter.Types, ParamsProvider;
 
 type
   TExporterBase<T: class, constructor> = class

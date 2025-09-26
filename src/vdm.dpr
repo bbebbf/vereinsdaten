@@ -128,7 +128,6 @@ uses
   Exporter.Base in 'export\Exporter.Base.pas',
   Exporter.UnitMembers in 'export\Exporter.UnitMembers.pas',
   Exporter.Birthdays in 'export\Exporter.Birthdays.pas',
-  Exporter.TargetIntf in 'export\Exporter.TargetIntf.pas',
   Exporter.ClubMembers in 'export\Exporter.ClubMembers.pas',
   Exporter.MemberUnits in 'export\Exporter.MemberUnits.pas',
   Exporter.OneUnitMembers in 'export\Exporter.OneUnitMembers.pas',
@@ -147,7 +146,8 @@ uses
   unExporter.Params.Base in 'view\forms\export\unExporter.Params.Base.pas' {fmExporterParamsBase},
   PatternValidation in 'general\common\Tools\PatternValidation.pas',
   SqlResultPopulator in 'general\intf\sql\SqlResultPopulator.pas',
-  CsvWriter in 'general\common\Tools\CsvWriter.pas';
+  CsvWriter in 'general\common\Tools\CsvWriter.pas',
+  Exporter.Types in 'export\Exporter.Types.pas';
 
 {$R *.res}
 

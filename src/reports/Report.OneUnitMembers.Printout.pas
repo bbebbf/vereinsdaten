@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, RLReport, SqlConnection, Data.DB, Vcl.StdCtrls,
-  Exporter.TargetIntf, Exporter.OneUnitMembers, Report.Base.Printout;
+  Exporter.Types, Exporter.OneUnitMembers, Report.Base.Printout;
 
 type
   TfmReportOneUnitMembersPrintout = class(TfmReportBasePrintout, IExporterTarget<TExporterOneUnitMembersParams>)

@@ -1,4 +1,4 @@
-unit Exporter.TargetIntf;
+unit Exporter.Types;
 
 interface
 

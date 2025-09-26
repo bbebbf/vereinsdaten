@@ -3,7 +3,7 @@ unit Exporter.Birthdays;
 
 interface
 
-uses SqlConnection, Exporter.TargetIntf, Exporter.Base, Exporter.Birthdays.Types;
+uses SqlConnection, Exporter.Types, Exporter.Base, Exporter.Birthdays.Types;
 
 type
   TExporterBirthdays = class(TExporterBase<TExporterBirthdaysParams>)

@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, RLReport, Data.DB, Vcl.StdCtrls,
-  Exporter.TargetIntf, SqlConnection, Exporter.Birthdays.Types, Report.Base.Printout;
+  Exporter.Types, SqlConnection, Exporter.Birthdays.Types, Report.Base.Printout;
 
 type
   TfmReportBirthdaysPrintout = class(TfmReportBasePrintout, IExporterTarget<TExporterBirthdaysParams>)

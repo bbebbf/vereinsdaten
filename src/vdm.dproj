@@ -345,7 +345,6 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="export\Exporter.Base.pas"/>
         <DCCReference Include="export\Exporter.UnitMembers.pas"/>
         <DCCReference Include="export\Exporter.Birthdays.pas"/>
-        <DCCReference Include="export\Exporter.TargetIntf.pas"/>
         <DCCReference Include="export\Exporter.ClubMembers.pas"/>
         <DCCReference Include="export\Exporter.MemberUnits.pas"/>
         <DCCReference Include="export\Exporter.OneUnitMembers.pas"/>
@@ -383,6 +382,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="general\common\Tools\PatternValidation.pas"/>
         <DCCReference Include="general\intf\sql\SqlResultPopulator.pas"/>
         <DCCReference Include="general\common\Tools\CsvWriter.pas"/>
+        <DCCReference Include="export\Exporter.Types.pas"/>
         <None Include="inc\CompilerDirectives.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
