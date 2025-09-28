@@ -383,6 +383,18 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="general\intf\sql\SqlResultPopulator.pas"/>
         <DCCReference Include="general\common\Tools\CsvWriter.pas"/>
         <DCCReference Include="export\Exporter.Types.pas"/>
+        <DCCReference Include="reports\Report.Base.Csv.pas"/>
+        <DCCReference Include="reports\Report.Persons.Csv.pas"/>
+        <DCCReference Include="reports\Report.Birthdays.Csv.pas"/>
+        <DCCReference Include="reports\Report.ClubMembers.Csv.pas"/>
+        <DCCReference Include="reports\Report.MemberUnits.Csv.pas"/>
+        <DCCReference Include="reports\Report.OneUnitMembers.Csv.pas"/>
+        <DCCReference Include="reports\Report.UnitMembers.Csv.pas"/>
+        <DCCReference Include="reports\Report.UnitRoles.Csv.pas"/>
+        <DCCReference Include="view\forms\export\unExporter.Params.ZeroParams.pas">
+            <Form>fmExporterParamsZeroParams</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <None Include="inc\CompilerDirectives.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>

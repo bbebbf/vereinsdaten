@@ -23,14 +23,14 @@ type
     function IsCrudPersonActivated: Boolean;
     function IsCrudUnitActivated: Boolean;
 
-    procedure OpenReportClubMembers;
+    procedure OpenReportClubMembers(const aParamsProvider: IParamsProvider<TObject>);
     procedure OpenReportMemberUnits(const aParams: TExporterPersonsParams;
       const aParamsProvider: IParamsProvider<TExporterPersonsParams>);
     procedure OpenReportPersons(const aParams: TExporterPersonsParams;
       const aParamsProvider: IParamsProvider<TExporterPersonsParams>);
     procedure OpenReportUnitMembers(const aParams: TExporterUnitMembersParams;
       const aParamsProvider: IParamsProvider<TExporterUnitMembersParams>);
-    procedure OpenReportUnitRoles;
+    procedure OpenReportUnitRoles(const aParamsProvider: IParamsProvider<TObject>);
     procedure OpenReportBirthdays(const aParamsProvider: IParamsProvider<TExporterBirthdaysParams>);
   end;
 

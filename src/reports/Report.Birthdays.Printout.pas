@@ -39,7 +39,8 @@ type
     procedure rdBirthdayBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
   strict private
     procedure SetParams(const aParams: TExporterBirthdaysParams);
-    procedure DoExport(const aDataSet: ISqlDataSet);
+  strict protected
+    procedure ExportInternal(const aDataSet: ISqlDataSet); override;
   end;
 
 implementation
@@ -50,7 +51,7 @@ uses System.IOUtils, System.Generics.Collections, System.DateUtils, TenantReader
 
 { TfmReportBirthdays }
 
-procedure TfmReportBirthdaysPrintout.DoExport(const aDataSet: ISqlDataSet);
+procedure TfmReportBirthdaysPrintout.ExportInternal(const aDataSet: ISqlDataSet);
 begin
   dsDataSource.DataSet := aDataSet.DataSet;
   RLReport.Preview;

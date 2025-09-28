@@ -9,12 +9,14 @@ type
     ['{AF4A1B46-BEE2-41C6-9E23-D067B4FD8E43}']
     function AddValue(const aValue: string): ICsvWriter; overload;
     function AddValue(const aValue: Int64): ICsvWriter; overload;
+    function AddValue(const aValue: Boolean): ICsvWriter; overload;
     function AddValue(const aValue: Extended): ICsvWriter; overload;
     function AddValue(const aValue: Extended; const aFormatSettings: TFormatSettings): ICsvWriter; overload;
     function AddValue(const aFormat: string; const aValue: Extended): ICsvWriter; overload;
     function AddValue(const aFormat: string; const aValue: Extended; const aFormatSettings: TFormatSettings): ICsvWriter; overload;
     function AddValue(const aFormat: string; const aValue: TDateTime): ICsvWriter; overload;
     function AddValue(const aFormat: string; const aValue: TDateTime; const aFormatSettings: TFormatSettings): ICsvWriter; overload;
+    function AddValue(const aValue: Variant): ICsvWriter; overload;
     function NewLine: ICsvWriter;
     function Close: ICsvWriter;
     function GetLineCount: Integer;
@@ -25,21 +27,22 @@ type
   strict private
     fStream: TStreamWriter;
     fCurrentLine: string;
-    fNewLinePending: Boolean;
     fLineCount: Integer;
     fFirstLineValueCount: Integer;
     fCurrentLineValueCount: Integer;
 
-    function CloseCurrentLine(const aCloseWriter: Boolean = False): Boolean;
+    procedure WriteCurrentLine;
 
     function AddValue(const aValue: string): ICsvWriter; overload;
     function AddValue(const aValue: Int64): ICsvWriter; overload;
+    function AddValue(const aValue: Boolean): ICsvWriter; overload;
     function AddValue(const aValue: Extended): ICsvWriter; overload;
     function AddValue(const aValue: Extended; const aFormatSettings: TFormatSettings): ICsvWriter; overload;
     function AddValue(const aFormat: string; const aValue: Extended): ICsvWriter; overload;
     function AddValue(const aFormat: string; const aValue: Extended; const aFormatSettings: TFormatSettings): ICsvWriter; overload;
     function AddValue(const aFormat: string; const aValue: TDateTime): ICsvWriter; overload;
     function AddValue(const aFormat: string; const aValue: TDateTime; const aFormatSettings: TFormatSettings): ICsvWriter; overload;
+    function AddValue(const aValue: Variant): ICsvWriter; overload;
     function NewLine: ICsvWriter;
     function Close: ICsvWriter;
     function GetLineCount: Integer;
@@ -52,6 +55,8 @@ type
   end;
 
 implementation
+
+uses System.Variants;
 
 { TCsvWriter }
 
@@ -119,15 +124,22 @@ begin
   Result := AddValue(IntToStr(aValue));
 end;
 
+function TCsvWriter.AddValue(const aValue: Boolean): ICsvWriter;
+begin
+  Result := AddValue(BoolToStr(aValue));
+end;
+
+function TCsvWriter.AddValue(const aValue: Variant): ICsvWriter;
+begin
+  Result := AddValue(VarToStr(aValue));
+end;
+
 function TCsvWriter.AddValue(const aValue: string): ICsvWriter;
 begin
   Result := Self;
-  var lLineClosed := CloseCurrentLine;
-
-  if lLineClosed or (fLineCount = 0) then
-    Inc(fLineCount);
-
-  if fCurrentLineValueCount > 0 then
+  if fCurrentLineValueCount = 0 then
+    Inc(fLineCount)
+  else
     fCurrentLine := fCurrentLine + ';';
 
   fCurrentLine := fCurrentLine + '"';
@@ -144,22 +156,18 @@ end;
 function TCsvWriter.Close: ICsvWriter;
 begin
   Result := Self;
-  CloseCurrentLine(True);
-  fStream.Flush;
+  if fCurrentLineValueCount > 0 then
+    WriteCurrentLine;
 end;
 
 function TCsvWriter.NewLine: ICsvWriter;
 begin
   Result := Self;
-  CloseCurrentLine;
-  fNewLinePending := True;
+  WriteCurrentLine;
 end;
 
-function TCsvWriter.CloseCurrentLine(const aCloseWriter: Boolean): Boolean;
+procedure TCsvWriter.WriteCurrentLine;
 begin
-  if not aCloseWriter and not fNewLinePending then
-    Exit(False);
-
   if fLineCount = 1 then
   begin
     fFirstLineValueCount := fCurrentLineValueCount;
@@ -170,10 +178,13 @@ begin
       [fCurrentLineValueCount, fFirstLineValueCount]);
   end;
 
-  Result := True;
-  fStream.WriteLine(fCurrentLine);
+  if fLineCount > 1 then
+  begin
+    fStream.WriteLine;
+  end;
+  fStream.Write(fCurrentLine);
+  fStream.Flush;
   fCurrentLine := '';
-  fNewLinePending := False;
   fCurrentLineValueCount := 0;
 end;
 

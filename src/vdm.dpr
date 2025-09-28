@@ -147,7 +147,16 @@ uses
   PatternValidation in 'general\common\Tools\PatternValidation.pas',
   SqlResultPopulator in 'general\intf\sql\SqlResultPopulator.pas',
   CsvWriter in 'general\common\Tools\CsvWriter.pas',
-  Exporter.Types in 'export\Exporter.Types.pas';
+  Exporter.Types in 'export\Exporter.Types.pas',
+  Report.Base.Csv in 'reports\Report.Base.Csv.pas',
+  Report.Persons.Csv in 'reports\Report.Persons.Csv.pas',
+  Report.Birthdays.Csv in 'reports\Report.Birthdays.Csv.pas',
+  Report.ClubMembers.Csv in 'reports\Report.ClubMembers.Csv.pas',
+  Report.MemberUnits.Csv in 'reports\Report.MemberUnits.Csv.pas',
+  Report.OneUnitMembers.Csv in 'reports\Report.OneUnitMembers.Csv.pas',
+  Report.UnitMembers.Csv in 'reports\Report.UnitMembers.Csv.pas',
+  Report.UnitRoles.Csv in 'reports\Report.UnitRoles.Csv.pas',
+  unExporter.Params.ZeroParams in 'view\forms\export\unExporter.Params.ZeroParams.pas' {fmExporterParamsZeroParams};
 
 {$R *.res}
 

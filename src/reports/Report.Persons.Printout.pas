@@ -36,7 +36,8 @@ type
     procedure rtBirthdayBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
   strict private
     procedure SetParams(const aParams: TExporterPersonsParams);
-    procedure DoExport(const aDataSet: ISqlDataSet);
+  strict protected
+    procedure ExportInternal(const aDataSet: ISqlDataSet); override;
   end;
 
 implementation
@@ -47,7 +48,7 @@ uses TenantReader, Vdm.Globals, VclUITools;
 
 { TfmReportPersons }
 
-procedure TfmReportPersonsPrintout.DoExport(const aDataSet: ISqlDataSet);
+procedure TfmReportPersonsPrintout.ExportInternal(const aDataSet: ISqlDataSet);
 begin
   dsDataSource.DataSet := aDataSet.DataSet;
   RLReport.Preview;

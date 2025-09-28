@@ -12,11 +12,14 @@ type
     fOwnsParams: Boolean;
     fParamsProvider: IParamsProvider<T>;
     fTargets: TList<IExporterTarget<T>>;
+    fSelectedTargetIndex: Integer;
+    fSelectedTarget: IExporterTarget<T>;
+    fResultMessageNotifier: IExporterResultMessageNotifier;
     fQuery: ISqlPreparedQuery;
     fTemporaryTableNames: TStack<string>;
     function GetSqlDataSet(out aSqlDataSet: ISqlDataSet): Boolean;
     procedure SetParams(const aValue: T);
-    procedure SetTargetsToParamsProvider;
+    procedure SetTargetsToParamsProvider(const aTargetProvider: IExporterTargetProvider);
   strict protected
     procedure PrepareExport; virtual;
     function CreatePreparedQuery(out aQuery: ISqlPreparedQuery): Boolean; virtual;
@@ -32,11 +35,14 @@ type
     property Targets: TList<IExporterTarget<T>> read fTargets;
     property Params: T read fParams write SetParams;
     property ParamsProvider: IParamsProvider<T> read fParamsProvider write fParamsProvider;
+    property SelectedTargetIndex: Integer read fSelectedTargetIndex write fSelectedTargetIndex;
+    property SelectedTarget: IExporterTarget<T> read fSelectedTarget write fSelectedTarget;
+    property ResultMessageNotifier: IExporterResultMessageNotifier read fResultMessageNotifier write fResultMessageNotifier;
   end;
 
 implementation
 
-uses System.IOUtils;
+uses System.SysUtils, System.IOUtils;
 
 { TExporterBase<T> }
 
@@ -48,6 +54,7 @@ begin
   fConnection := aConnection;
   fParams := T.Create;
   fOwnsParams := True;
+  fSelectedTargetIndex := -1;
 end;
 
 destructor TExporterBase<T>.Destroy;
@@ -62,41 +69,62 @@ end;
 function TExporterBase<T>.DoExport: Boolean;
 begin
   Result := False;
-  if fTargets.Count = 0 then
-    Exit;
-
-  var lTargetIndex: Integer;
-  if Assigned(fParamsProvider) then
+  if not Assigned(fSelectedTarget) then
   begin
-    SetTargetsToParamsProvider;
-    fParamsProvider.SetParams(fParams);
-    if fParamsProvider.ProvideParams then
-    begin
-      lTargetIndex := fParamsProvider.GetTargetIndex;
-      fParamsProvider.GetParams(fParams);
-      if not fParamsProvider.ShouldBeExported(fParams) then
-        Exit;
-    end
-    else
-    begin
+    if fTargets.Count = 0 then
       Exit;
-    end;
-  end
-  else
-  begin
-    lTargetIndex := 0;
-  end;
-  if lTargetIndex < 0 then
-    Exit;
 
+    if Assigned(fParamsProvider) then
+    begin
+      var lTargetProvider: IExporterTargetProvider;
+      Supports(fParamsProvider, IExporterTargetProvider, lTargetProvider);
+      if Assigned(lTargetProvider) then
+        SetTargetsToParamsProvider(lTargetProvider);
+
+      fParamsProvider.SetParams(fParams);
+      if fParamsProvider.ProvideParams then
+      begin
+        fParamsProvider.GetParams(fParams);
+        if Assigned(lTargetProvider) then
+          fSelectedTargetIndex := lTargetProvider.GetTargetIndex
+        else
+          fSelectedTargetIndex := 0;
+        if not fParamsProvider.ShouldBeExported(fParams) then
+          Exit;
+      end
+      else
+      begin
+        Exit;
+      end;
+    end
+    else if (fSelectedTargetIndex < 0) or (fSelectedTargetIndex >= fTargets.Count) then
+    begin
+      fSelectedTargetIndex := 0;
+    end;
+    if fSelectedTargetIndex < 0 then
+      Exit;
+
+    fSelectedTarget := fTargets[fSelectedTargetIndex];
+  end;
+
+  if not Assigned(fSelectedTarget) then
+    Exit;
   try
-    fTargets[lTargetIndex].SetParams(fParams);
+    fSelectedTarget.SetParams(fParams);
     PrepareExport;
     var lDataSet: ISqlDataSet;
     if GetSqlDataSet(lDataSet) then
     begin
-      fTargets[lTargetIndex].DoExport(lDataSet);
-      Result := True;
+      var lExportResult := fSelectedTarget.ExportDataSet(lDataSet);
+      if fSelectedTarget.ResultMessageRequired then
+      begin
+        var lResultMessageNotifier := fResultMessageNotifier;
+        if not Assigned(lResultMessageNotifier) then
+          Supports(fParamsProvider, IExporterResultMessageNotifier, lResultMessageNotifier);
+        if Assigned(lResultMessageNotifier) then
+          lResultMessageNotifier.ResultMessage(lExportResult);
+      end;
+      Result := lExportResult.Sucessful;
     end;
   finally
     CleanupAfterExport;
@@ -123,13 +151,13 @@ begin
   fOwnsParams := False;
 end;
 
-procedure TExporterBase<T>.SetTargetsToParamsProvider;
+procedure TExporterBase<T>.SetTargetsToParamsProvider(const aTargetProvider: IExporterTargetProvider);
 begin
-  var lTargetTitles: TArray<string> := [];
-  SetLength(lTargetTitles, fTargets.Count);
+  var lTargetConfigs: TArray<IExporterTargetConfig> := [];
+  SetLength(lTargetConfigs, fTargets.Count);
   for var i := 0 to fTargets.Count - 1 do
-    lTargetTitles[i] := fTargets[i].Title;
-  fParamsProvider.SetTargets(lTargetTitles);
+    lTargetConfigs[i] := fTargets[i];
+  aTargetProvider.SetTargets(lTargetConfigs);
 end;
 
 function TExporterBase<T>.CreatePreparedQuery(out aQuery: ISqlPreparedQuery): Boolean;

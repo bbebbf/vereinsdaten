@@ -40,7 +40,8 @@ type
     fPreviousRoleId: UInt32;
     fNewPageStarted: Boolean;
     procedure SetParams(const aParams: TObject);
-    procedure DoExport(const aDataSet: ISqlDataSet);
+  strict protected
+    procedure ExportInternal(const aDataSet: ISqlDataSet); override;
   end;
 
 implementation
@@ -51,7 +52,7 @@ uses TenantReader, Vdm.Globals;
 
 { TfmReportUnitRoles }
 
-procedure TfmReportUnitRolesPrintout.DoExport(const aDataSet: ISqlDataSet);
+procedure TfmReportUnitRolesPrintout.ExportInternal(const aDataSet: ISqlDataSet);
 begin
   dsDataSource.DataSet := aDataSet.DataSet;
   RLReport.Preview;

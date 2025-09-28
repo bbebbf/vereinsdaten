@@ -41,7 +41,8 @@ type
     fNewPageStarted: Boolean;
     fOneUnitPerPage: Boolean;
     procedure SetParams(const aParams: TExporterPersonsParams);
-    procedure DoExport(const aDataSet: ISqlDataSet);
+  strict protected
+    procedure ExportInternal(const aDataSet: ISqlDataSet); override;
   end;
 
 implementation
@@ -52,7 +53,7 @@ uses TenantReader, Vdm.Globals;
 
 { TfmReportMemberUnits }
 
-procedure TfmReportMemberUnitsPrintout.DoExport(const aDataSet: ISqlDataSet);
+procedure TfmReportMemberUnitsPrintout.ExportInternal(const aDataSet: ISqlDataSet);
 begin
   dsDataSource.DataSet := aDataSet.DataSet;
   RLReport.Preview;

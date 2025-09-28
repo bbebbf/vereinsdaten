@@ -79,6 +79,7 @@ implementation
 uses System.UITypes, Vdm.Globals, unRole, unAddress, unTenant, ProgressIndicator,
   UnitMapper,
 
+  unExporter.Params.ZeroParams,
   Exporter.UnitMembers.Types, unExporter.Params.UnitMember,
   Exporter.Persons.Types, unExporter.Params.Persons,
   unExporter.Params.Birthdays;
@@ -152,7 +153,12 @@ end;
 
 procedure TfmMain.acReportClubMembersExecute(Sender: TObject);
 begin
-  fBusiness.OpenReportClubMembers;
+  var lParamsProvider := TfmExporterParamsZeroParams.Create(Self, 'Vereinsmitglieder exportieren');
+  try
+    fBusiness.OpenReportClubMembers(lParamsProvider);
+  finally
+    lParamsProvider.Free;
+  end;
 end;
 
 procedure TfmMain.acReportMemberUnitsExecute(Sender: TObject);
@@ -161,11 +167,10 @@ begin
   var lParamsProvider: TfmExporterParamsPersons := nil;
   try
     lParams := TExporterPersonsParams.Create;
-    lParams.ParamProviderTitle := 'Personen und Einheiten exportieren';
     lParams.ShowInactivePersons := ffraPerson.cbShowInactivePersons.Checked;
     lParams.ShowExternalPersons := ffraPerson.cbShowExternalPersons.Checked;
 
-    lParamsProvider := TfmExporterParamsPersons.Create(Self);
+    lParamsProvider := TfmExporterParamsPersons.Create(Self, 'Personen und Einheiten exportieren');
     fBusiness.OpenReportMemberUnits(lParams, lParamsProvider);
   finally
     lParamsProvider.Free;
@@ -179,11 +184,10 @@ begin
   var lParamsProvider: TfmExporterParamsPersons := nil;
   try
     lParams := TExporterPersonsParams.Create;
-    lParams.ParamProviderTitle := 'Personen exportieren';
     lParams.ShowInactivePersons := ffraPerson.cbShowInactivePersons.Checked;
     lParams.ShowExternalPersons := ffraPerson.cbShowExternalPersons.Checked;
 
-    lParamsProvider := TfmExporterParamsPersons.Create(Self);
+    lParamsProvider := TfmExporterParamsPersons.Create(Self, 'Personen exportieren');
     fBusiness.OpenReportPersons(lParams, lParamsProvider);
   finally
     lParamsProvider.Free;
@@ -214,7 +218,12 @@ end;
 
 procedure TfmMain.acReportUnitRolesExecute(Sender: TObject);
 begin
-  fBusiness.OpenReportUnitRoles;
+  var lParamsProvider := TfmExporterParamsZeroParams.Create(Self, 'Rollen und Einheiten exportieren');
+  try
+    fBusiness.OpenReportUnitRoles(lParamsProvider);
+  finally
+    lParamsProvider.Free;
+  end;
 end;
 
 procedure TfmMain.FormCreate(Sender: TObject);

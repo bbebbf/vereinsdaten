@@ -1,41 +1,51 @@
 inherited fmExporterParamsPersons: TfmExporterParamsPersons
   Caption = 'Personen exportieren'
-  ClientHeight = 152
-  ClientWidth = 324
+  ClientHeight = 173
+  ClientWidth = 394
   StyleElements = [seFont, seClient, seBorder]
-  ExplicitLeft = 3
-  ExplicitTop = 3
-  ExplicitWidth = 340
-  ExplicitHeight = 191
+  ExplicitWidth = 410
+  ExplicitHeight = 212
   TextHeight = 15
   inherited pnBottom: TPanel
-    Top = 96
-    Width = 324
+    Top = 117
+    Width = 394
     StyleElements = [seFont, seClient, seBorder]
-    ExplicitTop = 127
-    ExplicitWidth = 340
+    ExplicitTop = 109
+    ExplicitWidth = 392
     inherited btCancel: TButton
-      Left = 190
-      ExplicitLeft = 204
+      Left = 274
+      ExplicitLeft = 272
     end
   end
   inherited pnTarget: TPanel
-    Top = 68
-    Width = 324
+    Top = 63
+    Width = 394
     TabOrder = 3
     StyleElements = [seFont, seClient, seBorder]
-    ExplicitTop = 116
-    ExplicitWidth = 338
+    ExplicitTop = 55
+    ExplicitWidth = 392
     inherited lbTargets: TLabel
       StyleElements = [seFont, seClient, seBorder]
     end
-    inherited cbTargets: TComboBox
-      Width = 239
+    inherited lbFilePath: TLabel
       StyleElements = [seFont, seClient, seBorder]
-      ExplicitWidth = 454
+    end
+    inherited cbTargets: TComboBox
+      Width = 323
+      StyleElements = [seFont, seClient, seBorder]
+      ExplicitWidth = 321
+    end
+    inherited edFilePath: TEdit
+      Width = 287
+      StyleElements = [seFont, seClient, seBorder]
+      ExplicitWidth = 285
+    end
+    inherited btOpenFileDlg: TButton
+      Left = 347
+      ExplicitLeft = 345
     end
   end
-  object cbShowInactivePersons: TCheckBox
+  object cbShowInactivePersons: TCheckBox [2]
     Left = 16
     Top = 13
     Width = 169
@@ -43,7 +53,7 @@ inherited fmExporterParamsPersons: TfmExporterParamsPersons
     Caption = 'Inaktive Personen anzeigen'
     TabOrder = 1
   end
-  object cbShowExternalPersons: TCheckBox
+  object cbShowExternalPersons: TCheckBox [3]
     Left = 16
     Top = 36
     Width = 169

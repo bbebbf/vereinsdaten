@@ -32,7 +32,6 @@ end;
 
 procedure TfmExporterParamsPersons.SetParams(const aParams: TExporterPersonsParams);
 begin
-  Caption := aParams.ParamProviderTitle;
   cbShowInactivePersons.Checked := aParams.ShowInactivePersons;
   cbShowExternalPersons.Checked := aParams.ShowExternalPersons;
 end;

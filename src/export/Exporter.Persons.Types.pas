@@ -7,7 +7,6 @@ type
   public
     ShowInactivePersons: Boolean;
     ShowExternalPersons: Boolean;
-    ParamProviderTitle: string;
   end;
 
 implementation

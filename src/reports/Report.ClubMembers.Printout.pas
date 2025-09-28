@@ -46,7 +46,8 @@ type
     fActiveCounter: Integer;
     fInactiveCounter: Integer;
     procedure SetParams(const aParams: TObject);
-    procedure DoExport(const aDataSet: ISqlDataSet);
+  strict protected
+    procedure ExportInternal(const aDataSet: ISqlDataSet); override;
   end;
 
 implementation
@@ -57,7 +58,7 @@ uses TenantReader, Vdm.Globals;
 
 { TfmReportClubMembers }
 
-procedure TfmReportClubMembersPrintout.DoExport(const aDataSet: ISqlDataSet);
+procedure TfmReportClubMembersPrintout.ExportInternal(const aDataSet: ISqlDataSet);
 begin
   dsDataSource.DataSet := aDataSet.DataSet;
   RLReport.Preview;
