@@ -156,7 +156,8 @@ uses
   Report.OneUnitMembers.Csv in 'reports\Report.OneUnitMembers.Csv.pas',
   Report.UnitMembers.Csv in 'reports\Report.UnitMembers.Csv.pas',
   Report.UnitRoles.Csv in 'reports\Report.UnitRoles.Csv.pas',
-  unExporter.Params.ZeroParams in 'view\forms\export\unExporter.Params.ZeroParams.pas' {fmExporterParamsZeroParams};
+  unExporter.Params.ZeroParams in 'view\forms\export\unExporter.Params.ZeroParams.pas' {fmExporterParamsZeroParams},
+  Windows.API.Tools in 'general\common\Tools\Windows.API.Tools.pas';
 
 {$R *.res}
 

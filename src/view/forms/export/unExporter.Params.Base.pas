@@ -34,7 +34,7 @@ implementation
 
 {$R *.dfm}
 
-uses MessageDialogs, WindowsProcess;
+uses MessageDialogs, Windows.API.Tools;
 
 { TfmExporterParamsBase }
 
@@ -130,7 +130,7 @@ begin
   if aExporterExportResult.Sucessful then
   begin
     TMessageDialogs.Ok(aExporterExportResult.FilePath + ' erfolgreich exportiert.', TMsgDlgType.mtInformation);
-    TNewWindowsProcess.Start('explorer.exe /e,/select,"' + aExporterExportResult.FilePath + '"');
+    TWindowsAPITools.OpenFolderAndSelectFile(aExporterExportResult.FilePath);
   end
   else
   begin

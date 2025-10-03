@@ -221,7 +221,7 @@ end;
 
 procedure TReportBaseCsv<T>.SetParams(const aParams: T);
 begin
-
+  fExportParams := aParams;
 end;
 
 function TReportBaseCsv<T>.GetSuggestedFileName: string;
