@@ -137,21 +137,14 @@ object fmReportOneUnitMembersPrintout: TfmReportOneUnitMembersPrintout
         Caption = 'Person'
       end
       object Label5: TLabel
-        Left = 550
+        Left = 520
         Top = 3
         Width = 32
         Height = 18
         Caption = 'Rolle'
       end
-      object lbBirthday: TLabel
-        Left = 180
-        Top = 3
-        Width = 75
-        Height = 18
-        Caption = 'Geb.-Datum'
-      end
       object lbAddress: TLabel
-        Left = 270
+        Left = 240
         Top = 3
         Width = 50
         Height = 18
@@ -189,7 +182,7 @@ object fmReportOneUnitMembersPrintout: TfmReportOneUnitMembersPrintout
         Text = ''
       end
       object RLDBText3: TRLDBText
-        Left = 550
+        Left = 520
         Top = 2
         Width = 70
         Height = 18
@@ -197,17 +190,8 @@ object fmReportOneUnitMembersPrintout: TfmReportOneUnitMembersPrintout
         DataSource = dsDataSource
         Text = ''
       end
-      object rtBirthday: TRLDBText
-        Left = 180
-        Top = 2
-        Width = 105
-        Height = 18
-        DataField = 'person_date_of_birth'
-        DataSource = dsDataSource
-        Text = ''
-      end
       object rtAddress: TRLDBText
-        Left = 270
+        Left = 240
         Top = 2
         Width = 84
         Height = 18

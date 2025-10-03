@@ -30,9 +30,7 @@ type
     rdMemberCount: TRLDBText;
     Label2: TLabel;
     rdUnitDivider: TRLDraw;
-    lbBirthday: TLabel;
     lbAddress: TLabel;
-    rtBirthday: TRLDBText;
     rtAddress: TRLDBText;
     procedure RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure bdDetailAfterPrint(Sender: TObject);

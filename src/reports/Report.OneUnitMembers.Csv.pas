@@ -29,7 +29,6 @@ begin
   aFields.Add(TReportCsvField.Create('person_firstname'));
   aFields.Add(TReportCsvField.Create('person_nameaddition'));
   aFields.Add(TReportCsvField.Create('person_lastname'));
-  aFields.Add(TReportCsvField.Create('person_date_of_birth'));
   aFields.Add(TReportCsvField.Create('address_street'));
   aFields.Add(TReportCsvField.Create('address_postalcode'));
   aFields.Add(TReportCsvField.Create('address_city'));
