@@ -232,7 +232,7 @@ begin
     var lExporter := TExporterMemberUnits.Create(fConnection);
     try
       lExporter.Targets.Add(lReport);
-      lExporter.Targets.Add(TReportPersonsCsv.Create);
+      lExporter.Targets.Add(TReportMemberUnitsCsv.Create);
       lExporter.Params := aParams;
       lExporter.ParamsProvider := aParamsProvider;
       lExporter.DoExport;

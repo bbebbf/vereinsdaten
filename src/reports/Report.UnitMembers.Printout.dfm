@@ -174,9 +174,9 @@ object fmReportUnitMembersPrintout: TfmReportUnitMembersPrintout
       object rdMemberCount: TRLDBText
         Left = 713
         Top = 2
-        Width = 93
+        Width = 130
         Height = 18
-        DataField = 'MemberCount'
+        DataField = 'unit_member_count'
         DataSource = dsDataSource
         Text = ''
         Visible = False

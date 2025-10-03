@@ -20,6 +20,8 @@ begin
     'SELECT cm.*, pn.person_name, p.person_date_of_birth, sa.address_title' +
     ', IFNULL(DATE_FORMAT(cm.clmb_enddate, ''%d.%m.%Y''), cm.clmb_enddate_str) AS clmb_enddate_calculated' +
     ', IF(cm.clmb_active, null, "X") AS clmb_inactive' +
+    ', pn.person_id,pn.person_lastname,pn.person_firstname,pn.person_nameaddition' +
+    ', sa.address_street,sa.address_postalcode,sa.address_city' +
     ' FROM clubmembership AS cm' +
     ' INNER JOIN person AS p ON p.person_id = cm.person_id' +
     ' INNER JOIN vw_person_name AS pn ON pn.person_id = cm.person_id' +

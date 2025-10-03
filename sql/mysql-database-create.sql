@@ -112,14 +112,34 @@ CREATE TABLE IF NOT EXISTS `version_info` (
 
 
 
+CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `vw_person_name` AS
+ select `person`.`person_id` AS `person_id`
+ ,concat_ws(', ',`person`.`person_lastname`,concat_ws(' ',`person`.`person_firstname`,`person`.`person_nameaddition`)) AS `person_name`
+ ,`person`.`person_lastname`
+ ,`person`.`person_firstname`
+ ,`person`.`person_nameaddition`
+ from `person`;
 
-CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `vw_person_name` AS select `person`.`person_id` AS `person_id`,concat_ws(', ',`person`.`person_lastname`,concat_ws(' ',`person`.`person_firstname`,`person`.`person_nameaddition`)) AS `person_name` from `person`;
+CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `vw_select_address` AS
+ select `a`.`adr_id` AS `adr_id`
+ ,concat_ws(', ',`a`.`adr_street`,concat_ws(' ',`a`.`adr_postalcode`,`a`.`adr_city`)) AS `address_title`
+ ,`a`.`adr_street` AS `address_street`
+ ,`a`.`adr_postalcode` AS `address_postalcode`
+ ,`a`.`adr_city` AS `address_city`
+ from `address` `a`;
 
-CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `vw_select_address` AS select `a`.`adr_id` AS `adr_id`,concat_ws(', ',`a`.`adr_street`,concat_ws(' ',`a`.`adr_postalcode`,`a`.`adr_city`)) AS `address_title` from `address` `a`;
+CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `vw_active_person` AS
+ select `pn`.`person_id` AS `person_id`
+ ,`pn`.`person_name` AS `person_name`
+ ,`pn`.`person_lastname` AS `person_lastname`
+ ,`pn`.`person_firstname` AS `person_firstname`
+ ,`pn`.`person_nameaddition` AS `person_nameaddition`
+ from (`vw_person_name` `pn` join `person` `p` on(`p`.`person_id` = `pn`.`person_id`))
+ where `p`.`person_active` = 1;
 
-CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `vw_active_person` AS select `pn`.`person_id` AS `person_id`,`pn`.`person_name` AS `person_name` from (`vw_person_name` `pn` join `person` `p` on(`p`.`person_id` = `pn`.`person_id`)) where `p`.`person_active` = 1;
-
-CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `vw_active_person_member` AS select `m`.* from `member` `m` inner join `person` `p` on `p`.`person_id` = `m`.`person_id` where `p`.`person_active` = 1;
+CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `vw_active_person_member` AS
+ select `m`.* from `member` `m` inner join `person` `p` on `p`.`person_id` = `m`.`person_id`
+ where `p`.`person_active` = 1;
 
 
 CREATE FUNCTION `IsLeapYear`(IN FromDate DATE) RETURNS int(11)

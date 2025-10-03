@@ -33,7 +33,7 @@ implementation
 
 {$R *.dfm}
 
-uses MessageDialogs;
+uses MessageDialogs, WindowsProcess;
 
 { TfmExporterParamsBase }
 
@@ -120,9 +120,14 @@ end;
 procedure TfmExporterParamsBase.ResultMessage(const aExporterExportResult: TExporterExportResult);
 begin
   if aExporterExportResult.Sucessful then
-    TMessageDialogs.Ok(aExporterExportResult.FilePath + ' erfolgreich exportiert.', TMsgDlgType.mtInformation)
+  begin
+    TMessageDialogs.Ok(aExporterExportResult.FilePath + ' erfolgreich exportiert.', TMsgDlgType.mtInformation);
+    TNewWindowsProcess.Start('explorer.exe /e,/select,"' + aExporterExportResult.FilePath + '"');
+  end
   else
+  begin
     TMessageDialogs.Ok(aExporterExportResult.FilePath + ' fehlerhaft exportiert.', TMsgDlgType.mtError);
+  end;
 end;
 
 end.

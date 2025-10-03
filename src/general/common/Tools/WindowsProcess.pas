@@ -70,6 +70,8 @@ type
     procedure SetStartupFlags(const aValue: Cardinal);
     procedure CreateTheProcessSuspended;
   public
+    class function Start(const aCommandLine: string; const aWorkingDirectory: string = ''): Boolean;
+
     constructor Create(const aCommandLine: string; const aWorkingDirectory: string = '');
     /// <summary>
     ///   Starts the defined windows process.
@@ -329,6 +331,16 @@ begin
 end;
 
 { TNewWindowsProcess }
+
+class function TNewWindowsProcess.Start(const aCommandLine, aWorkingDirectory: string): Boolean;
+begin
+  var lNewProcess := TNewWindowsProcess.Create(aCommandLine, aWorkingDirectory);
+  try
+    Result := lNewProcess.CreateProcess;
+  finally
+    lNewProcess.Free;
+  end;
+end;
 
 constructor TNewWindowsProcess.Create(const aCommandLine, aWorkingDirectory: string);
 begin

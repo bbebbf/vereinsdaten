@@ -22,7 +22,7 @@ object fmReportUnitRolesPrintout: TfmReportUnitRolesPrintout
     Font.Height = -17
     Font.Name = 'Arial'
     Font.Style = []
-    JobTitle = 'Einheiten und Personen'
+    JobTitle = 'Rollen und Einheiten'
     BeforePrint = RLReportBeforePrint
     OnPageStarting = RLReportPageStarting
     object bdReportHeader: TRLBand

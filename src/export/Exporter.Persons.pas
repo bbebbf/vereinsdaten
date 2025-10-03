@@ -21,6 +21,8 @@ begin
     ',IF(p.person_active, null, "I") AS person_inactive' +
     ',IF(p.person_external, "E", null) AS person_external_x' +
     ',p.person_external' +
+    ',pn.person_lastname,pn.person_firstname,pn.person_nameaddition' +
+    ',a.address_street,a.address_postalcode,a.address_city' +
     ' FROM person AS p' +
     ' INNER JOIN vw_person_name AS pn ON pn.person_id = p.person_id' +
     ' LEFT JOIN person_address AS pa ON pa.person_id = p.person_id' +

@@ -19,7 +19,8 @@ uses Vdm.Globals;
 function TExporterUnitRoles.CreatePreparedQuery(out aQuery: ISqlPreparedQuery): Boolean;
 begin
   aQuery := Connection.CreatePreparedQuery(
-    'SELECT r.role_id, r.role_name, u.unit_name, u.unit_data_confirmed_on, pn.person_name' +
+    'SELECT r.role_id, r.role_name, u.unit_id, u.unit_name, u.unit_data_confirmed_on, pn.person_name' +
+    ',pn.person_id,pn.person_lastname,pn.person_firstname,pn.person_nameaddition' +
     ' FROM role AS r' +
     ' INNER JOIN member AS m ON m.role_id = r.role_id' +
     ' INNER JOIN person AS p ON p.person_id = m.person_id' +

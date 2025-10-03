@@ -19,6 +19,7 @@ uses Vdm.Globals;
 function TExporterMemberUnits.CreatePreparedQuery(out aQuery: ISqlPreparedQuery): Boolean;
 begin
   var lSelectSql := 'SELECT u.unit_id, u.unit_name, u.unit_data_confirmed_on, pn.person_id, pn.person_name, r.role_name' +
+    ',pn.person_lastname,pn.person_firstname,pn.person_nameaddition' +
     ' FROM unit AS u' +
     ' INNER JOIN member AS m ON m.unit_id = u.unit_id' +
     ' INNER JOIN person AS p ON p.person_id = m.person_id' +
