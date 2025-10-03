@@ -6,8 +6,6 @@ uses System.Generics.Collections, Report.Base.Csv, Exporter.Persons.Types;
 
 type
   TReportMemberUnitsCsv = class(TReportBaseCsv<TExporterPersonsParams>)
-  strict private
-    procedure SetParams(const aParams: TExporterPersonsParams);
   strict protected
     function GetSuggestedFileName: string; override;
     procedure FillFieldsToExport(const aExportParams: TExporterPersonsParams;
@@ -34,11 +32,6 @@ end;
 function TReportMemberUnitsCsv.GetSuggestedFileName: string;
 begin
   Result := 'Personen_und_Einheiten';
-end;
-
-procedure TReportMemberUnitsCsv.SetParams(const aParams: TExporterPersonsParams);
-begin
-
 end;
 
 end.
