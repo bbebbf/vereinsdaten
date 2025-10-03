@@ -84,6 +84,13 @@ begin
   try
     var lFileStream := TFileStream.Create(fFilePath, fmCreate or fmOpenWrite);
     try
+      var lBinaryWriter := TBinaryWriter.Create(lFileStream);
+      try
+        var lUtf8BOM := TEncoding.UTF8.GetPreamble;
+        lBinaryWriter.Write(lUtf8BOM);
+      finally
+        lBinaryWriter.Free;
+      end;
       var lCsvWriter := TCsvWriter.GetInstance(lFileStream);
       for var i in lFieldsToExport do
         lCsvWriter.AddValue(i.Field.FieldName);
