@@ -246,8 +246,7 @@ end;
 
 procedure TfraUnit.cbEnableCheckboxesClick(Sender: TObject);
 begin
-  fExtendedListview.ClearCheckedIds;
-  lvListview.Checkboxes := not lvListview.Checkboxes;
+  fExtendedListview.SelectionMode := not fExtendedListview.SelectionMode;
   SetEnableCheckboxesCaption;
 end;
 

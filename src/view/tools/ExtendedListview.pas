@@ -2,7 +2,8 @@ unit ExtendedListview;
 
 interface
 
-uses System.Generics.Collections, System.Generics.Defaults, Vcl.ComCtrls, InterfacedBase;
+uses System.Classes, System.Types, System.Generics.Collections, System.Generics.Defaults, Vcl.ComCtrls, Vcl.Menus,
+  InterfacedBase;
 
 type
   TExtendedListviewDataToListItem<T> = reference to procedure(const aData: T; const aListItem: TListItem);
@@ -29,6 +30,7 @@ type
   TExtendedListview<T; K: record> = class
   strict private
     fListview: TListView;
+    fPopupMenuItemsCreated: Boolean;
     fDataItemsOwner: TObjectList<TExtendedListviewEntry<T>>;
     fDataItemsSortedList: TList<TExtendedListviewEntry<T>>;
     fDataItemsAreSorted: Boolean;
@@ -42,6 +44,7 @@ type
     fOnCompareColumn: TExtendedListviewCompareColumn<T>;
     fImageIndexSortUp: Integer;
     fImageIndexSortDown: Integer;
+    fSelectionMode: Boolean;
     fCheckedIds: THashSet<K>;
     fCheckedIdsDirty: Boolean;
     procedure ClearListItems;
@@ -51,8 +54,10 @@ type
     procedure OnListviewColumnClick(Sender: TObject; Column: TListColumn);
     procedure LVCompareEvent(Sender: TObject; Item1, Item2: TListItem; Data: Integer; var Compare: Integer);
     procedure LVItemCheckedEvent(Sender: TObject; Item: TListItem);
-  private
+    procedure LVContextPopupEvent(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     function GetCheckedIds: TArray<K>;
+    procedure SetSelectionMode(const aValue: Boolean);
+    procedure OnPopupMenuChangeSelection(Sender: TObject);
   strict protected
     function CreateEntry: TExtendedListviewEntry<T>; virtual;
   public
@@ -76,6 +81,7 @@ type
     property OnCompareColumn: TExtendedListviewCompareColumn<T> read fOnCompareColumn write fOnCompareColumn;
     property ImageIndexSortUp: Integer read fImageIndexSortUp write fImageIndexSortUp;
     property ImageIndexSortDown: Integer read fImageIndexSortDown write fImageIndexSortDown;
+    property SelectionMode: Boolean read fSelectionMode write SetSelectionMode;
     property CheckedIds: TArray<K> read GetCheckedIds;
   end;
 
@@ -93,7 +99,7 @@ type
 
 implementation
 
-uses System.Classes, System.SysUtils, Winapi.Windows;
+uses System.SysUtils, Winapi.Windows;
 
 { TExtendedListview<T, K> }
 
@@ -107,6 +113,8 @@ begin
   fListview.OnColumnClick := OnListviewColumnClick;
   fListview.OnCompare := LVCompareEvent;
   fListview.OnItemChecked := LVItemCheckedEvent;
+  fListview.OnContextPopup := LVContextPopupEvent;
+
   fDataToListItemFunc := aDataToListItemFunc;
   fDataToIdFunc := aDataToIdFunc;
   fDataItemsOwner := TObjectList<TExtendedListviewEntry<T>>.Create;
@@ -272,6 +280,43 @@ begin
     Compare := -Compare;
 end;
 
+procedure TExtendedListview<T, K>.LVContextPopupEvent(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
+begin
+  if not fSelectionMode then
+    Exit;
+
+  var lDividerNeeded := Assigned(fListview.PopupMenu) and not fPopupMenuItemsCreated;
+
+  if not Assigned(fListview.PopupMenu) then
+    fListview.PopupMenu := TPopupMenu.Create(fListview.Owner);
+
+  if not fPopupMenuItemsCreated then
+  begin
+    fPopupMenuItemsCreated := True;
+    var lItem: TMenuItem;
+    if lDividerNeeded then
+    begin
+      var lDivider := TMenuItem.Create(fListview.PopupMenu);
+      lDivider.Caption := '-';
+      fListview.PopupMenu.Items.Add(lDivider);
+    end;
+    lItem := TMenuItem.Create(fListview.PopupMenu);
+    lItem.Tag := 1;
+    lItem.Caption := 'Alle auswählen';
+    lItem.OnClick := OnPopupMenuChangeSelection;
+    fListview.PopupMenu.Items.Add(lItem);
+    lItem := TMenuItem.Create(fListview.PopupMenu);
+    lItem.Caption := 'Alle abwählen';
+    lItem.OnClick := OnPopupMenuChangeSelection;
+    fListview.PopupMenu.Items.Add(lItem);
+    lItem := TMenuItem.Create(fListview.PopupMenu);
+    lItem.Tag := 2;
+    lItem.Caption := 'Auswahl umkehren';
+    lItem.OnClick := OnPopupMenuChangeSelection;
+    fListview.PopupMenu.Items.Add(lItem);
+  end;
+end;
+
 procedure TExtendedListview<T, K>.LVItemCheckedEvent(Sender: TObject; Item: TListItem);
 begin
   fCheckedIdsDirty := True;
@@ -313,6 +358,23 @@ begin
     fColumnClickedColumn.ImageIndex := fImageIndexSortUp;
   end;
   fListview.CustomSort(nil, fColumnClickedColumn.Index);
+end;
+
+procedure TExtendedListview<T, K>.OnPopupMenuChangeSelection(Sender: TObject);
+begin
+  for var lItem in fListview.Items do
+  begin
+    lItem.Checked := ((Sender as TComponent).Tag = 1) or (((Sender as TComponent).Tag = 2) and not lItem.Checked);
+  end;
+end;
+
+procedure TExtendedListview<T, K>.SetSelectionMode(const aValue: Boolean);
+begin
+  if fSelectionMode = aValue then
+    Exit;
+  fSelectionMode := aValue;
+  fListview.Checkboxes := fSelectionMode;
+  ClearCheckedIds;
 end;
 
 procedure TExtendedListview<T, K>.SortDataItems;
