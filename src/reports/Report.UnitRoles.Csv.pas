@@ -2,22 +2,22 @@ unit Report.UnitRoles.Csv;
 
 interface
 
-uses System.Generics.Collections, Report.Base.Csv, Exporter.Types;
+uses System.Generics.Collections, Report.Base.Csv;
 
 type
-  TReportUnitRolesCsv = class(TReportBaseCsv, IExporterTarget<TObject>)
-  strict private
-    procedure SetParams(const aParams: TObject);
+  TReportUnitRolesCsv = class(TReportBaseCsv<TObject>)
   strict protected
     function GetSuggestedFileName: string; override;
-    procedure FillFieldsToExport(const aFields: TObjectList<TReportCsvField>); override;
+    procedure FillFieldsToExport(const aExportParams: TObject;
+      const aFields: TObjectList<TReportCsvField>); override;
   end;
 
 implementation
 
 { TReportUnitRolesCsv }
 
-procedure TReportUnitRolesCsv.FillFieldsToExport(const aFields: TObjectList<TReportCsvField>);
+procedure TReportUnitRolesCsv.FillFieldsToExport(const aExportParams: TObject;
+  const aFields: TObjectList<TReportCsvField>);
 begin
   inherited;
   aFields.Add(TReportCsvField.Create('role_name'));
@@ -32,12 +32,7 @@ end;
 
 function TReportUnitRolesCsv.GetSuggestedFileName: string;
 begin
-  Result := 'Rollen_und_Einheiten.csv';
-end;
-
-procedure TReportUnitRolesCsv.SetParams(const aParams: TObject);
-begin
-
+  Result := 'Rollen_und_Einheiten';
 end;
 
 end.

@@ -2,22 +2,22 @@ unit Report.ClubMembers.Csv;
 
 interface
 
-uses System.Generics.Collections, Report.Base.Csv, Exporter.Types;
+uses System.Generics.Collections, Report.Base.Csv;
 
 type
-  TReportClubMembersCsv = class(TReportBaseCsv, IExporterTarget<TObject>)
-  strict private
-    procedure SetParams(const aParams: TObject);
+  TReportClubMembersCsv = class(TReportBaseCsv<TObject>)
   strict protected
     function GetSuggestedFileName: string; override;
-    procedure FillFieldsToExport(const aFields: TObjectList<TReportCsvField>); override;
+    procedure FillFieldsToExport(const aExportParams: TObject;
+      const aFields: TObjectList<TReportCsvField>); override;
   end;
 
 implementation
 
 { TReportClubMembersCsv }
 
-procedure TReportClubMembersCsv.FillFieldsToExport(const aFields: TObjectList<TReportCsvField>);
+procedure TReportClubMembersCsv.FillFieldsToExport(const aExportParams: TObject;
+  const aFields: TObjectList<TReportCsvField>);
 begin
   inherited;
   aFields.Add(TReportCsvField.Create('clmb_number'));
@@ -37,12 +37,7 @@ end;
 
 function TReportClubMembersCsv.GetSuggestedFileName: string;
 begin
-  Result := 'Vereinsmitglieder.csv';
-end;
-
-procedure TReportClubMembersCsv.SetParams(const aParams: TObject);
-begin
-
+  Result := 'Vereinsmitglieder';
 end;
 
 end.

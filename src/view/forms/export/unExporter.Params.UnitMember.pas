@@ -14,9 +14,12 @@ type
     rbSelectedUnitDetails: TRadioButton;
   strict private
     fSelectUnitIdForDetails: UInt32;
+    fSelectUnitNameForDetails: string;
     function GetParams(const aParams: TExporterUnitMembersParams): TExporterUnitMembersParams;
     procedure SetParams(const aParams: TExporterUnitMembersParams);
     function ShouldBeExported(const aParams: TExporterUnitMembersParams): Boolean;
+  strict protected
+    function GetSuggestedExportFileName: string; override;
   end;
 
 implementation
@@ -40,6 +43,18 @@ begin
   end;
 end;
 
+function TfmExporterParamsUnitMember.GetSuggestedExportFileName: string;
+begin
+  if rbSelectedUnitDetails.Checked then
+  begin
+    Result := fSelectUnitNameForDetails + '_Personen';
+  end
+  else
+  begin
+    Result := inherited GetSuggestedExportFileName;
+  end;
+end;
+
 procedure TfmExporterParamsUnitMember.SetParams(const aParams: TExporterUnitMembersParams);
 begin
   rbAllUnits.Checked := True;
@@ -60,10 +75,9 @@ begin
 
   if fSelectUnitIdForDetails > 0 then
   begin
+    fSelectUnitNameForDetails := TUnitMapper.Instance.Data.Data.GetAllEntries.GetStringById(fSelectUnitIdForDetails, '???');
     rbSelectedUnitDetails.Enabled := True;
-    rbSelectedUnitDetails.Caption := 'Ausgewählte Einheit "' +
-      TUnitMapper.Instance.Data.Data.GetAllEntries.GetStringById(fSelectUnitIdForDetails, '???') +
-      '" exportieren mit Details';
+    rbSelectedUnitDetails.Caption := 'Ausgewählte Einheit "'  + fSelectUnitNameForDetails + '" exportieren mit Details';
   end
   else
   begin

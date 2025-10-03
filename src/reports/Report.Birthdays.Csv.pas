@@ -2,22 +2,22 @@ unit Report.Birthdays.Csv;
 
 interface
 
-uses System.Generics.Collections, Report.Base.Csv, Exporter.Birthdays.Types, Exporter.Types;
+uses System.Generics.Collections, Report.Base.Csv, Exporter.Birthdays.Types;
 
 type
-  TReportBirthdaysCsv = class(TReportBaseCsv, IExporterTarget<TExporterBirthdaysParams>)
-  strict private
-    procedure SetParams(const aParams: TExporterBirthdaysParams);
+  TReportBirthdaysCsv = class(TReportBaseCsv<TExporterBirthdaysParams>)
   strict protected
     function GetSuggestedFileName: string; override;
-    procedure FillFieldsToExport(const aFields: TObjectList<TReportCsvField>); override;
+    procedure FillFieldsToExport(const aExportParams: TExporterBirthdaysParams;
+      const aFields: TObjectList<TReportCsvField>); override;
   end;
 
 implementation
 
 { TReportBirthdaysCsv }
 
-procedure TReportBirthdaysCsv.FillFieldsToExport(const aFields: TObjectList<TReportCsvField>);
+procedure TReportBirthdaysCsv.FillFieldsToExport(const aExportParams: TExporterBirthdaysParams;
+  const aFields: TObjectList<TReportCsvField>);
 begin
   inherited;
   aFields.Add(TReportCsvField.Create('person_id'));
@@ -31,12 +31,7 @@ end;
 
 function TReportBirthdaysCsv.GetSuggestedFileName: string;
 begin
-  Result := 'Geburtstage.csv';
-end;
-
-procedure TReportBirthdaysCsv.SetParams(const aParams: TExporterBirthdaysParams);
-begin
-
+  Result := 'Geburtstage';
 end;
 
 end.

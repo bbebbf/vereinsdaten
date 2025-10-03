@@ -18,7 +18,7 @@ type
     property ValueToStrEvent: TReportCsvValueToStrEvent read fValueToStrEvent;
   end;
 
-  TReportBaseCsv = class(TInterfacedBase, IExporterTargetConfig, IExporterRequiresFilePath)
+  TReportBaseCsv<T> = class(TInterfacedBase, IExporterTargetConfig, IExporterRequiresFilePath, IExporterTarget<T>)
   strict private
     type
       TInternalFieldInfo = class
@@ -27,6 +27,7 @@ type
         ValueToStrEvent: TReportCsvValueToStrEvent;
       end;
     var
+    fExportParams: T;
     fFormatSettings: TFormatSettings;
     fExportTimeSeconds: Boolean;
     fTimeFormatStr: string;
@@ -40,8 +41,9 @@ type
     function GetStrFromCsvField(const aInternalField: TInternalFieldInfo): string;
     procedure SetExportTimeSeconds(const aValue: Boolean);
   strict protected
+    procedure SetParams(const aParams: T); virtual;
     function GetSuggestedFileName: string; virtual;
-    procedure FillFieldsToExport(const aFields: TObjectList<TReportCsvField>); virtual;
+    procedure FillFieldsToExport(const aExportParams: T; const aFields: TObjectList<TReportCsvField>); virtual;
     function ExportDataSet(const aDataSet: ISqlDataSet): TExporterExportResult;
     procedure Assign(const aExporterRequiresFilePath: IExporterRequiresFilePath);
   public
@@ -54,9 +56,9 @@ implementation
 
 uses System.Classes, System.Variants;
 
-{ TReportBaseCsv }
+{ TReportBaseCsv<T> }
 
-constructor TReportBaseCsv.Create;
+constructor TReportBaseCsv<T>.Create;
 begin
   inherited Create;
   fFieldsToExport := TObjectList<TReportCsvField>.Create;
@@ -66,18 +68,18 @@ begin
   SetExportTimeSeconds(False);
 end;
 
-destructor TReportBaseCsv.Destroy;
+destructor TReportBaseCsv<T>.Destroy;
 begin
   fFieldsToExport.Free;
   inherited;
 end;
 
-procedure TReportBaseCsv.Assign(const aExporterRequiresFilePath: IExporterRequiresFilePath);
+procedure TReportBaseCsv<T>.Assign(const aExporterRequiresFilePath: IExporterRequiresFilePath);
 begin
   fFilePath := aExporterRequiresFilePath.FilePath;
 end;
 
-function TReportBaseCsv.ExportDataSet(const aDataSet: ISqlDataSet): TExporterExportResult;
+function TReportBaseCsv<T>.ExportDataSet(const aDataSet: ISqlDataSet): TExporterExportResult;
 begin
   Result := default(TExporterExportResult);
   var lFieldsToExport := GetFieldsToExportInternal(aDataSet.DataSet.Fields);
@@ -112,7 +114,7 @@ begin
   end;
 end;
 
-function TReportBaseCsv.GetStrFromCsvField(const aInternalField: TInternalFieldInfo): string;
+function TReportBaseCsv<T>.GetStrFromCsvField(const aInternalField: TInternalFieldInfo): string;
 begin
   Result := '';
   if not aInternalField.Field.IsNull then
@@ -157,11 +159,11 @@ begin
     aInternalField.ValueToStrEvent(aInternalField.Field, Result);
 end;
 
-function TReportBaseCsv.GetFieldsToExportInternal(const aFields: TFields): TObjectList<TInternalFieldInfo>;
+function TReportBaseCsv<T>.GetFieldsToExportInternal(const aFields: TFields): TObjectList<TInternalFieldInfo>;
 begin
   Result := TObjectList<TInternalFieldInfo>.Create;
   fFieldsToExport.Clear;
-  FillFieldsToExport(fFieldsToExport);
+  FillFieldsToExport(fExportParams, fFieldsToExport);
   if fFieldsToExport.Count = 0 then
   begin
     for var i in aFields do
@@ -185,21 +187,21 @@ begin
   end;
 end;
 
-procedure TReportBaseCsv.FillFieldsToExport(const aFields: TObjectList<TReportCsvField>);
+procedure TReportBaseCsv<T>.FillFieldsToExport(const aExportParams: T; const aFields: TObjectList<TReportCsvField>);
 begin
 end;
 
-function TReportBaseCsv.GetFilePath: string;
+function TReportBaseCsv<T>.GetFilePath: string;
 begin
   Result := fFilePath;
 end;
 
-function TReportBaseCsv.GetResultMessageRequired: Boolean;
+function TReportBaseCsv<T>.GetResultMessageRequired: Boolean;
 begin
   Result := True;
 end;
 
-procedure TReportBaseCsv.SetExportTimeSeconds(const aValue: Boolean);
+procedure TReportBaseCsv<T>.SetExportTimeSeconds(const aValue: Boolean);
 begin
   fExportTimeSeconds := aValue;
   if fExportTimeSeconds then
@@ -212,17 +214,22 @@ begin
   end;
 end;
 
-procedure TReportBaseCsv.SetFilePath(const aValue: string);
+procedure TReportBaseCsv<T>.SetFilePath(const aValue: string);
 begin
-  fFilePath := aValue;
+  fFilePath := ChangeFileExt(aValue, '.csv');
 end;
 
-function TReportBaseCsv.GetSuggestedFileName: string;
+procedure TReportBaseCsv<T>.SetParams(const aParams: T);
+begin
+
+end;
+
+function TReportBaseCsv<T>.GetSuggestedFileName: string;
 begin
   Result := '';
 end;
 
-function TReportBaseCsv.GetTitle: string;
+function TReportBaseCsv<T>.GetTitle: string;
 begin
   Result := 'CSV-Datei';
 end;

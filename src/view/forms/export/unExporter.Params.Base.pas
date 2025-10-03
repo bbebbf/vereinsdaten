@@ -25,6 +25,7 @@ type
     function GetTargetIndex: Integer;
     function ParamsValid: Boolean; override;
     procedure ResultMessage(const aExporterExportResult: TExporterExportResult);
+    function GetSuggestedExportFileName: string; virtual;
   public
     constructor Create(AOwner: TComponent; const aDialogCaption: string = '');
   end;
@@ -49,7 +50,7 @@ begin
   if not Assigned(fRequiresFilePath) then
     Exit;
 
-  dlgSave.FileName := fRequiresFilePath.SuggestedFileName;
+  dlgSave.FileName := GetSuggestedExportFileName;
   if dlgSave.Execute(Handle) then
   begin
     edFilePath.Text := dlgSave.FileName;
@@ -74,6 +75,13 @@ begin
     edFilePath.Enabled := False;
     btOpenFileDlg.Enabled := False;
   end;
+end;
+
+function TfmExporterParamsBase.GetSuggestedExportFileName: string;
+begin
+  Result := '';
+  if Assigned(fRequiresFilePath) then
+    Result := fRequiresFilePath.SuggestedFileName;
 end;
 
 function TfmExporterParamsBase.GetTargetIndex: Integer;

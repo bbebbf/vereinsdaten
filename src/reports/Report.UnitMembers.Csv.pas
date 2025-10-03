@@ -2,22 +2,22 @@ unit Report.UnitMembers.Csv;
 
 interface
 
-uses System.Generics.Collections, Report.Base.Csv, Exporter.UnitMembers.Types, Exporter.Types;
+uses System.Generics.Collections, Report.Base.Csv, Exporter.UnitMembers.Types;
 
 type
-  TReportUnitMembersCsv = class(TReportBaseCsv, IExporterTarget<TExporterUnitMembersParams>)
-  strict private
-    procedure SetParams(const aParams: TExporterUnitMembersParams);
+  TReportUnitMembersCsv = class(TReportBaseCsv<TExporterUnitMembersParams>)
   strict protected
     function GetSuggestedFileName: string; override;
-    procedure FillFieldsToExport(const aFields: TObjectList<TReportCsvField>); override;
+    procedure FillFieldsToExport(const aExportParams: TExporterUnitMembersParams;
+      const aFields: TObjectList<TReportCsvField>); override;
   end;
 
 implementation
 
 { TReportUnitMembersCsv }
 
-procedure TReportUnitMembersCsv.FillFieldsToExport(const aFields: TObjectList<TReportCsvField>);
+procedure TReportUnitMembersCsv.FillFieldsToExport(const aExportParams: TExporterUnitMembersParams;
+  const aFields: TObjectList<TReportCsvField>);
 begin
   inherited;
   aFields.Add(TReportCsvField.Create('unit_id'));
@@ -33,12 +33,7 @@ end;
 
 function TReportUnitMembersCsv.GetSuggestedFileName: string;
 begin
-  Result := 'Einheiten_und_Personen.csv';
-end;
-
-procedure TReportUnitMembersCsv.SetParams(const aParams: TExporterUnitMembersParams);
-begin
-
+  Result := 'Einheiten_und_Personen';
 end;
 
 end.

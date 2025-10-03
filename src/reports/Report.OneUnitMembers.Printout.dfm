@@ -103,9 +103,9 @@ object fmReportOneUnitMembersPrintout: TfmReportOneUnitMembersPrintout
       object rdMemberCount: TRLDBText
         Left = 125
         Top = 40
-        Width = 96
+        Width = 134
         Height = 17
-        DataField = 'MemberCount'
+        DataField = 'unit_member_count'
         DataSource = dsDataSource
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
