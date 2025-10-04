@@ -24,7 +24,7 @@ uses System.SysUtils, Vdm.Globals;
 function TExporterOneUnitMembers.CreatePreparedQuery(out aQuery: ISqlPreparedQuery): Boolean;
 begin
   aQuery := Connection.CreatePreparedQuery(
-    'SELECT u.unit_id, u.unit_name, u.unit_data_confirmed_on, mc.unit_member_count' +
+    'SELECT u.unit_id, u.unit_name, u.unit_kind, u.unit_data_confirmed_on, mc.unit_member_count' +
     ', pn.person_name, a.address_title, r.role_name' +
     ', pn.person_id,pn.person_lastname,pn.person_firstname,pn.person_nameaddition' +
     ', a.address_street,a.address_postalcode,a.address_city' +

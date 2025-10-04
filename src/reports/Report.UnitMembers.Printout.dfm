@@ -93,11 +93,18 @@ object fmReportUnitMembersPrintout: TfmReportUnitMembersPrintout
         Caption = 'Rolle'
       end
       object Label1: TLabel
-        Left = 250
+        Left = 275
         Top = 3
-        Width = 71
+        Width = 35
         Height = 18
-        Caption = 'Datenstand'
+        Caption = 'Stand'
+      end
+      object Label2: TLabel
+        Left = 225
+        Top = 3
+        Width = 22
+        Height = 18
+        Caption = 'Typ'
       end
     end
     object bdDetail: TRLBand
@@ -115,7 +122,7 @@ object fmReportUnitMembersPrintout: TfmReportUnitMembersPrintout
       AfterPrint = bdDetailAfterPrint
       BeforePrint = bdDetailBeforePrint
       object rdUnitDataConfirmed: TRLDBText
-        Left = 250
+        Left = 275
         Top = 2
         Width = 156
         Height = 18
@@ -180,6 +187,16 @@ object fmReportUnitMembersPrintout: TfmReportUnitMembersPrintout
         DataSource = dsDataSource
         Text = ''
         Visible = False
+      end
+      object rdUnitKind: TRLDBText
+        Left = 225
+        Top = 2
+        Width = 62
+        Height = 18
+        DataField = 'unit_kind'
+        DataSource = dsDataSource
+        Text = ''
+        BeforePrint = rdUnitnameBeforePrint
       end
     end
     object bdPageFooter: TRLBand

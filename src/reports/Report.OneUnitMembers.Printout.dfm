@@ -28,7 +28,7 @@ object fmReportOneUnitMembersPrintout: TfmReportOneUnitMembersPrintout
       Left = 47
       Top = 47
       Width = 898
-      Height = 90
+      Height = 138
       BandType = btHeader
       object lbTenantTitle: TLabel
         Left = 633
@@ -46,7 +46,7 @@ object fmReportOneUnitMembersPrintout: TfmReportOneUnitMembersPrintout
       end
       object Label1: TLabel
         Left = 0
-        Top = 65
+        Top = 89
         Width = 79
         Height = 17
         Caption = 'Datenstand:'
@@ -59,10 +59,23 @@ object fmReportOneUnitMembersPrintout: TfmReportOneUnitMembersPrintout
       end
       object Label2: TLabel
         Left = 0
-        Top = 40
+        Top = 67
         Width = 115
         Height = 17
         Caption = 'Anzahl Personen:'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Height = -15
+        Font.Name = 'Arial'
+        Font.Style = []
+        ParentFont = False
+      end
+      object Label3: TLabel
+        Left = 0
+        Top = 44
+        Width = 27
+        Height = 17
+        Caption = 'Typ:'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
         Font.Height = -15
@@ -87,7 +100,7 @@ object fmReportOneUnitMembersPrintout: TfmReportOneUnitMembersPrintout
       end
       object rdUnitDataConfirmed: TRLDBText
         Left = 125
-        Top = 65
+        Top = 89
         Width = 160
         Height = 17
         DataField = 'unit_data_confirmed_on'
@@ -102,7 +115,7 @@ object fmReportOneUnitMembersPrintout: TfmReportOneUnitMembersPrintout
       end
       object rdMemberCount: TRLDBText
         Left = 125
-        Top = 40
+        Top = 67
         Width = 134
         Height = 17
         DataField = 'unit_member_count'
@@ -116,10 +129,26 @@ object fmReportOneUnitMembersPrintout: TfmReportOneUnitMembersPrintout
         Text = ''
         BeforePrint = rdMemberCountBeforePrint
       end
+      object rdUnitKind: TRLDBText
+        Left = 125
+        Top = 44
+        Width = 61
+        Height = 17
+        DataField = 'unit_kind'
+        DataSource = dsDataSource
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Height = -15
+        Font.Name = 'Arial'
+        Font.Style = []
+        ParentFont = False
+        Text = ''
+        BeforePrint = rdUnitKindBeforePrint
+      end
     end
     object bdColumnHeader: TRLBand
       Left = 47
-      Top = 137
+      Top = 185
       Width = 898
       Height = 25
       BandType = btColumnHeader
@@ -161,7 +190,7 @@ object fmReportOneUnitMembersPrintout: TfmReportOneUnitMembersPrintout
     end
     object bdDetail: TRLBand
       Left = 47
-      Top = 162
+      Top = 210
       Width = 898
       Height = 23
       GreenBarPrint = True
@@ -202,7 +231,7 @@ object fmReportOneUnitMembersPrintout: TfmReportOneUnitMembersPrintout
     end
     object bdPageFooter: TRLBand
       Left = 47
-      Top = 185
+      Top = 233
       Width = 898
       Height = 27
       BandType = btFooter

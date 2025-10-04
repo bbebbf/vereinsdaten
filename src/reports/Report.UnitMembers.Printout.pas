@@ -32,6 +32,8 @@ type
     Label1: TLabel;
     rdUnitDataConfirmed: TRLDBText;
     rdMemberCount: TRLDBText;
+    Label2: TLabel;
+    rdUnitKind: TRLDBText;
     procedure RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure bdDetailAfterPrint(Sender: TObject);
     procedure rdUnitDividerBeforePrint(Sender: TObject; var PrintIt: Boolean);
@@ -49,7 +51,7 @@ type
 
 implementation
 
-uses TenantReader, Vdm.Globals;
+uses TenantReader, Vdm.Globals, DtoUnit;
 
 {$R *.dfm}
 
@@ -97,6 +99,14 @@ begin
   if (Sender = rdUnitname) and (rdMemberCount.Field.AsInteger > 5) then
   begin
     AText := AText + ' (' + IntToStr(rdMemberCount.Field.AsInteger) + ' Pers.)';
+  end
+  else if Sender = rdUnitKind then
+  begin
+    AText := UnitKindToStrShort(TUnitKind(rdUnitKind.Field.AsInteger));
+  end
+  else if Sender = rdUnitDataConfirmed then
+  begin
+    AText := TVdmGlobals.GetDateAsString(rdUnitDataConfirmed.Field.AsDateTime);
   end;
 end;
 

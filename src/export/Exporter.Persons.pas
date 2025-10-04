@@ -18,8 +18,8 @@ function TExporterPersons.CreatePreparedQuery(out aQuery: ISqlPreparedQuery): Bo
 begin
   var lSelectStmt := 'SELECT p.person_id, p.person_active, pn.person_name, a.address_title' +
     ',p.person_date_of_birth, p.person_day_of_birth, p.person_month_of_birth' +
-    ',IF(p.person_active, null, "I") AS person_inactive' +
-    ',IF(p.person_external, "E", null) AS person_external_x' +
+    ',IF(p.person_active, null, "I") AS person_inactive_i' +
+    ',IF(p.person_external, "E", null) AS person_external_e' +
     ',p.person_external' +
     ',pn.person_lastname,pn.person_firstname,pn.person_nameaddition' +
     ',a.address_street,a.address_postalcode,a.address_city' +

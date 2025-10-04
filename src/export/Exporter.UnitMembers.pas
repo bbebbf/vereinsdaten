@@ -37,7 +37,7 @@ begin
     end;
 
   end;
-  var lSelectStm := 'SELECT u.unit_id, u.unit_name, u.unit_data_confirmed_on, mc.unit_member_count' +
+  var lSelectStm := 'SELECT u.unit_id, u.unit_name, u.unit_kind, u.unit_data_confirmed_on, mc.unit_member_count' +
     ',pn.person_name, r.role_name' +
     ',pn.person_id,pn.person_lastname,pn.person_firstname,pn.person_nameaddition' +
     ' FROM unit AS u' +

@@ -15,14 +15,13 @@ implementation
 
 { TReportOneUnitMembersCsv }
 
-{ TReportOneUnitMembersCsv }
-
 procedure TReportOneUnitMembersCsv.FillFieldsToExport(const aExportParams: TExporterOneUnitMembersParams;
   const aFields: TObjectList<TReportCsvField>);
 begin
   inherited;
   aFields.Add(TReportCsvField.Create('unit_id'));
   aFields.Add(TReportCsvField.Create('unit_name'));
+  aFields.Add(TReportCsvField.Create('unit_kind'));
   aFields.Add(TReportCsvField.Create('unit_data_confirmed_on'));
   aFields.Add(TReportCsvField.Create('unit_member_count'));
   aFields.Add(TReportCsvField.Create('person_id'));

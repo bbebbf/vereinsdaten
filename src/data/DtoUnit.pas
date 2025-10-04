@@ -21,6 +21,7 @@ type
   end;
 
 function UnitKindToStr(const aKind: TUnitKind): string;
+function UnitKindToStrShort(const aKind: TUnitKind): string;
 
 implementation
 
@@ -61,6 +62,18 @@ begin
       Result := 'Extern';
     else
       Result := '???';
+  end;
+end;
+
+function UnitKindToStrShort(const aKind: TUnitKind): string;
+begin
+  case aKind of
+    TUnitKind.OneTimeKind:
+      Result := 'Ein';
+    TUnitKind.ExternalKind:
+      Result := 'Ext';
+    else
+      Result := '';
   end;
 end;
 

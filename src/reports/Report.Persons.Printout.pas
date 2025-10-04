@@ -16,11 +16,9 @@ type
     lbTenantTitle: TLabel;
     bdColumnHeader: TRLBand;
     Label3: TLabel;
-    lbInactive: TLabel;
     lbAddress: TLabel;
     bdDetail: TRLBand;
     rdPersonname: TRLDBText;
-    rtInactive: TRLDBText;
     rtAddress: TRLDBText;
     bdPageFooter: TRLBand;
     lbSysDate: TRLSystemInfo;
@@ -30,10 +28,11 @@ type
     lbBirthday: TLabel;
     rtBirthday: TRLDBText;
     rdColumnHeaderHLine: TRLDraw;
-    lbExternal: TLabel;
-    rtExternal: TRLDBText;
+    lbStatus: TLabel;
+    rtStatus: TRLDBText;
     lbSpecialPersonsInfo: TRLLabel;
     procedure rtBirthdayBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
+    procedure rtStatusBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
   strict private
     procedure SetParams(const aParams: TExporterPersonsParams);
   strict protected
@@ -42,7 +41,7 @@ type
 
 implementation
 
-uses TenantReader, Vdm.Globals, VclUITools;
+uses TenantReader, Vdm.Globals, VclUITools, StringTools;
 
 {$R *.dfm}
 
@@ -64,20 +63,24 @@ begin
   end;
 end;
 
+procedure TfmReportPersonsPrintout.rtStatusBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
+begin
+  inherited;
+  PrintIt := rtStatus.Visible;
+  if PrintIt then
+    AText := TStringTools.Combine(rtStatus.DataSource.DataSet.FieldByName('person_external_e').AsString,
+      ' ', rtStatus.DataSource.DataSet.FieldByName('person_inactive_i').AsString);
+end;
+
 procedure TfmReportPersonsPrintout.SetParams(const aParams: TExporterPersonsParams);
 begin
   lbTenantTitle.Caption := TTenantReader.Instance.Tenant.Title;
   lbAppTitle.Caption := TVdmGlobals.GetVdmApplicationTitle;
 
-  if not aParams.ShowExternalPersons then
+  if not aParams.ShowExternalPersons and not aParams.ShowInactivePersons then
   begin
-    TVclUITools.HideAndMoveHorizontal(lbExternal, [lbInactive, lbBirthday, lbAddress, rtInactive, rtBirthday, rtAddress]);
-    rtExternal.Visible := False;
-  end;
-  if not aParams.ShowInactivePersons then
-  begin
-    TVclUITools.HideAndMoveHorizontal(lbInactive, [lbBirthday, lbAddress, rtBirthday, rtAddress]);
-    rtInactive.Visible := False;
+    TVclUITools.HideAndMoveHorizontal(lbStatus, [lbBirthday, lbAddress, rtBirthday, rtAddress]);
+    rtStatus.Visible := False;
   end;
 
   lbSpecialPersonsInfo.Visible := aParams.ShowInactivePersons or aParams.ShowExternalPersons;

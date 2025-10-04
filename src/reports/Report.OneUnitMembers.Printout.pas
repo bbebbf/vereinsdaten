@@ -32,10 +32,13 @@ type
     rdUnitDivider: TRLDraw;
     lbAddress: TLabel;
     rtAddress: TRLDBText;
+    rdUnitKind: TRLDBText;
+    Label3: TLabel;
     procedure RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure bdDetailAfterPrint(Sender: TObject);
     procedure RLReportPageStarting(Sender: TObject);
     procedure rdMemberCountBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
+    procedure rdUnitKindBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
   strict private
     fNewPageStarted: Boolean;
     procedure SetParams(const aParams: TExporterOneUnitMembersParams);
@@ -45,7 +48,7 @@ type
 
 implementation
 
-uses TenantReader, Vdm.Globals;
+uses TenantReader, Vdm.Globals, DtoUnit;
 
 {$R *.dfm}
 
@@ -62,6 +65,13 @@ begin
   inherited;
   if rdMemberCount.Field.IsNull then
     AText := '0';
+end;
+
+procedure TfmReportOneUnitMembersPrintout.rdUnitKindBeforePrint(Sender: TObject; var AText: string;
+  var PrintIt: Boolean);
+begin
+  inherited;
+  AText := UnitKindToStr(TUnitKind(rdUnitKind.Field.AsInteger));
 end;
 
 procedure TfmReportOneUnitMembersPrintout.bdDetailAfterPrint(Sender: TObject);

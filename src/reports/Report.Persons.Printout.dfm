@@ -89,35 +89,26 @@ object fmReportPersonsPrintout: TfmReportPersonsPrintout
         Height = 18
         Caption = 'Name'
       end
-      object lbInactive: TLabel
-        Left = 258
-        Top = 3
-        Width = 42
-        Height = 18
-        Alignment = taCenter
-        Caption = 'Inaktiv'
-      end
       object lbAddress: TLabel
-        Left = 410
+        Left = 350
         Top = 3
         Width = 50
         Height = 18
         Caption = 'Adresse'
       end
       object lbBirthday: TLabel
-        Left = 320
+        Left = 260
         Top = 3
         Width = 75
         Height = 18
         Caption = 'Geb.-Datum'
       end
-      object lbExternal: TLabel
+      object lbStatus: TLabel
         Left = 195
         Top = 3
-        Width = 40
+        Width = 38
         Height = 18
-        Alignment = taCenter
-        Caption = 'Extern'
+        Caption = 'Status'
       end
       object rdColumnHeaderHLine: TRLDraw
         Left = 0
@@ -149,18 +140,8 @@ object fmReportPersonsPrintout: TfmReportPersonsPrintout
         DataSource = dsDataSource
         Text = ''
       end
-      object rtInactive: TRLDBText
-        Left = 258
-        Top = 2
-        Width = 58
-        Height = 18
-        Alignment = taCenter
-        DataField = 'person_inactive'
-        DataSource = dsDataSource
-        Text = ''
-      end
       object rtAddress: TRLDBText
-        Left = 410
+        Left = 350
         Top = 2
         Width = 84
         Height = 18
@@ -169,7 +150,7 @@ object fmReportPersonsPrintout: TfmReportPersonsPrintout
         Text = ''
       end
       object rtBirthday: TRLDBText
-        Left = 320
+        Left = 260
         Top = 2
         Width = 105
         Height = 18
@@ -178,16 +159,15 @@ object fmReportPersonsPrintout: TfmReportPersonsPrintout
         Text = ''
         BeforePrint = rtBirthdayBeforePrint
       end
-      object rtExternal: TRLDBText
+      object rtStatus: TRLDBText
         Left = 195
         Top = 2
         Width = 58
         Height = 18
-        Alignment = taCenter
         AutoSize = False
-        DataField = 'person_external_x'
         DataSource = dsDataSource
         Text = ''
+        BeforePrint = rtStatusBeforePrint
       end
     end
     object bdPageFooter: TRLBand

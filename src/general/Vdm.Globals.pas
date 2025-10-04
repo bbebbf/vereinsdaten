@@ -8,8 +8,7 @@ type
   TVdmGlobals = class
   public
     class function GetVdmApplicationTitle: string;
-    class function GetDateTimePickerNullValue: TDateTime;
-    class function GetDateAsString(const aValue: TDateTime): string;
+    class function GetDateAsString(const aValue: TDateTime; const aShowCentury: Boolean = False): string;
     class function GetDateTimeAsString(const aValue: TDateTime): string;
     class function GetTimeStampAsString(const aValue: TDateTime): string;
     class function TryGetColorForCrudState(const aState: TListEntryCrudState; out aColor: TColor): Boolean;
@@ -49,17 +48,24 @@ begin
     Result := 'Inaktiv';
 end;
 
-class function TVdmGlobals.GetDateAsString(const aValue: TDateTime): string;
+class function TVdmGlobals.GetDateAsString(const aValue: TDateTime; const aShowCentury: Boolean): string;
 begin
-  if aValue > GetDateTimePickerNullValue then
-    Result := FormatDateTime('dd.mm.yyyy', aValue)
+  if aValue > 0 then
+  begin
+    var lFormatStr := 'dd.mm.yy';
+    if aShowCentury then
+      lFormatStr := 'dd.mm.yyyy';
+    Result := FormatDateTime(lFormatStr, aValue);
+  end
   else
+  begin
     Result := '';
+  end;
 end;
 
 class function TVdmGlobals.GetDateTimeAsString(const aValue: TDateTime): string;
 begin
-  if aValue > GetDateTimePickerNullValue then
+  if aValue > 0 then
     Result := FormatDateTime('dd.mm.yyyy HH:nn', aValue)
   else
     Result := '';
@@ -67,15 +73,10 @@ end;
 
 class function TVdmGlobals.GetTimeStampAsString(const aValue: TDateTime): string;
 begin
-  if aValue > GetDateTimePickerNullValue then
+  if aValue > 0 then
     Result := FormatDateTime('dd.mm.yyyy HH:nn:ss', aValue)
   else
     Result := '';
-end;
-
-class function TVdmGlobals.GetDateTimePickerNullValue: TDateTime;
-begin
-  Result := 1;
 end;
 
 class function TVdmGlobals.GetInactiveColor: TColor;
