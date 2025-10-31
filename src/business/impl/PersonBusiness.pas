@@ -69,7 +69,7 @@ implementation
 uses System.Generics.Collections, SelectList, KeyIndexMapper,
   CrudConfigPerson, CrudConfigAddress, CrudConfigPersonAddress, CrudConfigClubmembership,
   MemberOfBusiness, EntryCrudConfig, CrudConfigUnitAggregated, CrudBusiness, CrudMemberConfigMasterPerson,
-  VersionInfoEntryUI, VersionInfoAccessor, MemberOfVersionInfoConfig, PersonMapper;
+  VersionInfoEntryUI, VersionInfoAccessor, MemberOfVersionInfoConfig, PersonMapper, ListParamsPerson;
 
 type
   TPersonBasedataVersionInfoConfig = class(TInterfacedBase, IVersionInfoConfig<TDtoPerson, UInt32>)
@@ -250,16 +250,20 @@ begin
     var lSelectList: ISelectList<TDtoPerson>;
     if not Supports(fPersonConfig, ISelectList<TDtoPerson>, lSelectList) then
       raise ENotImplemented.Create('fPersonConfig must implement ISelectList<TDtoPerson>.');
-    var lSqlResult :=  fConnection.GetSelectResult(lSelectList.GetSelectListSQL);
+    var lParameterizedSelectList: IParameterizedSelectList<TListParamsPerson>;
+    if not Supports(fPersonConfig, IParameterizedSelectList<TListParamsPerson>, lParameterizedSelectList) then
+      raise ENotImplemented.Create('fPersonConfig must implement IParameterizedSelectList<TListParamsPerson>.');
+
+    var lParams := default(TListParamsPerson);
+    lParams.IncludeInactive := fShowInactivePersons;
+    lParams.IncludeExternal := fShowExternalPersons;
+    var lSqlResult := lParameterizedSelectList.GetParameterizedSelectQuery(fConnection, lParams).Open;
     while lSqlResult.Next do
     begin
       var lRecord := default(TDtoPerson);
       fPersonConfig.GetRecordFromSqlResult(lSqlResult, lRecord);
-      if (fShowInactivePersons or lRecord.Active) and (fShowExternalPersons or not lRecord.External) then
-      begin
-        fUI.ListEnumProcessItem(lRecord);
-        fNewEntryStarted := False;
-      end;
+      fUI.ListEnumProcessItem(lRecord);
+      fNewEntryStarted := False;
     end;
   finally
     fUI.ListEnumEnd;

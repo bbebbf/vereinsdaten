@@ -2,10 +2,11 @@ unit CrudConfigPerson;
 
 interface
 
-uses InterfacedBase, CrudConfig, SelectList, CrudAccessor, SqlConnection, DtoPerson, Vdm.Types;
+uses InterfacedBase, CrudConfig, SelectList, CrudAccessor, SqlConnection, DtoPerson, Vdm.Types, ListParamsPerson;
 
 type
-  TCrudConfigPerson = class(TInterfacedBase, ICrudConfig<TDtoPerson, UInt32>, ISelectList<TDtoPerson>)
+  TCrudConfigPerson = class(TInterfacedBase, ICrudConfig<TDtoPerson, UInt32>, ISelectList<TDtoPerson>,
+    IParameterizedSelectList<TListParamsPerson>)
   strict private
     function GetTablename: string;
     function GetIdentityColumns: TArray<string>;
@@ -18,6 +19,8 @@ type
     procedure UpdateRecordIdentity(const aAccessor: TCrudAccessorInsert; var aRecord: TDtoPerson);
     function GetSelectListSQL: string;
     function GetRecordIdentity(const aRecord: TDtoPerson): UInt32;
+    function GetParameterizedSelectQuery(const aConnection: ISqlConnection;
+      const aListParams: TListParamsPerson): ISqlPreparedQuery;
   end;
 
 implementation
@@ -144,6 +147,33 @@ end;
 procedure TCrudConfigPerson.UpdateRecordIdentity(const aAccessor: TCrudAccessorInsert; var aRecord: TDtoPerson);
 begin
   aRecord.NameId.Id := aAccessor.LastInsertedId;
+end;
+
+function TCrudConfigPerson.GetParameterizedSelectQuery(const aConnection: ISqlConnection;
+  const aListParams: TListParamsPerson): ISqlPreparedQuery;
+begin
+  Result := aConnection.CreatePreparedQuery(
+    'select * from person' +
+    ' where (person_active = 1 or :only_active = 0)' +
+    ' and (person_external = 0 or :include_external = 1)' +
+    ' order by person_lastname, person_firstname, person_nameaddition'
+    );
+  if aListParams.IncludeInactive then
+  begin
+    Result.ParamByName('only_active').Value := 0;
+  end
+  else
+  begin
+    Result.ParamByName('only_active').Value := 1;
+  end;
+  if aListParams.IncludeExternal then
+  begin
+    Result.ParamByName('include_external').Value := 1;
+  end
+  else
+  begin
+    Result.ParamByName('include_external').Value := 0;
+  end;
 end;
 
 end.
