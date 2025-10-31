@@ -9,6 +9,7 @@ uses System.SysUtils, InterfacedBase, EntryCrudConfig, DtoUnitAggregated, SqlCon
 type
   TCrudConfigUnitAggregated = class(TInterfacedBase,
     IEntryCrudConfig<TDtoUnitAggregated, TDtoUnit, UInt32, TEntryFilter>,
+    IEntryCrudConfigParameterizedList<TEntryFilter>,
     IVersionInfoEntryAccessor<TDtoUnitAggregated>)
   strict private
     fConnection: ISqlConnection;
@@ -20,6 +21,7 @@ type
     fUnitMemberOfsVersionInfoAccessor: IMemberOfsVersioningCrudEvents;
 
     function GetListSqlResult: ISqlResult;
+    function GetParameterizedListSqlQuery(const aListFilter: TEntryFilter): ISqlPreparedQuery;
     function GetListEntryFromSqlResult(const aSqlResult: ISqlResult): TDtoUnit;
     function IsEntryValidForList(const aEntry: TDtoUnit; const aListFilter: TEntryFilter): Boolean;
     function IsEntryValidForSaving(const aEntry: TDtoUnitAggregated): Boolean;
@@ -153,10 +155,15 @@ end;
 
 function TCrudConfigUnitAggregated.GetListSqlResult: ISqlResult;
 begin
-  var lSelectList: ISelectList<TDtoUnit>;
-  if not Supports(fCrudConfigUnit, ISelectList<TDtoUnit>, lSelectList) then
-    raise ENotImplemented.Create('fCrudConfigUnit must implement ISelectList<TDtoUnit>.');
-  Result := fConnection.GetSelectResult(lSelectList.GetSelectListSQL);
+  raise ENotImplemented.Create('TCrudConfigUnitAggregated.GetListSqlResult.');
+end;
+
+function TCrudConfigUnitAggregated.GetParameterizedListSqlQuery(const aListFilter: TEntryFilter): ISqlPreparedQuery;
+begin
+  var lSelectList: IParameterizedSelectList<TEntryFilter>;
+  if not Supports(fCrudConfigUnit, IParameterizedSelectList<TEntryFilter>, lSelectList) then
+    raise ENotImplemented.Create('fCrudConfigUnit must implement IParameterizedSelectList<TEntryFilter>.');
+  Result := lSelectList.GetParameterizedSelectQuery(fConnection, aListFilter);
 end;
 
 function TCrudConfigUnitAggregated.GetVersionInfoEntry(const aEntry: TDtoUnitAggregated;

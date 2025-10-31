@@ -2,10 +2,11 @@ unit CrudConfigAddress;
 
 interface
 
-uses InterfacedBase, CrudConfig, CrudAccessor, SqlConnection, SelectList, DtoAddress;
+uses InterfacedBase, CrudConfig, CrudAccessor, SqlConnection, SelectList, DtoAddress, Vdm.Types;
 
 type
-  TCrudConfigAddress = class(TInterfacedBase, ICrudConfig<TDtoAddress, UInt32>, ISelectList<TDtoAddress>)
+  TCrudConfigAddress = class(TInterfacedBase, ICrudConfig<TDtoAddress, UInt32>, ISelectList<TDtoAddress>,
+    IParameterizedSelectList<TEntryFilter>)
   strict private
     function GetTablename: string;
     function GetIdentityColumns: TArray<string>;
@@ -18,6 +19,8 @@ type
     procedure UpdateRecordIdentity(const aAccessor: TCrudAccessorInsert; var aRecord: TDtoAddress);
     function GetSelectListSQL: string;
     function GetRecordIdentity(const aRecord: TDtoAddress): UInt32;
+    function GetParameterizedSelectQuery(const aConnection: ISqlConnection;
+      const aListParams: TEntryFilter): ISqlPreparedQuery;
   end;
 
 implementation
@@ -90,6 +93,24 @@ end;
 procedure TCrudConfigAddress.UpdateRecordIdentity(const aAccessor: TCrudAccessorInsert; var aRecord: TDtoAddress);
 begin
   aRecord.Id := aAccessor.LastInsertedId;
+end;
+
+function TCrudConfigAddress.GetParameterizedSelectQuery(const aConnection: ISqlConnection;
+  const aListParams: TEntryFilter): ISqlPreparedQuery;
+begin
+  Result := aConnection.CreatePreparedQuery(
+    'select * from address' +
+    ' where (adr_active = 1 or :only_active = 0)' +
+    ' order by adr_street'
+    );
+  if aListParams.ShowInactiveEntries then
+  begin
+    Result.ParamByName('only_active').Value := 0;
+  end
+  else
+  begin
+    Result.ParamByName('only_active').Value := 1;
+  end;
 end;
 
 end.

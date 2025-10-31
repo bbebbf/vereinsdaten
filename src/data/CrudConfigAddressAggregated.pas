@@ -8,6 +8,7 @@ uses InterfacedBase, EntryCrudConfig, DtoAddressAggregated, SqlConnection, CrudC
 type
   TCrudConfigAddressAggregated = class(TInterfacedBase,
     IEntryCrudConfig<TDtoAddressAggregated, TDtoAddress, UInt32, TEntryFilter>,
+    IEntryCrudConfigParameterizedList<TEntryFilter>,
     IVersionInfoEntryAccessor<TDtoAddressAggregated>)
   strict private
     fConnection: ISqlConnection;
@@ -16,6 +17,7 @@ type
     fRecordActions: TRecordActionsVersioning<TDtoAddress, UInt32>;
     fMemberSelectQuery: ISqlPreparedQuery;
     function GetListSqlResult: ISqlResult;
+    function GetParameterizedListSqlQuery(const aListFilter: TEntryFilter): ISqlPreparedQuery;
     function GetListEntryFromSqlResult(const aSqlResult: ISqlResult): TDtoAddress;
     function IsEntryValidForList(const aEntry: TDtoAddress; const aListFilter: TEntryFilter): Boolean;
     function IsEntryValidForSaving(const aEntry: TDtoAddressAggregated): Boolean;
@@ -119,10 +121,15 @@ end;
 
 function TCrudConfigAddressAggregated.GetListSqlResult: ISqlResult;
 begin
-  var lSelectList: ISelectList<TDtoAddress>;
-  if not Supports(fCrudConfig, ISelectList<TDtoAddress>, lSelectList) then
-    raise ENotImplemented.Create('fCrudConfig must implement ISelectList<TDtoAddress>.');
-  Result := fConnection.GetSelectResult(lSelectList.GetSelectListSQL);
+  raise ENotImplemented.Create('TCrudConfigAddressAggregated.GetListSqlResult.');
+end;
+
+function TCrudConfigAddressAggregated.GetParameterizedListSqlQuery(const aListFilter: TEntryFilter): ISqlPreparedQuery;
+begin
+  var lSelectList: IParameterizedSelectList<TEntryFilter>;
+  if not Supports(fCrudConfig, IParameterizedSelectList<TEntryFilter>, lSelectList) then
+    raise ENotImplemented.Create('fCrudConfig must implement IParameterizedSelectList<TEntryFilter>.');
+  Result := lSelectList.GetParameterizedSelectQuery(fConnection, aListFilter);
 end;
 
 function TCrudConfigAddressAggregated.GetVersionInfoEntry(const aEntry: TDtoAddressAggregated;

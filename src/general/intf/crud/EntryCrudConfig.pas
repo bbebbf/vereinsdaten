@@ -25,6 +25,11 @@ type
     function GetEntryTitle(const aPlural: Boolean): string;
   end;
 
+  IEntryCrudConfigParameterizedList<TListFilter: record> = interface
+    ['{1EC17506-5FBA-44BD-896F-04471DA3A078}']
+    function GetParameterizedListSqlQuery(const aListFilter: TListFilter): ISqlPreparedQuery;
+  end;
+
 implementation
 
 end.

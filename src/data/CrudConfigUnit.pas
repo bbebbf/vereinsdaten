@@ -2,10 +2,11 @@ unit CrudConfigUnit;
 
 interface
 
-uses InterfacedBase, CrudConfig, SelectList, SqlConnection, CrudAccessor, DtoUnit;
+uses InterfacedBase, CrudConfig, SelectList, SqlConnection, CrudAccessor, DtoUnit, Vdm.Types;
 
 type
-  TCrudConfigUnit = class(TInterfacedBase, ICrudConfig<TDtoUnit, UInt32>, ISelectList<TDtoUnit>)
+  TCrudConfigUnit = class(TInterfacedBase, ICrudConfig<TDtoUnit, UInt32>, ISelectList<TDtoUnit>,
+    IParameterizedSelectList<TEntryFilter>)
   strict private
     function GetTablename: string;
     function GetIdentityColumns: TArray<string>;
@@ -19,6 +20,8 @@ type
 
     procedure GetRecordFromSqlResult(const aSqlResult: ISqlResult; var aData: TDtoUnit);
     function GetSelectListSQL: string;
+    function GetParameterizedSelectQuery(const aConnection: ISqlConnection;
+      const aListParams: TEntryFilter): ISqlPreparedQuery;
   end;
 
 implementation
@@ -95,6 +98,24 @@ end;
 procedure TCrudConfigUnit.UpdateRecordIdentity(const aAccessor: TCrudAccessorInsert; var aRecord: TDtoUnit);
 begin
   aRecord.Id := aAccessor.LastInsertedId;
+end;
+
+function TCrudConfigUnit.GetParameterizedSelectQuery(const aConnection: ISqlConnection;
+  const aListParams: TEntryFilter): ISqlPreparedQuery;
+begin
+  Result := aConnection.CreatePreparedQuery(
+    'select * from unit' +
+    ' where (unit_active = 1 or :only_active = 0)' +
+    ' order by unit_name'
+    );
+  if aListParams.ShowInactiveEntries then
+  begin
+    Result.ParamByName('only_active').Value := 0;
+  end
+  else
+  begin
+    Result.ParamByName('only_active').Value := 1;
+  end;
 end;
 
 end.

@@ -485,12 +485,18 @@ end;
 
 procedure TPersonBusiness.SetShowExternalPersons(const aValue: Boolean);
 begin
+  if fShowExternalPersons = aValue then
+    Exit;
+
   fShowExternalPersons := aValue;
   LoadList;
 end;
 
 procedure TPersonBusiness.SetShowInactivePersons(const aValue: Boolean);
 begin
+  if fShowInactivePersons = aValue then
+    Exit;
+
   fShowInactivePersons := aValue;
   LoadList;
 end;

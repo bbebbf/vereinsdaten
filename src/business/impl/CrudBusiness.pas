@@ -82,7 +82,17 @@ begin
   fUI.ClearEntryFromUI;
   fUI.ListEnumBegin;
   try
-    var lSqlResult := fConfig.GetListSqlResult;
+    var lSqlResult: ISqlResult;
+    var lConfigParameterizedList: IEntryCrudConfigParameterizedList<TListFilter>;
+    if Supports(fConfig, IEntryCrudConfigParameterizedList<TListFilter>, lConfigParameterizedList) then
+    begin
+      lSqlResult := lConfigParameterizedList.GetParameterizedListSqlQuery(fListFilter).Open;
+    end
+    else
+    begin
+      lSqlResult := fConfig.GetListSqlResult;
+    end;
+
     while lSqlResult.Next do
     begin
       var lEntry := fConfig.GetListEntryFromSqlResult(lSqlResult);
