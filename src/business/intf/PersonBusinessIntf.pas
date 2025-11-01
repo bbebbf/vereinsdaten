@@ -2,21 +2,15 @@ unit PersonBusinessIntf;
 
 interface
 
-uses CrudCommands, KeyIndexStrings, Vdm.Types;
+uses CrudCommands, KeyIndexStrings, ListFilterPerson;
 
 type
-  IPersonBusinessIntf = interface(ICrudCommands<UInt32, TVoid>)
+  IPersonBusinessIntf = interface(ICrudCommands<UInt32, TListFilterPerson>)
     ['{47719CB5-C17A-4DF3-A0CC-E2D0567F0F88}']
     function GetAvailableAddresses: TActiveKeyIndexStringsLoader;
-    function GetShowInactivePersons: Boolean;
-    procedure SetShowInactivePersons(const aValue: Boolean);
-    function GetShowExternalPersons: Boolean;
-    procedure SetShowExternalPersons(const aValue: Boolean);
     function LoadPerson(const aPersonId: UInt32; const aLoadMemberOfs: Boolean): TCrudCommandResult;
     procedure LoadPersonsMemberOfs;
     procedure ClearAddressCache;
-    property ShowInactivePersons: Boolean read GetShowInactivePersons write SetShowInactivePersons;
-    property ShowExternalPersons: Boolean read GetShowExternalPersons write SetShowExternalPersons;
     property AvailableAddresses: TActiveKeyIndexStringsLoader read GetAvailableAddresses;
   end;
 

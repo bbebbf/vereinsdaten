@@ -2,11 +2,11 @@ unit CrudConfigPerson;
 
 interface
 
-uses InterfacedBase, CrudConfig, SelectList, CrudAccessor, SqlConnection, DtoPerson, Vdm.Types, ListParamsPerson;
+uses InterfacedBase, CrudConfig, SelectList, CrudAccessor, SqlConnection, DtoPerson, Vdm.Types, ListFilterPerson;
 
 type
   TCrudConfigPerson = class(TInterfacedBase, ICrudConfig<TDtoPerson, UInt32>, ISelectList<TDtoPerson>,
-    IParameterizedSelectList<TListParamsPerson>)
+    IParameterizedSelectList<TListFilterPerson>)
   strict private
     function GetTablename: string;
     function GetIdentityColumns: TArray<string>;
@@ -20,7 +20,7 @@ type
     function GetSelectListSQL: string;
     function GetRecordIdentity(const aRecord: TDtoPerson): UInt32;
     function GetParameterizedSelectQuery(const aConnection: ISqlConnection;
-      const aListParams: TListParamsPerson): ISqlPreparedQuery;
+      const aListParams: TListFilterPerson): ISqlPreparedQuery;
   end;
 
 implementation
@@ -150,7 +150,7 @@ begin
 end;
 
 function TCrudConfigPerson.GetParameterizedSelectQuery(const aConnection: ISqlConnection;
-  const aListParams: TListParamsPerson): ISqlPreparedQuery;
+  const aListParams: TListFilterPerson): ISqlPreparedQuery;
 begin
   Result := aConnection.CreatePreparedQuery(
     'select * from person' +

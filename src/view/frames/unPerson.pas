@@ -319,8 +319,10 @@ end;
 procedure TfraPerson.cbCheckboxFilterPersonsClick(Sender: TObject);
 begin
   edFilter.Text := '';
-  fBusinessIntf.ShowInactivePersons := cbShowInactivePersons.Checked;
-  fBusinessIntf.ShowExternalPersons := cbShowExternalPersons.Checked;
+  var lListFilter := fBusinessIntf.ListFilter;
+  lListFilter.IncludeInactive := cbShowInactivePersons.Checked;
+  lListFilter.IncludeExternal := cbShowExternalPersons.Checked;
+  fBusinessIntf.ListFilter := lListFilter;
 end;
 
 procedure TfraPerson.ClearEntryFromUI;

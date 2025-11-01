@@ -1,9 +1,9 @@
-unit ListParamsPerson;
+unit ListFilterPerson;
 
 interface
 
 type
-  TListParamsPerson = record
+  TListFilterPerson = record
     IncludeInactive: Boolean;
     IncludeExternal: Boolean;
   end;

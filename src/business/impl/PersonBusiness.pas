@@ -5,7 +5,7 @@ interface
 uses System.Classes, System.SysUtils, InterfacedBase, CrudCommands, CrudConfig, Transaction, PersonBusinessIntf,
   DtoPersonAggregated, SqlConnection, PersonAggregatedUI, DtoPerson, RecordActions, RecordActionsVersioning,
   KeyIndexStrings, DtoPersonAddress, DtoAddress, DtoClubmembership, DtoMember, ClubmembershipTools,
-  MemberOfBusinessIntf, MemberOfConfigIntf, ProgressIndicatorIntf, Vdm.Types, Vdm.Versioning.Types, CrudUI,
+  MemberOfBusinessIntf, MemberOfConfigIntf, ProgressIndicatorIntf, ListFilterPerson, Vdm.Versioning.Types, CrudUI,
   EntriesCrudEvents, DtoMemberAggregated;
 
 type
@@ -26,8 +26,7 @@ type
     fCurrentEntry: TDtoPersonAggregated;
     fNewEntryStarted: Boolean;
     fAddressMapper: TActiveKeyIndexStringsLoader;
-    fShowInactivePersons: Boolean;
-    fShowExternalPersons: Boolean;
+    fListFilter: TListFilterPerson;
     fClubMembershipNumberChecker: TClubMembershipNumberChecker;
     fMemberOfConfig: IMemberOfConfigIntf;
     fMemberOfBusiness: IMemberOfBusinessIntf;
@@ -43,15 +42,11 @@ type
     function SetSelectedEntry(const aPersonId: UInt32): TCrudCommandResult;
     function DeleteEntry(const aPersonId: UInt32): TCrudCommandResult;
     function GetDataChanged: Boolean;
-    function GetShowInactivePersons: Boolean;
-    procedure SetShowInactivePersons(const aValue: Boolean);
-    function GetShowExternalPersons: Boolean;
-    procedure SetShowExternalPersons(const aValue: Boolean);
     procedure LoadPersonsMemberOfs;
     procedure ClearAddressCache;
     function GetAvailableAddresses: TActiveKeyIndexStringsLoader;
-    function GetListFilter: TVoid;
-    procedure SetListFilter(const aValue: TVoid);
+    function GetListFilter: TListFilterPerson;
+    procedure SetListFilter(const aValue: TListFilterPerson);
     function LoadPerson(const aPersonId: UInt32; const aLoadMemberOfs: Boolean): TCrudCommandResult;
 
     procedure SetCurrentEntryToUI(const aMode: TEntryToUIMode);
@@ -69,7 +64,7 @@ implementation
 uses System.Generics.Collections, SelectList, KeyIndexMapper,
   CrudConfigPerson, CrudConfigAddress, CrudConfigPersonAddress, CrudConfigClubmembership,
   MemberOfBusiness, EntryCrudConfig, CrudConfigUnitAggregated, CrudBusiness, CrudMemberConfigMasterPerson,
-  VersionInfoEntryUI, VersionInfoAccessor, MemberOfVersionInfoConfig, PersonMapper, ListParamsPerson;
+  VersionInfoEntryUI, VersionInfoAccessor, MemberOfVersionInfoConfig, PersonMapper;
 
 type
   TPersonBasedataVersionInfoConfig = class(TInterfacedBase, IVersionInfoConfig<TDtoPerson, UInt32>)
@@ -181,19 +176,9 @@ begin
   Result := fDataChanged;
 end;
 
-function TPersonBusiness.GetListFilter: TVoid;
+function TPersonBusiness.GetListFilter: TListFilterPerson;
 begin
-  raise ENotImplemented.Create('TPersonBusiness.GetListFilter: TVoid');
-end;
-
-function TPersonBusiness.GetShowExternalPersons: Boolean;
-begin
-  Result := fShowExternalPersons;
-end;
-
-function TPersonBusiness.GetShowInactivePersons: Boolean;
-begin
-  Result := fShowInactivePersons;
+  Result := fListFilter;
 end;
 
 function TPersonBusiness.DeleteEntry(const aPersonId: UInt32): TCrudCommandResult;
@@ -250,14 +235,11 @@ begin
     var lSelectList: ISelectList<TDtoPerson>;
     if not Supports(fPersonConfig, ISelectList<TDtoPerson>, lSelectList) then
       raise ENotImplemented.Create('fPersonConfig must implement ISelectList<TDtoPerson>.');
-    var lParameterizedSelectList: IParameterizedSelectList<TListParamsPerson>;
-    if not Supports(fPersonConfig, IParameterizedSelectList<TListParamsPerson>, lParameterizedSelectList) then
-      raise ENotImplemented.Create('fPersonConfig must implement IParameterizedSelectList<TListParamsPerson>.');
+    var lParameterizedSelectList: IParameterizedSelectList<TListFilterPerson>;
+    if not Supports(fPersonConfig, IParameterizedSelectList<TListFilterPerson>, lParameterizedSelectList) then
+      raise ENotImplemented.Create('fPersonConfig must implement IParameterizedSelectList<TListFilterPerson>.');
 
-    var lParams := default(TListParamsPerson);
-    lParams.IncludeInactive := fShowInactivePersons;
-    lParams.IncludeExternal := fShowExternalPersons;
-    var lSqlResult := lParameterizedSelectList.GetParameterizedSelectQuery(fConnection, lParams).Open;
+    var lSqlResult := lParameterizedSelectList.GetParameterizedSelectQuery(fConnection, fListFilter).Open;
     while lSqlResult.Next do
     begin
       var lRecord := default(TDtoPerson);
@@ -472,33 +454,18 @@ begin
     lVersionInfoEntryUI.ClearVersionInfoEntryFromUI;
 end;
 
-procedure TPersonBusiness.SetListFilter(const aValue: TVoid);
+procedure TPersonBusiness.SetListFilter(const aValue: TListFilterPerson);
 begin
-  raise ENotImplemented.Create('TPersonBusiness.SetListFilter(const aValue: TVoid)');
+  if CompareMem(@fListFilter, @aValue, SizeOf(TListFilterPerson)) then
+    Exit;
+  fListFilter := aValue;
+  LoadList;
 end;
 
 function TPersonBusiness.SetSelectedEntry(const aPersonId: UInt32): TCrudCommandResult;
 begin
   Result := default(TCrudCommandResult);
   Result.Sucessful := fUI.SetSelectedEntry(aPersonId);
-end;
-
-procedure TPersonBusiness.SetShowExternalPersons(const aValue: Boolean);
-begin
-  if fShowExternalPersons = aValue then
-    Exit;
-
-  fShowExternalPersons := aValue;
-  LoadList;
-end;
-
-procedure TPersonBusiness.SetShowInactivePersons(const aValue: Boolean);
-begin
-  if fShowInactivePersons = aValue then
-    Exit;
-
-  fShowInactivePersons := aValue;
-  LoadList;
 end;
 
 procedure TPersonBusiness.StartNewEntry;
