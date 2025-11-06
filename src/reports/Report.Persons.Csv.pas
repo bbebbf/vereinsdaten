@@ -30,9 +30,9 @@ begin
   aFields.Add(TReportCsvField.Create('address_street'));
   aFields.Add(TReportCsvField.Create('address_postalcode'));
   aFields.Add(TReportCsvField.Create('address_city'));
-  if aExportParams.ShowInactivePersons then
+  if aExportParams.IncludeInactivePersons then
     aFields.Add(TReportCsvField.Create('person_active'));
-  if aExportParams.ShowExternalPersons then
+  if aExportParams.IncludeExternalPersons then
     aFields.Add(TReportCsvField.Create('person_external'));
 end;
 

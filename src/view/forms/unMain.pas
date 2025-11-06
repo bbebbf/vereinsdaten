@@ -81,8 +81,8 @@ uses System.UITypes, Vdm.Globals, unRole, unAddress, unTenant, ProgressIndicator
 
   unExporter.Params.ZeroParams,
   Exporter.UnitMembers.Types, unExporter.Params.UnitMember,
-  Exporter.Persons.Types, unExporter.Params.Persons,
-  unExporter.Params.Birthdays;
+  Exporter.Persons.Types, Exporter.MemberUnits.Types, unExporter.Params.Persons,
+  unExporter.Params.Birthdays, unExporter.Params.MemberUnit;
 
 {$R *.dfm}
 
@@ -163,14 +163,14 @@ end;
 
 procedure TfmMain.acReportMemberUnitsExecute(Sender: TObject);
 begin
-  var lParams: TExporterPersonsParams := nil;
-  var lParamsProvider: TfmExporterParamsPersons := nil;
+  var lParams: TExporterMemberUnitsParams := nil;
+  var lParamsProvider: TfmExporterParamsMemberUnit := nil;
   try
-    lParams := TExporterPersonsParams.Create;
-    lParams.ShowInactivePersons := ffraPerson.cbShowInactivePersons.Checked;
-    lParams.ShowExternalPersons := ffraPerson.cbShowExternalPersons.Checked;
+    lParams := TExporterMemberUnitsParams.Create;
+    lParams.IncludeInactivePersons := ffraPerson.cbShowInactivePersons.Checked;
+    lParams.IncludeExternalPersons := ffraPerson.cbShowExternalPersons.Checked;
 
-    lParamsProvider := TfmExporterParamsPersons.Create(Self, 'Personen und Einheiten exportieren');
+    lParamsProvider := TfmExporterParamsMemberUnit.Create(Self, 'Personen und Einheiten exportieren');
     fBusiness.OpenReportMemberUnits(lParams, lParamsProvider);
   finally
     lParamsProvider.Free;
@@ -184,8 +184,8 @@ begin
   var lParamsProvider: TfmExporterParamsPersons := nil;
   try
     lParams := TExporterPersonsParams.Create;
-    lParams.ShowInactivePersons := ffraPerson.cbShowInactivePersons.Checked;
-    lParams.ShowExternalPersons := ffraPerson.cbShowExternalPersons.Checked;
+    lParams.IncludeInactivePersons := ffraPerson.cbShowInactivePersons.Checked;
+    lParams.IncludeExternalPersons := ffraPerson.cbShowExternalPersons.Checked;
 
     lParamsProvider := TfmExporterParamsPersons.Create(Self, 'Personen exportieren');
     fBusiness.OpenReportPersons(lParams, lParamsProvider);

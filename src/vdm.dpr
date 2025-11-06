@@ -158,7 +158,9 @@ uses
   Report.UnitRoles.Csv in 'reports\Report.UnitRoles.Csv.pas',
   unExporter.Params.ZeroParams in 'view\forms\export\unExporter.Params.ZeroParams.pas' {fmExporterParamsZeroParams},
   Windows.API.Tools in 'general\common\Tools\Windows.API.Tools.pas',
-  ListFilterPerson in 'data\ListFilterPerson.pas';
+  ListFilterPerson in 'data\ListFilterPerson.pas',
+  Exporter.MemberUnits.Types in 'export\Exporter.MemberUnits.Types.pas',
+  unExporter.Params.MemberUnit in 'view\forms\export\unExporter.Params.MemberUnit.pas' {fmExporterParamsMemberUnit};
 
 {$R *.res}
 

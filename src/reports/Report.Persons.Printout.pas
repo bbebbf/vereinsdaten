@@ -77,22 +77,22 @@ begin
   lbTenantTitle.Caption := TTenantReader.Instance.Tenant.Title;
   lbAppTitle.Caption := TVdmGlobals.GetVdmApplicationTitle;
 
-  if not aParams.ShowExternalPersons and not aParams.ShowInactivePersons then
+  if not aParams.IncludeExternalPersons and not aParams.IncludeInactivePersons then
   begin
     TVclUITools.HideAndMoveHorizontal(lbStatus, [lbBirthday, lbAddress, rtBirthday, rtAddress]);
     rtStatus.Visible := False;
   end;
 
-  lbSpecialPersonsInfo.Visible := aParams.ShowInactivePersons or aParams.ShowExternalPersons;
-  if aParams.ShowInactivePersons and aParams.ShowExternalPersons then
+  lbSpecialPersonsInfo.Visible := aParams.IncludeInactivePersons or aParams.IncludeExternalPersons;
+  if aParams.IncludeInactivePersons and aParams.IncludeExternalPersons then
   begin
     lbSpecialPersonsInfo.Caption := 'Externe und inaktive Personen enthalten.';
   end
-  else if aParams.ShowInactivePersons then
+  else if aParams.IncludeInactivePersons then
   begin
     lbSpecialPersonsInfo.Caption := 'Inaktive Personen enthalten.';
   end
-  else if aParams.ShowExternalPersons then
+  else if aParams.IncludeExternalPersons then
   begin
     lbSpecialPersonsInfo.Caption := 'Externe Personen enthalten.';
   end;

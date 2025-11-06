@@ -397,6 +397,11 @@ $(PostBuildEvent)]]></PostBuildEvent>
         </DCCReference>
         <DCCReference Include="general\common\Tools\Windows.API.Tools.pas"/>
         <DCCReference Include="data\ListFilterPerson.pas"/>
+        <DCCReference Include="export\Exporter.MemberUnits.Types.pas"/>
+        <DCCReference Include="view\forms\export\unExporter.Params.MemberUnit.pas">
+            <Form>fmExporterParamsMemberUnit</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <None Include="inc\CompilerDirectives.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>

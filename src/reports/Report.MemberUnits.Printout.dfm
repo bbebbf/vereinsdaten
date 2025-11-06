@@ -29,7 +29,7 @@ object fmReportMemberUnitsPrintout: TfmReportMemberUnitsPrintout
       Left = 47
       Top = 47
       Width = 898
-      Height = 50
+      Height = 54
       BandType = btHeader
       object lbReportTitle: TLabel
         Left = 0
@@ -58,15 +58,15 @@ object fmReportMemberUnitsPrintout: TfmReportMemberUnitsPrintout
         Font.Style = []
         ParentFont = False
       end
-      object lbSpecialPersonsInfo: TRLLabel
-        Left = 0
-        Top = 28
-        Width = 186
-        Height = 17
-        Caption = 'Inaktive Personen enthalten.'
+      object memFilterInfo: TRLMemo
+        Left = 3
+        Top = 29
+        Width = 518
+        Height = 16
+        Behavior = [beSiteExpander]
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlack
-        Font.Height = -15
+        Font.Height = -13
         Font.Name = 'Arial'
         Font.Style = []
         ParentFont = False
@@ -74,7 +74,7 @@ object fmReportMemberUnitsPrintout: TfmReportMemberUnitsPrintout
     end
     object bdColumnHeader: TRLBand
       Left = 47
-      Top = 97
+      Top = 101
       Width = 898
       Height = 30
       BandType = btColumnHeader
@@ -105,10 +105,17 @@ object fmReportMemberUnitsPrintout: TfmReportMemberUnitsPrintout
         Height = 18
         Caption = 'Rolle'
       end
+      object lbStatus: TLabel
+        Left = 210
+        Top = 3
+        Width = 38
+        Height = 18
+        Caption = 'Status'
+      end
     end
     object bdDetail: TRLBand
       Left = 47
-      Top = 127
+      Top = 131
       Width = 898
       Height = 23
       GreenBarPrint = True
@@ -130,7 +137,7 @@ object fmReportMemberUnitsPrintout: TfmReportMemberUnitsPrintout
         Text = ''
         BeforePrint = rdPersonnameBeforePrint
       end
-      object RLDBText2: TRLDBText
+      object rdUnitname: TRLDBText
         Left = 280
         Top = 2
         Width = 70
@@ -138,8 +145,9 @@ object fmReportMemberUnitsPrintout: TfmReportMemberUnitsPrintout
         DataField = 'unit_name'
         DataSource = dsDataSource
         Text = ''
+        BeforePrint = rdUnitnameBeforePrint
       end
-      object RLDBText3: TRLDBText
+      object rdRolename: TRLDBText
         Left = 520
         Top = 2
         Width = 70
@@ -147,6 +155,7 @@ object fmReportMemberUnitsPrintout: TfmReportMemberUnitsPrintout
         DataField = 'role_name'
         DataSource = dsDataSource
         Text = ''
+        BeforePrint = rdRolenameBeforePrint
       end
       object rdPersonid: TRLDBText
         Left = 660
@@ -167,10 +176,20 @@ object fmReportMemberUnitsPrintout: TfmReportMemberUnitsPrintout
         DrawKind = dkLine
         BeforePrint = rdUnitDividerBeforePrint
       end
+      object rtStatus: TRLDBText
+        Left = 210
+        Top = 2
+        Width = 58
+        Height = 18
+        AutoSize = False
+        DataSource = dsDataSource
+        Text = ''
+        BeforePrint = rtStatusBeforePrint
+      end
     end
     object bdPageFooter: TRLBand
       Left = 47
-      Top = 150
+      Top = 154
       Width = 898
       Height = 27
       BandType = btFooter

@@ -4,7 +4,7 @@ interface
 
 uses System.SysUtils, InterfacedBase, MainBusinessIntf, SqlConnection, MainUI, PersonBusinessIntf, EntryCrudConfig,
   CrudCommands, Vdm.Types, CrudUI, DtoUnit, DtoUnitAggregated, DtoAddress, DtoAddressAggregated, DtoRole, DtoTenant,
-  ParamsProvider, Exporter.Persons.Types, Exporter.UnitMembers.Types, Exporter.Birthdays.Types;
+  ParamsProvider, Exporter.Persons.Types, Exporter.UnitMembers.Types, Exporter.Birthdays.Types, Exporter.MemberUnits.Types;
 
 type
   TMainBusiness = class(TInterfacedBase, IMainBusiness)
@@ -30,8 +30,8 @@ type
     function IsCrudPersonActivated: Boolean;
     function IsCrudUnitActivated: Boolean;
     procedure OpenReportClubMembers(const aParamsProvider: IParamsProvider<TObject>);
-    procedure OpenReportMemberUnits(const aParams: TExporterPersonsParams;
-      const aParamsProvider: IParamsProvider<TExporterPersonsParams>);
+    procedure OpenReportMemberUnits(const aParams: TExporterMemberUnitsParams;
+      const aParamsProvider: IParamsProvider<TExporterMemberUnitsParams>);
     procedure OpenReportPersons(const aParams: TExporterPersonsParams;
       const aParamsProvider: IParamsProvider<TExporterPersonsParams>);
     procedure OpenReportUnitMembers(const aParams: TExporterUnitMembersParams;
@@ -224,8 +224,8 @@ begin
   end;
 end;
 
-procedure TMainBusiness.OpenReportMemberUnits(const aParams: TExporterPersonsParams;
-      const aParamsProvider: IParamsProvider<TExporterPersonsParams>);
+procedure TMainBusiness.OpenReportMemberUnits(const aParams: TExporterMemberUnitsParams;
+      const aParamsProvider: IParamsProvider<TExporterMemberUnitsParams>);
 begin
   var lReport := TfmReportMemberUnitsPrintout.Create;
   try

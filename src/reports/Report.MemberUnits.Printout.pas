@@ -5,10 +5,10 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, RLReport, SqlConnection, Data.DB, Vcl.StdCtrls,
-  Exporter.Types, Exporter.Persons.Types, Report.Base.Printout;
+  Exporter.Types, Exporter.MemberUnits.Types, Report.Base.Printout;
 
 type
-  TfmReportMemberUnitsPrintout = class(TfmReportBasePrintout, IExporterTarget<TExporterPersonsParams>)
+  TfmReportMemberUnitsPrintout = class(TfmReportBasePrintout, IExporterTarget<TExporterMemberUnitsParams>)
     RLReport: TRLReport;
     dsDataSource: TDataSource;
     bdReportHeader: TRLBand;
@@ -20,8 +20,8 @@ type
     Label5: TLabel;
     bdDetail: TRLBand;
     rdPersonname: TRLDBText;
-    RLDBText2: TRLDBText;
-    RLDBText3: TRLDBText;
+    rdUnitname: TRLDBText;
+    rdRolename: TRLDBText;
     rdPersonid: TRLDBText;
     rdUnitDivider: TRLDraw;
     bdPageFooter: TRLBand;
@@ -29,25 +29,30 @@ type
     RLSystemInfo3: TRLSystemInfo;
     RLSystemInfo4: TRLSystemInfo;
     lbAppTitle: TLabel;
-    lbSpecialPersonsInfo: TRLLabel;
+    memFilterInfo: TRLMemo;
+    lbStatus: TLabel;
+    rtStatus: TRLDBText;
     procedure RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure bdDetailAfterPrint(Sender: TObject);
     procedure rdUnitDividerBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure rdPersonnameBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
     procedure RLReportPageStarting(Sender: TObject);
     procedure bdDetailBeforePrint(Sender: TObject; var PrintIt: Boolean);
+    procedure rdRolenameBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
+    procedure rdUnitnameBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
+    procedure rtStatusBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
   strict private
     fPreviousPersonId: UInt32;
     fNewPageStarted: Boolean;
     fOneUnitPerPage: Boolean;
-    procedure SetParams(const aParams: TExporterPersonsParams);
+    procedure SetParams(const aParams: TExporterMemberUnitsParams);
   strict protected
     procedure ExportInternal(const aDataSet: ISqlDataSet); override;
   end;
 
 implementation
 
-uses TenantReader, Vdm.Globals;
+uses TenantReader, Vdm.Globals, StringTools;
 
 {$R *.dfm}
 
@@ -86,9 +91,32 @@ begin
   PrintIt := fNewPageStarted or (rdPersonid.Field.AsLargeInt <> fPreviousPersonId);
 end;
 
+procedure TfmReportMemberUnitsPrintout.rdUnitnameBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
+begin
+  inherited;
+  if rdUnitname.DataSource.DataSet.FieldByName('mb_active').AsBoolean then
+  begin
+    rdUnitname.Font.Style := [];
+  end
+  else
+  begin
+    rdUnitname.Font.Style := [TFontStyle.fsStrikeOut];
+    if not rdUnitname.DataSource.DataSet.FieldByName('mb_active_until').IsNull then
+    begin
+      AText := AText + ' (bis ' + FormatDateTime('c', rdUnitname.DataSource.DataSet.FieldByName('mb_active_until').AsDateTime) + ')';
+    end;
+  end;
+end;
+
 procedure TfmReportMemberUnitsPrintout.rdPersonnameBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
 begin
   PrintIt := fNewPageStarted or (rdPersonid.Field.AsLargeInt <> fPreviousPersonId);
+end;
+
+procedure TfmReportMemberUnitsPrintout.rdRolenameBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
+begin
+  inherited;
+  PrintIt := rdRolename.DataSource.DataSet.FieldByName('mb_active').AsBoolean;
 end;
 
 procedure TfmReportMemberUnitsPrintout.RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
@@ -103,21 +131,45 @@ begin
   fNewPageStarted := True;
 end;
 
-procedure TfmReportMemberUnitsPrintout.SetParams(const aParams: TExporterPersonsParams);
+procedure TfmReportMemberUnitsPrintout.rtStatusBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
 begin
-  lbSpecialPersonsInfo.Visible := aParams.ShowInactivePersons or aParams.ShowExternalPersons;
-  if aParams.ShowInactivePersons and aParams.ShowExternalPersons then
+  inherited;
+  PrintIt := rtStatus.Visible and (fNewPageStarted or (rdPersonid.Field.AsLargeInt <> fPreviousPersonId));
+  if PrintIt then
+    AText := TStringTools.Combine(rtStatus.DataSource.DataSet.FieldByName('person_external_e').AsString,
+      ' ', rtStatus.DataSource.DataSet.FieldByName('person_inactive_i').AsString);
+end;
+
+procedure TfmReportMemberUnitsPrintout.SetParams(const aParams: TExporterMemberUnitsParams);
+begin
+  var lFilterInfo := '';
+  if aParams.IncludeInactivePersons and aParams.IncludeExternalPersons then
   begin
-    lbSpecialPersonsInfo.Caption := 'Externe und inaktive Personen enthalten.';
+    lFilterInfo := 'Externe und inaktive Personen enthalten.';
   end
-  else if aParams.ShowInactivePersons then
+  else if aParams.IncludeInactivePersons then
   begin
-    lbSpecialPersonsInfo.Caption := 'Inaktive Personen enthalten.';
+    lFilterInfo := 'Inaktive Personen enthalten.';
   end
-  else if aParams.ShowExternalPersons then
+  else if aParams.IncludeExternalPersons then
   begin
-    lbSpecialPersonsInfo.Caption := 'Externe Personen enthalten.';
+    lFilterInfo := 'Externe Personen enthalten.';
   end;
+  if aParams.IncludeAllInactiveEntries then
+  begin
+    lFilterInfo := TStringTools.Combine(lFilterInfo, sLineBreak, 'Alle inaktive Verbindungen enthalten.');
+  end
+  else if aParams.InactiveButActiveUntil > 0 then
+  begin
+    lFilterInfo := TStringTools.Combine(lFilterInfo, sLineBreak, 'Inaktive Verbindungen enthalten');
+    lFilterInfo := lFilterInfo + ' (noch aktiv am ' + FormatDateTime('c', aParams.InactiveButActiveUntil) + ').';
+  end;
+
+  memFilterInfo.Lines.Text := lFilterInfo;
+  memFilterInfo.Visible := Length(lFilterInfo) > 0;
+
+  lbStatus.Visible := aParams.IncludeInactivePersons or aParams.IncludeExternalPersons;
+  rtStatus.Visible := lbStatus.Visible;
 end;
 
 end.

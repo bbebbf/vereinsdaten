@@ -5,12 +5,10 @@ interface
 type
   TExporterPersonsParams = class
   public
-    ShowInactivePersons: Boolean;
-    ShowExternalPersons: Boolean;
+    IncludeInactivePersons: Boolean;
+    IncludeExternalPersons: Boolean;
   end;
 
 implementation
-
-{ TExporterPersonsParams }
 
 end.
