@@ -2,10 +2,10 @@ unit Exporter.UnitMembers;
 
 interface
 
-uses SqlConnection, Exporter.Base, Exporter.UnitMembers.Types;
+uses SqlConnection, Exporter.Base, Exporter.Members.Types;
 
 type
-  TExporterUnitMembers = class(TExporterBase<TExporterUnitMembersParams>)
+  TExporterUnitMembers = class(TExporterBase<TExporterMembersParams>)
   strict protected
     function CreatePreparedQuery(out aQuery: ISqlPreparedQuery): Boolean; override;
   end;
@@ -19,7 +19,7 @@ uses System.SysUtils, Vdm.Globals, Joiner;
 function TExporterUnitMembers.CreatePreparedQuery(out aQuery: ISqlPreparedQuery): Boolean;
 begin
   var lTempTablename := '';
-  if Length(Params.CheckedUnitIds) > 0 then
+  if Length(Params.Units.CheckedUnitIds) > 0 then
   begin
     lTempTablename := CreateTemporaryTable('unit_id int(10) unsigned not null primary key');
     var lUintIdsJoiner := TJoiner<UInt32>.Create;
@@ -29,7 +29,7 @@ begin
       lUintIdsJoiner.ElementLeading := '(';
       lUintIdsJoiner.ElementTrailing := ')';
       lUintIdsJoiner.ElementSeparator := ',';
-      lUintIdsJoiner.Add(Params.CheckedUnitIds);
+      lUintIdsJoiner.Add(Params.Units.CheckedUnitIds);
       for var i in lUintIdsJoiner.Strings do
         Connection.ExecuteCommand(i);
     finally

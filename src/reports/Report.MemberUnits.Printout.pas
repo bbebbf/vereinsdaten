@@ -5,10 +5,10 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, RLReport, SqlConnection, Data.DB, Vcl.StdCtrls,
-  Exporter.Types, Exporter.MemberUnits.Types, Report.Base.Printout;
+  Exporter.Types, Exporter.Members.Types, Report.Base.Printout;
 
 type
-  TfmReportMemberUnitsPrintout = class(TfmReportBasePrintout, IExporterTarget<TExporterMemberUnitsParams>)
+  TfmReportMemberUnitsPrintout = class(TfmReportBasePrintout, IExporterTarget<TExporterMembersParams>)
     RLReport: TRLReport;
     dsDataSource: TDataSource;
     bdReportHeader: TRLBand;
@@ -45,7 +45,7 @@ type
     fPreviousPersonId: UInt32;
     fNewPageStarted: Boolean;
     fOneUnitPerPage: Boolean;
-    procedure SetParams(const aParams: TExporterMemberUnitsParams);
+    procedure SetParams(const aParams: TExporterMembersParams);
   strict protected
     procedure ExportInternal(const aDataSet: ISqlDataSet); override;
   end;
@@ -140,35 +140,35 @@ begin
       ' ', rtStatus.DataSource.DataSet.FieldByName('person_inactive_i').AsString);
 end;
 
-procedure TfmReportMemberUnitsPrintout.SetParams(const aParams: TExporterMemberUnitsParams);
+procedure TfmReportMemberUnitsPrintout.SetParams(const aParams: TExporterMembersParams);
 begin
   var lFilterInfo := '';
-  if aParams.IncludeInactivePersons and aParams.IncludeExternalPersons then
+  if aParams.Persons.IncludeInactive and aParams.Persons.IncludeExternal then
   begin
     lFilterInfo := 'Externe und inaktive Personen enthalten.';
   end
-  else if aParams.IncludeInactivePersons then
+  else if aParams.Persons.IncludeInactive then
   begin
     lFilterInfo := 'Inaktive Personen enthalten.';
   end
-  else if aParams.IncludeExternalPersons then
+  else if aParams.Persons.IncludeExternal then
   begin
     lFilterInfo := 'Externe Personen enthalten.';
   end;
-  if aParams.IncludeAllInactiveEntries then
+  if aParams.IncludeAllInactiveMembers then
   begin
     lFilterInfo := TStringTools.Combine(lFilterInfo, sLineBreak, 'Alle inaktive Verbindungen enthalten.');
   end
-  else if aParams.InactiveButActiveUntil > 0 then
+  else if aParams.InactiveMembersButActiveUntil > 0 then
   begin
     lFilterInfo := TStringTools.Combine(lFilterInfo, sLineBreak, 'Inaktive Verbindungen enthalten');
-    lFilterInfo := lFilterInfo + ' (noch aktiv am ' + FormatDateTime('c', aParams.InactiveButActiveUntil) + ').';
+    lFilterInfo := lFilterInfo + ' (noch aktiv am ' + FormatDateTime('c', aParams.InactiveMembersButActiveUntil) + ').';
   end;
 
   memFilterInfo.Lines.Text := lFilterInfo;
   memFilterInfo.Visible := Length(lFilterInfo) > 0;
 
-  lbStatus.Visible := aParams.IncludeInactivePersons or aParams.IncludeExternalPersons;
+  lbStatus.Visible := aParams.Persons.IncludeInactive or aParams.Persons.IncludeExternal;
   rtStatus.Visible := lbStatus.Visible;
 end;
 

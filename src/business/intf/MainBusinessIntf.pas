@@ -3,7 +3,7 @@ unit MainBusinessIntf;
 interface
 
 uses System.SysUtils, Vdm.Types, CrudUI, DtoAddress, DtoAddressAggregated, DtoRole, DtoTenant,
-  ParamsProvider, Exporter.Persons.Types, Exporter.UnitMembers.Types, Exporter.Birthdays.Types, Exporter.MemberUnits.Types;
+  ParamsProvider, Exporter.Persons.Types, Exporter.Members.Types, Exporter.Birthdays.Types;
 
 type
   IMainBusiness = interface
@@ -24,13 +24,14 @@ type
     function IsCrudUnitActivated: Boolean;
 
     procedure OpenReportClubMembers(const aParamsProvider: IParamsProvider<TObject>);
-    procedure OpenReportMemberUnits(const aParams: TExporterMemberUnitsParams;
-      const aParamsProvider: IParamsProvider<TExporterMemberUnitsParams>);
+    procedure OpenReportMemberUnits(const aParams: TExporterMembersParams;
+      const aParamsProvider: IParamsProvider<TExporterMembersParams>);
     procedure OpenReportPersons(const aParams: TExporterPersonsParams;
       const aParamsProvider: IParamsProvider<TExporterPersonsParams>);
-    procedure OpenReportUnitMembers(const aParams: TExporterUnitMembersParams;
-      const aParamsProvider: IParamsProvider<TExporterUnitMembersParams>);
-    procedure OpenReportUnitRoles(const aParamsProvider: IParamsProvider<TObject>);
+    procedure OpenReportUnitMembers(const aParams: TExporterMembersParams;
+      const aParamsProvider: IParamsProvider<TExporterMembersParams>);
+    procedure OpenReportUnitRoles(const aParams: TExporterMembersParams;
+      const aParamsProvider: IParamsProvider<TExporterMembersParams>);
     procedure OpenReportBirthdays(const aParamsProvider: IParamsProvider<TExporterBirthdaysParams>);
   end;
 

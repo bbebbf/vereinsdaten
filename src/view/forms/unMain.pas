@@ -80,8 +80,8 @@ uses System.UITypes, Vdm.Globals, unRole, unAddress, unTenant, ProgressIndicator
   UnitMapper,
 
   unExporter.Params.ZeroParams,
-  Exporter.UnitMembers.Types, unExporter.Params.UnitMember,
-  Exporter.Persons.Types, Exporter.MemberUnits.Types, unExporter.Params.Persons,
+  Exporter.Members.Types, unExporter.Params.UnitMember,
+  Exporter.Persons.Types, unExporter.Params.Persons,
   unExporter.Params.Birthdays, unExporter.Params.MemberUnit;
 
 {$R *.dfm}
@@ -163,12 +163,12 @@ end;
 
 procedure TfmMain.acReportMemberUnitsExecute(Sender: TObject);
 begin
-  var lParams: TExporterMemberUnitsParams := nil;
+  var lParams: TExporterMembersParams := nil;
   var lParamsProvider: TfmExporterParamsMemberUnit := nil;
   try
-    lParams := TExporterMemberUnitsParams.Create;
-    lParams.IncludeInactivePersons := ffraPerson.cbShowInactivePersons.Checked;
-    lParams.IncludeExternalPersons := ffraPerson.cbShowExternalPersons.Checked;
+    lParams := TExporterMembersParams.Create;
+    lParams.Persons.IncludeInactive := ffraPerson.cbShowInactivePersons.Checked;
+    lParams.Persons.IncludeExternal := ffraPerson.cbShowExternalPersons.Checked;
 
     lParamsProvider := TfmExporterParamsMemberUnit.Create(Self, 'Personen und Einheiten exportieren');
     fBusiness.OpenReportMemberUnits(lParams, lParamsProvider);
@@ -184,8 +184,8 @@ begin
   var lParamsProvider: TfmExporterParamsPersons := nil;
   try
     lParams := TExporterPersonsParams.Create;
-    lParams.IncludeInactivePersons := ffraPerson.cbShowInactivePersons.Checked;
-    lParams.IncludeExternalPersons := ffraPerson.cbShowExternalPersons.Checked;
+    lParams.IncludeInactive := ffraPerson.cbShowInactivePersons.Checked;
+    lParams.IncludeExternal := ffraPerson.cbShowExternalPersons.Checked;
 
     lParamsProvider := TfmExporterParamsPersons.Create(Self, 'Personen exportieren');
     fBusiness.OpenReportPersons(lParams, lParamsProvider);
@@ -201,12 +201,12 @@ begin
   if ffraUnit.Visible then
     lUnitIds := ffraUnit.CheckedUnitIds;
 
-  var lParams: TExporterUnitMembersParams := nil;
+  var lParams: TExporterMembersParams := nil;
   var lParamsProvider: TfmExporterParamsUnitMember := nil;
   try
-    lParams := TExporterUnitMembersParams.Create;
-    lParams.CheckedUnitIds := lUnitIds;
-    lParams.SelectedUnitId := GetCurrentUnitId;
+    lParams := TExporterMembersParams.Create;
+    lParams.Units.CheckedUnitIds := lUnitIds;
+    lParams.Units.SelectedUnitId := GetCurrentUnitId;
 
     lParamsProvider := TfmExporterParamsUnitMember.Create(Self);
     fBusiness.OpenReportUnitMembers(lParams, lParamsProvider);
@@ -218,11 +218,21 @@ end;
 
 procedure TfmMain.acReportUnitRolesExecute(Sender: TObject);
 begin
-  var lParamsProvider := TfmExporterParamsZeroParams.Create(Self, 'Rollen und Einheiten exportieren');
+  var lUnitIds: TArray<UInt32> := [];
+  if ffraUnit.Visible then
+    lUnitIds := ffraUnit.CheckedUnitIds;
+
+  var lParams: TExporterMembersParams := nil;
+  var lParamsProvider: TfmExporterParamsUnitMember := nil;
   try
-    fBusiness.OpenReportUnitRoles(lParamsProvider);
+    lParams := TExporterMembersParams.Create;
+    lParams.Units.CheckedUnitIds := lUnitIds;
+
+    lParamsProvider := TfmExporterParamsUnitMember.Create(Self, 'Rollen und Einheiten exportieren');
+    fBusiness.OpenReportUnitRoles(lParams, lParamsProvider);
   finally
     lParamsProvider.Free;
+    lParams.Free;
   end;
 end;
 

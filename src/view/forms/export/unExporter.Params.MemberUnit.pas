@@ -5,10 +5,10 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, unExporter.Params.Base, Vcl.StdCtrls, Vcl.ExtCtrls, ParamsProvider,
-  Exporter.MemberUnits.Types, ConstraintControls.ConstraintEdit, ConstraintControls.DateEdit;
+  Exporter.Members.Types, ConstraintControls.ConstraintEdit, ConstraintControls.DateEdit;
 
 type
-  TfmExporterParamsMemberUnit = class(TfmExporterParamsBase, IParamsProvider<TExporterMemberUnitsParams>)
+  TfmExporterParamsMemberUnit = class(TfmExporterParamsBase, IParamsProvider<TExporterMembersParams>)
     rbActiveMembersOnly: TRadioButton;
     rbInactiveMembersToo: TRadioButton;
     lbInactiveButActiveUntil: TLabel;
@@ -19,9 +19,9 @@ type
   strict private
     fSelectUnitIdForDetails: UInt32;
     fSelectUnitNameForDetails: string;
-    function GetParams(const aParams: TExporterMemberUnitsParams): TExporterMemberUnitsParams;
-    procedure SetParams(const aParams: TExporterMemberUnitsParams);
-    function ShouldBeExported(const aParams: TExporterMemberUnitsParams): Boolean;
+    function GetParams(const aParams: TExporterMembersParams): TExporterMembersParams;
+    procedure SetParams(const aParams: TExporterMembersParams);
+    function ShouldBeExported(const aParams: TExporterMembersParams): Boolean;
   end;
 
 implementation
@@ -32,22 +32,22 @@ uses System.DateUtils;
 
 { TfmExporterParamsMemberUnit }
 
-function TfmExporterParamsMemberUnit.GetParams(const aParams: TExporterMemberUnitsParams): TExporterMemberUnitsParams;
+function TfmExporterParamsMemberUnit.GetParams(const aParams: TExporterMembersParams): TExporterMembersParams;
 begin
   Result := aParams;
-  aParams.IncludeInactivePersons := cbShowInactivePersons.Checked;
-  aParams.IncludeExternalPersons := cbShowExternalPersons.Checked;
-  aParams.InactiveButActiveUntil := 0;
-  aParams.IncludeAllInactiveEntries := False;
+  aParams.Persons.IncludeInactive := cbShowInactivePersons.Checked;
+  aParams.Persons.IncludeExternal := cbShowExternalPersons.Checked;
+  aParams.InactiveMembersButActiveUntil := 0;
+  aParams.IncludeAllInactiveMembers := False;
   if rbInactiveMembersToo.Checked then
   begin
     if deInactiveButActiveUntil.ValidateValue and not deInactiveButActiveUntil.Value.Null then
     begin
-      aParams.InactiveButActiveUntil := deInactiveButActiveUntil.Value.Value.AsDate;
+      aParams.InactiveMembersButActiveUntil := deInactiveButActiveUntil.Value.Value.AsDate;
     end
     else
     begin
-      aParams.IncludeAllInactiveEntries := True;
+      aParams.IncludeAllInactiveMembers := True;
     end;
   end;
 end;
@@ -59,11 +59,11 @@ begin
   deInactiveButActiveUntil.Enabled := rbInactiveMembersToo.Checked;
 end;
 
-procedure TfmExporterParamsMemberUnit.SetParams(const aParams: TExporterMemberUnitsParams);
+procedure TfmExporterParamsMemberUnit.SetParams(const aParams: TExporterMembersParams);
 begin
 end;
 
-function TfmExporterParamsMemberUnit.ShouldBeExported(const aParams: TExporterMemberUnitsParams): Boolean;
+function TfmExporterParamsMemberUnit.ShouldBeExported(const aParams: TExporterMembersParams): Boolean;
 begin
   Result := True;
 end;

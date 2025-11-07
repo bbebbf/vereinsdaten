@@ -2,10 +2,10 @@ unit Exporter.UnitRoles;
 
 interface
 
-uses SqlConnection, Exporter.Base;
+uses SqlConnection, Exporter.Base, Exporter.Members.Types;
 
 type
-  TExporterUnitRoles = class(TExporterBase<TObject>)
+  TExporterUnitRoles = class(TExporterBase<TExporterMembersParams>)
   strict protected
     function CreatePreparedQuery(out aQuery: ISqlPreparedQuery): Boolean; override;
   end;

@@ -139,7 +139,6 @@ uses
   unExporter.Params.UnitMember in 'view\forms\export\unExporter.Params.UnitMember.pas' {fmExporterParamsUnitMember},
   unExporter.Params.Birthdays in 'view\forms\export\unExporter.Params.Birthdays.pas' {fmExporterParamsBirthdays},
   Exporter.Birthdays.Types in 'export\Exporter.Birthdays.Types.pas',
-  Exporter.UnitMembers.Types in 'export\Exporter.UnitMembers.Types.pas',
   Exporter.Persons.Types in 'export\Exporter.Persons.Types.pas',
   unExporter.Params.Persons in 'view\forms\export\unExporter.Params.Persons.pas' {fmExporterParamsPersons},
   Report.Base.Printout in 'reports\Report.Base.Printout.pas' {fmReportBasePrintout},
@@ -159,8 +158,9 @@ uses
   unExporter.Params.ZeroParams in 'view\forms\export\unExporter.Params.ZeroParams.pas' {fmExporterParamsZeroParams},
   Windows.API.Tools in 'general\common\Tools\Windows.API.Tools.pas',
   ListFilterPerson in 'data\ListFilterPerson.pas',
-  Exporter.MemberUnits.Types in 'export\Exporter.MemberUnits.Types.pas',
-  unExporter.Params.MemberUnit in 'view\forms\export\unExporter.Params.MemberUnit.pas' {fmExporterParamsMemberUnit};
+  unExporter.Params.MemberUnit in 'view\forms\export\unExporter.Params.MemberUnit.pas' {fmExporterParamsMemberUnit},
+  Exporter.Members.Types in 'export\Exporter.Members.Types.pas',
+  Exporter.Units.Types in 'export\Exporter.Units.Types.pas';
 
 {$R *.res}
 

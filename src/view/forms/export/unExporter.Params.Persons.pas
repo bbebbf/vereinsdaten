@@ -26,14 +26,14 @@ implementation
 function TfmExporterParamsPersons.GetParams(const aParams: TExporterPersonsParams): TExporterPersonsParams;
 begin
   Result := aParams;
-  Result.IncludeInactivePersons := cbShowInactivePersons.Checked;
-  Result.IncludeExternalPersons := cbShowExternalPersons.Checked;
+  Result.IncludeInactive := cbShowInactivePersons.Checked;
+  Result.IncludeExternal := cbShowExternalPersons.Checked;
 end;
 
 procedure TfmExporterParamsPersons.SetParams(const aParams: TExporterPersonsParams);
 begin
-  cbShowInactivePersons.Checked := aParams.IncludeInactivePersons;
-  cbShowExternalPersons.Checked := aParams.IncludeExternalPersons;
+  cbShowInactivePersons.Checked := aParams.IncludeInactive;
+  cbShowExternalPersons.Checked := aParams.IncludeExternal;
 end;
 
 function TfmExporterParamsPersons.ShouldBeExported(const aParams: TExporterPersonsParams): Boolean;

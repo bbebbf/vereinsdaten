@@ -4,7 +4,7 @@ interface
 
 uses System.SysUtils, InterfacedBase, MainBusinessIntf, SqlConnection, MainUI, PersonBusinessIntf, EntryCrudConfig,
   CrudCommands, Vdm.Types, CrudUI, DtoUnit, DtoUnitAggregated, DtoAddress, DtoAddressAggregated, DtoRole, DtoTenant,
-  ParamsProvider, Exporter.Persons.Types, Exporter.UnitMembers.Types, Exporter.Birthdays.Types, Exporter.MemberUnits.Types;
+  ParamsProvider, Exporter.Persons.Types, Exporter.Members.Types, Exporter.Birthdays.Types;
 
 type
   TMainBusiness = class(TInterfacedBase, IMainBusiness)
@@ -30,13 +30,14 @@ type
     function IsCrudPersonActivated: Boolean;
     function IsCrudUnitActivated: Boolean;
     procedure OpenReportClubMembers(const aParamsProvider: IParamsProvider<TObject>);
-    procedure OpenReportMemberUnits(const aParams: TExporterMemberUnitsParams;
-      const aParamsProvider: IParamsProvider<TExporterMemberUnitsParams>);
+    procedure OpenReportMemberUnits(const aParams: TExporterMembersParams;
+      const aParamsProvider: IParamsProvider<TExporterMembersParams>);
     procedure OpenReportPersons(const aParams: TExporterPersonsParams;
       const aParamsProvider: IParamsProvider<TExporterPersonsParams>);
-    procedure OpenReportUnitMembers(const aParams: TExporterUnitMembersParams;
-      const aParamsProvider: IParamsProvider<TExporterUnitMembersParams>);
-    procedure OpenReportUnitRoles(const aParamsProvider: IParamsProvider<TObject>);
+    procedure OpenReportUnitMembers(const aParams: TExporterMembersParams;
+      const aParamsProvider: IParamsProvider<TExporterMembersParams>);
+    procedure OpenReportUnitRoles(const aParams: TExporterMembersParams;
+      const aParamsProvider: IParamsProvider<TExporterMembersParams>);
     procedure OpenReportBirthdays(const aParamsProvider: IParamsProvider<TExporterBirthdaysParams>);
   public
     constructor Create(const aConnection: ISqlConnection; const aMainUI: IMainUI);
@@ -224,8 +225,8 @@ begin
   end;
 end;
 
-procedure TMainBusiness.OpenReportMemberUnits(const aParams: TExporterMemberUnitsParams;
-      const aParamsProvider: IParamsProvider<TExporterMemberUnitsParams>);
+procedure TMainBusiness.OpenReportMemberUnits(const aParams: TExporterMembersParams;
+      const aParamsProvider: IParamsProvider<TExporterMembersParams>);
 begin
   var lReport := TfmReportMemberUnitsPrintout.Create;
   try
@@ -264,12 +265,12 @@ begin
   end;
 end;
 
-procedure TMainBusiness.OpenReportUnitMembers(const aParams: TExporterUnitMembersParams;
-  const aParamsProvider: IParamsProvider<TExporterUnitMembersParams>);
+procedure TMainBusiness.OpenReportUnitMembers(const aParams: TExporterMembersParams;
+  const aParamsProvider: IParamsProvider<TExporterMembersParams>);
 begin
   var lReport := TfmReportUnitMembersPrintout.Create;
   try
-    var lUnitMembersCsv: IExporterTarget<TExporterUnitMembersParams> := TReportUnitMembersCsv.Create;
+    var lUnitMembersCsv: IExporterTarget<TExporterMembersParams> := TReportUnitMembersCsv.Create;
     var lExported: Boolean;
     var lSelectedTargetIndex: Integer;
     var lExporter := TExporterUnitMembers.Create(fConnection);
@@ -283,7 +284,7 @@ begin
     finally
       lExporter.Free;
     end;
-    if not lExported and (aParams.ExportOneUnitDetails > 0) then
+    if not lExported and (aParams.Units.ExportOneUnitDetails > 0) then
     begin
       var lOneUnitMembersCsv: IExporterTarget<TExporterOneUnitMembersParams> := TReportOneUnitMembersCsv.Create;
 
@@ -303,7 +304,7 @@ begin
           lDetailedExporter.Targets.Add(lDetailedReport);
           lDetailedExporter.Targets.Add(lOneUnitMembersCsv);
           lDetailedExporter.SelectedTargetIndex := lSelectedTargetIndex;
-          lDetailedExporter.Params.UnitId := aParams.ExportOneUnitDetails;
+          lDetailedExporter.Params.UnitId := aParams.Units.ExportOneUnitDetails;
           lDetailedExporter.ResultMessageNotifier := lResultMessageNotifier;
           lDetailedExporter.DoExport;
         finally
@@ -318,7 +319,8 @@ begin
   end;
 end;
 
-procedure TMainBusiness.OpenReportUnitRoles(const aParamsProvider: IParamsProvider<TObject>);
+procedure TMainBusiness.OpenReportUnitRoles(const aParams: TExporterMembersParams;
+  const aParamsProvider: IParamsProvider<TExporterMembersParams>);
 begin
   var lReport := TfmReportUnitRolesPrintout.Create;
   try
@@ -326,6 +328,7 @@ begin
     try
       lExporter.Targets.Add(lReport);
       lExporter.Targets.Add(TReportUnitRolesCsv.Create);
+      lExporter.Params := aParams;
       lExporter.ParamsProvider := aParamsProvider;
       lExporter.DoExport;
     finally

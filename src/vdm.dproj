@@ -161,8 +161,8 @@ $(PostBuildEvent)]]></PostBuildEvent>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <VerInfo_MinorVer>5</VerInfo_MinorVer>
-        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=2.5.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Vereinsdaten-Manager;ProductVersion=2.5.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_MinorVer>6</VerInfo_MinorVer>
+        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=2.6.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Vereinsdaten-Manager;ProductVersion=2.5.0.0;Comments=</VerInfo_Keys>
         <Icon_MainIcon>resources\vdm_Icon.ico</Icon_MainIcon>
         <VerInfo_MajorVer>2</VerInfo_MajorVer>
     </PropertyGroup>
@@ -365,7 +365,6 @@ $(PostBuildEvent)]]></PostBuildEvent>
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="export\Exporter.Birthdays.Types.pas"/>
-        <DCCReference Include="export\Exporter.UnitMembers.Types.pas"/>
         <DCCReference Include="export\Exporter.Persons.Types.pas"/>
         <DCCReference Include="view\forms\export\unExporter.Params.Persons.pas">
             <Form>fmExporterParamsPersons</Form>
@@ -397,11 +396,12 @@ $(PostBuildEvent)]]></PostBuildEvent>
         </DCCReference>
         <DCCReference Include="general\common\Tools\Windows.API.Tools.pas"/>
         <DCCReference Include="data\ListFilterPerson.pas"/>
-        <DCCReference Include="export\Exporter.MemberUnits.Types.pas"/>
         <DCCReference Include="view\forms\export\unExporter.Params.MemberUnit.pas">
             <Form>fmExporterParamsMemberUnit</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="export\Exporter.Members.Types.pas"/>
+        <DCCReference Include="export\Exporter.Units.Types.pas"/>
         <None Include="inc\CompilerDirectives.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
@@ -458,6 +458,12 @@ $(PostBuildEvent)]]></PostBuildEvent>
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="inc\CompilerDirectives.inc" Configuration="FastMM" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="inc\CompilerDirectives.inc" Configuration="Release" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>

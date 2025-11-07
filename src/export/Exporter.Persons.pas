@@ -28,9 +28,9 @@ begin
     ' LEFT JOIN person_address AS pa ON pa.person_id = p.person_id' +
     ' LEFT JOIN vw_select_address AS a ON a.adr_id = pa.adr_id' +
     ' WHERE 1=1';
-  if not Params.IncludeInactivePersons then
+  if not Params.IncludeInactive then
     lSelectStmt := lSelectStmt + ' AND p.person_active = 1';
-  if not Params.IncludeExternalPersons then
+  if not Params.IncludeExternal then
     lSelectStmt := lSelectStmt + ' AND p.person_external = 0';
   lSelectStmt := lSelectStmt + ' ORDER BY pn.person_name';
   aQuery := Connection.CreatePreparedQuery(lSelectStmt);

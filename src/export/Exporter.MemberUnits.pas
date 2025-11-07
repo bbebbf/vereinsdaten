@@ -2,10 +2,10 @@ unit Exporter.MemberUnits;
 
 interface
 
-uses SqlConnection, Exporter.Base, Exporter.MemberUnits.Types;
+uses SqlConnection, Exporter.Base, Exporter.Members.Types;
 
 type
-  TExporterMemberUnits = class(TExporterBase<TExporterMemberUnitsParams>)
+  TExporterMemberUnits = class(TExporterBase<TExporterMembersParams>)
   strict protected
     function CreatePreparedQuery(out aQuery: ISqlPreparedQuery): Boolean; override;
   end;
@@ -30,19 +30,19 @@ begin
     ' INNER JOIN vw_person_name AS pn ON pn.person_id = m.person_id' +
     ' LEFT JOIN role AS r ON r.role_id = m.role_id' +
     ' WHERE u.unit_active = 1';
-  if not Params.IncludeInactivePersons then
+  if not Params.Persons.IncludeInactive then
     lSelectSql := lSelectSql + ' AND p.person_active = 1';
-  if not Params.IncludeExternalPersons then
+  if not Params.Persons.IncludeExternal then
     lSelectSql := lSelectSql + ' AND p.person_external = 0';
 
   var lInactiveButActiveUntilPresent := False;
-  if Params.InactiveButActiveUntil > 0 then
+  if Params.InactiveMembersButActiveUntil > 0 then
   begin
     lInactiveButActiveUntilPresent := True;
     lSelectSql := lSelectSql + ' AND (m.mb_active = 1' +
       ' OR (m.mb_active = 0 AND (m.mb_active_until is not null AND m.mb_active_until >= :InactiveButActiveUntil)))';
   end
-  else if not Params.IncludeAllInactiveEntries then
+  else if not Params.IncludeAllInactiveMembers then
   begin
     lSelectSql := lSelectSql + ' AND m.mb_active = 1';
   end;
@@ -55,7 +55,7 @@ begin
   begin
     var lParameter := aQuery.ParamByName('InactiveButActiveUntil');
     lParameter.DataType := TFieldType.ftDate;
-    lParameter.Value :=  Params.InactiveButActiveUntil;
+    lParameter.Value :=  Params.InactiveMembersButActiveUntil;
   end;
   Result := True;
 end;

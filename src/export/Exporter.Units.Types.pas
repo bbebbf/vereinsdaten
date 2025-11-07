@@ -1,14 +1,17 @@
-unit Exporter.UnitMembers.Types;
+unit Exporter.Units.Types;
 
 interface
 
 type
-  TExporterUnitMembersParams = class
+  TExporterUnitsParams = class
   public
+    IncludeAllInactive: Boolean;
+    InactiveButActiveUntil: TDate;
     SelectedUnitId: UInt32;
     CheckedUnitIds: TArray<UInt32>;
     ExportOneUnitDetails: UInt32;
   end;
+
 
 implementation
 

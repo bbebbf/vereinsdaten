@@ -2,13 +2,13 @@ unit Report.UnitMembers.Csv;
 
 interface
 
-uses System.Generics.Collections, Report.Base.Csv, Exporter.UnitMembers.Types;
+uses System.Generics.Collections, Report.Base.Csv, Exporter.Members.Types;
 
 type
-  TReportUnitMembersCsv = class(TReportBaseCsv<TExporterUnitMembersParams>)
+  TReportUnitMembersCsv = class(TReportBaseCsv<TExporterMembersParams>)
   strict protected
     function GetSuggestedFileName: string; override;
-    procedure FillFieldsToExport(const aExportParams: TExporterUnitMembersParams;
+    procedure FillFieldsToExport(const aExportParams: TExporterMembersParams;
       const aFields: TObjectList<TReportCsvField>); override;
   end;
 
@@ -16,7 +16,7 @@ implementation
 
 { TReportUnitMembersCsv }
 
-procedure TReportUnitMembersCsv.FillFieldsToExport(const aExportParams: TExporterUnitMembersParams;
+procedure TReportUnitMembersCsv.FillFieldsToExport(const aExportParams: TExporterMembersParams;
   const aFields: TObjectList<TReportCsvField>);
 begin
   inherited;

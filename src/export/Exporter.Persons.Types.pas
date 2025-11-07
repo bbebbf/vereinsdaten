@@ -5,8 +5,8 @@ interface
 type
   TExporterPersonsParams = class
   public
-    IncludeInactivePersons: Boolean;
-    IncludeExternalPersons: Boolean;
+    IncludeInactive: Boolean;
+    IncludeExternal: Boolean;
   end;
 
 implementation
