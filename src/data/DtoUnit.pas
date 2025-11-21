@@ -6,6 +6,7 @@ uses Nullable;
 
 type
   TUnitKind = (DefaultKind, OneTimeKind, ExternalKind);
+  TUnitKinds = set of TUnitKind;
 
   TDtoUnit = record
     Id: UInt32;

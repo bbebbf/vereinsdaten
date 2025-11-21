@@ -3,7 +3,7 @@ program vdm;
 uses
   {$ifdef FASTMM}
   FastMM4,
-  {$endif}
+  {$endif }
   Vcl.Forms,
   Vcl.Dialogs,
   FireDAC.VCLUI.Wait,
@@ -160,7 +160,11 @@ uses
   ListFilterPerson in 'data\ListFilterPerson.pas',
   unExporter.Params.MemberUnit in 'view\forms\export\unExporter.Params.MemberUnit.pas' {fmExporterParamsMemberUnit},
   Exporter.Members.Types in 'export\Exporter.Members.Types.pas',
-  Exporter.Units.Types in 'export\Exporter.Units.Types.pas';
+  Exporter.Units.Types in 'export\Exporter.Units.Types.pas',
+  Helper.WinControl in 'view\tools\Helper.WinControl.pas',
+  Exporter.Params.Tools in 'export\Exporter.Params.Tools.pas',
+  unExporter.ActiveRangeParams in 'view\frames\export\unExporter.ActiveRangeParams.pas' {fraExporterActiveRangeParams: TFrame},
+  SqlConditionBuilder in 'general\common\Tools\SqlConditionBuilder.pas';
 
 {$R *.res}
 
@@ -182,8 +186,7 @@ begin
     AssignProcessToJobObject(lJobObjectHandle, GetCurrentProcess);
     {$endif}
     Application.CreateForm(TfmMain, fmMain);
-
-    var lConnectionCount := TConfigReader.Instance.ConnectionNames.Count;
+  var lConnectionCount := TConfigReader.Instance.ConnectionNames.Count;
     if lConnectionCount = 0 then
     begin
       TMessageDialogs.Ok('Keine Verbindungsdefinitionen gefunden. Programm wird beendet.', TMsgDlgType.mtError);

@@ -155,6 +155,7 @@ begin
   begin
     lFilterInfo := 'Externe Personen enthalten.';
   end;
+  {
   if aParams.IncludeAllInactiveMembers then
   begin
     lFilterInfo := TStringTools.Combine(lFilterInfo, sLineBreak, 'Alle inaktive Verbindungen enthalten.');
@@ -164,7 +165,7 @@ begin
     lFilterInfo := TStringTools.Combine(lFilterInfo, sLineBreak, 'Inaktive Verbindungen enthalten');
     lFilterInfo := lFilterInfo + ' (noch aktiv am ' + FormatDateTime('c', aParams.InactiveMembersButActiveUntil) + ').';
   end;
-
+  }
   memFilterInfo.Lines.Text := lFilterInfo;
   memFilterInfo.Visible := Length(lFilterInfo) > 0;
 

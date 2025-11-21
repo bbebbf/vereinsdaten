@@ -205,8 +205,7 @@ begin
   var lParamsProvider: TfmExporterParamsUnitMember := nil;
   try
     lParams := TExporterMembersParams.Create;
-    lParams.Units.CheckedUnitIds := lUnitIds;
-    lParams.Units.SelectedUnitId := GetCurrentUnitId;
+    lParams.Units.CheckedUnitIds.AddRange(lUnitIds);
 
     lParamsProvider := TfmExporterParamsUnitMember.Create(Self);
     fBusiness.OpenReportUnitMembers(lParams, lParamsProvider);
@@ -226,7 +225,7 @@ begin
   var lParamsProvider: TfmExporterParamsUnitMember := nil;
   try
     lParams := TExporterMembersParams.Create;
-    lParams.Units.CheckedUnitIds := lUnitIds;
+    lParams.Units.CheckedUnitIds.AddRange(lUnitIds);
 
     lParamsProvider := TfmExporterParamsUnitMember.Create(Self, 'Rollen und Einheiten exportieren');
     fBusiness.OpenReportUnitRoles(lParams, lParamsProvider);

@@ -2,12 +2,12 @@ unit Report.OneUnitMembers.Csv;
 
 interface
 
-uses System.Generics.Collections, Report.Base.Csv, Exporter.OneUnitMembers;
+uses System.Generics.Collections, Report.Base.Csv, Exporter.OneUnitMembers, Exporter.Units.Types;
 
 type
-  TReportOneUnitMembersCsv = class(TReportBaseCsv<TExporterOneUnitMembersParams>)
+  TReportOneUnitMembersCsv = class(TReportBaseCsv<TExporterUnitDetailsParams>)
   strict protected
-    procedure FillFieldsToExport(const aExportParams: TExporterOneUnitMembersParams;
+    procedure FillFieldsToExport(const aExportParams: TExporterUnitDetailsParams;
       const aFields: TObjectList<TReportCsvField>); override;
   end;
 
@@ -15,7 +15,7 @@ implementation
 
 { TReportOneUnitMembersCsv }
 
-procedure TReportOneUnitMembersCsv.FillFieldsToExport(const aExportParams: TExporterOneUnitMembersParams;
+procedure TReportOneUnitMembersCsv.FillFieldsToExport(const aExportParams: TExporterUnitDetailsParams;
   const aFields: TObjectList<TReportCsvField>);
 begin
   inherited;

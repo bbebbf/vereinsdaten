@@ -141,6 +141,8 @@ CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `vw_active_person_member` A
  select `m`.* from `member` `m` inner join `person` `p` on `p`.`person_id` = `m`.`person_id`
  where `p`.`person_active` = 1;
 
+CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `vw_person_member` AS
+ select `m`.*, `p`.`person_active`, `p`.`person_external` from `member` `m` inner join `person` `p` on `p`.`person_id` = `m`.`person_id`;
 
 CREATE FUNCTION `IsLeapYear`(IN FromDate DATE) RETURNS int(11)
 BEGIN

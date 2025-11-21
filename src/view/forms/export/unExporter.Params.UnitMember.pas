@@ -5,89 +5,89 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, unExporter.Params.Base, Vcl.StdCtrls, Vcl.ExtCtrls, ParamsProvider,
-  Exporter.Members.Types;
+  Exporter.Members.Types, unExporter.ActiveRangeParams;
 
 type
   TfmExporterParamsUnitMember = class(TfmExporterParamsBase, IParamsProvider<TExporterMembersParams>)
-    rbAllUnits: TRadioButton;
+    pnUnits: TPanel;
+    fraParamsUnitsRange: TfraExporterActiveRangeParams;
+    pnMembers: TPanel;
+    fraParamsMembersRange: TfraExporterActiveRangeParams;
+    pnPersons: TPanel;
+    cbIncludeInactivePersons: TCheckBox;
+    cbIncludeExternalPersons: TCheckBox;
     rbAllCheckedUnits: TRadioButton;
-    rbSelectedUnitDetails: TRadioButton;
+    cbIncludeOneTimeUnits: TCheckBox;
+    cbIncludeExternalUnits: TCheckBox;
+    procedure FormCreate(Sender: TObject);
+    procedure rbAllCheckedUnitsClick(Sender: TObject);
   strict private
     fSelectUnitIdForDetails: UInt32;
     fSelectUnitNameForDetails: string;
+    procedure ParamsUnitsRangeChecked(Sender: TObject);
     function GetParams(const aParams: TExporterMembersParams): TExporterMembersParams;
     procedure SetParams(const aParams: TExporterMembersParams);
     function ShouldBeExported(const aParams: TExporterMembersParams): Boolean;
-  strict protected
-    function GetSuggestedExportFileName: string; override;
   end;
 
 implementation
 
-uses UnitMapper;
+uses DtoUnit;
 
 {$R *.dfm}
 
 { TfmExporterParamsUnitMember }
 
+procedure TfmExporterParamsUnitMember.FormCreate(Sender: TObject);
+begin
+  inherited;
+  fraParamsUnitsRange.Initialize('Einheiten');
+  fraParamsUnitsRange.OnOptionChecked := ParamsUnitsRangeChecked;
+  fraParamsMembersRange.Initialize('Verbindungen');
+end;
+
 function TfmExporterParamsUnitMember.GetParams(const aParams: TExporterMembersParams): TExporterMembersParams;
 begin
   Result := aParams;
-  if rbSelectedUnitDetails.Checked then
-  begin
-    Result.Units.ExportOneUnitDetails := fSelectUnitIdForDetails;
-  end
-  else if rbAllUnits.Checked then
-  begin
-    SetLength(Result.Units.CheckedUnitIds, 0);
-  end;
+  fraParamsUnitsRange.GetParams(Result.Units.State);
+  if not rbAllCheckedUnits.Checked then
+    Result.Units.CheckedUnitIds.Clear;
+  Result.Units.SetDefaultKindOnly;
+  if cbIncludeOneTimeUnits.Checked then
+    Result.Units.IncludeOneTimeKind;
+  if cbIncludeExternalUnits.Checked then
+    Result.Units.IncludeExternalKind;
+  fraParamsMembersRange.GetParams(Result.MembersState);
+  Result.Persons.IncludeInactive := cbIncludeInactivePersons.Checked;
+  Result.Persons.IncludeExternal := cbIncludeExternalPersons.Checked;
 end;
 
-function TfmExporterParamsUnitMember.GetSuggestedExportFileName: string;
+procedure TfmExporterParamsUnitMember.ParamsUnitsRangeChecked(Sender: TObject);
 begin
-  if rbSelectedUnitDetails.Checked then
-  begin
-    Result := fSelectUnitNameForDetails + '_Personen';
-  end
-  else
-  begin
-    Result := inherited GetSuggestedExportFileName;
-  end;
+  rbAllCheckedUnits.Checked := False;
+end;
+
+procedure TfmExporterParamsUnitMember.rbAllCheckedUnitsClick(Sender: TObject);
+begin
+  inherited;
+  fraParamsUnitsRange.UncheckAllOptions;
 end;
 
 procedure TfmExporterParamsUnitMember.SetParams(const aParams: TExporterMembersParams);
 begin
-  rbAllUnits.Checked := True;
-  var lCheckedCount := Length(aParams.Units.CheckedUnitIds);
-  if lCheckedCount > 0 then
-  begin
-    rbAllCheckedUnits.Enabled := True;
-    rbAllCheckedUnits.Caption := 'Ausgewählte ' + IntToStr(lCheckedCount) + ' Einheit(en) exportieren';
-  end
-  else
-  begin
-    rbAllCheckedUnits.Enabled := False;
-  end;
-
-  fSelectUnitIdForDetails := aParams.Units.SelectedUnitId;
-  if (fSelectUnitIdForDetails = 0) and (lCheckedCount = 1) then
-    fSelectUnitIdForDetails := aParams.Units.CheckedUnitIds[0];
-
-  if fSelectUnitIdForDetails > 0 then
-  begin
-    fSelectUnitNameForDetails := TUnitMapper.Instance.Data.Data.GetAllEntries.GetStringById(fSelectUnitIdForDetails, '???');
-    rbSelectedUnitDetails.Visible := True;
-    rbSelectedUnitDetails.Caption := 'Ausgewählte Einheit "'  + fSelectUnitNameForDetails + '" exportieren mit Details';
-  end
-  else
-  begin
-    rbSelectedUnitDetails.Visible := False;
-  end;
+  fraParamsUnitsRange.SetParams(aParams.Units.State);
+  fraParamsMembersRange.SetParams(aParams.MembersState);
+  cbIncludeInactivePersons.Checked := aParams.Persons.IncludeInactive;
+  cbIncludeExternalPersons.Checked := aParams.Persons.IncludeExternal;
+  rbAllCheckedUnits.Enabled := aParams.Units.CheckedUnitIds.Count > 0;
+  rbAllCheckedUnits.Caption := 'Ausgewählte ' + IntToStr(aParams.Units.CheckedUnitIds.Count) + ' Einheit(en)';
+  cbIncludeOneTimeUnits.Checked := TUnitKind.OneTimeKind in aParams.Units.Kinds;
+  cbIncludeExternalUnits.Checked := TUnitKind.ExternalKind in aParams.Units.Kinds;
 end;
 
 function TfmExporterParamsUnitMember.ShouldBeExported(const aParams: TExporterMembersParams): Boolean;
 begin
-  Result := aParams.Units.ExportOneUnitDetails = 0;
+  Result := True;
 end;
 
 end.

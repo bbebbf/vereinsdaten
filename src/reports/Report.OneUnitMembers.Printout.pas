@@ -5,10 +5,10 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, RLReport, SqlConnection, Data.DB, Vcl.StdCtrls,
-  Exporter.Types, Exporter.OneUnitMembers, Report.Base.Printout;
+  Exporter.Types, Exporter.OneUnitMembers, Report.Base.Printout, Exporter.Units.Types;
 
 type
-  TfmReportOneUnitMembersPrintout = class(TfmReportBasePrintout, IExporterTarget<TExporterOneUnitMembersParams>)
+  TfmReportOneUnitMembersPrintout = class(TfmReportBasePrintout, IExporterTarget<TExporterUnitDetailsParams>)
     RLReport: TRLReport;
     dsDataSource: TDataSource;
     bdReportHeader: TRLBand;
@@ -41,7 +41,7 @@ type
     procedure rdUnitKindBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
   strict private
     fNewPageStarted: Boolean;
-    procedure SetParams(const aParams: TExporterOneUnitMembersParams);
+    procedure SetParams(const aParams: TExporterUnitDetailsParams);
   strict protected
     procedure ExportInternal(const aDataSet: ISqlDataSet); override;
   end;
@@ -98,7 +98,7 @@ begin
   fNewPageStarted := True;
 end;
 
-procedure TfmReportOneUnitMembersPrintout.SetParams(const aParams: TExporterOneUnitMembersParams);
+procedure TfmReportOneUnitMembersPrintout.SetParams(const aParams: TExporterUnitDetailsParams);
 begin
 
 end;

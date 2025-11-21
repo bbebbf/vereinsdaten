@@ -4,7 +4,7 @@ interface
 
 uses System.SysUtils, InterfacedBase, MainBusinessIntf, SqlConnection, MainUI, PersonBusinessIntf, EntryCrudConfig,
   CrudCommands, Vdm.Types, CrudUI, DtoUnit, DtoUnitAggregated, DtoAddress, DtoAddressAggregated, DtoRole, DtoTenant,
-  ParamsProvider, Exporter.Persons.Types, Exporter.Members.Types, Exporter.Birthdays.Types;
+  ParamsProvider, Exporter.Persons.Types, Exporter.Units.Types, Exporter.Members.Types, Exporter.Birthdays.Types;
 
 type
   TMainBusiness = class(TInterfacedBase, IMainBusiness)
@@ -36,6 +36,8 @@ type
       const aParamsProvider: IParamsProvider<TExporterPersonsParams>);
     procedure OpenReportUnitMembers(const aParams: TExporterMembersParams;
       const aParamsProvider: IParamsProvider<TExporterMembersParams>);
+    procedure OpenReportUnitDetails(const aParams: TExporterUnitDetailsParams;
+      const aParamsProvider: IParamsProvider<TExporterUnitDetailsParams>);
     procedure OpenReportUnitRoles(const aParams: TExporterMembersParams;
       const aParamsProvider: IParamsProvider<TExporterMembersParams>);
     procedure OpenReportBirthdays(const aParamsProvider: IParamsProvider<TExporterBirthdaysParams>);
@@ -265,54 +267,42 @@ begin
   end;
 end;
 
+procedure TMainBusiness.OpenReportUnitDetails(const aParams: TExporterUnitDetailsParams;
+  const aParamsProvider: IParamsProvider<TExporterUnitDetailsParams>);
+begin
+  var lReport := TfmReportOneUnitMembersPrintout.Create;
+  try
+    var lOneUnitMembersCsv: IExporterTarget<TExporterUnitDetailsParams> := TReportOneUnitMembersCsv.Create;
+    var lExporter := TExporterOneUnitMembers.Create(fConnection);
+    try
+      lExporter.Targets.Add(lReport);
+      lExporter.Targets.Add(lOneUnitMembersCsv);
+      lExporter.Params := aParams;
+      lExporter.ParamsProvider := aParamsProvider;
+      lExporter.DoExport;
+    finally
+      lExporter.Free;
+    end;
+  finally
+    lReport.Free;
+  end;
+end;
+
 procedure TMainBusiness.OpenReportUnitMembers(const aParams: TExporterMembersParams;
   const aParamsProvider: IParamsProvider<TExporterMembersParams>);
 begin
   var lReport := TfmReportUnitMembersPrintout.Create;
   try
     var lUnitMembersCsv: IExporterTarget<TExporterMembersParams> := TReportUnitMembersCsv.Create;
-    var lExported: Boolean;
-    var lSelectedTargetIndex: Integer;
     var lExporter := TExporterUnitMembers.Create(fConnection);
     try
       lExporter.Targets.Add(lReport);
       lExporter.Targets.Add(lUnitMembersCsv);
       lExporter.Params := aParams;
       lExporter.ParamsProvider := aParamsProvider;
-      lExported := lExporter.DoExport;
-      lSelectedTargetIndex := lExporter.SelectedTargetIndex;
+      lExporter.DoExport;
     finally
       lExporter.Free;
-    end;
-    if not lExported and (aParams.Units.ExportOneUnitDetails > 0) then
-    begin
-      var lOneUnitMembersCsv: IExporterTarget<TExporterOneUnitMembersParams> := TReportOneUnitMembersCsv.Create;
-
-      var lUnitMembersRequFilePath: IExporterRequiresFilePath;
-      Supports(lUnitMembersCsv, IExporterRequiresFilePath, lUnitMembersRequFilePath);
-      var lOneUnitMembersRequFilePath: IExporterRequiresFilePath;
-      Supports(lOneUnitMembersCsv, IExporterRequiresFilePath, lOneUnitMembersRequFilePath);
-      lOneUnitMembersRequFilePath.Assign(lUnitMembersRequFilePath);
-
-      var lResultMessageNotifier: IExporterResultMessageNotifier;
-      Supports(aParamsProvider, IExporterResultMessageNotifier, lResultMessageNotifier);
-
-      var lDetailedReport := TfmReportOneUnitMembersPrintout.Create;
-      try
-        var lDetailedExporter := TExporterOneUnitMembers.Create(fConnection);
-        try
-          lDetailedExporter.Targets.Add(lDetailedReport);
-          lDetailedExporter.Targets.Add(lOneUnitMembersCsv);
-          lDetailedExporter.SelectedTargetIndex := lSelectedTargetIndex;
-          lDetailedExporter.Params.UnitId := aParams.Units.ExportOneUnitDetails;
-          lDetailedExporter.ResultMessageNotifier := lResultMessageNotifier;
-          lDetailedExporter.DoExport;
-        finally
-          lDetailedExporter.Free;
-        end;
-      finally
-        lDetailedReport.Free;
-      end;
     end;
   finally
     lReport.Free;

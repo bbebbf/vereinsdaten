@@ -2,15 +2,10 @@ unit Exporter.OneUnitMembers;
 
 interface
 
-uses SqlConnection, Exporter.Base;
+uses SqlConnection, Exporter.Base, Exporter.Units.Types;
 
 type
-  TExporterOneUnitMembersParams = class
-  public
-    UnitId: UInt32;
-  end;
-
-  TExporterOneUnitMembers = class(TExporterBase<TExporterOneUnitMembersParams>)
+  TExporterOneUnitMembers = class(TExporterBase<TExporterUnitDetailsParams>)
   strict protected
     function CreatePreparedQuery(out aQuery: ISqlPreparedQuery): Boolean; override;
   end;
@@ -40,7 +35,7 @@ begin
     ' LEFT JOIN person_address AS pa ON pa.person_id = m.person_id' +
     ' LEFT JOIN vw_select_address AS a ON a.adr_id = pa.adr_id' +
     ' LEFT JOIN role AS r ON r.role_id = m.role_id' +
-    ' WHERE u.unit_id = ' + UIntToStr(Params.UnitId) +
+    ' WHERE u.unit_id = ' + UIntToStr(Params.SelectedUnitId) +
     ' ORDER BY ' + TVdmGlobals.GetRoleSortingSqlOrderBy('r') + ', pn.person_name'
   );
   Result := True;
