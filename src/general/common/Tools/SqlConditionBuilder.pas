@@ -5,15 +5,16 @@ interface
 type
   TSqlConditionKind = (EmptyKind, WhereKind, OnKind, AndKind, OrKind);
 
-  ISqlConditionNode = interface
-    ['{85C653A1-3BD5-40F0-B0D8-6E483A105300}']
+  ISqlConditionNodeBase = interface
+    ['{C26CCBE6-CD10-4374-8F69-BD7BE7F04216}']
     function GetConditionString(const aKind: TSqlConditionKind = TSqlConditionKind.WhereKind): string;
   end;
 
-  ISqlConditionNodeBase = interface(ISqlConditionNode)
+  ISqlConditionNodeInternal = interface
     ['{2F0AE743-6EAE-41AD-A38B-110C0C12F2E3}']
     function IsValid: Boolean;
     function GetCondition: string;
+    procedure SetValue(const aValue: string);
   end;
 
   ISqlConditionNodeValue = interface;
@@ -65,21 +66,22 @@ type
 
 implementation
 
-uses System.Generics.Collections, InterfacedBase, Joiner;
+uses System.SysUtils, System.Generics.Collections, InterfacedBase, Joiner;
 
 type
-  TSqlConditionNodeBase = class abstract(TInterfacedBase, ISqlConditionNodeBase)
+  TSqlConditionNodeBase = class abstract(TInterfacedBase, ISqlConditionNodeBase, ISqlConditionNodeInternal)
   strict private
     function GetConditionString(const aKind: TSqlConditionKind): string;
   strict protected
     function IsValid: Boolean; virtual; abstract;
     function GetCondition: string; virtual; abstract;
+    procedure SetValue(const aValue: string); virtual;
   end;
 
   TSqlConditionNodeOperator = class abstract(TSqlConditionNodeBase, ISqlConditionNodeOperator)
   strict private
     fParent: ISqlConditionNodeOperator;
-    fNodes: TList<ISqlConditionNodeBase>;
+    fNodes: TList<ISqlConditionNodeInternal>;
     function AddAnd: ISqlConditionNodeOperator;
     function AddOr: ISqlConditionNodeOperator;
     function AddNot: ISqlConditionNodeOperator;
@@ -123,8 +125,8 @@ type
   TSqlConditionNodeComparer = class abstract(TSqlConditionNodeBase, ISqlConditionNodeComparer)
   strict private
     fParent: ISqlConditionNodeOperator;
-    fLeft: ISqlConditionNodeValue;
-    fRight: ISqlConditionNodeValue;
+    fLeft: ISqlConditionNodeInternal;
+    fRight: ISqlConditionNodeInternal;
     function GetParent: ISqlConditionNodeOperator;
     function SetLeftValue(const aValue: string): ISqlConditionNodeComparer;
     function SetRightValue(const aValue: string): ISqlConditionNodeComparer;
@@ -175,11 +177,11 @@ type
     fComparerParent: ISqlConditionNodeComparer;
     function GetOperatorParent: ISqlConditionNodeOperator;
     function GetComparerParent: ISqlConditionNodeComparer;
-    procedure SetValue(const aValue: string);
   strict protected
     function IsValid: Boolean; override;
     function GetCondition: string; override;
     function GetValue: string;
+    procedure SetValue(const aValue: string); override;
   public
     constructor Create(const aOperatorParent: ISqlConditionNodeOperator;
       const aComparerParent: ISqlConditionNodeComparer; const aEmptyStringIsValid: Boolean);
@@ -204,13 +206,18 @@ begin
     Result := TSqlConditionBuilder.KindToKeyword(aKind) + ' ' + Result;
 end;
 
+procedure TSqlConditionNodeBase.SetValue(const aValue: string);
+begin
+
+end;
+
 { TSqlConditionNodeOperator }
 
 constructor TSqlConditionNodeOperator.Create(const aParent: ISqlConditionNodeOperator);
 begin
   inherited Create;
   fParent := aParent;
-  fNodes := TList<ISqlConditionNodeBase>.Create;
+  fNodes := TList<ISqlConditionNodeInternal>.Create;
 end;
 
 destructor TSqlConditionNodeOperator.Destroy;
@@ -342,7 +349,9 @@ end;
 function TSqlConditionNodeOperator.AddNode(const aNode: ISqlConditionNodeBase): ISqlConditionNodeOperator;
 begin
   Result := Self;
-  fNodes.Add(aNode);
+  var lInternalNode: ISqlConditionNodeInternal;
+  if Supports(aNode, ISqlConditionNodeInternal, lInternalNode) then
+    fNodes.Add(lInternalNode);
 end;
 
 { TSqlConditionNodeAnd }
@@ -470,14 +479,14 @@ function TSqlConditionNodeComparer.SetLeftValue(const aValue: string): ISqlCondi
 begin
   Result := Self;
   fLeft := TSqlConditionNodeValue.Create(nil, Self, True);
-  fLeft.Value := aValue;
+  fLeft.SetValue(aValue);
 end;
 
 function TSqlConditionNodeComparer.SetRightValue(const aValue: string): ISqlConditionNodeComparer;
 begin
   Result := Self;
   fRight := TSqlConditionNodeValue.Create(nil, Self, True);
-  fRight.Value := aValue;
+  fRight.SetValue(aValue);
 end;
 
 { TSqlConditionNodeEquals }

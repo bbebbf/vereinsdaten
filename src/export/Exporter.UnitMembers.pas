@@ -63,12 +63,15 @@ begin
     lSelectStm := lSelectStm + ' AND m.person_external = 0';
 
   var lUnitConditions := TSqlConditionBuilder.CreateAnd;
-  lUnitConditions.Add(False).Value := lUnitState.GetSqlCondition();
-  var lUnitConditionsKind := lUnitConditions.AddOr;
-  if TUnitKind.OneTimeKind in Params.Units.Kinds then
-    lUnitConditionsKind.AddEquals.SetLeftValue('u.unit_kind').SetRightValue(IntToStr(Ord(TUnitKind.OneTimeKind)));
-  if TUnitKind.ExternalKind in Params.Units.Kinds then
-    lUnitConditionsKind.AddEquals.SetLeftValue('u.unit_kind').SetRightValue(IntToStr(Ord(TUnitKind.ExternalKind)));
+  lUnitConditions.Add(False).Value := lUnitState.GetSqlCondition;
+  var lUnitConditionsKind := lUnitConditions.AddAnd;
+  for var i := Succ(Low(TUnitKind)) to High(TUnitKind) do
+  begin
+    if not (i in Params.Units.Kinds) then
+      lUnitConditionsKind.AddNotEquals
+        .SetLeftValue('u.unit_kind')
+        .SetRightValue(IntToStr(Ord(i)));
+  end;
   var lUnitConditionsStr := lUnitConditions.GetConditionString(TSqlConditionKind.WhereKind);
 
   lSelectStm := lSelectStm +

@@ -12,7 +12,7 @@ type
 
 implementation
 
-uses Data.DB, Vdm.Globals;
+uses System.SysUtils, Data.DB, Vdm.Globals, SqlConditionBuilder, DtoUnit;
 
 { TExporterMemberUnits }
 
@@ -36,9 +36,21 @@ begin
   if not Params.Persons.IncludeExternal then
     lSelectSql := lSelectSql + ' AND p.person_external = 0';
 
+  var lUnitConditions := TSqlConditionBuilder.CreateAnd;
+  lUnitConditions.Add(False).Value := lUnitState.GetSqlCondition;
+  var lUnitConditionsKind := lUnitConditions.AddAnd;
+  for var i := Succ(Low(TUnitKind)) to High(TUnitKind) do
+  begin
+    if not (i in Params.Units.Kinds) then
+      lUnitConditionsKind.AddNotEquals
+        .SetLeftValue('u.unit_kind')
+        .SetRightValue(IntToStr(Ord(i)));
+  end;
+  var lUnitConditionsStr := lUnitConditions.GetConditionString(TSqlConditionKind.WhereKind);
+
   lSelectSql := lSelectSql +
     ' INNER JOIN vw_person_name AS pn ON pn.person_id = m.person_id' +
-    ' LEFT JOIN role AS r ON r.role_id = m.role_id ' + lUnitState.GetSqlCondition('WHERE');
+    ' LEFT JOIN role AS r ON r.role_id = m.role_id ' + lUnitConditionsStr;
 
   lSelectSql := lSelectSql +
     ' ORDER BY pn.person_name, m.mb_active DESC, ' + TVdmGlobals.GetRoleSortingSqlOrderBy('r') + ', u.unit_name';
