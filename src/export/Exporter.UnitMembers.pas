@@ -12,7 +12,7 @@ type
 
 implementation
 
-uses System.SysUtils, Vdm.Globals, Joiner;
+uses System.SysUtils, Vdm.Globals, Joiner, SqlConditionBuilder, DtoUnit;
 
 { TExporterUnitMembers }
 
@@ -62,10 +62,19 @@ begin
   if not Params.Persons.IncludeExternal then
     lSelectStm := lSelectStm + ' AND m.person_external = 0';
 
+  var lUnitConditions := TSqlConditionBuilder.CreateAnd;
+  lUnitConditions.Add(False).Value := lUnitState.GetSqlCondition();
+  var lUnitConditionsKind := lUnitConditions.AddOr;
+  if TUnitKind.OneTimeKind in Params.Units.Kinds then
+    lUnitConditionsKind.AddEquals.SetLeftValue('u.unit_kind').SetRightValue(IntToStr(Ord(TUnitKind.OneTimeKind)));
+  if TUnitKind.ExternalKind in Params.Units.Kinds then
+    lUnitConditionsKind.AddEquals.SetLeftValue('u.unit_kind').SetRightValue(IntToStr(Ord(TUnitKind.ExternalKind)));
+  var lUnitConditionsStr := lUnitConditions.GetConditionString(TSqlConditionKind.WhereKind);
+
   lSelectStm := lSelectStm +
     ' LEFT JOIN vw_person_name AS pn ON pn.person_id = m.person_id ' +
     ' LEFT JOIN role AS r ON r.role_id = m.role_id' +
-    ' ' + lUnitState.GetSqlCondition('WHERE') +
+    ' ' + lUnitConditionsStr +
     ' ORDER BY u.unit_name, ' + TVdmGlobals.GetRoleSortingSqlOrderBy('r') + ', pn.person_name';
   aQuery := Connection.CreatePreparedQuery(lSelectStm);
   lUnitState.ApplyParameters(aQuery);

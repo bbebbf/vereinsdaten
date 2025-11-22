@@ -14,7 +14,9 @@ uses
   {$ENDIF }
   DUnitX.TestFramework,
   Joiner.Tests in 'tests\Joiner.Tests.pas',
-  Joiner in 'general\common\Tools\Joiner.pas';
+  Joiner in 'general\common\Tools\Joiner.pas',
+  SqlConditionBuilder in 'general\common\Tools\SqlConditionBuilder.pas',
+  SqlConditionBuilder.Tests in 'tests\SqlConditionBuilder.Tests.pas';
 
 { keep comment here to protect the following conditional from being removed by the IDE when adding a unit }
 {$IFNDEF TESTINSIGHT}
