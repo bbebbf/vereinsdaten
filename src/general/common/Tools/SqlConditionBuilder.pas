@@ -3,11 +3,11 @@ unit SqlConditionBuilder;
 interface
 
 type
-  TSqlConditionKind = (EmptyKind, WhereKind, OnKind, AndKind, OrKind);
+  TSqlConditionStart = (EmptyStart, WhereStart, OnStart, AndStart, OrStart);
 
-  ISqlConditionNodeBase = interface
+  ISqlConditionNode = interface
     ['{C26CCBE6-CD10-4374-8F69-BD7BE7F04216}']
-    function GetConditionString(const aKind: TSqlConditionKind = TSqlConditionKind.WhereKind): string;
+    function GetConditionString(const aStart: TSqlConditionStart = TSqlConditionStart.WhereStart): string;
   end;
 
   ISqlConditionNodeInternal = interface
@@ -19,7 +19,7 @@ type
 
   ISqlConditionNodeValue = interface;
   ISqlConditionNodeComparer = interface;
-  ISqlConditionNodeOperator = interface(ISqlConditionNodeBase)
+  ISqlConditionNodeOperator = interface(ISqlConditionNode)
     ['{1F4685C3-C008-4DB5-A841-AC4FF1C185EB}']
     function AddAnd: ISqlConditionNodeOperator;
     function AddOr: ISqlConditionNodeOperator;
@@ -33,12 +33,12 @@ type
     function AddGreaterOrEqualThan: ISqlConditionNodeComparer;
     function AddLessThan: ISqlConditionNodeComparer;
     function AddLessOrEqualThan: ISqlConditionNodeComparer;
-    function AddNode(const aNode: ISqlConditionNodeBase): ISqlConditionNodeOperator;
+    function AddNode(const aNode: ISqlConditionNode): ISqlConditionNodeOperator;
     function GetParent: ISqlConditionNodeOperator;
     property Parent: ISqlConditionNodeOperator read GetParent;
   end;
 
-  ISqlConditionNodeComparer = interface(ISqlConditionNodeBase)
+  ISqlConditionNodeComparer = interface(ISqlConditionNode)
     ['{985BDA99-CC5E-4DBC-A470-92B50395FF66}']
     function SetLeftValue(const aValue: string): ISqlConditionNodeComparer;
     function SetRightValue(const aValue: string): ISqlConditionNodeComparer;
@@ -46,22 +46,22 @@ type
     property Parent: ISqlConditionNodeOperator read GetParent;
   end;
 
-  ISqlConditionNodeValue = interface(ISqlConditionNodeBase)
+  ISqlConditionNodeValue = interface(ISqlConditionNode)
     ['{6F263E71-7F18-4F00-8A47-74002914FBA9}']
     function GetValue: string;
     procedure SetValue(const aValue: string);
+    function GetParent: ISqlConditionNodeComparer;
     function GetOperatorParent: ISqlConditionNodeOperator;
-    function GetComparerParent: ISqlConditionNodeComparer;
     property Value: string read GetValue write SetValue;
+    property Parent: ISqlConditionNodeComparer read GetParent;
     property OperatorParent: ISqlConditionNodeOperator read GetOperatorParent;
-    property ComparerParent: ISqlConditionNodeComparer read GetComparerParent;
   end;
 
   TSqlConditionBuilder = class
     class function CreateAnd: ISqlConditionNodeOperator;
     class function CreateOr: ISqlConditionNodeOperator;
     class function CreateNot: ISqlConditionNodeOperator;
-    class function KindToKeyword(const aKind: TSqlConditionKind): string;
+    class function AddConditionStart(const aCondition: string; const aStart: TSqlConditionStart): string;
   end;
 
 implementation
@@ -69,9 +69,9 @@ implementation
 uses System.SysUtils, System.Generics.Collections, InterfacedBase, Joiner;
 
 type
-  TSqlConditionNodeBase = class abstract(TInterfacedBase, ISqlConditionNodeBase, ISqlConditionNodeInternal)
+  TSqlConditionNodeBase = class abstract(TInterfacedBase, ISqlConditionNode, ISqlConditionNodeInternal)
   strict private
-    function GetConditionString(const aKind: TSqlConditionKind): string;
+    function GetConditionString(const aStart: TSqlConditionStart): string;
   strict protected
     function IsValid: Boolean; virtual; abstract;
     function GetCondition: string; virtual; abstract;
@@ -98,7 +98,7 @@ type
   strict protected
     function IsValid: Boolean; override;
     function GetCondition: string; override;
-    function AddNode(const aNode: ISqlConditionNodeBase): ISqlConditionNodeOperator; virtual;
+    function AddNode(const aNode: ISqlConditionNode): ISqlConditionNodeOperator; virtual;
     procedure ClearNodes;
     function GetOperatorString: string; virtual; abstract;
   public
@@ -118,7 +118,7 @@ type
 
   TSqlConditionNodeNot = class(TSqlConditionNodeOperator)
   strict protected
-    function AddNode(const aNode: ISqlConditionNodeBase): ISqlConditionNodeOperator; override;
+    function AddNode(const aNode: ISqlConditionNode): ISqlConditionNodeOperator; override;
     function GetOperatorString: string; override;
   end;
 
@@ -174,9 +174,9 @@ type
     fEmptyStringIsValid: Boolean;
     fValueIsValid: Boolean;
     fOperatorParent: ISqlConditionNodeOperator;
-    fComparerParent: ISqlConditionNodeComparer;
+    fParent: ISqlConditionNodeComparer;
     function GetOperatorParent: ISqlConditionNodeOperator;
-    function GetComparerParent: ISqlConditionNodeComparer;
+    function GetParent: ISqlConditionNodeComparer;
   strict protected
     function IsValid: Boolean; override;
     function GetCondition: string; override;
@@ -184,7 +184,7 @@ type
     procedure SetValue(const aValue: string); override;
   public
     constructor Create(const aOperatorParent: ISqlConditionNodeOperator;
-      const aComparerParent: ISqlConditionNodeComparer; const aEmptyStringIsValid: Boolean);
+      const aParent: ISqlConditionNodeComparer; const aEmptyStringIsValid: Boolean);
   end;
 
   TSqlConditionNodeValueIsNull = class(TSqlConditionNodeValue)
@@ -199,11 +199,9 @@ type
 
 { TSqlConditionNodeBase }
 
-function TSqlConditionNodeBase.GetConditionString(const aKind: TSqlConditionKind): string;
+function TSqlConditionNodeBase.GetConditionString(const aStart: TSqlConditionStart): string;
 begin
-  Result := GetCondition;
-  if Length(Result) > 0 then
-    Result := TSqlConditionBuilder.KindToKeyword(aKind) + ' ' + Result;
+  Result := TSqlConditionBuilder.AddConditionStart(GetCondition, aStart);
 end;
 
 procedure TSqlConditionNodeBase.SetValue(const aValue: string);
@@ -346,7 +344,7 @@ begin
   AddNode(Result);
 end;
 
-function TSqlConditionNodeOperator.AddNode(const aNode: ISqlConditionNodeBase): ISqlConditionNodeOperator;
+function TSqlConditionNodeOperator.AddNode(const aNode: ISqlConditionNode): ISqlConditionNodeOperator;
 begin
   Result := Self;
   var lInternalNode: ISqlConditionNodeInternal;
@@ -370,7 +368,7 @@ end;
 
 { TSqlConditionNodeNot }
 
-function TSqlConditionNodeNot.AddNode(const aNode: ISqlConditionNodeBase): ISqlConditionNodeOperator;
+function TSqlConditionNodeNot.AddNode(const aNode: ISqlConditionNode): ISqlConditionNodeOperator;
 begin
   ClearNodes;
   Result := inherited AddNode(aNode);
@@ -384,11 +382,11 @@ end;
 { TSqlConditionNodeValue }
 
 constructor TSqlConditionNodeValue.Create(const aOperatorParent: ISqlConditionNodeOperator;
-  const aComparerParent: ISqlConditionNodeComparer; const aEmptyStringIsValid: Boolean);
+  const aParent: ISqlConditionNodeComparer; const aEmptyStringIsValid: Boolean);
 begin
   inherited Create;
   fOperatorParent := aOperatorParent;
-  fComparerParent := aComparerParent;
+  fParent := aParent;
   fEmptyStringIsValid := aEmptyStringIsValid;
 end;
 
@@ -397,9 +395,9 @@ begin
   Result := fOperatorParent;
 end;
 
-function TSqlConditionNodeValue.GetComparerParent: ISqlConditionNodeComparer;
+function TSqlConditionNodeValue.GetParent: ISqlConditionNodeComparer;
 begin
-  Result := fComparerParent;
+  Result := fParent;
 end;
 
 function TSqlConditionNodeValue.GetCondition: string;
@@ -440,15 +438,19 @@ begin
   Result := TSqlConditionNodeOr.Create(nil);
 end;
 
-class function TSqlConditionBuilder.KindToKeyword(const aKind: TSqlConditionKind): string;
+class function TSqlConditionBuilder.AddConditionStart(const aCondition: string;
+  const aStart: TSqlConditionStart): string;
 begin
-  case aKind of
-    TSqlConditionKind.EmptyKind: Result := '';
-    TSqlConditionKind.WhereKind: Result := 'where';
-    TSqlConditionKind.OnKind: Result := 'on';
-    TSqlConditionKind.AndKind: Result := 'and';
-    TSqlConditionKind.OrKind: Result := 'or';
-    else Result := '';
+  Result := '';
+  if Length(aCondition) =  0 then
+    Exit;
+
+  case aStart of
+    TSqlConditionStart.EmptyStart: Result := aCondition;
+    TSqlConditionStart.WhereStart: Result := 'where ' + aCondition;
+    TSqlConditionStart.OnStart: Result := 'on ' + aCondition;
+    TSqlConditionStart.AndStart: Result := 'and (' + aCondition + ')' ;
+    TSqlConditionStart.OrStart: Result := 'or (' + aCondition + ')';
   end;
 end;
 
