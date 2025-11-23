@@ -40,7 +40,7 @@ begin
       .SetLeftValue('p.person_external')
       .SetRightValue('0');
 
-  var lConditionsStr := lConditions.GetConditionString(TSqlConditionKind.WhereKind);
+  var lConditionsStr := lConditions.GetConditionString(TSqlConditionStart.WhereStart);
 
   aQuery := Connection.CreatePreparedQuery(
     'SELECT r.role_id, r.role_name, u.unit_id, u.unit_name, u.unit_data_confirmed_on, pn.person_name' +

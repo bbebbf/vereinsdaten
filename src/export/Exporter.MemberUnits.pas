@@ -46,7 +46,7 @@ begin
         .SetLeftValue('u.unit_kind')
         .SetRightValue(IntToStr(Ord(i)));
   end;
-  var lUnitConditionsStr := lUnitConditions.GetConditionString(TSqlConditionKind.WhereKind);
+  var lUnitConditionsStr := lUnitConditions.GetConditionString(TSqlConditionStart.WhereStart);
 
   lSelectSql := lSelectSql +
     ' INNER JOIN vw_person_name AS pn ON pn.person_id = m.person_id' +
