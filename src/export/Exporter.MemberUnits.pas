@@ -28,7 +28,7 @@ begin
     ',IF(p.person_external, "E", null) AS person_external_e' +
     ', p.person_active, p.person_external' +
     ' FROM unit AS u' +
-    ' INNER JOIN member AS m ON m.unit_id = u.unit_id ' + lMemberStateJoinWhere.GetSqlCondition('AND') +
+    ' INNER JOIN member AS m ON m.unit_id = u.unit_id ' + lMemberStateJoinWhere.GetSqlCondition(TSqlConditionStart.AndStart) +
     ' INNER JOIN person AS p ON p.person_id = m.person_id';
 
   if not Params.Persons.IncludeInactive then
@@ -37,14 +37,14 @@ begin
     lSelectSql := lSelectSql + ' AND p.person_external = 0';
 
   var lUnitConditions := TSqlConditionBuilder.CreateAnd;
-  lUnitConditions.Add(False).Value := lUnitState.GetSqlCondition;
+  lUnitConditions.AddRawSql(lUnitState.GetSqlCondition);
   var lUnitConditionsKind := lUnitConditions.AddAnd;
   for var i := Succ(Low(TUnitKind)) to High(TUnitKind) do
   begin
     if not (i in Params.Units.Kinds) then
       lUnitConditionsKind.AddNotEquals
-        .SetLeftValue('u.unit_kind')
-        .SetRightValue(IntToStr(Ord(i)));
+        .Left('u.unit_kind')
+        .Right(IntToStr(Ord(i)));
   end;
   var lUnitConditionsStr := lUnitConditions.GetConditionString(TSqlConditionStart.WhereStart);
 

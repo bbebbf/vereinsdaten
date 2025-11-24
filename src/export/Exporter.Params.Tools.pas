@@ -2,14 +2,15 @@ unit Exporter.Params.Tools;
 
 interface
 
-uses SqlConnection;
+uses SqlConnection, SqlConditionBuilder;
 
 type
   TActiveRangeParamsKind = (Unknown, AllEntries, ActiveEntries, InactiveEntriesOnly);
 
   IActiveRangeParamsResult = interface
     ['{377BD875-A7CF-4528-BDAD-2C242C01E7CD}']
-    function GetSqlCondition(const aConjunction: string = ''): string;
+    function GetSqlCondition(const aConditionStart: TSqlConditionStart = TSqlConditionStart.EmptyStart): string;
+    function GetReadableCondition(const aEntryTitle: string): string;
     procedure ApplyParameters(const aQuery: ISqlPreparedBase);
   end;
 
@@ -19,9 +20,10 @@ type
     fActiveFromColumnName: string;
     fActiveToColumnName: string;
     fKind: TActiveRangeParamsKind;
-    fActiveRangeSet: Boolean;
     fActiveFrom: TDate;
+    fActiveFromSet: Boolean;
     fActiveTo: TDate;
+    fActiveToSet: Boolean;
     procedure SetActiveFrom(const aValue: TDate);
     procedure SetActiveTo(const aValue: TDate);
   public
@@ -29,9 +31,10 @@ type
     function Get(const aTableAlias: string = ''; const aParamsPrefix: string = ''): IActiveRangeParamsResult;
     procedure ClearActiveRange;
     property Kind: TActiveRangeParamsKind read fKind write fKind;
-    property ActiveRangeSet: Boolean read fActiveRangeSet;
     property ActiveFrom: TDate read fActiveFrom write SetActiveFrom;
+    property ActiveFromSet: Boolean read fActiveFromSet;
     property ActiveTo: TDate read fActiveTo write SetActiveTo;
+    property ActiveToSet: Boolean read fActiveToSet;
   end;
 
 implementation
@@ -47,19 +50,21 @@ type
     fTableAlias: string;
     fParamsPrefix: string;
     fKind: TActiveRangeParamsKind;
-    fActiveRangeSet: Boolean;
     fActiveFrom: TDate;
+    fActiveFromSet: Boolean;
     fActiveTo: TDate;
+    fActiveToSet: Boolean;
     fFromParamName: string;
     fToParamName: string;
-    function GetSqlCondition(const aConjunction: string): string;
+    function GetSqlCondition(const aConditionStart: TSqlConditionStart): string;
+    function GetReadableCondition(const aEntryTitle: string): string;
     procedure ApplyParameters(const aQuery: ISqlPreparedBase);
   public
     constructor Create(const aActiveColumnName, aActiveFromColumnName, aActiveToColumnName,
       aTableAlias, aParamsPrefix: string;
       const aKind: TActiveRangeParamsKind;
-      const aActiveRangeSet: Boolean;
-      const aActiveSince, aActiveUntil: TDate);
+      const aActiveFromSet, aActiveToSet: Boolean;
+      const aActiveFrom, aActiveTo: TDate);
   end;
 
 { TActiveRangeParams }
@@ -70,21 +75,22 @@ begin
   fActiveColumnName := aActiveColumnName;
   fActiveFromColumnName := aActiveFromColumnName;
   fActiveToColumnName := aActiveToColumnName;
-  fKind := TActiveRangeParamsKind.AllEntries;
+  fKind := TActiveRangeParamsKind.ActiveEntries;
 end;
 
 procedure TActiveRangeParams.ClearActiveRange;
 begin
   fActiveFrom := 0;
+  fActiveFromSet := False;
   fActiveTo := 0;
-  fActiveRangeSet := False;
+  fActiveToSet := False;
 end;
 
 function TActiveRangeParams.Get(const aTableAlias, aParamsPrefix: string): IActiveRangeParamsResult;
 begin
   Result := TActiveRangeParamsResult.Create(fActiveColumnName,
     fActiveFromColumnName, fActiveToColumnName, aTableAlias, aParamsPrefix,
-    fKind, fActiveRangeSet, fActiveFrom, fActiveTo);
+    fKind, fActiveFromSet, fActiveToSet, fActiveFrom, fActiveTo);
 end;
 
 procedure TActiveRangeParams.SetActiveFrom(const aValue: TDate);
@@ -92,7 +98,7 @@ begin
   fActiveFrom := aValue;
   if CompareDate(fActiveFrom, fActiveTo) > 0 then
     fActiveTo := fActiveFrom;
-  fActiveRangeSet := True;
+  fActiveFromSet := True;
 end;
 
 procedure TActiveRangeParams.SetActiveTo(const aValue: TDate);
@@ -100,7 +106,7 @@ begin
   fActiveTo := aValue;
   if CompareDate(fActiveFrom, fActiveTo) > 0 then
     fActiveFrom := fActiveTo;
-  fActiveRangeSet := True;
+  fActiveToSet := True;
 end;
 
 { TActiveRangeParamsResult }
@@ -108,8 +114,8 @@ end;
 constructor TActiveRangeParamsResult.Create(
   const aActiveColumnName, aActiveFromColumnName, aActiveToColumnName, aTableAlias, aParamsPrefix: string;
   const aKind: TActiveRangeParamsKind;
-  const aActiveRangeSet: Boolean;
-  const aActiveSince, aActiveUntil: TDate);
+  const aActiveFromSet, aActiveToSet: Boolean;
+  const aActiveFrom, aActiveTo: TDate);
 begin
   inherited Create;
   fActiveColumnName := aActiveColumnName;
@@ -118,12 +124,13 @@ begin
   fTableAlias := aTableAlias;
   fParamsPrefix := aParamsPrefix;
   fKind := aKind;
-  fActiveRangeSet := aActiveRangeSet;
-  fActiveFrom := aActiveSince;
-  fActiveTo := aActiveUntil;
+  fActiveFromSet := aActiveFromSet;
+  fActiveToSet := aActiveToSet;
+  fActiveFrom := aActiveFrom;
+  fActiveTo := aActiveTo;
 end;
 
-function TActiveRangeParamsResult.GetSqlCondition(const aConjunction: string): string;
+function TActiveRangeParamsResult.GetSqlCondition(const aConditionStart: TSqlConditionStart): string;
 begin
   fFromParamName := '';
   fToParamName := '';
@@ -131,13 +138,22 @@ begin
     Exit('');
 
   var lActiveColumn := TStringTools.Combine(fTableAlias, '.', fActiveColumnName);
+  var lSqlCondition := TSqlConditionBuilder.CreateOr;
+
   if fKind = TActiveRangeParamsKind.InactiveEntriesOnly then
-    Exit(aConjunction + ' (' + lActiveColumn + ' = 0)');
+  begin
+    lSqlCondition.AddEquals
+      .Left(lActiveColumn)
+      .Right('0');
+    Exit(lSqlCondition.GetConditionString(aConditionStart));
+  end;
 
-  var lSqlCondition := lActiveColumn + ' = 1';
+  lSqlCondition.AddEquals
+    .Left(lActiveColumn)
+    .Right('1');
 
-  if not fActiveRangeSet then
-    Exit(aConjunction + ' (' + lSqlCondition + ')');
+  if not fActiveFromSet and not fActiveToSet then
+    Exit(lSqlCondition.GetConditionString(aConditionStart));
 
   var lParamsPrefix := fParamsPrefix;
   if Length(lParamsPrefix) = 0 then
@@ -145,22 +161,69 @@ begin
 
   var lFromColumn := TStringTools.Combine(fTableAlias, '.', fActiveFromColumnName);
   var lToColumn := TStringTools.Combine(fTableAlias, '.', fActiveToColumnName);
-  fFromParamName := TStringTools.Combine(lParamsPrefix, '_', fActiveFromColumnName);
-  fToParamName := TStringTools.Combine(lParamsPrefix, '_', fActiveToColumnName);
 
-  var lFromInRange := '(' + lFromColumn + ' >= :' + fFromParamName +
-    ' and ' + lFromColumn + ' <= :' + fToParamName + ')';
-  var lToInRange := '(' + lToColumn + ' >= :' + fFromParamName +
-    ' and ' + lToColumn + ' <= :' + fToParamName + ')';
-  var lNoOverlappingRange := '(' + lFromColumn + ' < :' + fFromParamName + ' and ' + lToColumn + ' < :' + fFromParamName + ')' +
-    ' or (' + lFromColumn + ' > :' + fToParamName + ' and ' + lToColumn + ' > :' + fToParamName + ')';
+  var lFromInRange := TSqlConditionBuilder.CreateAnd;
+  var lToInRange := TSqlConditionBuilder.CreateAnd;
+  var lNoOverlappingRange := TSqlConditionBuilder.CreateOr;
 
-  var lSqlConditionInactive := '(' + lActiveColumn + ' = 0 and (' +
-         '(' + lFromColumn + ' is not null and ' + lToColumn + ' is not null and not (' + lNoOverlappingRange + '))' +
-      'or (' + lFromColumn + ' is not null and ' + lToColumn + ' is null and (' + lFromInRange + '))' +
-      'or (' + lFromColumn + ' is null and ' + lToColumn + ' is not null and (' + lToInRange + '))' +
-    '))';
-  Result := aConjunction + ' (' + lSqlCondition + ' or ' + lSqlConditionInactive + ')';
+  if fActiveFromSet then
+  begin
+    fFromParamName := TStringTools.Combine(lParamsPrefix, '_', fActiveFromColumnName);
+
+    lFromInRange.AddGreaterOrEqualThan.Left(lFromColumn).Right(':' +fFromParamName);
+    lToInRange.AddGreaterOrEqualThan.Left(lToColumn).Right(':' +fFromParamName);
+    lNoOverlappingRange.AddAnd
+      .AddLessThan.Left(lFromColumn).Right(':' + fFromParamName)
+      .Parent
+      .AddLessThan.Left(lToColumn).Right(':' + fFromParamName);
+  end;
+  if fActiveToSet then
+  begin
+    fToParamName := TStringTools.Combine(lParamsPrefix, '_', fActiveToColumnName);
+
+    lFromInRange.AddLessOrEqualThan.Left(lFromColumn).Right(':' +fToParamName);
+    lToInRange.AddLessOrEqualThan.Left(lToColumn).Right(':' +fToParamName);
+    lNoOverlappingRange.AddAnd
+      .AddGreaterThan.Left(lFromColumn).Right(':' + fToParamName)
+      .Parent
+      .AddGreaterThan.Left(lToColumn).Right(':' + fToParamName);
+  end;
+
+  var lSqlConditionInactive := TSqlConditionBuilder.CreateAnd;
+  lSqlConditionInactive
+    .AddEquals.Left(lActiveColumn).Right('0')
+    .Parent
+    .AddOr
+      .AddAnd
+        .AddIsNotNull(lFromColumn)
+        .AddIsNotNull(lToColumn)
+        .AddNot.Add(lNoOverlappingRange)
+      .Parent
+      .AddAnd
+        .AddIsNotNull(lFromColumn)
+        .AddIsNull(lToColumn)
+        .Add(lFromInRange)
+      .Parent
+      .AddAnd
+        .AddIsNull(lFromColumn)
+        .AddIsNotNull(lToColumn)
+        .Add(lToInRange);
+
+  Result := lSqlCondition.Add(lSqlConditionInactive).GetConditionString(aConditionStart);
+end;
+
+function TActiveRangeParamsResult.GetReadableCondition(const aEntryTitle: string): string;
+begin
+  Result := '';
+  if fKind = TActiveRangeParamsKind.Unknown then
+    Exit;
+  if fKind = TActiveRangeParamsKind.AllEntries then
+    Exit('Alle ' + aEntryTitle);
+  if fKind = TActiveRangeParamsKind.InactiveEntriesOnly then
+    Exit('Nur inaktive ' + aEntryTitle);
+  if fKind = TActiveRangeParamsKind.ActiveEntries then
+  begin
+  end;
 end;
 
 procedure TActiveRangeParamsResult.ApplyParameters(const aQuery: ISqlPreparedBase);

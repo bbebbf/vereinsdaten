@@ -22,23 +22,23 @@ begin
   var lMemberState := Params.MembersState.Get('m');
 
   var lConditions := TSqlConditionBuilder.CreateAnd;
-  lConditions.Add(False).Value := lUnitState.GetSqlCondition;
-  lConditions.Add(False).Value := lMemberState.GetSqlCondition;
+  lConditions.AddRawSql(lUnitState.GetSqlCondition);
+  lConditions.AddRawSql(lMemberState.GetSqlCondition);
   for var i := Succ(Low(TUnitKind)) to High(TUnitKind) do
   begin
     if not (i in Params.Units.Kinds) then
       lConditions.AddNotEquals
-        .SetLeftValue('u.unit_kind')
-        .SetRightValue(IntToStr(Ord(i)));
+        .Left('u.unit_kind')
+        .Right(IntToStr(Ord(i)));
   end;
   if not Params.Persons.IncludeInactive then
     lConditions.AddEquals
-      .SetLeftValue('p.person_active')
-      .SetRightValue('1');
+      .Left('p.person_active')
+      .Right('1');
   if not Params.Persons.IncludeExternal then
     lConditions.AddEquals
-      .SetLeftValue('p.person_external')
-      .SetRightValue('0');
+      .Left('p.person_external')
+      .Right('0');
 
   var lConditionsStr := lConditions.GetConditionString(TSqlConditionStart.WhereStart);
 

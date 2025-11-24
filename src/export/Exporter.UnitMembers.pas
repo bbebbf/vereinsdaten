@@ -47,7 +47,7 @@ begin
     ' FROM unit AS u' +
     ' LEFT JOIN (' +
           ' SELECT unit_id, COUNT(*) AS unit_member_count' +
-          ' FROM vw_person_member ' + lMemberStateFromWhere.GetSqlCondition('WHERE') +
+          ' FROM vw_person_member ' + lMemberStateFromWhere.GetSqlCondition(TSqlConditionStart.WhereStart) +
           ' GROUP BY unit_id' +
     ') AS mc ON mc.unit_id = u.unit_id';
   if Length(lTempTablename) > 0 then
@@ -55,7 +55,7 @@ begin
     lSelectStm := lSelectStm + ' INNER JOIN ' + lTempTablename + ' AS tt ON tt.unit_id = u.unit_id';
   end;
   lSelectStm := lSelectStm + ' LEFT JOIN vw_person_member AS m ON m.unit_id = u.unit_id ' +
-    lMemberStateJoinWhere.GetSqlCondition('AND');
+    lMemberStateJoinWhere.GetSqlCondition(TSqlConditionStart.AndStart);
 
   if not Params.Persons.IncludeInactive then
     lSelectStm := lSelectStm + ' AND m.person_active = 1';
@@ -63,14 +63,14 @@ begin
     lSelectStm := lSelectStm + ' AND m.person_external = 0';
 
   var lUnitConditions := TSqlConditionBuilder.CreateAnd;
-  lUnitConditions.Add(False).Value := lUnitState.GetSqlCondition;
+  lUnitConditions.AddRawSql(lUnitState.GetSqlCondition);
   var lUnitConditionsKind := lUnitConditions.AddAnd;
   for var i := Succ(Low(TUnitKind)) to High(TUnitKind) do
   begin
     if not (i in Params.Units.Kinds) then
       lUnitConditionsKind.AddNotEquals
-        .SetLeftValue('u.unit_kind')
-        .SetRightValue(IntToStr(Ord(i)));
+        .Left('u.unit_kind')
+        .Right(IntToStr(Ord(i)));
   end;
   var lUnitConditionsStr := lUnitConditions.GetConditionString(TSqlConditionStart.WhereStart);
 

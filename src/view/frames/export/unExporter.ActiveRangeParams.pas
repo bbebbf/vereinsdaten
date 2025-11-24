@@ -101,16 +101,14 @@ begin
     TActiveRangeParamsKind.InactiveEntriesOnly:
       rbInactiveEntriesOnly.Checked := True;
   end;
-  if (aParams.Kind = TActiveRangeParamsKind.ActiveEntries) and aParams.ActiveRangeSet then
-  begin
-    deActiveRangeFrom.Value.Value := aParams.ActiveFrom;
-    deActiveRangeTo.Value.Value := aParams.ActiveTo;
-  end
+  if aParams.ActiveFromSet then
+    deActiveRangeFrom.Value.Value := aParams.ActiveFrom
   else
-  begin
     deActiveRangeFrom.Clear;
+  if aParams.ActiveToSet then
+    deActiveRangeTo.Value.Value := aParams.ActiveTo
+  else
     deActiveRangeTo.Clear;
-  end;
 end;
 
 procedure TfraExporterActiveRangeParams.UncheckAllOptions;

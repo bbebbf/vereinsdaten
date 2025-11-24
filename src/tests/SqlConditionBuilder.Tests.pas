@@ -24,11 +24,11 @@ implementation
 procedure TSqlConditionBuilderTests.Build1;
 begin
   var lNode := TSqlConditionBuilder.CreateAnd;
-  lNode.Add.Value := 'Hallo';
+  lNode.AddRawSql('Hallo');
   var lUnitConditionsKind := lNode.AddOr;
   lUnitConditionsKind.AddIsNull.Value := 'u.a';
   lUnitConditionsKind.AddIsNotNull.Value := 'u.unit_kind';
-  lUnitConditionsKind.AddEquals.SetLeftValue('u.unit_kind').SetRightValue('2');
+  lUnitConditionsKind.AddEquals.Left('u.unit_kind').Right('2');
   AssertSqlConditionNode('(Hallo) and ((u.a is null) or (u.unit_kind is not null) or (u.unit_kind = 2))', lNode);
 end;
 
