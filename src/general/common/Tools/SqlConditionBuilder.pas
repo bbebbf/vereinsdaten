@@ -36,27 +36,27 @@ type
     function AddLessThan: ISqlConditionNodeComparer;
     function AddLessOrEqualThan: ISqlConditionNodeComparer;
     function Add(const aNode: ISqlConditionNode): ISqlConditionNodeOperator;
-    function GetParent: ISqlConditionNodeOperator;
-    property Parent: ISqlConditionNodeOperator read GetParent;
+    function GetParentOperator: ISqlConditionNodeOperator;
+    property ParentOperator: ISqlConditionNodeOperator read GetParentOperator;
   end;
 
   ISqlConditionNodeComparer = interface(ISqlConditionNode)
     ['{985BDA99-CC5E-4DBC-A470-92B50395FF66}']
     function Left(const aValue: string): ISqlConditionNodeComparer;
     function Right(const aValue: string): ISqlConditionNodeComparer;
-    function GetParent: ISqlConditionNodeOperator;
-    property Parent: ISqlConditionNodeOperator read GetParent;
+    function GetParentOperator: ISqlConditionNodeOperator;
+    property ParentOperator: ISqlConditionNodeOperator read GetParentOperator;
   end;
 
   ISqlConditionNodeValue = interface(ISqlConditionNode)
     ['{6F263E71-7F18-4F00-8A47-74002914FBA9}']
     function GetValue: string;
     procedure SetValue(const aValue: string);
-    function GetParent: ISqlConditionNodeComparer;
-    function GetOperatorParent: ISqlConditionNodeOperator;
+    function GetParentComparer: ISqlConditionNodeComparer;
+    function GetParentOperator: ISqlConditionNodeOperator;
     property Value: string read GetValue write SetValue;
-    property Parent: ISqlConditionNodeComparer read GetParent;
-    property OperatorParent: ISqlConditionNodeOperator read GetOperatorParent;
+    property ParentComparer: ISqlConditionNodeComparer read GetParentComparer;
+    property ParentOperator: ISqlConditionNodeOperator read GetParentOperator;
   end;
 
   TSqlConditionBuilder = class
@@ -98,7 +98,7 @@ type
     function AddGreaterOrEqualThan: ISqlConditionNodeComparer;
     function AddLessThan: ISqlConditionNodeComparer;
     function AddLessOrEqualThan: ISqlConditionNodeComparer;
-    function GetParent: ISqlConditionNodeOperator;
+    function GetParentOperator: ISqlConditionNodeOperator;
   strict protected
     function IsValid: Boolean; override;
     function GetCondition: string; override;
@@ -134,7 +134,7 @@ type
     fParent: ISqlConditionNodeOperator;
     fLeft: ISqlConditionNodeInternal;
     fRight: ISqlConditionNodeInternal;
-    function GetParent: ISqlConditionNodeOperator;
+    function GetParentOperator: ISqlConditionNodeOperator;
     function Left(const aValue: string): ISqlConditionNodeComparer;
     function Right(const aValue: string): ISqlConditionNodeComparer;
   strict protected
@@ -180,18 +180,18 @@ type
     fValue: string;
     fEmptyStringIsValid: Boolean;
     fValueIsValid: Boolean;
-    fOperatorParent: ISqlConditionNodeOperator;
-    fParent: ISqlConditionNodeComparer;
-    function GetOperatorParent: ISqlConditionNodeOperator;
-    function GetParent: ISqlConditionNodeComparer;
+    fParentOperator: ISqlConditionNodeOperator;
+    fParentComparer: ISqlConditionNodeComparer;
+    function GetParentOperator: ISqlConditionNodeOperator;
+    function GetParentComparer: ISqlConditionNodeComparer;
   strict protected
     function IsValid: Boolean; override;
     function GetCondition: string; override;
     function GetValue: string;
     procedure SetValue(const aValue: string); override;
   public
-    constructor Create(const aOperatorParent: ISqlConditionNodeOperator;
-      const aParent: ISqlConditionNodeComparer; const aEmptyStringIsValid: Boolean);
+    constructor Create(const aParentOperator: ISqlConditionNodeOperator;
+      const aParentComparer: ISqlConditionNodeComparer; const aEmptyStringIsValid: Boolean);
   end;
 
   TSqlConditionNodeValueIsNull = class(TSqlConditionNodeValue)
@@ -270,7 +270,7 @@ begin
   Result := '';
 end;
 
-function TSqlConditionNodeOperator.GetParent: ISqlConditionNodeOperator;
+function TSqlConditionNodeOperator.GetParentOperator: ISqlConditionNodeOperator;
 begin
   Result := fParent;
 end;
@@ -427,23 +427,23 @@ end;
 
 { TSqlConditionNodeValue }
 
-constructor TSqlConditionNodeValue.Create(const aOperatorParent: ISqlConditionNodeOperator;
-  const aParent: ISqlConditionNodeComparer; const aEmptyStringIsValid: Boolean);
+constructor TSqlConditionNodeValue.Create(const aParentOperator: ISqlConditionNodeOperator;
+  const aParentComparer: ISqlConditionNodeComparer; const aEmptyStringIsValid: Boolean);
 begin
   inherited Create;
-  fOperatorParent := aOperatorParent;
-  fParent := aParent;
+  fParentOperator := aParentOperator;
+  fParentComparer := aParentComparer;
   fEmptyStringIsValid := aEmptyStringIsValid;
 end;
 
-function TSqlConditionNodeValue.GetOperatorParent: ISqlConditionNodeOperator;
+function TSqlConditionNodeValue.GetParentOperator: ISqlConditionNodeOperator;
 begin
-  Result := fOperatorParent;
+  Result := fParentOperator;
 end;
 
-function TSqlConditionNodeValue.GetParent: ISqlConditionNodeComparer;
+function TSqlConditionNodeValue.GetParentComparer: ISqlConditionNodeComparer;
 begin
-  Result := fParent;
+  Result := fParentComparer;
 end;
 
 function TSqlConditionNodeValue.GetCondition: string;
@@ -513,7 +513,7 @@ begin
   Result := fLeft.GetCondition + ' ' + GetComparerString + ' ' + fRight.GetCondition;
 end;
 
-function TSqlConditionNodeComparer.GetParent: ISqlConditionNodeOperator;
+function TSqlConditionNodeComparer.GetParentOperator: ISqlConditionNodeOperator;
 begin
   Result := fParent;
 end;
