@@ -80,7 +80,7 @@ type
     procedure SetValue(const aValue: string); virtual;
   end;
 
-  TSqlConditionNodeOperator = class abstract(TSqlConditionNodeBase, ISqlConditionNodeOperator)
+  TSqlConditionNodeOperator = class(TSqlConditionNodeBase, ISqlConditionNodeOperator)
   strict private
     fParent: ISqlConditionNodeOperator;
     fNodes: TList<ISqlConditionNodeInternal>;
@@ -104,7 +104,9 @@ type
     function GetCondition: string; override;
     function Add(const aNode: ISqlConditionNode): ISqlConditionNodeOperator; virtual;
     procedure ClearNodes;
-    function GetOperatorString: string; virtual; abstract;
+    function ParenthesesNeeded: Boolean; virtual;
+    function GetConditionLeading: string; virtual;
+    function GetOperatorString: string; virtual;
   public
     constructor Create(const aParent: ISqlConditionNodeOperator);
     destructor Destroy; override;
@@ -123,7 +125,8 @@ type
   TSqlConditionNodeNot = class(TSqlConditionNodeOperator)
   strict protected
     function Add(const aNode: ISqlConditionNode): ISqlConditionNodeOperator; override;
-    function GetOperatorString: string; override;
+    function ParenthesesNeeded: Boolean; override;
+    function GetConditionLeading: string; override;
   end;
 
   TSqlConditionNodeComparer = class abstract(TSqlConditionNodeBase, ISqlConditionNodeComparer)
@@ -233,7 +236,7 @@ begin
   Result := '';
   var lOpenPa := '';
   var lClosedPa := '';
-  if fNodes.Count > 1 then
+  if ParenthesesNeeded then
   begin
     lOpenPa := '(';
     lClosedPa := ')';
@@ -241,6 +244,7 @@ begin
 
   var lJoiner := TJoiner<string>.Create;
   try
+    lJoiner.LineLeading := GetConditionLeading;
     lJoiner.ElementSeparator := ' ' + GetOperatorString + ' ';
     lJoiner.ElementLeading := lOpenPa;
     lJoiner.ElementTrailing := lClosedPa;
@@ -256,6 +260,16 @@ begin
   end;
 end;
 
+function TSqlConditionNodeOperator.GetConditionLeading: string;
+begin
+  Result := '';
+end;
+
+function TSqlConditionNodeOperator.GetOperatorString: string;
+begin
+  Result := '';
+end;
+
 function TSqlConditionNodeOperator.GetParent: ISqlConditionNodeOperator;
 begin
   Result := fParent;
@@ -269,6 +283,11 @@ begin
     if i.IsValid then
       Exit(True);
   end;
+end;
+
+function TSqlConditionNodeOperator.ParenthesesNeeded: Boolean;
+begin
+  Result := fNodes.Count > 1;
 end;
 
 procedure TSqlConditionNodeOperator.ClearNodes;
@@ -396,9 +415,14 @@ begin
   Result := inherited Add(aNode);
 end;
 
-function TSqlConditionNodeNot.GetOperatorString: string;
+function TSqlConditionNodeNot.GetConditionLeading: string;
 begin
-  Result := 'not';
+  Result := 'not ';
+end;
+
+function TSqlConditionNodeNot.ParenthesesNeeded: Boolean;
+begin
+  Result := True;
 end;
 
 { TSqlConditionNodeValue }

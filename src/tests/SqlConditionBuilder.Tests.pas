@@ -15,6 +15,8 @@ type
     procedure Build1();
     [Test]
     procedure BuildEmpty();
+    [Test]
+    procedure BuildNot();
   end;
 
 implementation
@@ -38,6 +40,14 @@ begin
   var lUnitConditionsKind := lNode.AddOr;
   lUnitConditionsKind.AddIsNotNull;
   AssertSqlConditionNode('', lNode);
+end;
+
+procedure TSqlConditionBuilderTests.BuildNot;
+begin
+  var lNode := TSqlConditionBuilder.CreateNot;
+  lNode.AddEquals.Left('0').Right('1');
+  lNode.AddEquals.Left('a').Right('b');
+  AssertSqlConditionNode('not (a = b)', lNode);
 end;
 
 procedure TSqlConditionBuilderTests.AssertSqlConditionNode(const aExpectedCondition: string;
