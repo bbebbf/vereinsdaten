@@ -79,8 +79,8 @@ begin
   fPerson := aPerson;
   fExistingAddressId := aExistingAddressId;
   fAvailableAddresses := aAvailableAddresses;
-  fMembershipBeginDate := TNullable<TDate>.Create;
-  fMembershipEndDate := TNullable<TDate>.Create;
+  fMembershipBeginDate := TNullable<TDate>.New;
+  fMembershipEndDate := TNullable<TDate>.New;
 end;
 
 destructor TDtoPersonAggregated.Destroy;

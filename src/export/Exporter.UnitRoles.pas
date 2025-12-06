@@ -22,8 +22,8 @@ begin
   var lMemberState := Params.MembersState.Get('m');
 
   var lConditions := TSqlConditionBuilder.CreateAnd;
-  lConditions.AddRawSql(lUnitState.GetSqlCondition);
-  lConditions.AddRawSql(lMemberState.GetSqlCondition);
+  lConditions.Add(lUnitState.GetSqlCondition);
+  lConditions.Add(lMemberState.GetSqlCondition);
   for var i := Succ(Low(TUnitKind)) to High(TUnitKind) do
   begin
     if not (i in Params.Units.Kinds) then

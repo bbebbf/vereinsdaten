@@ -117,7 +117,7 @@ object fmReportMemberUnitsPrintout: TfmReportMemberUnitsPrintout
       Left = 47
       Top = 131
       Width = 898
-      Height = 23
+      Height = 41
       GreenBarPrint = True
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlack
@@ -145,7 +145,6 @@ object fmReportMemberUnitsPrintout: TfmReportMemberUnitsPrintout
         DataField = 'unit_name'
         DataSource = dsDataSource
         Text = ''
-        BeforePrint = rdUnitnameBeforePrint
       end
       object rdRolename: TRLDBText
         Left = 520
@@ -186,10 +185,22 @@ object fmReportMemberUnitsPrintout: TfmReportMemberUnitsPrintout
         Text = ''
         BeforePrint = rtStatusBeforePrint
       end
+      object rdInactiveInfo: TRLLabel
+        Left = 280
+        Top = 21
+        Width = 81
+        Height = 15
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clGray
+        Font.Height = -13
+        Font.Name = 'Calibri'
+        Font.Style = []
+        ParentFont = False
+      end
     end
     object bdPageFooter: TRLBand
       Left = 47
-      Top = 154
+      Top = 172
       Width = 898
       Height = 27
       BandType = btFooter

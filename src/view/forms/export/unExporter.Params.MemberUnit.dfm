@@ -3,8 +3,6 @@ inherited fmExporterParamsMemberUnit: TfmExporterParamsMemberUnit
   ClientHeight = 503
   ClientWidth = 423
   StyleElements = [seFont, seClient, seBorder]
-  ExplicitLeft = 3
-  ExplicitTop = 3
   ExplicitWidth = 439
   ExplicitHeight = 542
   TextHeight = 15
@@ -25,8 +23,8 @@ inherited fmExporterParamsMemberUnit: TfmExporterParamsMemberUnit
     Width = 423
     TabOrder = 0
     StyleElements = [seFont, seClient, seBorder]
-    ExplicitTop = 335
-    ExplicitWidth = 421
+    ExplicitTop = 393
+    ExplicitWidth = 423
     inherited lbTargets: TLabel
       StyleElements = [seFont, seClient, seBorder]
     end
@@ -34,17 +32,17 @@ inherited fmExporterParamsMemberUnit: TfmExporterParamsMemberUnit
       StyleElements = [seFont, seClient, seBorder]
     end
     inherited cbTargets: TComboBox
-      Width = 346
+      Width = 344
       StyleElements = [seFont, seClient, seBorder]
       ExplicitWidth = 344
     end
     inherited edFilePath: TEdit
-      Width = 308
+      Width = 306
       StyleElements = [seFont, seClient, seBorder]
       ExplicitWidth = 306
     end
     inherited btOpenFileDlg: TButton
-      Left = 370
+      Left = 368
       ExplicitLeft = 368
     end
   end

@@ -32,6 +32,7 @@ type
     memFilterInfo: TRLMemo;
     lbStatus: TLabel;
     rtStatus: TRLDBText;
+    rdInactiveInfo: TRLLabel;
     procedure RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure bdDetailAfterPrint(Sender: TObject);
     procedure rdUnitDividerBeforePrint(Sender: TObject; var PrintIt: Boolean);
@@ -39,12 +40,13 @@ type
     procedure RLReportPageStarting(Sender: TObject);
     procedure bdDetailBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure rdRolenameBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
-    procedure rdUnitnameBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
     procedure rtStatusBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
   strict private
+    fParams: TExporterMembersParams;
     fPreviousPersonId: UInt32;
     fNewPageStarted: Boolean;
     fOneUnitPerPage: Boolean;
+    fDefaultDetailHeight: Integer;
     procedure SetParams(const aParams: TExporterMembersParams);
   strict protected
     procedure ExportInternal(const aDataSet: ISqlDataSet); override;
@@ -66,6 +68,23 @@ end;
 
 procedure TfmReportMemberUnitsPrintout.bdDetailBeforePrint(Sender: TObject; var PrintIt: Boolean);
 begin
+  var lInactiveInfo := fParams.Units.State.GetMixedActiveRangeText(rdPersonname.DataSource.DataSet);
+  if TStringTools.IsEmpty(lInactiveInfo) then
+    lInactiveInfo := fParams.MembersState.GetMixedActiveRangeText(rdPersonname.DataSource.DataSet);
+
+  if Length(lInactiveInfo) = 0 then
+  begin
+    rdInactiveInfo.Visible := False;
+    bdDetail.Height := fDefaultDetailHeight;
+    rdUnitname.Font.Style := [];
+  end
+  else
+  begin
+    rdInactiveInfo.Caption := lInactiveInfo;
+    rdInactiveInfo.Visible := True;
+    rdUnitname.Font.Style := [TFontStyle.fsStrikeOut];
+  end;
+
   if fOneUnitPerPage then
   begin
     if not fNewPageStarted and (rdPersonid.Field.AsLargeInt <> fPreviousPersonId) then
@@ -91,23 +110,6 @@ begin
   PrintIt := fNewPageStarted or (rdPersonid.Field.AsLargeInt <> fPreviousPersonId);
 end;
 
-procedure TfmReportMemberUnitsPrintout.rdUnitnameBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
-begin
-  inherited;
-  if rdUnitname.DataSource.DataSet.FieldByName('mb_active').AsBoolean then
-  begin
-    rdUnitname.Font.Style := [];
-  end
-  else
-  begin
-    rdUnitname.Font.Style := [TFontStyle.fsStrikeOut];
-    if not rdUnitname.DataSource.DataSet.FieldByName('mb_active_until').IsNull then
-    begin
-      AText := AText + ' (bis ' + FormatDateTime('c', rdUnitname.DataSource.DataSet.FieldByName('mb_active_until').AsDateTime) + ')';
-    end;
-  end;
-end;
-
 procedure TfmReportMemberUnitsPrintout.rdPersonnameBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
 begin
   PrintIt := fNewPageStarted or (rdPersonid.Field.AsLargeInt <> fPreviousPersonId);
@@ -123,6 +125,7 @@ procedure TfmReportMemberUnitsPrintout.RLReportBeforePrint(Sender: TObject; var 
 begin
   lbTenantTitle.Caption := TTenantReader.Instance.Tenant.Title;
   fPreviousPersonId := 0;
+  fDefaultDetailHeight :=  (2 * rdUnitname.Top) + rdUnitname.Height;
   lbAppTitle.Caption := TVdmGlobals.GetVdmApplicationTitle;
 end;
 
@@ -142,6 +145,7 @@ end;
 
 procedure TfmReportMemberUnitsPrintout.SetParams(const aParams: TExporterMembersParams);
 begin
+  fParams := aParams;
   var lFilterInfo := '';
   if aParams.Persons.IncludeInactive and aParams.Persons.IncludeExternal then
   begin
@@ -155,17 +159,9 @@ begin
   begin
     lFilterInfo := 'Externe Personen enthalten.';
   end;
-  {
-  if aParams.IncludeAllInactiveMembers then
-  begin
-    lFilterInfo := TStringTools.Combine(lFilterInfo, sLineBreak, 'Alle inaktive Verbindungen enthalten.');
-  end
-  else if aParams.InactiveMembersButActiveUntil > 0 then
-  begin
-    lFilterInfo := TStringTools.Combine(lFilterInfo, sLineBreak, 'Inaktive Verbindungen enthalten');
-    lFilterInfo := lFilterInfo + ' (noch aktiv am ' + FormatDateTime('c', aParams.InactiveMembersButActiveUntil) + ').';
-  end;
-  }
+  lFilterInfo := TStringTools.Combine(lFilterInfo, sLineBreak, aParams.MembersState.GetReadableCondition);
+  lFilterInfo := TStringTools.Combine(lFilterInfo, sLineBreak, aParams.Units.State.GetReadableCondition);
+
   memFilterInfo.Lines.Text := lFilterInfo;
   memFilterInfo.Visible := Length(lFilterInfo) > 0;
 

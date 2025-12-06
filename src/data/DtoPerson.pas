@@ -25,7 +25,7 @@ implementation
 
 class operator TDtoPerson.Initialize(out Dest: TDtoPerson);
 begin
-  Dest.Birthday := TNullable<TSimpleDate>.Create;
+  Dest.Birthday := TNullable<TSimpleDate>.New;
 end;
 
 class operator TDtoPerson.Finalize(var Dest: TDtoPerson);

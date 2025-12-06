@@ -8,7 +8,7 @@ type
   TVdmGlobals = class
   public
     class function GetVdmApplicationTitle: string;
-    class function GetDateAsString(const aValue: TDateTime; const aShowCentury: Boolean = False): string;
+    class function GetDateAsString(const aValue: TDate; const aShowCentury: Boolean = False): string;
     class function GetDateTimeAsString(const aValue: TDateTime): string;
     class function GetTimeStampAsString(const aValue: TDateTime): string;
     class function TryGetColorForCrudState(const aState: TListEntryCrudState; out aColor: TColor): Boolean;
@@ -48,7 +48,7 @@ begin
     Result := 'Inaktiv';
 end;
 
-class function TVdmGlobals.GetDateAsString(const aValue: TDateTime; const aShowCentury: Boolean): string;
+class function TVdmGlobals.GetDateAsString(const aValue: TDate; const aShowCentury: Boolean): string;
 begin
   if aValue > 0 then
   begin

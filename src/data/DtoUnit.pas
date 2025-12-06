@@ -32,9 +32,9 @@ uses System.SysUtils;
 
 class operator TDtoUnit.Initialize(out Dest: TDtoUnit);
 begin
-  Dest.ActiveSince := TNullable<TDate>.Create;
-  Dest.ActiveUntil := TNullable<TDate>.Create;
-  Dest.DataConfirmedOn := TNullable<TDate>.Create;
+  Dest.ActiveSince := TNullable<TDate>.New;
+  Dest.ActiveUntil := TNullable<TDate>.New;
+  Dest.DataConfirmedOn := TNullable<TDate>.New;
 end;
 
 class operator TDtoUnit.Finalize(var Dest: TDtoUnit);

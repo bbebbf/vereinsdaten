@@ -21,8 +21,8 @@ implementation
 
 class operator TDtoMember.Initialize(out Dest: TDtoMember);
 begin
-  Dest.ActiveSince := TNullable<TDate>.Create;
-  Dest.ActiveUntil := TNullable<TDate>.Create;
+  Dest.ActiveSince := TNullable<TDate>.New;
+  Dest.ActiveUntil := TNullable<TDate>.New;
 end;
 
 class operator TDtoMember.Finalize(var Dest: TDtoMember);

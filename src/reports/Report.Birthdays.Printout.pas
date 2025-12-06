@@ -59,7 +59,7 @@ end;
 
 procedure TfmReportBirthdaysPrintout.rdBirthdayBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
 begin
-  AText := FormatDateTime('dd.mm.yy', rdBirthday.Field.AsDateTime);
+  AText := TVdmGlobals.GetDateAsString(rdBirthday.Field.AsDateTime);
 end;
 
 procedure TfmReportBirthdaysPrintout.rdBirthdayWeekdayBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
@@ -71,8 +71,8 @@ procedure TfmReportBirthdaysPrintout.SetParams(const aParams: TExporterBirthdays
 begin
   lbTenantTitle.Caption := TTenantReader.Instance.Tenant.Title;
   lbAppTitle.Caption := TVdmGlobals.GetVdmApplicationTitle;
-  lbFromDate.Caption := FormatDatetime('dd.mm.yyyy', aParams.FromDate);
-  lbToDate.Caption := FormatDatetime('dd.mm.yyyy', aParams.ToDate);
+  lbFromDate.Caption := TVdmGlobals.GetDateAsString(aParams.FromDate);
+  lbToDate.Caption := TVdmGlobals.GetDateAsString(aParams.ToDate);
 end;
 
 end.

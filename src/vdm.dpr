@@ -164,7 +164,8 @@ uses
   Helper.WinControl in 'view\tools\Helper.WinControl.pas',
   Exporter.Params.Tools in 'export\Exporter.Params.Tools.pas',
   unExporter.ActiveRangeParams in 'view\frames\export\unExporter.ActiveRangeParams.pas' {fraExporterActiveRangeParams: TFrame},
-  SqlConditionBuilder in 'general\common\Tools\SqlConditionBuilder.pas';
+  SqlConditionBuilder in 'general\common\Tools\SqlConditionBuilder.pas',
+  RangeTools in 'general\common\Tools\RangeTools.pas';
 
 {$R *.res}
 

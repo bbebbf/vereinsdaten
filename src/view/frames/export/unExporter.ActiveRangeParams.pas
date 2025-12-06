@@ -22,7 +22,6 @@ type
   strict private
     fOnOptionChecked: TNotifyEvent;
   public
-    procedure Initialize(const aEntryTitle: string);
     procedure SetParams(const aParams: TActiveRangeParams);
     procedure GetParams(const aParams: TActiveRangeParams);
     procedure UncheckAllOptions;
@@ -34,13 +33,6 @@ implementation
 {$R *.dfm}
 
 { TfraExporterActiveRangeParams }
-
-procedure TfraExporterActiveRangeParams.Initialize(const aEntryTitle: string);
-begin
-  rbAllEntries.Caption := 'Alle ' + aEntryTitle;
-  rbActiveEntries.Caption := 'Aktive ' + aEntryTitle;
-  rbInactiveEntriesOnly.Caption := 'Nur inaktive ' + aEntryTitle;
-end;
 
 procedure TfraExporterActiveRangeParams.rbOptionClick(Sender: TObject);
 begin
@@ -93,6 +85,10 @@ end;
 
 procedure TfraExporterActiveRangeParams.SetParams(const aParams: TActiveRangeParams);
 begin
+  rbAllEntries.Caption := 'Alle ' + aParams.EntityTitle;
+  rbActiveEntries.Caption := 'Aktive ' + aParams.EntityTitle;
+  rbInactiveEntriesOnly.Caption := 'Nur inaktive ' + aParams.EntityTitle;
+
   case aParams.Kind of
     TActiveRangeParamsKind.AllEntries:
       rbAllEntries.Checked := True;

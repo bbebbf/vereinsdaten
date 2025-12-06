@@ -16,7 +16,9 @@ uses
   Joiner.Tests in 'tests\Joiner.Tests.pas',
   Joiner in 'general\common\Tools\Joiner.pas',
   SqlConditionBuilder in 'general\common\Tools\SqlConditionBuilder.pas',
-  SqlConditionBuilder.Tests in 'tests\SqlConditionBuilder.Tests.pas';
+  SqlConditionBuilder.Tests in 'tests\SqlConditionBuilder.Tests.pas',
+  ActiveRangeParams.Tests in 'tests\ActiveRangeParams.Tests.pas',
+  Exporter.Params.Tools in 'export\Exporter.Params.Tools.pas';
 
 { keep comment here to protect the following conditional from being removed by the IDE when adding a unit }
 {$IFNDEF TESTINSIGHT}

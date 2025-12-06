@@ -23,12 +23,14 @@ begin
 
   var lSelectSql := 'SELECT u.unit_id, u.unit_name, u.unit_data_confirmed_on, pn.person_id, pn.person_name, r.role_name' +
     ',pn.person_lastname,pn.person_firstname,pn.person_nameaddition' +
-    ',m.mb_active, m.mb_active_until' +
+    ',m.mb_active, m.mb_active_since, m.mb_active_until' +
+    ',u.unit_active, u.unit_active_since, u.unit_active_until' +
     ',IF(p.person_active, null, "I") AS person_inactive_i' +
     ',IF(p.person_external, "E", null) AS person_external_e' +
     ', p.person_active, p.person_external' +
     ' FROM unit AS u' +
-    ' INNER JOIN member AS m ON m.unit_id = u.unit_id ' + lMemberStateJoinWhere.GetSqlCondition(TSqlConditionStart.AndStart) +
+    ' INNER JOIN member AS m ON m.unit_id = u.unit_id ' +
+      lMemberStateJoinWhere.GetSqlCondition.GetConditionString(TSqlConditionStart.AndStart) +
     ' INNER JOIN person AS p ON p.person_id = m.person_id';
 
   if not Params.Persons.IncludeInactive then
@@ -37,7 +39,7 @@ begin
     lSelectSql := lSelectSql + ' AND p.person_external = 0';
 
   var lUnitConditions := TSqlConditionBuilder.CreateAnd;
-  lUnitConditions.AddRawSql(lUnitState.GetSqlCondition);
+  lUnitConditions.Add(lUnitState.GetSqlCondition);
   var lUnitConditionsKind := lUnitConditions.AddAnd;
   for var i := Succ(Low(TUnitKind)) to High(TUnitKind) do
   begin

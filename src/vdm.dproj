@@ -410,6 +410,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="general\common\Tools\SqlConditionBuilder.pas"/>
+        <DCCReference Include="general\common\Tools\RangeTools.pas"/>
         <None Include="inc\CompilerDirectives.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>

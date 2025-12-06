@@ -41,9 +41,7 @@ uses DtoUnit;
 procedure TfmExporterParamsUnitMember.FormCreate(Sender: TObject);
 begin
   inherited;
-  fraParamsUnitsRange.Initialize('Einheiten');
   fraParamsUnitsRange.OnOptionChecked := ParamsUnitsRangeChecked;
-  fraParamsMembersRange.Initialize('Verbindungen');
 end;
 
 function TfmExporterParamsUnitMember.GetParams(const aParams: TExporterMembersParams): TExporterMembersParams;

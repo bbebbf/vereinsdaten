@@ -25,7 +25,7 @@ implementation
 constructor TExporterMembersParams.Create;
 begin
   inherited Create;
-  fMembersState := TActiveRangeParams.Create('mb_active', 'mb_active_since', 'mb_active_until');
+  fMembersState := TActiveRangeParams.Create('mb_active', 'mb_active_since', 'mb_active_until', 'Verbindungen');
   fPersons := TExporterPersonsParams.Create;
   fUnits := TExporterUnitsParams.Create;
 end;

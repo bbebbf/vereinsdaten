@@ -18,7 +18,6 @@ type
     fraParamsUnitsRange: TfraExporterActiveRangeParams;
     cbIncludeOneTimeUnits: TCheckBox;
     cbIncludeExternalUnits: TCheckBox;
-    procedure FormCreate(Sender: TObject);
   strict private
     fSelectUnitIdForDetails: UInt32;
     fSelectUnitNameForDetails: string;
@@ -34,13 +33,6 @@ uses DtoUnit;
 {$R *.dfm}
 
 { TfmExporterParamsMemberUnit }
-
-procedure TfmExporterParamsMemberUnit.FormCreate(Sender: TObject);
-begin
-  inherited;
-  fraParamsMembersRange.Initialize('Verbindungen');
-  fraParamsUnitsRange.Initialize('Einheiten');
-end;
 
 function TfmExporterParamsMemberUnit.GetParams(const aParams: TExporterMembersParams): TExporterMembersParams;
 begin

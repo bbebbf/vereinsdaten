@@ -35,7 +35,7 @@ implementation
 constructor TExporterUnitsParams.Create;
 begin
   inherited Create;
-  fState := TActiveRangeParams.Create('unit_active', 'unit_active_since', 'unit_active_until');
+  fState := TActiveRangeParams.Create('unit_active', 'unit_active_since', 'unit_active_until', 'Einheiten');
   fCheckedUnitIds := TList<UInt32>.Create;
   SetDefaultKindOnly;
 end;

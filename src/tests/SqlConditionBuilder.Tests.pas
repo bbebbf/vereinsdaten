@@ -8,7 +8,7 @@ uses
 type
   [TestFixture]
   TSqlConditionBuilderTests = class
-  strict private
+  strict protected
     procedure AssertSqlConditionNode(const aExpectedCondition: string; const aNode: ISqlConditionNode);
   public
     [Test]

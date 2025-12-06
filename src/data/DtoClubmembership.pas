@@ -24,8 +24,8 @@ implementation
 
 class operator TDtoClubmembership.Initialize(out Dest: TDtoClubmembership);
 begin
-  Dest.Startdate := TNullable<TDate>.Create;
-  Dest.Enddate := TNullable<TDate>.Create;
+  Dest.Startdate := TNullable<TDate>.New;
+  Dest.Enddate := TNullable<TDate>.New;
 end;
 
 class operator TDtoClubmembership.Finalize(var Dest: TDtoClubmembership);

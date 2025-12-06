@@ -23,19 +23,25 @@ type
     function GetValue: T;
     procedure SetValue(const aValue: T);
     function GetHasValue: Boolean;
+    constructor Create;
   public
-    constructor Create; overload;
-    constructor Create(const aValue: T); overload;
+    class function New: INullable<T>; overload;
+    class function New(const aValue: T): INullable<T>; overload;
   end;
 
 implementation
 
 { TNullable<T> }
 
-constructor TNullable<T>.Create(const aValue: T);
+class function TNullable<T>.New: INullable<T>;
 begin
-  inherited Create;
-  SetValue(aValue);
+  Result := TNullable<T>.Create;
+end;
+
+class function TNullable<T>.New(const aValue: T): INullable<T>;
+begin
+  Result := TNullable<T>.Create;
+  Result.Value := aValue;
 end;
 
 constructor TNullable<T>.Create;
