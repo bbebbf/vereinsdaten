@@ -27,6 +27,8 @@ begin
   aFields.Add(TReportCsvField.Create('birthday'));
   aFields.Add(TReportCsvField.Create('age'));
   aFields.Add(TReportCsvField.Create('person_date_of_birth'));
+  if not aExportParams.ConsiderBirthdaylistFlag then
+    aFields.Add(TReportCsvField.Create('person_on_birthday_list'));
 end;
 
 function TReportBirthdaysCsv.GetSuggestedFileName: string;

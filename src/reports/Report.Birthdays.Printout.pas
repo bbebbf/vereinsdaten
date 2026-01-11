@@ -35,8 +35,11 @@ type
     lbFromDate: TLabel;
     lbToDate: TLabel;
     rdBirthday: TRLDBText;
+    lbOnBirthdaylist: TLabel;
+    rdOnBirthdaylist: TRLDBText;
     procedure rdBirthdayWeekdayBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
     procedure rdBirthdayBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
+    procedure rdOnBirthdaylistBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
   strict private
     procedure SetParams(const aParams: TExporterBirthdaysParams);
   strict protected
@@ -67,12 +70,27 @@ begin
   AText := FormatDateTime('dddd', rdBirthday.Field.AsDateTime);
 end;
 
+procedure TfmReportBirthdaysPrintout.rdOnBirthdaylistBeforePrint(Sender: TObject; var AText: string;
+  var PrintIt: Boolean);
+begin
+  if rdOnBirthdaylist.Field.AsBoolean then
+  begin
+    AText := 'X';
+  end
+  else
+  begin
+    PrintIt := False;
+  end;
+end;
+
 procedure TfmReportBirthdaysPrintout.SetParams(const aParams: TExporterBirthdaysParams);
 begin
   lbTenantTitle.Caption := TTenantReader.Instance.Tenant.Title;
   lbAppTitle.Caption := TVdmGlobals.GetVdmApplicationTitle;
   lbFromDate.Caption := TVdmGlobals.GetDateAsString(aParams.FromDate);
   lbToDate.Caption := TVdmGlobals.GetDateAsString(aParams.ToDate);
+  lbOnBirthdaylist.Visible := not aParams.ConsiderBirthdaylistFlag;
+  rdOnBirthdaylist.Visible := not aParams.ConsiderBirthdaylistFlag;
 end;
 
 end.

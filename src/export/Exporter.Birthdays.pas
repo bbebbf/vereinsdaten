@@ -43,7 +43,7 @@ begin
 
   var lSelectStmt := 'SELECT p.person_id, p.person_date_of_birth, pn.person_name' +
     ', bt.birthday, year(bt.birthday) - year(p.person_date_of_birth) as age' +
-    ', pn.person_lastname,pn.person_firstname,pn.person_nameaddition' +
+    ', pn.person_lastname,pn.person_firstname,pn.person_nameaddition, p.person_on_birthday_list' +
     ' FROM person AS p' +
     ' INNER JOIN vw_person_name AS pn ON pn.person_id = p.person_id' +
     ' INNER JOIN ' + lTempTablename + ' AS bt ON (' +

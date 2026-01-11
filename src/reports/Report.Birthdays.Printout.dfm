@@ -151,6 +151,13 @@ object fmReportBirthdaysPrintout: TfmReportBirthdaysPrintout
         AutoSize = False
         Caption = 'Alter'
       end
+      object lbOnBirthdaylist: TLabel
+        Left = 576
+        Top = 3
+        Width = 130
+        Height = 18
+        Caption = 'Geburtstagskalender'
+      end
       object rdColumnHeaderHLine: TRLDraw
         Left = 0
         Top = 24
@@ -219,6 +226,17 @@ object fmReportBirthdaysPrintout: TfmReportBirthdaysPrintout
         DataSource = dsDataSource
         Text = ''
         BeforePrint = rdBirthdayBeforePrint
+      end
+      object rdOnBirthdaylist: TRLDBText
+        Left = 576
+        Top = 2
+        Width = 130
+        Height = 18
+        Alignment = taCenter
+        DataField = 'person_on_birthday_list'
+        DataSource = dsDataSource
+        Text = ''
+        BeforePrint = rdOnBirthdaylistBeforePrint
       end
     end
     object bdPageFooter: TRLBand
