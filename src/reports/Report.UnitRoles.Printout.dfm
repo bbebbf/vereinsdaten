@@ -29,7 +29,7 @@ object fmReportUnitRolesPrintout: TfmReportUnitRolesPrintout
       Left = 47
       Top = 47
       Width = 898
-      Height = 35
+      Height = 52
       BandType = btHeader
       object lbReportTitle: TLabel
         Left = 0
@@ -58,10 +58,23 @@ object fmReportUnitRolesPrintout: TfmReportUnitRolesPrintout
         Font.Style = []
         ParentFont = False
       end
+      object memFilterInfo: TRLMemo
+        Left = 3
+        Top = 29
+        Width = 518
+        Height = 16
+        Behavior = [beSiteExpander]
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Height = -13
+        Font.Name = 'Arial'
+        Font.Style = []
+        ParentFont = False
+      end
     end
     object bdColumnHeader: TRLBand
       Left = 47
-      Top = 82
+      Top = 99
       Width = 898
       Height = 30
       BandType = btColumnHeader
@@ -102,9 +115,9 @@ object fmReportUnitRolesPrintout: TfmReportUnitRolesPrintout
     end
     object bdDetail: TRLBand
       Left = 47
-      Top = 112
+      Top = 129
       Width = 898
-      Height = 23
+      Height = 40
       GreenBarPrint = True
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlack
@@ -113,6 +126,7 @@ object fmReportUnitRolesPrintout: TfmReportUnitRolesPrintout
       Font.Style = []
       ParentFont = False
       AfterPrint = bdDetailAfterPrint
+      BeforePrint = bdDetailBeforePrint
       object RLDBText1: TRLDBText
         Left = 420
         Top = 2
@@ -132,7 +146,7 @@ object fmReportUnitRolesPrintout: TfmReportUnitRolesPrintout
         Text = ''
         BeforePrint = rdRoleNameBeforePrint
       end
-      object RLDBText2: TRLDBText
+      object rdPersonname: TRLDBText
         Left = 510
         Top = 2
         Width = 88
@@ -141,7 +155,7 @@ object fmReportUnitRolesPrintout: TfmReportUnitRolesPrintout
         DataSource = dsDataSource
         Text = ''
       end
-      object RLDBText3: TRLDBText
+      object rdUnitname: TRLDBText
         Left = 210
         Top = 2
         Width = 70
@@ -169,10 +183,34 @@ object fmReportUnitRolesPrintout: TfmReportUnitRolesPrintout
         DrawKind = dkLine
         BeforePrint = rdDividerBeforePrint
       end
+      object rdInactiveInfoUnit: TRLLabel
+        Left = 210
+        Top = 21
+        Width = 104
+        Height = 15
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clGray
+        Font.Height = -13
+        Font.Name = 'Calibri'
+        Font.Style = []
+        ParentFont = False
+      end
+      object rdInactiveInfo: TRLLabel
+        Left = 510
+        Top = 21
+        Width = 81
+        Height = 15
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clGray
+        Font.Height = -13
+        Font.Name = 'Calibri'
+        Font.Style = []
+        ParentFont = False
+      end
     end
     object bdPageFooter: TRLBand
       Left = 47
-      Top = 135
+      Top = 169
       Width = 898
       Height = 27
       BandType = btFooter

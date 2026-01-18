@@ -2,9 +2,23 @@ unit Exporter.Params.Tools;
 
 interface
 
-uses Data.DB, SqlConnection, SqlConditionBuilder;
+uses Data.DB, SqlConnection, SqlConditionBuilder, Nullable;
 
 type
+  TActiveRecordInfo = record
+  strict private
+    fInitialized: Boolean;
+    fActive: Boolean;
+    fInactiveInfoStr: string;
+    procedure SetActive(const aValue: Boolean);
+    procedure SetInactiveInfoStr(const aValue: string);
+  public
+    procedure Reset;
+    property Initialized: Boolean read fInitialized;
+    property Active: Boolean read fActive write SetActive;
+    property InactiveInfoStr: string read fInactiveInfoStr write SetInactiveInfoStr;
+  end;
+
   TActiveRangeParamsKind = (Unknown, AllEntries, ActiveEntries, InactiveEntriesOnly);
 
   IActiveRangeParamsResult = interface
@@ -20,31 +34,26 @@ type
     fActiveToColumnName: string;
     fEntityTitle: string;
     fKind: TActiveRangeParamsKind;
-    fActiveFrom: TDate;
-    fActiveFromSet: Boolean;
-    fActiveTo: TDate;
-    fActiveToSet: Boolean;
-    procedure SetActiveFrom(const aValue: TDate);
-    procedure SetActiveTo(const aValue: TDate);
-  private
-    function IsActiveAndInactiveMixed: Boolean;
+    fActiveFrom: INullable<TDate>;
+    fActiveTo: INullable<TDate>;
+    procedure ActiveFromChanged(Sender: TObject);
+    procedure ActiveToChanged(Sender: TObject);
   public
     constructor Create(const aActiveColumnName, aActiveFromColumnName, aActiveToColumnName, aEntityTitle: string);
     function Get(const aTableAlias: string = ''; const aParamsPrefix: string = ''): IActiveRangeParamsResult;
     procedure ClearActiveRange;
     function GetReadableCondition: string;
-    function GetMixedActiveRangeText(const aDataSet: TDataSet): string;
+    procedure GetActiveRecordInfo(const aDataSet: TDataSet;
+      var aActiveRecordInfo: TActiveRecordInfo; const aTitle: string = '');
     property EntityTitle: string read fEntityTitle;
     property Kind: TActiveRangeParamsKind read fKind write fKind;
-    property ActiveFrom: TDate read fActiveFrom write SetActiveFrom;
-    property ActiveFromSet: Boolean read fActiveFromSet;
-    property ActiveTo: TDate read fActiveTo write SetActiveTo;
-    property ActiveToSet: Boolean read fActiveToSet;
+    property ActiveFrom: INullable<TDate> read fActiveFrom;
+    property ActiveTo: INullable<TDate> read fActiveTo;
   end;
 
 implementation
 
-uses System.SysUtils, System.DateUtils, StringTools, InterfacedBase, RangeTools, Nullable;
+uses System.SysUtils, System.DateUtils, StringTools, InterfacedBase, RangeTools;
 
 type
   TActiveRangeParamsResult = class(TInterfacedBase, IActiveRangeParamsResult)
@@ -55,10 +64,8 @@ type
     fTableAlias: string;
     fParamsPrefix: string;
     fKind: TActiveRangeParamsKind;
-    fActiveFrom: TDate;
-    fActiveFromSet: Boolean;
-    fActiveTo: TDate;
-    fActiveToSet: Boolean;
+    fActiveFrom: INullable<TDate>;
+    fActiveTo: INullable<TDate>;
     fFromParamName: string;
     fToParamName: string;
     function GetSqlCondition: ISqlConditionNode;
@@ -67,8 +74,7 @@ type
     constructor Create(const aActiveColumnName, aActiveFromColumnName, aActiveToColumnName,
       aTableAlias, aParamsPrefix: string;
       const aKind: TActiveRangeParamsKind;
-      const aActiveFromSet, aActiveToSet: Boolean;
-      const aActiveFrom, aActiveTo: TDate);
+      const aActiveFrom, aActiveTo: INullable<TDate>);
   end;
 
 { TActiveRangeParams }
@@ -76,6 +82,10 @@ type
 constructor TActiveRangeParams.Create(const aActiveColumnName, aActiveFromColumnName, aActiveToColumnName, aEntityTitle: string);
 begin
   inherited Create;
+  fActiveFrom := TNullable<TDate>.New;
+  fActiveFrom.OnValueChanged := ActiveFromChanged;
+  fActiveTo := TNullable<TDate>.New;
+  fActiveTo.OnValueChanged := ActiveToChanged;
   fActiveColumnName := aActiveColumnName;
   fActiveFromColumnName := aActiveFromColumnName;
   fActiveToColumnName := aActiveToColumnName;
@@ -85,25 +95,28 @@ end;
 
 procedure TActiveRangeParams.ClearActiveRange;
 begin
-  fActiveFrom := 0;
-  fActiveFromSet := False;
-  fActiveTo := 0;
-  fActiveToSet := False;
+  fActiveFrom.Reset;
+  fActiveTo.Reset;
 end;
 
 function TActiveRangeParams.Get(const aTableAlias, aParamsPrefix: string): IActiveRangeParamsResult;
 begin
   Result := TActiveRangeParamsResult.Create(fActiveColumnName,
     fActiveFromColumnName, fActiveToColumnName, aTableAlias, aParamsPrefix,
-    fKind, fActiveFromSet, fActiveToSet, fActiveFrom, fActiveTo);
+    fKind, fActiveFrom, fActiveTo);
 end;
 
-function TActiveRangeParams.GetMixedActiveRangeText(const aDataSet: TDataSet): string;
+procedure TActiveRangeParams.GetActiveRecordInfo(const aDataSet: TDataSet;
+  var aActiveRecordInfo: TActiveRecordInfo; const aTitle: string = '');
 begin
-  Result := '';
   if fKind = TActiveRangeParamsKind.InactiveEntriesOnly then
     Exit;
-  if aDataSet.FieldByName(fActiveColumnName).AsBoolean then
+
+  if aActiveRecordInfo.Initialized and not aActiveRecordInfo.Active then
+    Exit;
+
+  aActiveRecordInfo.Active := aDataSet.FieldByName(fActiveColumnName).AsBoolean;
+  if aActiveRecordInfo.Active then
     Exit;
 
   var lNullableFrom := TNullable<TDate>.New;
@@ -114,7 +127,13 @@ begin
     lNullableFrom.Value := lFieldActiveFrom.AsDateTime;
   if not lFieldActiveTo.IsNull then
     lNullableTo.Value := lFieldActiveTo.AsDateTime;
-  Result := 'aktiv ' + TRangeTools.GetDateRangeString(lNullableFrom, lNullableTo);
+
+  var lDateRange := TRangeTools.GetDateRangeString(lNullableFrom, lNullableTo);
+  if Length(lDateRange) > 0 then
+    aActiveRecordInfo.InactiveInfoStr := TStringTools.Combine(
+      TStringTools.Combine(aTitle, ' ', 'aktiv'), ' ', lDateRange)
+  else if Length(aTitle) > 0 then
+    aActiveRecordInfo.InactiveInfoStr := TStringTools.Combine(aTitle, ' ', 'inaktiv');
 end;
 
 function TActiveRangeParams.GetReadableCondition: string;
@@ -123,49 +142,29 @@ begin
   if fKind = TActiveRangeParamsKind.Unknown then
     Exit;
   if fKind = TActiveRangeParamsKind.AllEntries then
-    Exit('Alle ' + fEntityTitle);
+    Exit('Aktive und inkative ' + fEntityTitle);
   if fKind = TActiveRangeParamsKind.InactiveEntriesOnly then
     Exit('Nur inaktive ' + fEntityTitle);
   if fKind = TActiveRangeParamsKind.ActiveEntries then
   begin
-    var lFromDate := TNullable<TDate>.New;
-    if fActiveFromSet then
-      lFromDate.Value := fActiveFrom;
-    var lToDate := TNullable<TDate>.New;
-    if fActiveToSet then
-      lToDate.Value := fActiveTo;
-
-    var lRangeText := TRangeTools.GetDateRangeString(lFromDate, lToDate);
+    var lRangeText := TRangeTools.GetDateRangeString(fActiveFrom, fActiveTo);
     if Length(lRangeText) > 0 then
     begin
       Result := 'Aktive und inaktive ' + fEntityTitle + ' (aktiv ' + lRangeText + ')';
-    end
-    else
-    begin
-      Result := 'Aktive ' + fEntityTitle;
     end;
   end;
 end;
 
-function TActiveRangeParams.IsActiveAndInactiveMixed: Boolean;
+procedure TActiveRangeParams.ActiveFromChanged(Sender: TObject);
 begin
-  Result := (fKind = TActiveRangeParamsKind.ActiveEntries) and (fActiveFromSet or fActiveToSet);
+  if fActiveFrom.HasValue and fActiveTo.HasValue and (CompareDate(fActiveFrom.Value, fActiveTo.Value) > 0) then
+    fActiveTo.Value := fActiveFrom.Value;
 end;
 
-procedure TActiveRangeParams.SetActiveFrom(const aValue: TDate);
+procedure TActiveRangeParams.ActiveToChanged(Sender: TObject);
 begin
-  fActiveFrom := aValue;
-  if CompareDate(fActiveFrom, fActiveTo) > 0 then
-    fActiveTo := fActiveFrom;
-  fActiveFromSet := True;
-end;
-
-procedure TActiveRangeParams.SetActiveTo(const aValue: TDate);
-begin
-  fActiveTo := aValue;
-  if CompareDate(fActiveFrom, fActiveTo) > 0 then
-    fActiveFrom := fActiveTo;
-  fActiveToSet := True;
+  if fActiveFrom.HasValue and fActiveTo.HasValue and (CompareDate(fActiveFrom.Value, fActiveTo.Value) > 0) then
+    fActiveFrom.Value := fActiveTo.Value;
 end;
 
 { TActiveRangeParamsResult }
@@ -173,8 +172,7 @@ end;
 constructor TActiveRangeParamsResult.Create(
   const aActiveColumnName, aActiveFromColumnName, aActiveToColumnName, aTableAlias, aParamsPrefix: string;
   const aKind: TActiveRangeParamsKind;
-  const aActiveFromSet, aActiveToSet: Boolean;
-  const aActiveFrom, aActiveTo: TDate);
+  const aActiveFrom, aActiveTo: INullable<TDate>);
 begin
   inherited Create;
   fActiveColumnName := aActiveColumnName;
@@ -183,8 +181,6 @@ begin
   fTableAlias := aTableAlias;
   fParamsPrefix := aParamsPrefix;
   fKind := aKind;
-  fActiveFromSet := aActiveFromSet;
-  fActiveToSet := aActiveToSet;
   fActiveFrom := aActiveFrom;
   fActiveTo := aActiveTo;
 end;
@@ -211,7 +207,7 @@ begin
     .Left(lActiveColumn)
     .Right('1');
 
-  if not fActiveFromSet and not fActiveToSet then
+  if not fActiveFrom.HasValue and not fActiveTo.HasValue then
     Exit(lSqlCondition);
 
   var lParamsPrefix := fParamsPrefix;
@@ -222,7 +218,7 @@ begin
   var lToColumn := TStringTools.Combine(fTableAlias, '.', fActiveToColumnName);
 
   var lRangeCondition := TSqlConditionBuilder.CreateOr;
-  if fActiveFromSet and fActiveToSet then
+  if fActiveFrom.HasValue and fActiveTo.HasValue then
   begin
     fFromParamName := TStringTools.Combine(lParamsPrefix, '_', fActiveFromColumnName);
     fToParamName := TStringTools.Combine(lParamsPrefix, '_', fActiveToColumnName);
@@ -249,7 +245,7 @@ begin
       .ParentOperator
       .AddLessOrEqualThan.Left(lToColumn).Right(':' + fToParamName);
   end
-  else if fActiveFromSet then
+  else if fActiveFrom.HasValue then
   begin
     fFromParamName := TStringTools.Combine(lParamsPrefix, '_', fActiveFromColumnName);
 
@@ -257,7 +253,7 @@ begin
       .AddIsNotNull(lToColumn)
       .AddLessOrEqualThan.Left(':' + fFromParamName).Right(lToColumn);
   end
-  else if fActiveToSet then
+  else if fActiveTo.HasValue then
   begin
     fToParamName := TStringTools.Combine(lParamsPrefix, '_', fActiveToColumnName);
 
@@ -289,6 +285,25 @@ begin
     lParam.DataType := TFieldType.ftDate;
     lParam.Value := fActiveTo;
   end;
+end;
+
+{ TActiveRecordInfo }
+
+procedure TActiveRecordInfo.Reset;
+begin
+  Self := default(TActiveRecordInfo);
+end;
+
+procedure TActiveRecordInfo.SetActive(const aValue: Boolean);
+begin
+  fActive := aValue;
+  fInitialized := True;
+end;
+
+procedure TActiveRecordInfo.SetInactiveInfoStr(const aValue: string);
+begin
+  fInactiveInfoStr := aValue;
+  fInitialized := True;
 end;
 
 end.

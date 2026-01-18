@@ -20,7 +20,7 @@ type
     Label5: TLabel;
     bdDetail: TRLBand;
     rdUnitname: TRLDBText;
-    RLDBText2: TRLDBText;
+    rdPersonname: TRLDBText;
     RLDBText3: TRLDBText;
     rdUinitId: TRLDBText;
     rdUnitDivider: TRLDraw;
@@ -34,6 +34,9 @@ type
     rdMemberCount: TRLDBText;
     Label2: TLabel;
     rdUnitKind: TRLDBText;
+    memFilterInfo: TRLMemo;
+    rdInactiveInfo: TRLLabel;
+    rdInactiveInfoUnit: TRLLabel;
     procedure RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure bdDetailAfterPrint(Sender: TObject);
     procedure rdUnitDividerBeforePrint(Sender: TObject; var PrintIt: Boolean);
@@ -41,9 +44,11 @@ type
     procedure RLReportPageStarting(Sender: TObject);
     procedure bdDetailBeforePrint(Sender: TObject; var PrintIt: Boolean);
   strict private
+    fParams: TExporterMembersParams;
     fPreviousUnitId: UInt32;
     fNewPageStarted: Boolean;
     fOneUnitPerPage: Boolean;
+    fDefaultDetailHeight: Integer;
     procedure SetParams(const aParams: TExporterMembersParams);
   strict protected
     procedure ExportInternal(const aDataSet: ISqlDataSet); override;
@@ -51,7 +56,7 @@ type
 
 implementation
 
-uses TenantReader, Vdm.Globals, DtoUnit;
+uses TenantReader, Vdm.Globals, DtoUnit, StringTools, Exporter.Params.Tools;
 
 {$R *.dfm}
 
@@ -65,6 +70,28 @@ end;
 
 procedure TfmReportUnitMembersPrintout.bdDetailBeforePrint(Sender: TObject; var PrintIt: Boolean);
 begin
+  var lActiveRecordInfo := default(TActiveRecordInfo);
+  fParams.Units.State.GetActiveRecordInfo(rdUnitname.DataSet, lActiveRecordInfo);
+  if lActiveRecordInfo.Active then
+    rdUnitname.Font.Style := []
+  else
+    rdUnitname.Font.Style := [TFontStyle.fsStrikeOut];
+  rdInactiveInfoUnit.Visible := Length(lActiveRecordInfo.InactiveInfoStr) > 0;
+  rdInactiveInfoUnit.Caption := lActiveRecordInfo.InactiveInfoStr;
+
+  lActiveRecordInfo := default(TActiveRecordInfo);
+  lActiveRecordInfo.Active := rdUnitname.DataSet.FieldByName('person_active').AsBoolean;
+  fParams.MembersState.GetActiveRecordInfo(rdUnitname.DataSet, lActiveRecordInfo, 'Verbindung');
+  if lActiveRecordInfo.Active then
+    rdPersonname.Font.Style := []
+  else
+    rdPersonname.Font.Style := [TFontStyle.fsStrikeOut];
+  rdInactiveInfo.Visible := Length(lActiveRecordInfo.InactiveInfoStr) > 0;
+  rdInactiveInfo.Caption := lActiveRecordInfo.InactiveInfoStr;
+
+  if not rdInactiveInfoUnit.Visible and not rdInactiveInfo.Visible then
+    bdDetail.Height := fDefaultDetailHeight;
+
   var lUnitBreak := rdUinitId.Field.AsLargeInt <> fPreviousUnitId;
   if fOneUnitPerPage then
   begin
@@ -115,6 +142,7 @@ begin
   lbTenantTitle.Caption := TTenantReader.Instance.Tenant.Title;
   fPreviousUnitId := 0;
   lbAppTitle.Caption := TVdmGlobals.GetVdmApplicationTitle;
+  fDefaultDetailHeight := (2 * rdUnitname.Top) + rdUnitname.Height;
 end;
 
 procedure TfmReportUnitMembersPrintout.RLReportPageStarting(Sender: TObject);
@@ -124,7 +152,19 @@ end;
 
 procedure TfmReportUnitMembersPrintout.SetParams(const aParams: TExporterMembersParams);
 begin
+  fParams := aParams;
+  var lFilterInfo := '';
+  lFilterInfo := TStringTools.Combine(lFilterInfo, sLineBreak, aParams.Units.State.GetReadableCondition);
+  lFilterInfo := TStringTools.Combine(lFilterInfo, sLineBreak, aParams.MembersState.GetReadableCondition);
+  if aParams.Persons.IncludeInactive and aParams.Persons.IncludeExternal then
+    lFilterInfo := TStringTools.Combine(lFilterInfo, sLineBreak, 'Externe und inaktive Personen enthalten.')
+  else if aParams.Persons.IncludeInactive then
+    lFilterInfo := TStringTools.Combine(lFilterInfo, sLineBreak, 'Inaktive Personen enthalten.')
+  else if aParams.Persons.IncludeExternal then
+    lFilterInfo := TStringTools.Combine(lFilterInfo, sLineBreak, 'Externe Personen enthalten.');
 
+  memFilterInfo.Lines.Text := lFilterInfo;
+  memFilterInfo.Visible := Length(lFilterInfo) > 0;
 end;
 
 end.

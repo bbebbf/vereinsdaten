@@ -29,7 +29,7 @@ object fmReportUnitMembersPrintout: TfmReportUnitMembersPrintout
       Left = 47
       Top = 47
       Width = 898
-      Height = 35
+      Height = 52
       BandType = btHeader
       object lbReportTitle: TLabel
         Left = 0
@@ -58,12 +58,25 @@ object fmReportUnitMembersPrintout: TfmReportUnitMembersPrintout
         Font.Style = []
         ParentFont = False
       end
+      object memFilterInfo: TRLMemo
+        Left = 3
+        Top = 29
+        Width = 518
+        Height = 16
+        Behavior = [beSiteExpander]
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Height = -13
+        Font.Name = 'Arial'
+        Font.Style = []
+        ParentFont = False
+      end
     end
     object bdColumnHeader: TRLBand
       Left = 47
-      Top = 82
+      Top = 99
       Width = 898
-      Height = 30
+      Height = 22
       BandType = btColumnHeader
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlack
@@ -109,9 +122,9 @@ object fmReportUnitMembersPrintout: TfmReportUnitMembersPrintout
     end
     object bdDetail: TRLBand
       Left = 47
-      Top = 112
+      Top = 121
       Width = 898
-      Height = 23
+      Height = 40
       GreenBarPrint = True
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlack
@@ -141,7 +154,7 @@ object fmReportUnitMembersPrintout: TfmReportUnitMembersPrintout
         Text = ''
         BeforePrint = rdUnitnameBeforePrint
       end
-      object RLDBText2: TRLDBText
+      object rdPersonname: TRLDBText
         Left = 340
         Top = 2
         Width = 88
@@ -198,10 +211,35 @@ object fmReportUnitMembersPrintout: TfmReportUnitMembersPrintout
         Text = ''
         BeforePrint = rdUnitnameBeforePrint
       end
+      object rdInactiveInfo: TRLLabel
+        Left = 340
+        Top = 21
+        Width = 81
+        Height = 15
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clGray
+        Font.Height = -13
+        Font.Name = 'Calibri'
+        Font.Style = []
+        ParentFont = False
+      end
+      object rdInactiveInfoUnit: TRLLabel
+        Left = 0
+        Top = 21
+        Width = 104
+        Height = 15
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clGray
+        Font.Height = -13
+        Font.Name = 'Calibri'
+        Font.Style = []
+        ParentFont = False
+        BeforePrint = rdUnitnameBeforePrint
+      end
     end
     object bdPageFooter: TRLBand
       Left = 47
-      Top = 135
+      Top = 161
       Width = 898
       Height = 27
       BandType = btFooter

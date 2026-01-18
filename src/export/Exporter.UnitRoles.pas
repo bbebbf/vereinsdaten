@@ -44,7 +44,9 @@ begin
 
   aQuery := Connection.CreatePreparedQuery(
     'SELECT r.role_id, r.role_name, u.unit_id, u.unit_name, u.unit_data_confirmed_on, pn.person_name' +
-    ',pn.person_id,pn.person_lastname,pn.person_firstname,pn.person_nameaddition' +
+    ',pn.person_id,pn.person_lastname,pn.person_firstname,pn.person_nameaddition,p.person_active' +
+    ',u.unit_active, u.unit_active_since, u.unit_active_until' +
+    ',m.mb_active, m.mb_active_since, m.mb_active_until' +
     ' FROM role AS r' +
     ' INNER JOIN member AS m ON m.role_id = r.role_id' +
     ' INNER JOIN unit AS u ON u.unit_id = m.unit_id' +

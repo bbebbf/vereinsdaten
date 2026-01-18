@@ -42,6 +42,8 @@ begin
   var lUnitState := Params.Units.State.Get('u');
 
   var lSelectStm := 'SELECT u.unit_id, u.unit_name, u.unit_kind, u.unit_data_confirmed_on, mc.unit_member_count' +
+    ',u.unit_active, u.unit_active_since, u.unit_active_until' +
+    ',m.person_active, m.mb_active, m.mb_active_since, m.mb_active_until' +
     ',pn.person_name, r.role_name' +
     ',pn.person_id,pn.person_lastname,pn.person_firstname,pn.person_nameaddition' +
     ' FROM unit AS u' +

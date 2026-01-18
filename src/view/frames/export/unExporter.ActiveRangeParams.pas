@@ -69,9 +69,9 @@ begin
   begin
     aParams.Kind := TActiveRangeParamsKind.ActiveEntries;
     if not deActiveRangeFrom.Value.Null then
-      aParams.ActiveFrom := deActiveRangeFrom.Value.Value.AsDate;
+      aParams.ActiveFrom.Value := deActiveRangeFrom.Value.Value.AsDate;
     if not deActiveRangeTo.Value.Null then
-      aParams.ActiveTo := deActiveRangeTo.Value.Value.AsDate;
+      aParams.ActiveTo.Value := deActiveRangeTo.Value.Value.AsDate;
   end
   else if rbInactiveEntriesOnly.Checked then
   begin
@@ -97,12 +97,12 @@ begin
     TActiveRangeParamsKind.InactiveEntriesOnly:
       rbInactiveEntriesOnly.Checked := True;
   end;
-  if aParams.ActiveFromSet then
-    deActiveRangeFrom.Value.Value := aParams.ActiveFrom
+  if aParams.ActiveFrom.HasValue then
+    deActiveRangeFrom.Value.Value := aParams.ActiveFrom.Value
   else
     deActiveRangeFrom.Clear;
-  if aParams.ActiveToSet then
-    deActiveRangeTo.Value.Value := aParams.ActiveTo
+  if aParams.ActiveTo.HasValue then
+    deActiveRangeTo.Value.Value := aParams.ActiveTo.Value
   else
     deActiveRangeTo.Clear;
 end;

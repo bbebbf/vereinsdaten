@@ -54,7 +54,7 @@ type
 
 implementation
 
-uses TenantReader, Vdm.Globals, StringTools;
+uses TenantReader, Vdm.Globals, StringTools, Exporter.Params.Tools;
 
 {$R *.dfm}
 
@@ -68,22 +68,26 @@ end;
 
 procedure TfmReportMemberUnitsPrintout.bdDetailBeforePrint(Sender: TObject; var PrintIt: Boolean);
 begin
-  var lInactiveInfo := fParams.Units.State.GetMixedActiveRangeText(rdPersonname.DataSource.DataSet);
-  if TStringTools.IsEmpty(lInactiveInfo) then
-    lInactiveInfo := fParams.MembersState.GetMixedActiveRangeText(rdPersonname.DataSource.DataSet);
-
-  if Length(lInactiveInfo) = 0 then
-  begin
-    rdInactiveInfo.Visible := False;
-    bdDetail.Height := fDefaultDetailHeight;
-    rdUnitname.Font.Style := [];
-  end
+  var lActiveRecordInfo := default(TActiveRecordInfo);
+  lActiveRecordInfo.Active := rdUnitname.DataSet.FieldByName('person_active').AsBoolean;
+  if lActiveRecordInfo.Active then
+    rdPersonname.Font.Style := []
   else
-  begin
-    rdInactiveInfo.Caption := lInactiveInfo;
-    rdInactiveInfo.Visible := True;
+    rdPersonname.Font.Style := [TFontStyle.fsStrikeOut];
+
+  lActiveRecordInfo := default(TActiveRecordInfo);
+  fParams.Units.State.GetActiveRecordInfo(rdPersonname.DataSet, lActiveRecordInfo);
+  fParams.MembersState.GetActiveRecordInfo(rdPersonname.DataSet, lActiveRecordInfo, 'Verbindung');
+
+  if lActiveRecordInfo.Active then
+    rdUnitname.Font.Style := []
+  else
     rdUnitname.Font.Style := [TFontStyle.fsStrikeOut];
-  end;
+
+  rdInactiveInfo.Visible := Length(lActiveRecordInfo.InactiveInfoStr) > 0;
+  rdInactiveInfo.Caption := lActiveRecordInfo.InactiveInfoStr;
+  if not rdInactiveInfo.Visible then
+    bdDetail.Height := fDefaultDetailHeight;
 
   if fOneUnitPerPage then
   begin

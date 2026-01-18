@@ -2,6 +2,8 @@ unit Nullable;
 
 interface
 
+uses System.Classes;
+
 type
   INullable<T> = interface
     ['{DFFBD6FF-CDF1-41F5-A601-38315116F623}']
@@ -10,19 +12,25 @@ type
     function GetValue: T;
     procedure SetValue(const aValue: T);
     function GetHasValue: Boolean;
+    procedure SetOnValueChanged(const aValue: TNotifyEvent);
+    function GetOnValueChanged: TNotifyEvent;
     property Value: T read GetValue write SetValue;
     property HasValue: Boolean read GetHasValue;
+    property OnValueChanged: TNotifyEvent read GetOnValueChanged write SetOnValueChanged;
   end;
 
   TNullable<T> = class(TInterfacedObject, INullable<T>)
   strict private
     fHasValue: Boolean;
     fValue: T;
+    fOnValueChangedEvent: TNotifyEvent;
     procedure Assign(const aValue: INullable<T>);
     procedure Reset;
     function GetValue: T;
     procedure SetValue(const aValue: T);
     function GetHasValue: Boolean;
+    procedure SetOnValueChanged(const aValue: TNotifyEvent);
+    function GetOnValueChanged: TNotifyEvent;
     constructor Create;
   public
     class function New: INullable<T>; overload;
@@ -74,12 +82,26 @@ procedure TNullable<T>.Reset;
 begin
   fValue := default(T);
   fHasValue := False;
+  if Assigned(fOnValueChangedEvent) then
+    fOnValueChangedEvent(Self);
+end;
+
+procedure TNullable<T>.SetOnValueChanged(const aValue: TNotifyEvent);
+begin
+  fOnValueChangedEvent := aValue;
+end;
+
+function TNullable<T>.GetOnValueChanged: TNotifyEvent;
+begin
+  Result := fOnValueChangedEvent;
 end;
 
 procedure TNullable<T>.SetValue(const aValue: T);
 begin
   fValue := aValue;
   fHasValue := True;
+  if Assigned(fOnValueChangedEvent) then
+    fOnValueChangedEvent(Self);
 end;
 
 end.
