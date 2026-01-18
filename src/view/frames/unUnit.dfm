@@ -206,7 +206,7 @@ object fraUnit: TfraUnit
         Height = 25
         Action = acSaveCurrentEntry
         Default = True
-        TabOrder = 3
+        TabOrder = 6
       end
       object btReload: TButton
         Left = 190
@@ -215,7 +215,7 @@ object fraUnit: TfraUnit
         Height = 25
         Action = acReloadCurrentEntry
         Cancel = True
-        TabOrder = 4
+        TabOrder = 7
       end
       object cbUnitKind: TComboBox
         Left = 289
@@ -230,21 +230,21 @@ object fraUnit: TfraUnit
         Top = 139
         Width = 114
         Height = 23
-        TabOrder = 5
+        TabOrder = 3
       end
       object deUnitActiveUntil: TDateEdit
         Left = 149
         Top = 139
         Width = 114
         Height = 23
-        TabOrder = 6
+        TabOrder = 4
       end
       object deDataConfirmedOn: TDateEdit
         Left = 23
         Top = 203
         Width = 114
         Height = 23
-        TabOrder = 7
+        TabOrder = 5
       end
     end
     object pnMemberOf: TPanel

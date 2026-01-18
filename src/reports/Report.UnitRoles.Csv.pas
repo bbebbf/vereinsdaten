@@ -23,11 +23,18 @@ begin
   aFields.Add(TReportCsvField.Create('role_name'));
   aFields.Add(TReportCsvField.Create('unit_id'));
   aFields.Add(TReportCsvField.Create('unit_name'));
+  aFields.Add(TReportCsvField.Create('unit_active'));
+  aFields.Add(TReportCsvField.Create('unit_active_since'));
+  aFields.Add(TReportCsvField.Create('unit_active_until'));
   aFields.Add(TReportCsvField.Create('unit_data_confirmed_on'));
   aFields.Add(TReportCsvField.Create('person_id'));
   aFields.Add(TReportCsvField.Create('person_firstname'));
   aFields.Add(TReportCsvField.Create('person_nameaddition'));
   aFields.Add(TReportCsvField.Create('person_lastname'));
+  aFields.Add(TReportCsvField.Create('person_active'));
+  aFields.Add(TReportCsvField.Create('mb_active'));
+  aFields.Add(TReportCsvField.Create('mb_active_since'));
+  aFields.Add(TReportCsvField.Create('mb_active_until'));
 end;
 
 function TReportUnitRolesCsv.GetSuggestedFileName: string;
