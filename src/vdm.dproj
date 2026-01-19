@@ -411,6 +411,9 @@ $(PostBuildEvent)]]></PostBuildEvent>
         </DCCReference>
         <DCCReference Include="general\common\Tools\SqlConditionBuilder.pas"/>
         <DCCReference Include="general\common\Tools\RangeTools.pas"/>
+        <DCCReference Include="general\common\Tools\Logging.Impl.pas"/>
+        <DCCReference Include="general\common\Tools\Logging.TargetFile.pas"/>
+        <DCCReference Include="general\common\Tools\Logging.Intf.pas"/>
         <None Include="inc\CompilerDirectives.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>

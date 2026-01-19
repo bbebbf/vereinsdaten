@@ -31,6 +31,7 @@ type
     procedure ReadFile;
     function GetConnection: TConfigConnection;
     function GetFound: Boolean;
+    function GetConfigDir: string;
     function GetIniFilePath: string;
     procedure WriteExampleEntries;
 
@@ -47,6 +48,7 @@ type
     property Found: Boolean read GetFound;
     property ConnectionNames: TStrings read GetConnectionNames;
     property Connection: TConfigConnection read GetConnection;
+    property ConfigDir: string read GetConfigDir;
   end;
 
 implementation
@@ -192,9 +194,15 @@ end;
 
 function TConfigReader.GetIniFilePath: string;
 begin
+  var lIniDir := GetConfigDir;
   var lExeName := TPath.GetFileNameWithoutExtension(ParamStr(0));
-  var lIniDir := TPath.Combine(TPath.GetCachePath, TPath.Combine('BBE', lExeName));
   Result := TPath.Combine(lIniDir, lExeName + '.ini');
+end;
+
+function TConfigReader.GetConfigDir: string;
+begin
+  var lExeName := TPath.GetFileNameWithoutExtension(ParamStr(0));
+  Result := TPath.Combine(TPath.GetCachePath, TPath.Combine('BBE', lExeName));
 end;
 
 end.

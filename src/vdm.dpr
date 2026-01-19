@@ -8,6 +8,7 @@ uses
   Vcl.Dialogs,
   FireDAC.VCLUI.Wait,
   Winapi.Windows,
+  System.IOUtils,
   SqlConnection in 'general\intf\sql\SqlConnection.pas',
   Transaction in 'general\intf\transcation\Transaction.pas',
   MySqlConnection in 'general\common\MySql\MySqlConnection.pas',
@@ -165,7 +166,10 @@ uses
   Exporter.Params.Tools in 'export\Exporter.Params.Tools.pas',
   unExporter.ActiveRangeParams in 'view\frames\export\unExporter.ActiveRangeParams.pas' {fraExporterActiveRangeParams: TFrame},
   SqlConditionBuilder in 'general\common\Tools\SqlConditionBuilder.pas',
-  RangeTools in 'general\common\Tools\RangeTools.pas';
+  RangeTools in 'general\common\Tools\RangeTools.pas',
+  Logging.Impl in 'general\common\Tools\Logging.Impl.pas',
+  Logging.TargetFile in 'general\common\Tools\Logging.TargetFile.pas',
+  Logging.Intf in 'general\common\Tools\Logging.Intf.pas';
 
 {$R *.res}
 
@@ -186,8 +190,14 @@ begin
     SetInformationJobObject(lJobObjectHandle, JobObjectExtendedLimitInformation, @lJobLimitInfo, SizeOf(lJobLimitInfo));
     AssignProcessToJobObject(lJobObjectHandle, GetCurrentProcess);
     {$endif}
+
+    var lLoggingDir := TPath.Combine(TConfigReader.Instance.ConfigDir, 'Logs');
+    var lLoggingTarget := TLoggingTargetFile.Create(lLoggingDir);
+    TLogger.Targets.Add(lLoggingTarget);
+    TLogger.LogLevel := TLogLevel.Debug;
+
     Application.CreateForm(TfmMain, fmMain);
-  var lConnectionCount := TConfigReader.Instance.ConnectionNames.Count;
+    var lConnectionCount := TConfigReader.Instance.ConnectionNames.Count;
     if lConnectionCount = 0 then
     begin
       TMessageDialogs.Ok('Keine Verbindungsdefinitionen gefunden. Programm wird beendet.', TMsgDlgType.mtError);
