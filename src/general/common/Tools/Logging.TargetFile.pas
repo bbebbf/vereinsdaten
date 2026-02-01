@@ -9,6 +9,7 @@ type
   strict private
     fDirectory: string;
     fWriter: TStreamWriter;
+    function ConfigurationInfo: string;
     procedure WriteLogText(const aTimestamp: TDateTime; const aText: string; const aLogLevel: TLogLevel);
   public
     constructor Create(const aDirectory: string);
@@ -33,6 +34,11 @@ begin
   inherited;
 end;
 
+function TLoggingTargetFile.ConfigurationInfo: string;
+begin
+  Result := 'Logging directory: ' + fDirectory;
+end;
+
 procedure TLoggingTargetFile.WriteLogText(const aTimestamp: TDateTime;
   const aText: string; const aLogLevel: TLogLevel);
 begin
@@ -46,7 +52,7 @@ begin
     end
     else
     begin
-      ForceDirectories(fDirectory);
+      ForceDirectories(ExpandFileName(fDirectory));
       lFileStream := TFile.Open(lFilePath, TFileMode.fmCreate, TFileAccess.faWrite, TFileShare.fsRead);
     end;
     fWriter := TStreamWriter.Create(lFileStream);

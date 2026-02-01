@@ -17,6 +17,9 @@ type
     procedure SetLogLevel(const aLogLevel: TLogLevel);
     function GetLogLevel: TLogLevel;
     function GetTargets: TList<ILoggingTarget>;
+    function GetTargetConfigInfos: string;
+
+    procedure LoggingTargetConfigToStr(Sender: TObject; const aElement: ILoggingTarget; var aElementStr: string);
   public
     constructor Create;
     destructor Destroy; override;
@@ -24,7 +27,7 @@ type
 
 implementation
 
-uses System.SysUtils;
+uses System.SysUtils, Joiner;
 
 { TLoggingImpl }
 
@@ -71,6 +74,22 @@ begin
   fLogLevel := aLogLevel;
 end;
 
+function TLoggingImpl.GetTargetConfigInfos: string;
+begin
+  if fTargets.Count = 0 then
+    Exit('');
+
+  var lJoiner := TJoiner<ILoggingTarget>.Create;
+  try
+    lJoiner.ElementSeparator := ', ';
+    lJoiner.OnElementToStr := LoggingTargetConfigToStr;
+    lJoiner.Add(fTargets);
+    Result := lJoiner.Strings[0];
+  finally
+    lJoiner.Free;
+  end;
+end;
+
 function TLoggingImpl.GetTargets: TList<ILoggingTarget>;
 begin
   Result := fTargets;
@@ -84,6 +103,12 @@ begin
   var lTimestamp := Now;
   for var lTarget in fTargets do
     lTarget.WriteLogText(lTimestamp, aText, aLogLevel);
+end;
+
+procedure TLoggingImpl.LoggingTargetConfigToStr(Sender: TObject; const aElement: ILoggingTarget;
+  var aElementStr: string);
+begin
+  aElementStr := aElement.ConfigurationInfo;
 end;
 
 end.

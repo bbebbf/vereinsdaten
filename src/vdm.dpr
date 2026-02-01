@@ -169,7 +169,9 @@ uses
   RangeTools in 'general\common\Tools\RangeTools.pas',
   Logging.Impl in 'general\common\Tools\Logging.Impl.pas',
   Logging.TargetFile in 'general\common\Tools\Logging.TargetFile.pas',
-  Logging.Intf in 'general\common\Tools\Logging.Intf.pas';
+  Logging.Intf in 'general\common\Tools\Logging.Intf.pas',
+  Vdm.Logging in 'general\Vdm.Logging.pas',
+  Logging.TargetPipe in 'general\common\Tools\Logging.TargetPipe.pas';
 
 {$R *.res}
 
@@ -191,10 +193,7 @@ begin
     AssignProcessToJobObject(lJobObjectHandle, GetCurrentProcess);
     {$endif}
 
-    var lLoggingDir := TPath.Combine(TConfigReader.Instance.ConfigDir, 'Logs');
-    var lLoggingTarget := TLoggingTargetFile.Create(lLoggingDir);
-    TLogger.Targets.Add(lLoggingTarget);
-    TLogger.LogLevel := TLogLevel.Debug;
+    TVdmLogging.ApplyLoggingConfig;
 
     Application.CreateForm(TfmMain, fmMain);
     var lConnectionCount := TConfigReader.Instance.ConnectionNames.Count;

@@ -19,6 +19,17 @@ type
     ShapeColor: string;
   end;
 
+  TLoggingTargetConfig = class
+  strict private
+    fTargetType: string;
+    fParams: TDictionary<string, string>;
+  public
+    constructor Create(const aTargetType: string);
+    destructor Destroy; override;
+    property TargetType: string read fTargetType;
+    property Params: TDictionary<string, string> read fParams;
+  end;
+
   TConfigReader = class
   strict private
     class var fInstance: TConfigReader;
@@ -27,6 +38,8 @@ type
     fConnectionNames: TStrings;
     fConnections: TList<TConfigConnection>;
     fCurrentConnectionIndex: Integer;
+    fLogLevel: string;
+    fLoggingTargets: TList<TLoggingTargetConfig>;
     fFound: Boolean;
     procedure ReadFile;
     function GetConnection: TConfigConnection;
@@ -36,8 +49,9 @@ type
     procedure WriteExampleEntries;
 
     class function GetInstance: TConfigReader; static;
-  private
     function GetConnectionNames: TStrings;
+    function GetLoggingTargets: TList<TLoggingTargetConfig>;
+    function GetLogLevel: string;
   public
     class destructor ClassDestroy;
     class property Instance: TConfigReader read GetInstance;
@@ -49,6 +63,8 @@ type
     property ConnectionNames: TStrings read GetConnectionNames;
     property Connection: TConfigConnection read GetConnection;
     property ConfigDir: string read GetConfigDir;
+    property LogLevel: string read GetLogLevel;
+    property LoggingTargets: TList<TLoggingTargetConfig> read GetLoggingTargets;
   end;
 
 implementation
@@ -67,10 +83,12 @@ begin
   inherited Create;
   fConnectionNames := TStringList.Create;
   fConnections := TList<TConfigConnection>.Create;
+  fLoggingTargets := TList<TLoggingTargetConfig>.Create;
 end;
 
 destructor TConfigReader.Destroy;
 begin
+  fLoggingTargets.Free;
   fConnections.Free;
   fConnectionNames.Free;
   inherited;
@@ -109,6 +127,18 @@ begin
   Result := fInstance;
 end;
 
+function TConfigReader.GetLoggingTargets: TList<TLoggingTargetConfig>;
+begin
+  ReadFile;
+  Result := fLoggingTargets;
+end;
+
+function TConfigReader.GetLogLevel: string;
+begin
+  ReadFile;
+  Result := fLogLevel;
+end;
+
 procedure TConfigReader.ReadFile;
 begin
   if fFound then
@@ -124,33 +154,61 @@ begin
       try
         lIniFile.ReadSections(lSections);
         const ConnectionString = 'Connection';
+        const Logging = 'Logging';
         for var lSection in lSections do
         begin
-          if not lSection.StartsWith(ConnectionString) then
-            Continue;
+          if lSection.StartsWith(ConnectionString) then
+          begin
+            var lConnection := default(TConfigConnection);
+            lConnection.DatabaseHost := lIniFile.ReadString(lSection, 'DatabaseHost', 'localhost');
+            lConnection.DatabasePort := lIniFile.ReadInteger(lSection, 'DatabasePort', 0);
+            lConnection.DatabaseUserName := lIniFile.ReadString(lSection, 'DatabaseUserName', '');
+            lConnection.DatabaseUserPassword := lIniFile.ReadString(lSection, 'DatabaseUserPassword', '');
+            lConnection.DatabaseName := lIniFile.ReadString(lSection, 'DatabaseName', '');
+            lConnection.SshServerHost := lIniFile.ReadString(lSection, 'SshServerHost', '');
+            lConnection.SshServerPort := lIniFile.ReadInteger(lSection, 'SshServerPort', 0);
+            lConnection.SshLocalTunnelPort := lIniFile.ReadInteger(lSection, 'SshLocalTunnelPort', 0);
+            lConnection.ShapeVisible := lIniFile.ValueExists(lSection, 'ShapeColor');
+            lConnection.ShapeColor := lIniFile.ReadString(lSection, 'ShapeColor', '');
 
-          var lConnection := default(TConfigConnection);
-          lConnection.DatabaseHost := lIniFile.ReadString(lSection, 'DatabaseHost', 'localhost');
-          lConnection.DatabasePort := lIniFile.ReadInteger(lSection, 'DatabasePort', 0);
-          lConnection.DatabaseUserName := lIniFile.ReadString(lSection, 'DatabaseUserName', '');
-          lConnection.DatabaseUserPassword := lIniFile.ReadString(lSection, 'DatabaseUserPassword', '');
-          lConnection.DatabaseName := lIniFile.ReadString(lSection, 'DatabaseName', '');
-          lConnection.SshServerHost := lIniFile.ReadString(lSection, 'SshServerHost', '');
-          lConnection.SshServerPort := lIniFile.ReadInteger(lSection, 'SshServerPort', 0);
-          lConnection.SshLocalTunnelPort := lIniFile.ReadInteger(lSection, 'SshLocalTunnelPort', 0);
-          lConnection.ShapeVisible := lIniFile.ValueExists(lSection, 'ShapeColor');
-          lConnection.ShapeColor := lIniFile.ReadString(lSection, 'ShapeColor', '');
+            var lConnectionName := lSection;
+            Delete(lConnectionName, 1, Length(ConnectionString));
+            lConnectionName := Trim(lConnectionName);
+            if Length(lConnectionName) = 0 then
+              lConnectionName := lSection;
 
-          var lConnectionName := lSection;
-          Delete(lConnectionName, 1, Length(ConnectionString));
-          lConnectionName := Trim(lConnectionName);
-          if Length(lConnectionName) = 0 then
-            lConnectionName := lSection;
-
-          lConnection.ConnnectionName := lConnectionName;
-          fConnectionNames.Add(lConnectionName);
-          fConnections.Add(lConnection);
-          fFound := True;
+            lConnection.ConnnectionName := lConnectionName;
+            fConnectionNames.Add(lConnectionName);
+            fConnections.Add(lConnection);
+            fFound := True;
+          end
+          else if lSection = Logging then
+          begin
+            fLogLevel := lIniFile.ReadString(lSection, 'Level', '');
+            var lSubSections := TStringList.Create;
+            try
+              lIniFile.ReadSubSections(lSection, lSubSections);
+              for var lSubSection in lSubSections do
+              begin
+                var lLoggingTarget := TLoggingTargetConfig.Create(lSubSection);
+                fLoggingTargets.Add(lLoggingTarget);
+                var lSectionValues := TStringList.Create;
+                try
+                  lIniFile.ReadSectionValues(lSection + '.' + lSubSection, lSectionValues);
+                  for var lValue in lSectionValues do
+                  begin
+                    var lParts := lValue.Split(['=']);
+                    if Length(lParts) = 2 then
+                      lLoggingTarget.Params.Add(lParts[0], lParts[1]);
+                  end;
+                finally
+                  lSectionValues.Free;
+                end;
+              end;
+            finally
+              lSubSections.Free;
+            end;
+          end;
         end;
       finally
         lSections.Free;
@@ -203,6 +261,21 @@ function TConfigReader.GetConfigDir: string;
 begin
   var lExeName := TPath.GetFileNameWithoutExtension(ParamStr(0));
   Result := TPath.Combine(TPath.GetCachePath, TPath.Combine('BBE', lExeName));
+end;
+
+{ TLoggingTargetConfig }
+
+constructor TLoggingTargetConfig.Create(const aTargetType: string);
+begin
+  inherited Create;
+  fParams := TDictionary<string, string>.Create;
+  fTargetType := aTargetType;
+end;
+
+destructor TLoggingTargetConfig.Destroy;
+begin
+  fParams.Free;
+  inherited;
 end;
 
 end.

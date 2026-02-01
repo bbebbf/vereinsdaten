@@ -414,6 +414,8 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="general\common\Tools\Logging.Impl.pas"/>
         <DCCReference Include="general\common\Tools\Logging.TargetFile.pas"/>
         <DCCReference Include="general\common\Tools\Logging.Intf.pas"/>
+        <DCCReference Include="general\Vdm.Logging.pas"/>
+        <DCCReference Include="general\common\Tools\Logging.TargetPipe.pas"/>
         <None Include="inc\CompilerDirectives.inc"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>

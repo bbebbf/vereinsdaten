@@ -9,6 +9,7 @@ type
 
   ILoggingTarget = interface
     ['{3D5A5D8A-2DC7-49C9-9682-E446E2CFD42F}']
+    function ConfigurationInfo: string;
     procedure WriteLogText(const aTimestamp: TDateTime; const aText: string; const aLogLevel: TLogLevel);
   end;
 
@@ -17,11 +18,13 @@ type
     procedure SetLogLevel(const aLogLevel: TLogLevel);
     function GetLogLevel: TLogLevel;
     function GetTargets: TList<ILoggingTarget>;
+    function GetTargetConfigInfos: string;
     procedure Error(const aText: string);
     procedure Warning(const aText: string);
     procedure Info(const aText: string);
     procedure Debug(const aText: string);
     property LogLevel: TLogLevel read GetLogLevel write SetLogLevel;
+    property TargetConfigInfos: string read GetTargetConfigInfos;
     property Targets: TList<ILoggingTarget> read GetTargets;
   end;
 
@@ -36,6 +39,7 @@ type
     class constructor ClassCreate;
     class destructor ClassDestroy;
     class function LogLevelToStr(const aLogLevel: TLogLevel): string;
+    class function TargetConfigInfos: string;
     class procedure Error(const aText: string);
     class procedure Warning(const aText: string);
     class procedure Info(const aText: string);
@@ -93,6 +97,11 @@ end;
 class procedure TLogger.SetLogLevel(const aLogLevel: TLogLevel);
 begin
   GetInstance.LogLevel := aLogLevel;
+end;
+
+class function TLogger.TargetConfigInfos: string;
+begin
+  Result := GetInstance.TargetConfigInfos;
 end;
 
 class function TLogger.GetInstance: ILogger;
