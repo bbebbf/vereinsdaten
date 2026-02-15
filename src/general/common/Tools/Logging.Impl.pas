@@ -27,7 +27,7 @@ type
 
 implementation
 
-uses System.SysUtils, Joiner;
+uses System.SysUtils, System.DateUtils, Winapi.Windows, Joiner;
 
 { TLoggingImpl }
 
@@ -100,9 +100,14 @@ begin
   if (aLogLevel > fLogLevel) or (fTargets.Count = 0) then
     Exit;
 
-  var lTimestamp := Now;
+  var lData := default(TLoggingData);
+  lData.TimestampUTC := TTimeZone.Local.ToUniversalTime(Now);
+  lData.ProcessId := GetCurrentProcessId;
+  lData.LogMessage := aText;
+  lData.LogLevel := aLogLevel;
+
   for var lTarget in fTargets do
-    lTarget.WriteLogText(lTimestamp, aText, aLogLevel);
+    lTarget.WriteLoggingData(lData);
 end;
 
 procedure TLoggingImpl.LoggingTargetConfigToStr(Sender: TObject; const aElement: ILoggingTarget;

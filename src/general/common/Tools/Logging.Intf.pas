@@ -2,15 +2,26 @@ unit Logging.Intf;
 
 interface
 
-uses System.Generics.Collections;
+uses Winapi.Windows, System.Generics.Collections;
 
 type
   TLogLevel = (Error, Warning, Info, Debug);
 
+  TLoggingData = record
+    TimestampUTC: TDateTime;
+    LogLevel: TLogLevel;
+    LogMessage: string;
+    ProcessId: DWORD;
+    function LogLevelToColoredText: string;
+    function ToString(const aColoredConsoleText: Boolean = False): string;
+    function ToColoredConsoleText: string;
+  end;
+
   ILoggingTarget = interface
     ['{3D5A5D8A-2DC7-49C9-9682-E446E2CFD42F}']
     function ConfigurationInfo: string;
-    procedure WriteLogText(const aTimestamp: TDateTime; const aText: string; const aLogLevel: TLogLevel);
+    procedure InitializeTarget;
+    procedure WriteLoggingData(const aLoggingData: TLoggingData);
   end;
 
   ILogger = interface
@@ -50,7 +61,7 @@ type
 
 implementation
 
-uses Logging.Impl, Logging.TargetFile;
+uses System.SysUtils, System.DateUtils, Logging.Impl, Logging.TargetFile;
 
 { TLogger }
 
@@ -128,6 +139,37 @@ begin
     else
       Exit('???');
   end;
+end;
+
+{ TLoggingData }
+
+function TLoggingData.ToString(const aColoredConsoleText: Boolean): string;
+begin
+  var lLogLevelText := '';
+  if aColoredConsoleText then
+    lLogLevelText := LogLevelToColoredText
+  else
+    lLogLevelText := TLogger.LogLevelToStr(LogLevel);
+
+  Result := '[' + UIntToStr(ProcessId) + '][' + DateToISO8601(TimestampUTC) + '][' +
+    lLogLevelText + '][' + LogMessage;
+end;
+
+function TLoggingData.ToColoredConsoleText: string;
+begin
+  Result := ToString(True);
+end;
+
+function TLoggingData.LogLevelToColoredText: string;
+begin
+  var lTextColor: string := '0';
+  case LogLevel of
+    TLogLevel.Error: lTextColor := '91'; // red
+    TLogLevel.Warning: lTextColor := '93'; // yellow
+    TLogLevel.Info: lTextColor := '96'; // cyan
+    TLogLevel.Debug: lTextColor := '97'; // white
+  end;
+  Result := #27 + '[' + lTextColor + 'm' + TLogger.LogLevelToStr(LogLevel) + #27 + '[0m';
 end;
 
 end.

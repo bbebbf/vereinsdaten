@@ -10,7 +10,8 @@ type
     fDirectory: string;
     fWriter: TStreamWriter;
     function ConfigurationInfo: string;
-    procedure WriteLogText(const aTimestamp: TDateTime; const aText: string; const aLogLevel: TLogLevel);
+    procedure InitializeTarget;
+    procedure WriteLoggingData(const aLoggingData: TLoggingData);
   public
     constructor Create(const aDirectory: string);
     destructor Destroy; override;
@@ -34,18 +35,22 @@ begin
   inherited;
 end;
 
+procedure TLoggingTargetFile.InitializeTarget;
+begin
+
+end;
+
 function TLoggingTargetFile.ConfigurationInfo: string;
 begin
   Result := 'Logging directory: ' + fDirectory;
 end;
 
-procedure TLoggingTargetFile.WriteLogText(const aTimestamp: TDateTime;
-  const aText: string; const aLogLevel: TLogLevel);
+procedure TLoggingTargetFile.WriteLoggingData(const aLoggingData: TLoggingData);
 begin
   if not Assigned(fWriter) then
   begin
     var lFileStream: TFileStream;
-    var lFilePath := TPath.Combine(fDirectory, FormatDateTime('yyyy-mm-dd', aTimestamp) + '.log');
+    var lFilePath := TPath.Combine(fDirectory, FormatDateTime('yyyy-mm-dd', aLoggingData.TimestampUTC) + '.log');
     if FileExists(lFilePath) then
     begin
       lFileStream := TFile.Open(lFilePath, TFileMode.fmAppend, TFileAccess.faWrite, TFileShare.fsRead);
@@ -60,9 +65,7 @@ begin
     fWriter.AutoFlush := True;
   end;
 
-  var lFormattedText := '[' + FormatDateTime('yyyy-mm-dd hh:nn:ss:zzz', aTimestamp) + '][' +
-    TLogger.LogLevelToStr(aLogLevel) + '] ' + aText;
-  fWriter.WriteLine(lFormattedText);
+  fWriter.WriteLine(aLoggingData.ToString);
 end;
 
 end.

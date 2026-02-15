@@ -171,7 +171,8 @@ uses
   Logging.TargetFile in 'general\common\Tools\Logging.TargetFile.pas',
   Logging.Intf in 'general\common\Tools\Logging.Intf.pas',
   Vdm.Logging in 'general\Vdm.Logging.pas',
-  Logging.TargetPipe in 'general\common\Tools\Logging.TargetPipe.pas';
+  Logging.TargetPipe in 'general\common\Tools\Logging.TargetPipe.pas',
+  Logging.TargetConsole in 'general\common\Tools\Logging.TargetConsole.pas';
 
 {$R *.res}
 

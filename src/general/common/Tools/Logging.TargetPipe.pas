@@ -9,7 +9,6 @@ type
 
   TLoggingTargetPipeHandle = class
   strict private
-    fPipeName: string;
     fConnectEventHandle: THandle;
     fHandle: THandle;
     fStream: THandleStream;
@@ -28,12 +27,9 @@ type
     fName: string;
     fConnections: TObjectList<TLoggingTargetPipeHandle>;
 
-    fConnectEventHandle: THandle;
-    fPipeStream: THandleStream;
-    fPipeWriter: TStreamWriter;
-
     function ConfigurationInfo: string;
-    procedure WriteLogText(const aTimestamp: TDateTime; const aText: string; const aLogLevel: TLogLevel);
+    procedure InitializeTarget;
+    procedure WriteLoggingData(const aLoggingData: TLoggingData);
 
     procedure EnumerateConnections(const aWriterCallback: TLoggingTargetPipeWriter);
   public
@@ -67,14 +63,17 @@ begin
   Result := 'Logging pipe: ' + fName;
 end;
 
-procedure TLoggingTargetPipe.WriteLogText(const aTimestamp: TDateTime; const aText: string; const aLogLevel: TLogLevel);
+procedure TLoggingTargetPipe.InitializeTarget;
 begin
-  var lFormattedText := '[' + FormatDateTime('yyyy-mm-dd hh:nn:ss:zzz', aTimestamp) + '][' +
-    TLogger.LogLevelToStr(aLogLevel) + '] ' + aText;
+  EnumerateConnections(nil);
+end;
+
+procedure TLoggingTargetPipe.WriteLoggingData(const aLoggingData: TLoggingData);
+begin
   EnumerateConnections(
     procedure(const aWriter: TStreamWriter)
     begin
-      aWriter.WriteLine(lFormattedText);
+      aWriter.WriteLine(aLoggingData.ToString(True));
     end
   );
 end;
@@ -92,10 +91,13 @@ begin
       end;
       TLoggingTargetPipeConnectionResult.ClientConnected:
       begin
-        try
-          aWriterCallback(fConnections[i].Writer);
-        except
-          fConnections.Delete(i);
+        if Assigned(aWriterCallback) then
+        begin
+          try
+            aWriterCallback(fConnections[i].Writer);
+          except
+            fConnections.Delete(i);
+          end;
         end;
       end;
       TLoggingTargetPipeConnectionResult.ClosedByClient,
@@ -115,11 +117,14 @@ begin
     begin
       if lInspectResult = TLoggingTargetPipeConnectionResult.ClientConnected then
       begin
-        try
-          aWriterCallback(lNewConnection.Writer);
-        except
-          lNewConnection.Free;
-          Exit;
+        if Assigned(aWriterCallback) then
+        begin
+          try
+            aWriterCallback(lNewConnection.Writer);
+          except
+            lNewConnection.Free;
+            Exit;
+          end;
         end;
       end;
       fConnections.Add(lNewConnection);
