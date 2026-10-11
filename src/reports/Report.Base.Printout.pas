@@ -21,8 +21,8 @@ type
     lbLastPageNumber: TRLSystemInfo;
     procedure RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
   strict protected
+    function GetTargetTitle: string;
     function GetReportTitle: string; virtual;
-    function GetTitle: string;
     function GetResultMessageRequired: Boolean;
     function ExportDataSet(const aDataSet: ISqlDataSet): TExporterExportResult;
     procedure ExportInternal(const aDataSet: ISqlDataSet); virtual;
@@ -76,19 +76,19 @@ begin
   RLReport.Preview;
 end;
 
-function TfmReportBasePrintout.GetReportTitle: string;
+function TfmReportBasePrintout.GetTargetTitle: string;
 begin
   Result := 'Ausdruck';
+end;
+
+function TfmReportBasePrintout.GetReportTitle: string;
+begin
+  Result := '';
 end;
 
 function TfmReportBasePrintout.GetResultMessageRequired: Boolean;
 begin
   Result := False;
-end;
-
-function TfmReportBasePrintout.GetTitle: string;
-begin
-  Result := GetReportTitle;
 end;
 
 procedure TfmReportBasePrintout.RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);

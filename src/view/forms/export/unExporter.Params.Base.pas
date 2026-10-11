@@ -113,7 +113,7 @@ begin
   try
     cbTargets.Items.Clear;
     for var i := Low(fTargets) to High(fTargets) do
-      cbTargets.Items.Add(fTargets[i].Title);
+      cbTargets.Items.Add(fTargets[i].TargetTitle);
     if Length(aTargets) > 0 then
       cbTargets.ItemIndex := 0
     else

@@ -7,9 +7,9 @@ uses SqlConnection;
 type
   IExporterTargetConfig = interface
     ['{31DF37FF-7EA5-4106-BC90-0378FC20AA2A}']
-    function GetTitle: string;
+    function GetTargetTitle: string;
     function GetResultMessageRequired: Boolean;
-    property Title: string read GetTitle;
+    property TargetTitle: string read GetTargetTitle;
     property ResultMessageRequired: Boolean read GetResultMessageRequired;
   end;
 

@@ -33,7 +33,7 @@ type
     fTimeFormatStr: string;
     fFieldsToExport: TObjectList<TReportCsvField>;
     fFilePath: string;
-    function GetTitle: string;
+    function GetTargetTitle: string;
     function GetResultMessageRequired: Boolean;
     function GetFilePath: string;
     procedure SetFilePath(const aValue: string);
@@ -229,7 +229,7 @@ begin
   Result := '';
 end;
 
-function TReportBaseCsv<T>.GetTitle: string;
+function TReportBaseCsv<T>.GetTargetTitle: string;
 begin
   Result := 'CSV-Datei';
 end;
