@@ -30,7 +30,7 @@ begin
   aFields.Add(TReportCsvField.Create('address_postalcode'));
   aFields.Add(TReportCsvField.Create('address_city'));
   aFields.Add(TReportCsvField.Create('clmb_startdate'));
-  if not aExportParams.OnlyActive then
+  if aExportParams.IncludeInactive then
   begin
     aFields.Add(TReportCsvField.Create('clmb_active'));
     aFields.Add(TReportCsvField.Create('clmb_enddate_calculated'));

@@ -8,7 +8,7 @@ uses
   ParamsProvider, Exporter.ClubMembers.Types;
 type
   TfmExporterParamsClubMembers = class(TfmExporterParamsBase, IParamsProvider<TExporterClubMembersParams>)
-    cbOnlyActive: TCheckBox;
+    cbIncludeInactive: TCheckBox;
     cbSortedByName: TCheckBox;
   strict private
     function GetParams(const aParams: TExporterClubMembersParams): TExporterClubMembersParams;
@@ -25,13 +25,13 @@ implementation
 function TfmExporterParamsClubMembers.GetParams(const aParams: TExporterClubMembersParams): TExporterClubMembersParams;
 begin
   Result := aParams;
-  Result.OnlyActive := cbOnlyActive.Checked;
+  Result.IncludeInactive := cbIncludeInactive.Checked;
   Result.SortedByName := cbSortedByName.Checked;
 end;
 
 procedure TfmExporterParamsClubMembers.SetParams(const aParams: TExporterClubMembersParams);
 begin
-  cbOnlyActive.Checked := aParams.OnlyActive;
+  cbIncludeInactive.Checked := aParams.IncludeInactive;
   cbSortedByName.Checked := aParams.SortedByName;
 end;
 

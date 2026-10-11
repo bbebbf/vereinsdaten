@@ -85,9 +85,9 @@ end;
 procedure TfmReportClubMembersPrintout.SetParams(const aParams: TExporterClubMembersParams);
 begin
   var lFilterInfo := '';
-  if aParams.OnlyActive then
+  if aParams.IncludeInactive then
   begin
-    lFilterInfo := 'Nur aktive Vereinsmitglieder.';
+    lFilterInfo := TStringTools.Combine(lFilterInfo, sLineBreak, 'Enthält inaktive Vereinsmitglieder.');
   end;
   if aParams.SortedByName then
   begin
@@ -96,16 +96,16 @@ begin
 
   SetFilterInfo(lFilterInfo);
 
-  bdSummary.Visible := not aParams.OnlyActive;
+  bdSummary.Visible := aParams.IncludeInactive;
 
-  Label8.Visible := not aParams.OnlyActive;
-  Label9.Visible := not aParams.OnlyActive;
-  Label7.Visible := not aParams.OnlyActive;
-  rdInactive.Visible := not aParams.OnlyActive;
-  RLDBText6.Visible := not aParams.OnlyActive;
-  RLDBText8.Visible := not aParams.OnlyActive;
+  Label8.Visible := aParams.IncludeInactive;
+  Label9.Visible := aParams.IncludeInactive;
+  Label7.Visible := aParams.IncludeInactive;
+  rdInactive.Visible := aParams.IncludeInactive;
+  RLDBText6.Visible := aParams.IncludeInactive;
+  RLDBText8.Visible := aParams.IncludeInactive;
 
-  fPortrait := aParams.OnlyActive;
+  fPortrait := not aParams.IncludeInactive;
   ApplyLayout;
 end;
 

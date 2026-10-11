@@ -5,7 +5,7 @@ interface
 type
   TExporterClubMembersParams = class
   public
-    OnlyActive: Boolean;
+    IncludeInactive: Boolean;
     SortedByName: Boolean;
   end;
 

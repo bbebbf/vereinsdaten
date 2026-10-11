@@ -15,8 +15,8 @@ inherited fmExporterParamsClubMembers: TfmExporterParamsClubMembers
     ExplicitTop = 117
     ExplicitWidth = 429
     inherited btCancel: TButton
-      Left = 308
-      ExplicitLeft = 306
+      Left = 306
+      ExplicitLeft = 304
     end
   end
   inherited pnTarget: TPanel
@@ -33,29 +33,29 @@ inherited fmExporterParamsClubMembers: TfmExporterParamsClubMembers
       StyleElements = [seFont, seClient, seBorder]
     end
     inherited cbTargets: TComboBox
-      Width = 359
+      Width = 357
       StyleElements = [seFont, seClient, seBorder]
-      ExplicitWidth = 357
+      ExplicitWidth = 355
     end
     inherited edFilePath: TEdit
-      Width = 321
+      Width = 319
       StyleElements = [seFont, seClient, seBorder]
-      ExplicitWidth = 319
+      ExplicitWidth = 317
     end
     inherited btOpenFileDlg: TButton
-      Left = 383
-      ExplicitLeft = 381
+      Left = 381
+      ExplicitLeft = 379
     end
   end
-  object cbOnlyActive: TCheckBox
+  object cbIncludeInactive: TCheckBox [2]
     Left = 16
     Top = 16
     Width = 399
     Height = 17
-    Caption = 'Nur aktive Vereinsmitglieder'
+    Caption = 'Auch inaktive Vereinsmitglieder anzeigen'
     TabOrder = 0
   end
-  object cbSortedByName: TCheckBox
+  object cbSortedByName: TCheckBox [3]
     Left = 16
     Top = 39
     Width = 399

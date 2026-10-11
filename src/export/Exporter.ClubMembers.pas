@@ -28,7 +28,7 @@ begin
     ' LEFT JOIN person_address AS pa ON pa.person_id = cm.person_id' +
     ' LEFT JOIN vw_select_address AS sa ON sa.adr_id = pa.adr_id';
 
-  if Params.OnlyActive then
+  if not Params.IncludeInactive then
   begin
     lSelectStmt := lSelectStmt + ' WHERE cm.clmb_active = 1';
   end;
