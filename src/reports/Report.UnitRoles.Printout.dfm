@@ -28,28 +28,28 @@ inherited fmReportUnitRolesPrintout: TfmReportUnitRolesPrintout
       Font.Name = 'Calibri'
       Font.Style = [fsBold]
       ParentFont = False
-      object Label3: TLabel
+      object lbRole: TLabel
         Left = 0
         Top = 3
         Width = 32
         Height = 18
         Caption = 'Rolle'
       end
-      object Label4: TLabel
+      object lbPerson: TLabel
         Left = 510
         Top = 3
         Width = 43
         Height = 18
         Caption = 'Person'
       end
-      object Label5: TLabel
+      object lbUnit: TLabel
         Left = 210
         Top = 3
         Width = 44
         Height = 18
         Caption = 'Einheit'
       end
-      object Label1: TLabel
+      object lbDataConfirmed: TLabel
         Left = 420
         Top = 3
         Width = 71
@@ -71,7 +71,7 @@ inherited fmReportUnitRolesPrintout: TfmReportUnitRolesPrintout
       ParentFont = False
       AfterPrint = bdDetailAfterPrint
       BeforePrint = bdDetailBeforePrint
-      object RLDBText1: TRLDBText
+      object rdUnitDataConfirmed: TRLDBText
         Left = 420
         Top = 2
         Width = 156

@@ -28,21 +28,21 @@ inherited fmReportMemberUnitsPrintout: TfmReportMemberUnitsPrintout
       Font.Name = 'Calibri'
       Font.Style = [fsBold]
       ParentFont = False
-      object Label3: TLabel
+      object lbPerson: TLabel
         Left = 0
         Top = 3
         Width = 43
         Height = 18
         Caption = 'Person'
       end
-      object Label4: TLabel
+      object lbUnit: TLabel
         Left = 280
         Top = 3
         Width = 44
         Height = 18
         Caption = 'Einheit'
       end
-      object Label5: TLabel
+      object lbRole: TLabel
         Left = 520
         Top = 3
         Width = 32

@@ -10,9 +10,9 @@ uses
 type
   TfmReportMemberUnitsPrintout = class(TfmReportBasePrintout, IExporterTarget<TExporterMembersParams>)
     bdColumnHeader: TRLBand;
-    Label3: TLabel;
-    Label4: TLabel;
-    Label5: TLabel;
+    lbPerson: TLabel;
+    lbUnit: TLabel;
+    lbRole: TLabel;
     bdDetail: TRLBand;
     rdPersonname: TRLDBText;
     rdUnitname: TRLDBText;

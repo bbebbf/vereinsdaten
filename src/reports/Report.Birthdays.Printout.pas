@@ -19,9 +19,9 @@ type
     rdColumnHeaderHLine: TRLDraw;
     lbAge: TLabel;
     rdBirthdayWeekday: TRLDBText;
-    RLDBText1: TRLDBText;
-    Label2: TLabel;
-    Label1: TLabel;
+    rdAge: TRLDBText;
+    lbFromCaption: TLabel;
+    lbToCaption: TLabel;
     lbFromDate: TLabel;
     lbToDate: TLabel;
     rdBirthday: TRLDBText;

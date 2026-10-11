@@ -10,17 +10,17 @@ uses
 type
   TfmReportUnitRolesPrintout = class(TfmReportBasePrintout, IExporterTarget<TExporterMembersParams>)
     bdColumnHeader: TRLBand;
-    Label3: TLabel;
-    Label4: TLabel;
-    Label5: TLabel;
+    lbRole: TLabel;
+    lbPerson: TLabel;
+    lbUnit: TLabel;
     bdDetail: TRLBand;
     rdRoleName: TRLDBText;
     rdPersonname: TRLDBText;
     rdUnitname: TRLDBText;
     rdRoleId: TRLDBText;
     rdDivider: TRLDraw;
-    Label1: TLabel;
-    RLDBText1: TRLDBText;
+    lbDataConfirmed: TLabel;
+    rdUnitDataConfirmed: TRLDBText;
     rdInactiveInfoUnit: TRLLabel;
     rdInactiveInfo: TRLLabel;
     procedure bdDetailAfterPrint(Sender: TObject);

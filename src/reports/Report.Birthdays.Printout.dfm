@@ -14,7 +14,7 @@ inherited fmReportBirthdaysPrintout: TfmReportBirthdaysPrintout
   inherited RLReport: TRLReport
     inherited bdReportHeader: TRLBand
       Height = 66
-      object Label2: TLabel
+      object lbFromCaption: TLabel
         Left = 0
         Top = 40
         Width = 27
@@ -27,7 +27,7 @@ inherited fmReportBirthdaysPrintout: TfmReportBirthdaysPrintout
         Font.Style = []
         ParentFont = False
       end
-      object Label1: TLabel
+      object lbToCaption: TLabel
         Left = 120
         Top = 40
         Width = 23
@@ -165,7 +165,7 @@ inherited fmReportBirthdaysPrintout: TfmReportBirthdaysPrintout
         Text = ''
         BeforePrint = rdBirthdayWeekdayBeforePrint
       end
-      object RLDBText1: TRLDBText
+      object rdAge: TRLDBText
         Left = 368
         Top = 2
         Width = 50

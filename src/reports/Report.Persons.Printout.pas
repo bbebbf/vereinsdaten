@@ -10,7 +10,7 @@ uses
 type
   TfmReportPersonsPrintout = class(TfmReportBasePrintout, IExporterTarget<TExporterPersonsParams>)
     bdColumnHeader: TRLBand;
-    Label3: TLabel;
+    lbName: TLabel;
     lbAddress: TLabel;
     bdDetail: TRLBand;
     rdPersonname: TRLDBText;

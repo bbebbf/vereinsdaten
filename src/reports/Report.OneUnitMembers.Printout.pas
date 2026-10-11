@@ -10,21 +10,21 @@ uses
 type
   TfmReportOneUnitMembersPrintout = class(TfmReportBasePrintout, IExporterTarget<TExporterUnitDetailsParams>)
     bdColumnHeader: TRLBand;
-    Label4: TLabel;
-    Label5: TLabel;
+    lbPerson: TLabel;
+    lbRole: TLabel;
     bdDetail: TRLBand;
-    RLDBText2: TRLDBText;
-    RLDBText3: TRLDBText;
+    rdPersonname: TRLDBText;
+    rdRolename: TRLDBText;
     rdUnitname: TRLDBText;
     rdUnitDataConfirmed: TRLDBText;
-    Label1: TLabel;
+    lbDataConfirmedCaption: TLabel;
     rdMemberCount: TRLDBText;
-    Label2: TLabel;
+    lbMemberCountCaption: TLabel;
     rdUnitDivider: TRLDraw;
     lbAddress: TLabel;
     rtAddress: TRLDBText;
     rdUnitKind: TRLDBText;
-    Label3: TLabel;
+    lbUnitKindCaption: TLabel;
     procedure bdDetailAfterPrint(Sender: TObject);
     procedure RLReportPageStarting(Sender: TObject);
     procedure rdMemberCountBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);

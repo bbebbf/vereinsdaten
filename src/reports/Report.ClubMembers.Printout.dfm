@@ -29,7 +29,7 @@ inherited fmReportClubMembersPrintout: TfmReportClubMembersPrintout
       Font.Name = 'Calibri'
       Font.Style = []
       ParentFont = False
-      object RLDBText1: TRLDBText
+      object rdPersonname: TRLDBText
         Left = 55
         Top = 2
         Width = 165
@@ -39,7 +39,7 @@ inherited fmReportClubMembersPrintout: TfmReportClubMembersPrintout
         DataSource = dsDataSource
         Text = ''
       end
-      object RLDBText2: TRLDBText
+      object rdNumber: TRLDBText
         Left = 0
         Top = 2
         Width = 50
@@ -49,7 +49,7 @@ inherited fmReportClubMembersPrintout: TfmReportClubMembersPrintout
         DataSource = dsDataSource
         Text = ''
       end
-      object RLDBText3: TRLDBText
+      object rdBirthday: TRLDBText
         Left = 225
         Top = 3
         Width = 85
@@ -59,7 +59,7 @@ inherited fmReportClubMembersPrintout: TfmReportClubMembersPrintout
         DataSource = dsDataSource
         Text = ''
       end
-      object RLDBText4: TRLDBText
+      object rdAddress: TRLDBText
         Left = 315
         Top = 2
         Width = 300
@@ -69,7 +69,7 @@ inherited fmReportClubMembersPrintout: TfmReportClubMembersPrintout
         DataSource = dsDataSource
         Text = ''
       end
-      object RLDBText5: TRLDBText
+      object rdStartDate: TRLDBText
         Left = 620
         Top = 2
         Width = 96
@@ -78,7 +78,7 @@ inherited fmReportClubMembersPrintout: TfmReportClubMembersPrintout
         DataSource = dsDataSource
         Text = ''
       end
-      object RLDBText6: TRLDBText
+      object rdEndDate: TRLDBText
         Left = 765
         Top = 2
         Width = 100
@@ -100,7 +100,7 @@ inherited fmReportClubMembersPrintout: TfmReportClubMembersPrintout
         Text = ''
         AfterPrint = rdInactiveAfterPrint
       end
-      object RLDBText8: TRLDBText
+      object rdEndReason: TRLDBText
         Left = 870
         Top = 2
         Width = 106
@@ -122,7 +122,7 @@ inherited fmReportClubMembersPrintout: TfmReportClubMembersPrintout
       Font.Name = 'Calibri'
       Font.Style = [fsBold]
       ParentFont = False
-      object Label2: TLabel
+      object lbNumber: TLabel
         Left = 0
         Top = 3
         Width = 50
@@ -131,35 +131,35 @@ inherited fmReportClubMembersPrintout: TfmReportClubMembersPrintout
         AutoSize = False
         Caption = 'Nr.'
       end
-      object Label3: TLabel
+      object lbName: TLabel
         Left = 55
         Top = 3
         Width = 37
         Height = 18
         Caption = 'Name'
       end
-      object Label4: TLabel
+      object lbBirthday: TLabel
         Left = 225
         Top = 3
         Width = 75
         Height = 18
         Caption = 'Geb.-Datum'
       end
-      object Label5: TLabel
+      object lbAddress: TLabel
         Left = 315
         Top = 3
         Width = 56
         Height = 18
         Caption = 'Anschrift'
       end
-      object Label6: TLabel
+      object lbStartDate: TLabel
         Left = 620
         Top = 3
         Width = 43
         Height = 18
         Caption = 'Eintritt'
       end
-      object Label8: TLabel
+      object lbInactive: TLabel
         Left = 710
         Top = 3
         Width = 50
@@ -168,14 +168,14 @@ inherited fmReportClubMembersPrintout: TfmReportClubMembersPrintout
         AutoSize = False
         Caption = 'Inaktiv'
       end
-      object Label9: TLabel
+      object lbEndDate: TLabel
         Left = 765
         Top = 3
         Width = 47
         Height = 18
         Caption = 'Austritt'
       end
-      object Label7: TLabel
+      object lbEndReason: TLabel
         Left = 870
         Top = 3
         Width = 89

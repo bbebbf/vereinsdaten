@@ -10,23 +10,23 @@ uses
 type
   TfmReportClubMembersPrintout = class(TfmReportBasePrintout, IExporterTarget<TExporterClubMembersParams>)
     bdDetail: TRLBand;
-    RLDBText1: TRLDBText;
-    RLDBText2: TRLDBText;
-    RLDBText3: TRLDBText;
-    RLDBText4: TRLDBText;
+    rdPersonname: TRLDBText;
+    rdNumber: TRLDBText;
+    rdBirthday: TRLDBText;
+    rdAddress: TRLDBText;
     bdColumnHeader: TRLBand;
-    Label2: TLabel;
-    Label3: TLabel;
-    Label4: TLabel;
-    Label5: TLabel;
-    Label6: TLabel;
-    RLDBText5: TRLDBText;
-    Label8: TLabel;
-    Label9: TLabel;
-    RLDBText6: TRLDBText;
+    lbNumber: TLabel;
+    lbName: TLabel;
+    lbBirthday: TLabel;
+    lbAddress: TLabel;
+    lbStartDate: TLabel;
+    rdStartDate: TRLDBText;
+    lbInactive: TLabel;
+    lbEndDate: TLabel;
+    rdEndDate: TRLDBText;
     rdInactive: TRLDBText;
-    Label7: TLabel;
-    RLDBText8: TRLDBText;
+    lbEndReason: TLabel;
+    rdEndReason: TRLDBText;
     bdSummary: TRLBand;
     lbActiveInactive: TLabel;
     procedure rdInactiveAfterPrint(Sender: TObject);
@@ -98,12 +98,12 @@ begin
 
   bdSummary.Visible := aParams.IncludeInactive;
 
-  Label8.Visible := aParams.IncludeInactive;
-  Label9.Visible := aParams.IncludeInactive;
-  Label7.Visible := aParams.IncludeInactive;
+  lbInactive.Visible := aParams.IncludeInactive;
+  lbEndDate.Visible := aParams.IncludeInactive;
+  lbEndReason.Visible := aParams.IncludeInactive;
   rdInactive.Visible := aParams.IncludeInactive;
-  RLDBText6.Visible := aParams.IncludeInactive;
-  RLDBText8.Visible := aParams.IncludeInactive;
+  rdEndDate.Visible := aParams.IncludeInactive;
+  rdEndReason.Visible := aParams.IncludeInactive;
 
   fPortrait := not aParams.IncludeInactive;
   ApplyLayout;

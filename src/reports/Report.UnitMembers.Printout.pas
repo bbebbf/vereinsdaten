@@ -10,19 +10,19 @@ uses
 type
   TfmReportUnitMembersPrintout = class(TfmReportBasePrintout, IExporterTarget<TExporterMembersParams>)
     bdColumnHeader: TRLBand;
-    Label3: TLabel;
-    Label4: TLabel;
-    Label5: TLabel;
+    lbUnit: TLabel;
+    lbPerson: TLabel;
+    lbRole: TLabel;
     bdDetail: TRLBand;
     rdUnitname: TRLDBText;
     rdPersonname: TRLDBText;
-    RLDBText3: TRLDBText;
+    rdRolename: TRLDBText;
     rdUinitId: TRLDBText;
     rdUnitDivider: TRLDraw;
-    Label1: TLabel;
+    lbDataConfirmed: TLabel;
     rdUnitDataConfirmed: TRLDBText;
     rdMemberCount: TRLDBText;
-    Label2: TLabel;
+    lbUnitKind: TLabel;
     rdUnitKind: TRLDBText;
     rdInactiveInfo: TRLLabel;
     rdInactiveInfoUnit: TRLLabel;

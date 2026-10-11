@@ -18,7 +18,7 @@ inherited fmReportOneUnitMembersPrintout: TfmReportOneUnitMembersPrintout
       inherited lbReportTitle: TLabel
         Visible = False
       end
-      object Label1: TLabel
+      object lbDataConfirmedCaption: TLabel
         Left = 0
         Top = 89
         Width = 79
@@ -31,7 +31,7 @@ inherited fmReportOneUnitMembersPrintout: TfmReportOneUnitMembersPrintout
         Font.Style = []
         ParentFont = False
       end
-      object Label2: TLabel
+      object lbMemberCountCaption: TLabel
         Left = 0
         Top = 67
         Width = 115
@@ -44,7 +44,7 @@ inherited fmReportOneUnitMembersPrintout: TfmReportOneUnitMembersPrintout
         Font.Style = []
         ParentFont = False
       end
-      object Label3: TLabel
+      object lbUnitKindCaption: TLabel
         Left = 0
         Top = 44
         Width = 27
@@ -132,14 +132,14 @@ inherited fmReportOneUnitMembersPrintout: TfmReportOneUnitMembersPrintout
       Font.Name = 'Calibri'
       Font.Style = [fsBold]
       ParentFont = False
-      object Label4: TLabel
+      object lbPerson: TLabel
         Left = 0
         Top = 3
         Width = 43
         Height = 18
         Caption = 'Person'
       end
-      object Label5: TLabel
+      object lbRole: TLabel
         Left = 520
         Top = 3
         Width = 32
@@ -175,7 +175,7 @@ inherited fmReportOneUnitMembersPrintout: TfmReportOneUnitMembersPrintout
       Font.Style = []
       ParentFont = False
       AfterPrint = bdDetailAfterPrint
-      object RLDBText2: TRLDBText
+      object rdPersonname: TRLDBText
         Left = 0
         Top = 2
         Width = 88
@@ -184,7 +184,7 @@ inherited fmReportOneUnitMembersPrintout: TfmReportOneUnitMembersPrintout
         DataSource = dsDataSource
         Text = ''
       end
-      object RLDBText3: TRLDBText
+      object rdRolename: TRLDBText
         Left = 520
         Top = 2
         Width = 70

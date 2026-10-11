@@ -27,7 +27,7 @@ inherited fmReportPersonsPrintout: TfmReportPersonsPrintout
       Font.Name = 'Calibri'
       Font.Style = [fsBold]
       ParentFont = False
-      object Label3: TLabel
+      object lbName: TLabel
         Left = 0
         Top = 3
         Width = 37
