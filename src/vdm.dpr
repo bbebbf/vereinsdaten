@@ -140,6 +140,8 @@ uses
   unExporter.Params.UnitMember in 'view\forms\export\unExporter.Params.UnitMember.pas' {fmExporterParamsUnitMember},
   unExporter.Params.Birthdays in 'view\forms\export\unExporter.Params.Birthdays.pas' {fmExporterParamsBirthdays},
   Exporter.Birthdays.Types in 'export\Exporter.Birthdays.Types.pas',
+  Exporter.ClubMembers.Types in 'export\Exporter.ClubMembers.Types.pas',
+  unExporter.Params.ClubMembers in 'view\forms\export\unExporter.Params.ClubMembers.pas' {fmExporterParamsClubMembers},
   Exporter.Persons.Types in 'export\Exporter.Persons.Types.pas',
   unExporter.Params.Persons in 'view\forms\export\unExporter.Params.Persons.pas' {fmExporterParamsPersons},
   Report.Base.Printout in 'reports\Report.Base.Printout.pas' {fmReportBasePrintout},

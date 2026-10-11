@@ -79,7 +79,7 @@ implementation
 uses System.UITypes, Vdm.Globals, unRole, unAddress, unTenant, ProgressIndicator,
   UnitMapper,
 
-  unExporter.Params.ZeroParams,
+  unExporter.Params.ClubMembers,
   Exporter.Members.Types, unExporter.Params.UnitMember,
   Exporter.Persons.Types, unExporter.Params.Persons,
   unExporter.Params.Birthdays, unExporter.Params.MemberUnit;
@@ -153,7 +153,7 @@ end;
 
 procedure TfmMain.acReportClubMembersExecute(Sender: TObject);
 begin
-  var lParamsProvider := TfmExporterParamsZeroParams.Create(Self, 'Vereinsmitglieder exportieren');
+  var lParamsProvider := TfmExporterParamsClubMembers.Create(Self);
   try
     fBusiness.OpenReportClubMembers(lParamsProvider);
   finally

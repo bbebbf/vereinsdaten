@@ -3,7 +3,8 @@ unit MainBusinessIntf;
 interface
 
 uses System.SysUtils, Vdm.Types, CrudUI, DtoAddress, DtoAddressAggregated, DtoRole, DtoTenant,
-  ParamsProvider, Exporter.Persons.Types, Exporter.Units.Types, Exporter.Members.Types, Exporter.Birthdays.Types;
+  ParamsProvider, Exporter.Persons.Types, Exporter.Units.Types, Exporter.Members.Types, Exporter.Birthdays.Types,
+  Exporter.ClubMembers.Types;
 
 type
   IMainBusiness = interface
@@ -23,7 +24,7 @@ type
     function IsCrudPersonActivated: Boolean;
     function IsCrudUnitActivated: Boolean;
 
-    procedure OpenReportClubMembers(const aParamsProvider: IParamsProvider<TObject>);
+    procedure OpenReportClubMembers(const aParamsProvider: IParamsProvider<TExporterClubMembersParams>);
     procedure OpenReportMemberUnits(const aParams: TExporterMembersParams;
       const aParamsProvider: IParamsProvider<TExporterMembersParams>);
     procedure OpenReportPersons(const aParams: TExporterPersonsParams;

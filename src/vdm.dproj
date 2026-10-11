@@ -365,6 +365,11 @@ $(PostBuildEvent)]]></PostBuildEvent>
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="export\Exporter.Birthdays.Types.pas"/>
+        <DCCReference Include="export\Exporter.ClubMembers.Types.pas"/>
+        <DCCReference Include="view\forms\export\unExporter.Params.ClubMembers.pas">
+            <Form>fmExporterParamsClubMembers</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <DCCReference Include="export\Exporter.Persons.Types.pas"/>
         <DCCReference Include="view\forms\export\unExporter.Params.Persons.pas">
             <Form>fmExporterParamsPersons</Form>

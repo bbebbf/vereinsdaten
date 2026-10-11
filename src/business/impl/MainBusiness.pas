@@ -4,7 +4,8 @@ interface
 
 uses System.SysUtils, InterfacedBase, MainBusinessIntf, SqlConnection, MainUI, PersonBusinessIntf, EntryCrudConfig,
   CrudCommands, Vdm.Types, CrudUI, DtoUnit, DtoUnitAggregated, DtoAddress, DtoAddressAggregated, DtoRole, DtoTenant,
-  ParamsProvider, Exporter.Persons.Types, Exporter.Units.Types, Exporter.Members.Types, Exporter.Birthdays.Types;
+  ParamsProvider, Exporter.Persons.Types, Exporter.Units.Types, Exporter.Members.Types, Exporter.Birthdays.Types,
+  Exporter.ClubMembers.Types;
 
 type
   TMainBusiness = class(TInterfacedBase, IMainBusiness)
@@ -29,7 +30,7 @@ type
       const aModalProc: TFunc<Integer>);
     function IsCrudPersonActivated: Boolean;
     function IsCrudUnitActivated: Boolean;
-    procedure OpenReportClubMembers(const aParamsProvider: IParamsProvider<TObject>);
+    procedure OpenReportClubMembers(const aParamsProvider: IParamsProvider<TExporterClubMembersParams>);
     procedure OpenReportMemberUnits(const aParams: TExporterMembersParams;
       const aParamsProvider: IParamsProvider<TExporterMembersParams>);
     procedure OpenReportPersons(const aParams: TExporterPersonsParams;
@@ -209,20 +210,23 @@ begin
   end;
 end;
 
-procedure TMainBusiness.OpenReportClubMembers(const aParamsProvider: IParamsProvider<TObject>);
+procedure TMainBusiness.OpenReportClubMembers(const aParamsProvider: IParamsProvider<TExporterClubMembersParams>);
 begin
+  var lExporter: TExporterClubMembers := nil;
+  var lParams: TExporterClubMembersParams := nil;
   var lReport := TfmReportClubMembersPrintout.Create;
   try
-    var lExporter := TExporterClubMembers.Create(fConnection);
-    try
-      lExporter.Targets.Add(lReport);
-      lExporter.Targets.Add(TReportClubMembersCsv.Create);
-      lExporter.ParamsProvider := aParamsProvider;
-      lExporter.DoExport;
-    finally
-      lExporter.Free;
-    end;
+    lParams := TExporterClubMembersParams.Create;
+
+    lExporter := TExporterClubMembers.Create(fConnection);
+    lExporter.Targets.Add(lReport);
+    lExporter.Targets.Add(TReportClubMembersCsv.Create);
+    lExporter.Params := lParams;
+    lExporter.ParamsProvider := aParamsProvider;
+    lExporter.DoExport;
   finally
+    lExporter.Free;
+    lParams.Free;
     lReport.Free;
   end;
 end;

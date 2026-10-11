@@ -30,7 +30,7 @@ object fmReportClubMembersPrintout: TfmReportClubMembersPrintout
     BeforePrint = RLReportBeforePrint
     object bdDetail: TRLBand
       Left = 24
-      Top = 112
+      Top = 131
       Width = 1355
       Height = 28
       GreenBarPrint = True
@@ -123,7 +123,7 @@ object fmReportClubMembersPrintout: TfmReportClubMembersPrintout
     end
     object bdColumnHeader: TRLBand
       Left = 24
-      Top = 82
+      Top = 101
       Width = 1355
       Height = 30
       BandType = btColumnHeader
@@ -198,7 +198,7 @@ object fmReportClubMembersPrintout: TfmReportClubMembersPrintout
       Left = 24
       Top = 47
       Width = 1355
-      Height = 35
+      Height = 54
       BandType = btHeader
       object lbReportTitle: TLabel
         Left = 0
@@ -227,10 +227,23 @@ object fmReportClubMembersPrintout: TfmReportClubMembersPrintout
         Font.Style = []
         ParentFont = False
       end
+      object memFilterInfo: TRLMemo
+        Left = 3
+        Top = 29
+        Width = 518
+        Height = 16
+        Behavior = [beSiteExpander]
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Height = -13
+        Font.Name = 'Arial'
+        Font.Style = []
+        ParentFont = False
+      end
     end
     object bdPageFooter: TRLBand
       Left = 24
-      Top = 164
+      Top = 183
       Width = 1355
       Height = 27
       BandType = btFooter
@@ -295,7 +308,7 @@ object fmReportClubMembersPrintout: TfmReportClubMembersPrintout
     end
     object bdSummary: TRLBand
       Left = 24
-      Top = 140
+      Top = 159
       Width = 1355
       Height = 24
       BandType = btSummary
