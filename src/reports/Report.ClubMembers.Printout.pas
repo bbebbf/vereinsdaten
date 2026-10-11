@@ -29,11 +29,12 @@ type
     rdEndReason: TRLDBText;
     bdSummary: TRLBand;
     lbActiveInactive: TLabel;
-    procedure rdInactiveAfterPrint(Sender: TObject);
     procedure bdSummaryBeforePrint(Sender: TObject; var PrintIt: Boolean);
+    procedure rdNumberAfterPrint(Sender: TObject);
   strict private
     fActiveCounter: Integer;
     fInactiveCounter: Integer;
+    fIncludeInactive: Boolean;
     fPortrait: Boolean;
     procedure ApplyLayout;
     procedure SetParams(const aParams: TExporterClubMembersParams);
@@ -53,6 +54,15 @@ uses RLTypes, StringTools;
 function TfmReportClubMembersPrintout.GetReportTitle: string;
 begin
   Result := 'Vereinsmitglieder';
+end;
+
+procedure TfmReportClubMembersPrintout.rdNumberAfterPrint(Sender: TObject);
+begin
+  inherited;
+  if Length(rdInactive.Field.AsString) = 0 then
+    Inc(fActiveCounter)
+  else
+    Inc(fInactiveCounter);
 end;
 
 procedure TfmReportClubMembersPrintout.DoBeforePrint;
@@ -96,8 +106,6 @@ begin
 
   SetFilterInfo(lFilterInfo);
 
-  bdSummary.Visible := aParams.IncludeInactive;
-
   lbInactive.Visible := aParams.IncludeInactive;
   lbEndDate.Visible := aParams.IncludeInactive;
   lbEndReason.Visible := aParams.IncludeInactive;
@@ -105,21 +113,21 @@ begin
   rdEndDate.Visible := aParams.IncludeInactive;
   rdEndReason.Visible := aParams.IncludeInactive;
 
+  fIncludeInactive := aParams.IncludeInactive;
   fPortrait := not aParams.IncludeInactive;
   ApplyLayout;
 end;
 
 procedure TfmReportClubMembersPrintout.bdSummaryBeforePrint(Sender: TObject; var PrintIt: Boolean);
 begin
-  lbActiveInactive.Caption := 'Aktive: ' + IntToStr(fActiveCounter) + ' / Inaktive: ' + IntToStr(fInactiveCounter);
-end;
-
-procedure TfmReportClubMembersPrintout.rdInactiveAfterPrint(Sender: TObject);
-begin
-  if Length(rdInactive.Field.AsString) = 0 then
-    Inc(fActiveCounter)
+  if fIncludeInactive then
+  begin
+    lbActiveInactive.Caption := 'Anzahl Aktive: ' + IntToStr(fActiveCounter) + ' / Inaktive: ' + IntToStr(fInactiveCounter);
+  end
   else
-    Inc(fInactiveCounter);
+  begin
+    lbActiveInactive.Caption := 'Anzahl: ' + IntToStr(fActiveCounter);
+  end;
 end;
 
 end.

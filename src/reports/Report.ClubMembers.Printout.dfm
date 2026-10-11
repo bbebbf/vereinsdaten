@@ -1,22 +1,46 @@
 inherited fmReportClubMembersPrintout: TfmReportClubMembersPrintout
-  Left = 0
-  Top = 0
   Caption = 'fmReportClubMembersPrintout'
   ClientHeight = 863
   ClientWidth = 1411
-  Color = clBtnFace
-  Font.Charset = DEFAULT_CHARSET
-  Font.Color = clWindowText
-  Font.Height = -12
-  Font.Name = 'Segoe UI'
-  Font.Style = []
+  StyleElements = [seFont, seClient, seBorder]
+  ExplicitWidth = 1427
+  ExplicitHeight = 902
   TextHeight = 15
   inherited RLReport: TRLReport
+    Width = 1403
+    Height = 992
     Margins.LeftMargin = 5.000000000000000000
     Margins.RightMargin = 5.000000000000000000
     PageSetup.Orientation = poLandscape
     PreviewOptions.ShowModal = True
     Title = 'Vereinsmitglieder'
+    ExplicitWidth = 1403
+    ExplicitHeight = 992
+    inherited bdReportHeader: TRLBand
+      Left = 24
+      Width = 1355
+      Height = 54
+      ExplicitLeft = 24
+      ExplicitWidth = 1355
+      ExplicitHeight = 54
+      inherited lbReportTitle: TLabel
+        StyleElements = [seFont, seClient, seBorder]
+      end
+      inherited lbTenantTitle: TLabel
+        StyleElements = [seFont, seClient, seBorder]
+      end
+    end
+    inherited bdPageFooter: TRLBand
+      Left = 24
+      Top = 183
+      Width = 1355
+      ExplicitLeft = 24
+      ExplicitTop = 183
+      ExplicitWidth = 1355
+      inherited lbAppTitle: TLabel
+        StyleElements = [seFont, seClient, seBorder]
+      end
+    end
     object bdDetail: TRLBand
       Left = 24
       Top = 131
@@ -48,6 +72,7 @@ inherited fmReportClubMembersPrintout: TfmReportClubMembersPrintout
         DataField = 'clmb_number'
         DataSource = dsDataSource
         Text = ''
+        AfterPrint = rdNumberAfterPrint
       end
       object rdBirthday: TRLDBText
         Left = 225
@@ -98,7 +123,6 @@ inherited fmReportClubMembersPrintout: TfmReportClubMembersPrintout
         DataField = 'clmb_inactive'
         DataSource = dsDataSource
         Text = ''
-        AfterPrint = rdInactiveAfterPrint
       end
       object rdEndReason: TRLDBText
         Left = 870
@@ -182,15 +206,6 @@ inherited fmReportClubMembersPrintout: TfmReportClubMembersPrintout
         Height = 18
         Caption = 'Austrittsgrund'
       end
-    end
-    inherited bdReportHeader: TRLBand
-      Left = 24
-      Width = 1355
-      Height = 54
-    end
-    inherited bdPageFooter: TRLBand
-      Left = 24
-      Width = 1355
     end
     object bdSummary: TRLBand
       Left = 24
