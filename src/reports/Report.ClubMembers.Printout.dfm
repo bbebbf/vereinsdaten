@@ -1,4 +1,4 @@
-object fmReportClubMembersPrintout: TfmReportClubMembersPrintout
+inherited fmReportClubMembersPrintout: TfmReportClubMembersPrintout
   Left = 0
   Top = 0
   Caption = 'fmReportClubMembersPrintout'
@@ -11,23 +11,12 @@ object fmReportClubMembersPrintout: TfmReportClubMembersPrintout
   Font.Name = 'Segoe UI'
   Font.Style = []
   TextHeight = 15
-  object RLReport: TRLReport
-    Left = 0
-    Top = 0
-    Width = 1403
-    Height = 992
+  inherited RLReport: TRLReport
     Margins.LeftMargin = 5.000000000000000000
     Margins.RightMargin = 5.000000000000000000
-    DataSource = dsDataSource
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -17
-    Font.Name = 'Calibri'
-    Font.Style = []
     PageSetup.Orientation = poLandscape
     PreviewOptions.ShowModal = True
     Title = 'Vereinsmitglieder'
-    BeforePrint = RLReportBeforePrint
     object bdDetail: TRLBand
       Left = 24
       Top = 131
@@ -194,117 +183,14 @@ object fmReportClubMembersPrintout: TfmReportClubMembersPrintout
         Caption = 'Austrittsgrund'
       end
     end
-    object bdReportHeader: TRLBand
+    inherited bdReportHeader: TRLBand
       Left = 24
-      Top = 47
       Width = 1355
       Height = 54
-      BandType = btHeader
-      object lbReportTitle: TLabel
-        Left = 0
-        Top = 0
-        Width = 150
-        Height = 23
-        Caption = 'Vereinsmitglieder'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -20
-        Font.Name = 'Arial'
-        Font.Style = []
-        ParentFont = False
-      end
-      object lbTenantTitle: TLabel
-        Left = 999
-        Top = 0
-        Width = 78
-        Height = 21
-        Alignment = taRightJustify
-        Caption = 'Vereinstitel'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -17
-        Font.Name = 'Calibri'
-        Font.Style = []
-        ParentFont = False
-      end
-      object memFilterInfo: TRLMemo
-        Left = 3
-        Top = 29
-        Width = 518
-        Height = 16
-        Behavior = [beSiteExpander]
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -13
-        Font.Name = 'Arial'
-        Font.Style = []
-        ParentFont = False
-      end
     end
-    object bdPageFooter: TRLBand
+    inherited bdPageFooter: TRLBand
       Left = 24
-      Top = 183
       Width = 1355
-      Height = 27
-      BandType = btFooter
-      object lbAppTitle: TLabel
-        Left = 417
-        Top = 10
-        Width = 250
-        Height = 14
-        Alignment = taCenter
-        AutoSize = False
-        Caption = 'lbAppTitle'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -12
-        Font.Name = 'Calibri'
-        Font.Style = [fsItalic]
-        ParentFont = False
-      end
-      object lbSysDate: TRLSystemInfo
-        Left = 0
-        Top = 6
-        Width = 65
-        Height = 18
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -15
-        Font.Name = 'Calibri'
-        Font.Style = []
-        Info = itFullDate
-        ParentFont = False
-        Text = ''
-      end
-      object RLSystemInfo3: TRLSystemInfo
-        Left = 1009
-        Top = 6
-        Width = 36
-        Height = 18
-        Alignment = taRightJustify
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -15
-        Font.Name = 'Calibri'
-        Font.Style = []
-        Info = itPageNumber
-        ParentFont = False
-        Text = ''
-      end
-      object RLSystemInfo4: TRLSystemInfo
-        Left = 1043
-        Top = 6
-        Width = 42
-        Height = 18
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -15
-        Font.Name = 'Calibri'
-        Font.Style = []
-        Info = itLastPageNumber
-        ParentFont = False
-        Text = '/ '
-      end
     end
     object bdSummary: TRLBand
       Left = 24
@@ -327,9 +213,5 @@ object fmReportClubMembersPrintout: TfmReportClubMembersPrintout
         Caption = 'lcActiveInactiveCount'
       end
     end
-  end
-  object dsDataSource: TDataSource
-    Left = 384
-    Top = 360
   end
 end

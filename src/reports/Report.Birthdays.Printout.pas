@@ -9,22 +9,12 @@ uses
 
 type
   TfmReportBirthdaysPrintout = class(TfmReportBasePrintout, IExporterTarget<TExporterBirthdaysParams>)
-    RLReport: TRLReport;
-    dsDataSource: TDataSource;
-    bdReportHeader: TRLBand;
-    lbReportTitle: TLabel;
-    lbTenantTitle: TLabel;
     bdColumnHeader: TRLBand;
     lbName: TLabel;
     lbAddress: TLabel;
     bdDetail: TRLBand;
     rdPersonname: TRLDBText;
     rtAddress: TRLDBText;
-    bdPageFooter: TRLBand;
-    lbSysDate: TRLSystemInfo;
-    RLSystemInfo3: TRLSystemInfo;
-    RLSystemInfo4: TRLSystemInfo;
-    lbAppTitle: TLabel;
     lbBirthday: TLabel;
     rdColumnHeaderHLine: TRLDraw;
     lbAge: TLabel;
@@ -43,21 +33,20 @@ type
   strict private
     procedure SetParams(const aParams: TExporterBirthdaysParams);
   strict protected
-    procedure ExportInternal(const aDataSet: ISqlDataSet); override;
+    function GetReportTitle: string; override;
   end;
 
 implementation
 
-uses System.IOUtils, System.Generics.Collections, System.DateUtils, TenantReader, Vdm.Globals, VclUITools;
+uses Vdm.Globals;
 
 {$R *.dfm}
 
 { TfmReportBirthdays }
 
-procedure TfmReportBirthdaysPrintout.ExportInternal(const aDataSet: ISqlDataSet);
+function TfmReportBirthdaysPrintout.GetReportTitle: string;
 begin
-  dsDataSource.DataSet := aDataSet.DataSet;
-  RLReport.Preview;
+  Result := 'Geburtstagsliste';
 end;
 
 procedure TfmReportBirthdaysPrintout.rdBirthdayBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
@@ -85,8 +74,6 @@ end;
 
 procedure TfmReportBirthdaysPrintout.SetParams(const aParams: TExporterBirthdaysParams);
 begin
-  lbTenantTitle.Caption := TTenantReader.Instance.Tenant.Title;
-  lbAppTitle.Caption := TVdmGlobals.GetVdmApplicationTitle;
   lbFromDate.Caption := TVdmGlobals.GetDateAsString(aParams.FromDate);
   lbToDate.Caption := TVdmGlobals.GetDateAsString(aParams.ToDate);
   lbOnBirthdaylist.Visible := not aParams.ConsiderBirthdaylistFlag;

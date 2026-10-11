@@ -9,48 +9,36 @@ uses
 
 type
   TfmReportPersonsPrintout = class(TfmReportBasePrintout, IExporterTarget<TExporterPersonsParams>)
-    RLReport: TRLReport;
-    dsDataSource: TDataSource;
-    bdReportHeader: TRLBand;
-    lbReportTitle: TLabel;
-    lbTenantTitle: TLabel;
     bdColumnHeader: TRLBand;
     Label3: TLabel;
     lbAddress: TLabel;
     bdDetail: TRLBand;
     rdPersonname: TRLDBText;
     rtAddress: TRLDBText;
-    bdPageFooter: TRLBand;
-    lbSysDate: TRLSystemInfo;
-    RLSystemInfo3: TRLSystemInfo;
-    RLSystemInfo4: TRLSystemInfo;
-    lbAppTitle: TLabel;
     lbBirthday: TLabel;
     rtBirthday: TRLDBText;
     rdColumnHeaderHLine: TRLDraw;
     lbStatus: TLabel;
     rtStatus: TRLDBText;
-    lbSpecialPersonsInfo: TRLLabel;
     procedure rtBirthdayBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
     procedure rtStatusBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
   strict private
     procedure SetParams(const aParams: TExporterPersonsParams);
   strict protected
-    procedure ExportInternal(const aDataSet: ISqlDataSet); override;
+    function GetReportTitle: string; override;
   end;
 
 implementation
 
-uses TenantReader, Vdm.Globals, VclUITools, StringTools;
+uses VclUITools, StringTools;
 
 {$R *.dfm}
 
 { TfmReportPersons }
 
-procedure TfmReportPersonsPrintout.ExportInternal(const aDataSet: ISqlDataSet);
+function TfmReportPersonsPrintout.GetReportTitle: string;
 begin
-  dsDataSource.DataSet := aDataSet.DataSet;
-  RLReport.Preview;
+  Result := 'Personen';
 end;
 
 procedure TfmReportPersonsPrintout.rtBirthdayBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
@@ -74,28 +62,13 @@ end;
 
 procedure TfmReportPersonsPrintout.SetParams(const aParams: TExporterPersonsParams);
 begin
-  lbTenantTitle.Caption := TTenantReader.Instance.Tenant.Title;
-  lbAppTitle.Caption := TVdmGlobals.GetVdmApplicationTitle;
-
   if not aParams.IncludeExternal and not aParams.IncludeInactive then
   begin
     TVclUITools.HideAndMoveHorizontal(lbStatus, [lbBirthday, lbAddress, rtBirthday, rtAddress]);
     rtStatus.Visible := False;
   end;
 
-  lbSpecialPersonsInfo.Visible := aParams.IncludeInactive or aParams.IncludeExternal;
-  if aParams.IncludeInactive and aParams.IncludeExternal then
-  begin
-    lbSpecialPersonsInfo.Caption := 'Externe und inaktive Personen enthalten.';
-  end
-  else if aParams.IncludeInactive then
-  begin
-    lbSpecialPersonsInfo.Caption := 'Inaktive Personen enthalten.';
-  end
-  else if aParams.IncludeExternal then
-  begin
-    lbSpecialPersonsInfo.Caption := 'Externe Personen enthalten.';
-  end;
+  SetFilterInfo(GetPersonInclusionInfo(aParams.IncludeInactive, aParams.IncludeExternal));
 end;
 
 end.

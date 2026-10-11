@@ -9,21 +9,12 @@ uses
 
 type
   TfmReportOneUnitMembersPrintout = class(TfmReportBasePrintout, IExporterTarget<TExporterUnitDetailsParams>)
-    RLReport: TRLReport;
-    dsDataSource: TDataSource;
-    bdReportHeader: TRLBand;
-    lbTenantTitle: TLabel;
     bdColumnHeader: TRLBand;
     Label4: TLabel;
     Label5: TLabel;
     bdDetail: TRLBand;
     RLDBText2: TRLDBText;
     RLDBText3: TRLDBText;
-    bdPageFooter: TRLBand;
-    lbSysDate: TRLSystemInfo;
-    RLSystemInfo3: TRLSystemInfo;
-    RLSystemInfo4: TRLSystemInfo;
-    lbAppTitle: TLabel;
     rdUnitname: TRLDBText;
     rdUnitDataConfirmed: TRLDBText;
     Label1: TLabel;
@@ -34,7 +25,6 @@ type
     rtAddress: TRLDBText;
     rdUnitKind: TRLDBText;
     Label3: TLabel;
-    procedure RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure bdDetailAfterPrint(Sender: TObject);
     procedure RLReportPageStarting(Sender: TObject);
     procedure rdMemberCountBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
@@ -43,21 +33,23 @@ type
     fNewPageStarted: Boolean;
     procedure SetParams(const aParams: TExporterUnitDetailsParams);
   strict protected
-    procedure ExportInternal(const aDataSet: ISqlDataSet); override;
+    function GetReportTitle: string; override;
   end;
 
 implementation
 
-uses TenantReader, Vdm.Globals, DtoUnit;
+uses DtoUnit;
 
 {$R *.dfm}
 
 { TfmReportOneUnitMembers }
 
-procedure TfmReportOneUnitMembersPrintout.ExportInternal(const aDataSet: ISqlDataSet);
+function TfmReportOneUnitMembersPrintout.GetReportTitle: string;
 begin
-  dsDataSource.DataSet := aDataSet.DataSet;
-  RLReport.Preview;
+  if Assigned(dsDataSource.DataSet) and not dsDataSource.DataSet.Eof then
+    Result := dsDataSource.DataSet.FieldByName('unit_name').AsString
+  else
+    Result := 'Unbekannte Einheit';
 end;
 
 procedure TfmReportOneUnitMembersPrintout.rdMemberCountBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
@@ -77,20 +69,6 @@ end;
 procedure TfmReportOneUnitMembersPrintout.bdDetailAfterPrint(Sender: TObject);
 begin
   fNewPageStarted := False;
-end;
-
-procedure TfmReportOneUnitMembersPrintout.RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
-begin
-  lbTenantTitle.Caption := TTenantReader.Instance.Tenant.Title;
-  lbAppTitle.Caption := TVdmGlobals.GetVdmApplicationTitle;
-  if dsDataSource.DataSet.Eof then
-  begin
-    RLReport.JobTitle := 'Unbekannte Einheit';
-  end
-  else
-  begin
-    RLReport.JobTitle := dsDataSource.DataSet.FieldByName('unit_name').AsString;
-  end;
 end;
 
 procedure TfmReportOneUnitMembersPrintout.RLReportPageStarting(Sender: TObject);

@@ -9,11 +9,6 @@ uses
 
 type
   TfmReportUnitMembersPrintout = class(TfmReportBasePrintout, IExporterTarget<TExporterMembersParams>)
-    RLReport: TRLReport;
-    dsDataSource: TDataSource;
-    bdReportHeader: TRLBand;
-    lbReportTitle: TLabel;
-    lbTenantTitle: TLabel;
     bdColumnHeader: TRLBand;
     Label3: TLabel;
     Label4: TLabel;
@@ -24,20 +19,13 @@ type
     RLDBText3: TRLDBText;
     rdUinitId: TRLDBText;
     rdUnitDivider: TRLDraw;
-    bdPageFooter: TRLBand;
-    lbSysDate: TRLSystemInfo;
-    RLSystemInfo3: TRLSystemInfo;
-    RLSystemInfo4: TRLSystemInfo;
-    lbAppTitle: TLabel;
     Label1: TLabel;
     rdUnitDataConfirmed: TRLDBText;
     rdMemberCount: TRLDBText;
     Label2: TLabel;
     rdUnitKind: TRLDBText;
-    memFilterInfo: TRLMemo;
     rdInactiveInfo: TRLLabel;
     rdInactiveInfoUnit: TRLLabel;
-    procedure RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure bdDetailAfterPrint(Sender: TObject);
     procedure rdUnitDividerBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure rdUnitnameBeforePrint(Sender: TObject; var AText: string; var PrintIt: Boolean);
@@ -51,21 +39,21 @@ type
     fDefaultDetailHeight: Integer;
     procedure SetParams(const aParams: TExporterMembersParams);
   strict protected
-    procedure ExportInternal(const aDataSet: ISqlDataSet); override;
+    function GetReportTitle: string; override;
+    procedure DoBeforePrint; override;
   end;
 
 implementation
 
-uses TenantReader, Vdm.Globals, DtoUnit, StringTools, Exporter.Params.Tools;
+uses Vdm.Globals, DtoUnit, StringTools, Exporter.Params.Tools;
 
 {$R *.dfm}
 
 { TfmReportUnitMembers }
 
-procedure TfmReportUnitMembersPrintout.ExportInternal(const aDataSet: ISqlDataSet);
+function TfmReportUnitMembersPrintout.GetReportTitle: string;
 begin
-  dsDataSource.DataSet := aDataSet.DataSet;
-  RLReport.Preview;
+  Result := 'Einheiten und Personen';
 end;
 
 procedure TfmReportUnitMembersPrintout.bdDetailBeforePrint(Sender: TObject; var PrintIt: Boolean);
@@ -137,11 +125,10 @@ begin
   end;
 end;
 
-procedure TfmReportUnitMembersPrintout.RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
+procedure TfmReportUnitMembersPrintout.DoBeforePrint;
 begin
-  lbTenantTitle.Caption := TTenantReader.Instance.Tenant.Title;
+  inherited;
   fPreviousUnitId := 0;
-  lbAppTitle.Caption := TVdmGlobals.GetVdmApplicationTitle;
   fDefaultDetailHeight := (2 * rdUnitname.Top) + rdUnitname.Height;
 end;
 
@@ -156,15 +143,10 @@ begin
   var lFilterInfo := '';
   lFilterInfo := TStringTools.Combine(lFilterInfo, sLineBreak, aParams.Units.State.GetReadableCondition);
   lFilterInfo := TStringTools.Combine(lFilterInfo, sLineBreak, aParams.MembersState.GetReadableCondition);
-  if aParams.Persons.IncludeInactive and aParams.Persons.IncludeExternal then
-    lFilterInfo := TStringTools.Combine(lFilterInfo, sLineBreak, 'Externe und inaktive Personen enthalten.')
-  else if aParams.Persons.IncludeInactive then
-    lFilterInfo := TStringTools.Combine(lFilterInfo, sLineBreak, 'Inaktive Personen enthalten.')
-  else if aParams.Persons.IncludeExternal then
-    lFilterInfo := TStringTools.Combine(lFilterInfo, sLineBreak, 'Externe Personen enthalten.');
+  lFilterInfo := TStringTools.Combine(lFilterInfo, sLineBreak,
+    GetPersonInclusionInfo(aParams.Persons.IncludeInactive, aParams.Persons.IncludeExternal));
 
-  memFilterInfo.Lines.Text := lFilterInfo;
-  memFilterInfo.Visible := Length(lFilterInfo) > 0;
+  SetFilterInfo(lFilterInfo);
 end;
 
 end.

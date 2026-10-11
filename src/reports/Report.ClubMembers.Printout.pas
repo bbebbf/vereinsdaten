@@ -9,16 +9,12 @@ uses
 
 type
   TfmReportClubMembersPrintout = class(TfmReportBasePrintout, IExporterTarget<TExporterClubMembersParams>)
-    RLReport: TRLReport;
-    dsDataSource: TDataSource;
     bdDetail: TRLBand;
     RLDBText1: TRLDBText;
     RLDBText2: TRLDBText;
     RLDBText3: TRLDBText;
     RLDBText4: TRLDBText;
     bdColumnHeader: TRLBand;
-    bdReportHeader: TRLBand;
-    lbReportTitle: TLabel;
     Label2: TLabel;
     Label3: TLabel;
     Label4: TLabel;
@@ -31,16 +27,8 @@ type
     rdInactive: TRLDBText;
     Label7: TLabel;
     RLDBText8: TRLDBText;
-    bdPageFooter: TRLBand;
-    lbSysDate: TRLSystemInfo;
-    RLSystemInfo3: TRLSystemInfo;
-    RLSystemInfo4: TRLSystemInfo;
-    lbTenantTitle: TLabel;
     bdSummary: TRLBand;
     lbActiveInactive: TLabel;
-    lbAppTitle: TLabel;
-    memFilterInfo: TRLMemo;
-    procedure RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
     procedure rdInactiveAfterPrint(Sender: TObject);
     procedure bdSummaryBeforePrint(Sender: TObject; var PrintIt: Boolean);
   strict private
@@ -50,29 +38,28 @@ type
     procedure ApplyLayout;
     procedure SetParams(const aParams: TExporterClubMembersParams);
   strict protected
-    procedure ExportInternal(const aDataSet: ISqlDataSet); override;
+    function GetReportTitle: string; override;
+    procedure DoBeforePrint; override;
   end;
 
 implementation
 
-uses RLTypes, TenantReader, Vdm.Globals, StringTools;
+uses RLTypes, StringTools;
 
 {$R *.dfm}
 
 { TfmReportClubMembers }
 
-procedure TfmReportClubMembersPrintout.ExportInternal(const aDataSet: ISqlDataSet);
+function TfmReportClubMembersPrintout.GetReportTitle: string;
 begin
-  dsDataSource.DataSet := aDataSet.DataSet;
-  RLReport.Preview;
+  Result := 'Vereinsmitglieder';
 end;
 
-procedure TfmReportClubMembersPrintout.RLReportBeforePrint(Sender: TObject; var PrintIt: Boolean);
+procedure TfmReportClubMembersPrintout.DoBeforePrint;
 begin
-  lbTenantTitle.Caption := TTenantReader.Instance.Tenant.Title;
+  inherited;
   fActiveCounter := 0;
   fInactiveCounter := 0;
-  lbAppTitle.Caption := TVdmGlobals.GetVdmApplicationTitle;
   ApplyLayout;
 end;
 
@@ -92,10 +79,7 @@ begin
     RLReport.PageSetup.Orientation := poLandscape;
   end;
 
-  lbTenantTitle.Left := lBandWidth - lbTenantTitle.Width;
-  RLSystemInfo4.Left := lBandWidth - RLSystemInfo4.Width;
-  RLSystemInfo3.Left := RLSystemInfo4.Left - RLSystemInfo3.Width;
-  lbAppTitle.Left := (lBandWidth - lbAppTitle.Width) div 2;
+  ApplyBandWidth(lBandWidth);
 end;
 
 procedure TfmReportClubMembersPrintout.SetParams(const aParams: TExporterClubMembersParams);
@@ -110,8 +94,7 @@ begin
     lFilterInfo := TStringTools.Combine(lFilterInfo, sLineBreak, 'Nach Name sortiert.');
   end;
 
-  memFilterInfo.Lines.Text := lFilterInfo;
-  memFilterInfo.Visible := Length(lFilterInfo) > 0;
+  SetFilterInfo(lFilterInfo);
 
   bdSummary.Visible := not aParams.OnlyActive;
 

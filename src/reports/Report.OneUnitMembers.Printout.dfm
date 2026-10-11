@@ -1,4 +1,4 @@
-object fmReportOneUnitMembersPrintout: TfmReportOneUnitMembersPrintout
+inherited fmReportOneUnitMembersPrintout: TfmReportOneUnitMembersPrintout
   Left = 0
   Top = 0
   Caption = 'fmReportOneUnitMembersPrintout'
@@ -11,38 +11,12 @@ object fmReportOneUnitMembersPrintout: TfmReportOneUnitMembersPrintout
   Font.Name = 'Segoe UI'
   Font.Style = []
   TextHeight = 15
-  object RLReport: TRLReport
-    Left = 0
-    Top = 8
-    Width = 992
-    Height = 1403
-    DataSource = dsDataSource
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -17
-    Font.Name = 'Arial'
-    Font.Style = []
-    BeforePrint = RLReportBeforePrint
+  inherited RLReport: TRLReport
     OnPageStarting = RLReportPageStarting
-    object bdReportHeader: TRLBand
-      Left = 47
-      Top = 47
-      Width = 898
+    inherited bdReportHeader: TRLBand
       Height = 138
-      BandType = btHeader
-      object lbTenantTitle: TLabel
-        Left = 633
-        Top = 0
-        Width = 78
-        Height = 21
-        Alignment = taRightJustify
-        Caption = 'Vereinstitel'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -17
-        Font.Name = 'Calibri'
-        Font.Style = []
-        ParentFont = False
+      inherited lbReportTitle: TLabel
+        Visible = False
       end
       object Label1: TLabel
         Left = 0
@@ -229,74 +203,5 @@ object fmReportOneUnitMembersPrintout: TfmReportOneUnitMembersPrintout
         Text = ''
       end
     end
-    object bdPageFooter: TRLBand
-      Left = 47
-      Top = 233
-      Width = 898
-      Height = 27
-      BandType = btFooter
-      object lbAppTitle: TLabel
-        Left = 234
-        Top = 10
-        Width = 250
-        Height = 14
-        Alignment = taCenter
-        AutoSize = False
-        Caption = 'lbAppTitle'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -12
-        Font.Name = 'Calibri'
-        Font.Style = [fsItalic]
-        ParentFont = False
-      end
-      object lbSysDate: TRLSystemInfo
-        Left = 0
-        Top = 6
-        Width = 65
-        Height = 18
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -15
-        Font.Name = 'Calibri'
-        Font.Style = []
-        Info = itFullDate
-        ParentFont = False
-        Text = ''
-      end
-      object RLSystemInfo3: TRLSystemInfo
-        Left = 630
-        Top = 6
-        Width = 36
-        Height = 18
-        Alignment = taRightJustify
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -15
-        Font.Name = 'Calibri'
-        Font.Style = []
-        Info = itPageNumber
-        ParentFont = False
-        Text = ''
-      end
-      object RLSystemInfo4: TRLSystemInfo
-        Left = 665
-        Top = 6
-        Width = 42
-        Height = 18
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -15
-        Font.Name = 'Calibri'
-        Font.Style = []
-        Info = itLastPageNumber
-        ParentFont = False
-        Text = '/ '
-      end
-    end
-  end
-  object dsDataSource: TDataSource
-    Left = 480
-    Top = 432
   end
 end
