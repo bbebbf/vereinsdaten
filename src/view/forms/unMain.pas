@@ -238,6 +238,11 @@ end;
 procedure TfmMain.FormCreate(Sender: TObject);
 begin
   fProgressForm := TfmProgressForm.Create(Self);
+  // Das Fortschrittsformular muss dem Hauptformular gehören. Sonst ist es Popup des (unsichtbaren)
+  // Application-Fensters, und TApplication aktiviert es beim Zurückwechseln als "letztes aktives Popup"
+  // (CM_ACTIVATE -> SetFocus(FLastActivePopup)), obwohl ein modaler Dialog offen ist.
+  fProgressForm.PopupMode := TPopupMode.pmExplicit;
+  fProgressForm.PopupParent := Self;
   fProgressIndicator := TProgressIndicator.Create(fProgressForm);
 
   ffraPerson := TfraPerson.Create(Self, fProgressIndicator);
