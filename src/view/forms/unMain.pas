@@ -67,7 +67,6 @@ type
     function GetPersonAggregatedUI: IPersonAggregatedUI;
     function GetUnitCrudUI: ICrudUI<TDtoUnitAggregated, TDtoUnit, UInt32, TEntryFilter>;
     function GetUnitMemberOfsUI: IMemberOfUI;
-    function GetCurrentUnitId: UInt32;
     procedure UpdateMainActions;
   end;
 
@@ -238,9 +237,6 @@ end;
 procedure TfmMain.FormCreate(Sender: TObject);
 begin
   fProgressForm := TfmProgressForm.Create(Self);
-  // Das Fortschrittsformular muss dem Hauptformular gehören. Sonst ist es Popup des (unsichtbaren)
-  // Application-Fensters, und TApplication aktiviert es beim Zurückwechseln als "letztes aktives Popup"
-  // (CM_ACTIVATE -> SetFocus(FLastActivePopup)), obwohl ein modaler Dialog offen ist.
   fProgressForm.PopupMode := TPopupMode.pmExplicit;
   fProgressForm.PopupParent := Self;
   fProgressIndicator := TProgressIndicator.Create(fProgressForm);
@@ -265,15 +261,6 @@ end;
 procedure TfmMain.FormShow(Sender: TObject);
 begin
   fBusiness.UIIsReady;
-end;
-
-function TfmMain.GetCurrentUnitId: UInt32;
-begin
-  Result := 0;
-  if ffraUnit.Visible then
-    Result := ffraUnit.CurrentUnitId;
-  if (Result = 0) or ffraPerson.Visible then
-    Result := ffraPerson.CurrentUnitId;
 end;
 
 function TfmMain.GetPersonAggregatedUI: IPersonAggregatedUI;

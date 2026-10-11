@@ -19,8 +19,6 @@ type
     cbIncludeOneTimeUnits: TCheckBox;
     cbIncludeExternalUnits: TCheckBox;
   strict private
-    fSelectUnitIdForDetails: UInt32;
-    fSelectUnitNameForDetails: string;
     function GetParams(const aParams: TExporterMembersParams): TExporterMembersParams;
     procedure SetParams(const aParams: TExporterMembersParams);
     function ShouldBeExported(const aParams: TExporterMembersParams): Boolean;

@@ -2,15 +2,13 @@ inherited fmExporterParamsMemberUnit: TfmExporterParamsMemberUnit
   Caption = 'Personen und Einheiten exportieren'
   ClientHeight = 503
   ClientWidth = 423
-  StyleElements = [seFont, seClient, seBorder]
-  ExplicitWidth = 439
-  ExplicitHeight = 542
+  ExplicitWidth = 441
+  ExplicitHeight = 550
   TextHeight = 15
   inherited pnBottom: TPanel
     Top = 447
     Width = 423
     TabOrder = 1
-    StyleElements = [seFont, seClient, seBorder]
     ExplicitTop = 389
     ExplicitWidth = 421
     inherited btCancel: TButton
@@ -22,27 +20,18 @@ inherited fmExporterParamsMemberUnit: TfmExporterParamsMemberUnit
     Top = 393
     Width = 423
     TabOrder = 0
-    StyleElements = [seFont, seClient, seBorder]
     ExplicitTop = 393
     ExplicitWidth = 423
-    inherited lbTargets: TLabel
-      StyleElements = [seFont, seClient, seBorder]
-    end
-    inherited lbFilePath: TLabel
-      StyleElements = [seFont, seClient, seBorder]
-    end
     inherited cbTargets: TComboBox
-      Width = 344
-      StyleElements = [seFont, seClient, seBorder]
-      ExplicitWidth = 344
+      Width = 342
+      ExplicitWidth = 342
     end
     inherited edFilePath: TEdit
-      Width = 306
-      StyleElements = [seFont, seClient, seBorder]
+      Width = 304
       ExplicitWidth = 306
     end
     inherited btOpenFileDlg: TButton
-      Left = 368
+      Left = 366
       ExplicitLeft = 368
     end
   end
@@ -88,18 +77,6 @@ inherited fmExporterParamsMemberUnit: TfmExporterParamsMemberUnit
       Height = 125
       TabOrder = 0
       ExplicitTop = 8
-      inherited lbActiveRange: TLabel
-        StyleElements = [seFont, seClient, seBorder]
-      end
-      inherited lbTo: TLabel
-        StyleElements = [seFont, seClient, seBorder]
-      end
-      inherited deActiveRangeFrom: TDateEdit
-        StyleElements = [seFont, seClient, seBorder]
-      end
-      inherited deActiveRangeTo: TDateEdit
-        StyleElements = [seFont, seClient, seBorder]
-      end
     end
   end
   object pnUnits: TPanel [4]
@@ -118,18 +95,6 @@ inherited fmExporterParamsMemberUnit: TfmExporterParamsMemberUnit
       TabOrder = 0
       ExplicitTop = 8
       ExplicitHeight = 121
-      inherited lbActiveRange: TLabel
-        StyleElements = [seFont, seClient, seBorder]
-      end
-      inherited lbTo: TLabel
-        StyleElements = [seFont, seClient, seBorder]
-      end
-      inherited deActiveRangeFrom: TDateEdit
-        StyleElements = [seFont, seClient, seBorder]
-      end
-      inherited deActiveRangeTo: TDateEdit
-        StyleElements = [seFont, seClient, seBorder]
-      end
     end
     object cbIncludeOneTimeUnits: TCheckBox
       Left = 9

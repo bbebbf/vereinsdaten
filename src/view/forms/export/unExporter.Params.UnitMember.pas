@@ -22,8 +22,6 @@ type
     procedure FormCreate(Sender: TObject);
     procedure rbAllCheckedUnitsClick(Sender: TObject);
   strict private
-    fSelectUnitIdForDetails: UInt32;
-    fSelectUnitNameForDetails: string;
     procedure ParamsUnitsRangeChecked(Sender: TObject);
     function GetParams(const aParams: TExporterMembersParams): TExporterMembersParams;
     procedure SetParams(const aParams: TExporterMembersParams);
